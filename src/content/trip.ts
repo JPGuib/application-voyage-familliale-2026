@@ -1,7 +1,7 @@
 export const TRIP = {
-  name: "Notre aventure au Japon 🇯🇵",
+  name: "Notre aventure en Turquie 🇹🇷",
   totalDays: 14,
   currentDay: 4,
-  todayDestination: "Kyoto",
-  todaySubtitle: "Arashiyama & Fushimi Inari",
+  todayDestination: "Istanbul",
+  todaySubtitle: "Sultanahmet & Bosphore",
 };

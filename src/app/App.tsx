@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   type LucideIcon,
   Check,
@@ -18,6 +18,8 @@ import {
   Volume2,
 } from "lucide-react";
 import { TRIP } from "../content/trip";
+import { PLACES } from "../content/places";
+import { QUESTIONS } from "../content/game";
 import { TIPS } from "../content/tips";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
@@ -40,7 +42,7 @@ const CHECKLIST_CATEGORIES = [
     label: "Documents",
     items: [
       { id: "passeports", label: "Passeports valides" },
-      { id: "visas", label: "Visas Japon" },
+      { id: "visas", label: "Visa e-visa Turquie" },
       { id: "billets", label: "Billets d'avion imprimés" },
       { id: "hotels", label: "Réservations hôtels" },
       { id: "assurance", label: "Assurance voyage" },
@@ -52,10 +54,10 @@ const CHECKLIST_CATEGORIES = [
     label: "Électronique",
     items: [
       { id: "phones", label: "Téléphones chargés" },
-      { id: "adaptateurs", label: "Adaptateurs prise japonaise" },
+      { id: "adaptateurs", label: "Adaptateurs prise Type C/F" },
       { id: "powerbank", label: "Power bank" },
       { id: "photo", label: "Appareil photo + chargeur" },
-      { id: "sim", label: "Carte SIM internationale" },
+      { id: "sim", label: "Carte SIM ou eSIM" },
     ],
   },
   {
@@ -64,7 +66,7 @@ const CHECKLIST_CATEGORIES = [
     label: "Indispensables",
     items: [
       { id: "pharmacie", label: "Trousse à pharmacie" },
-      { id: "yens", label: "Yens (cash)" },
+      { id: "yens", label: "Lires turques ou carte bancaire" },
       { id: "carte-banque", label: "Carte bancaire internationale" },
       { id: "snacks", label: "Snacks pour l'avion" },
     ],
@@ -74,9 +76,9 @@ const CHECKLIST_CATEGORIES = [
     emoji: "👗",
     label: "Effets personnels",
     items: [
-      { id: "vetements", label: "Vêtements (7 tenues)" },
+      { id: "vetements", label: "Vêtements légers (7 tenues)" },
       { id: "chaussures", label: "Chaussures confortables" },
-      { id: "impermeable", label: "Imperméable" },
+      { id: "impermeable", label: "Casquette ou chapeau" },
       { id: "toilette", label: "Trousse de toilette" },
       { id: "lunettes", label: "Lunettes de soleil" },
       { id: "creme", label: "Crème solaire SPF 50" },
@@ -89,87 +91,6 @@ const CHECKLIST_ITEM_IDS = new Set(
     category.items.map((item) => item.id)
   )
 );
-
-const PLACES = [
-  {
-    id: "arashiyama",
-    name: "Bambouseraie d'Arashiyama",
-    shortDesc: "Une forêt de bambous géants, féerique et mystérieuse",
-    tag: "Nature",
-    image:
-      "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&h=500&fit=crop&auto=format",
-    history:
-      "La bambouseraie d'Arashiyama est l'un des sites les plus emblématiques du Japon. Ces bambous géants, certains atteignant 30 mètres de hauteur, ont été cultivés depuis le XIVe siècle pour de multiples usages : artisanat, alimentation et construction traditionnelle.",
-    anecdotes: [
-      "Le bruit du vent dans les bambous est classé parmi les 100 sons du patrimoine japonais à préserver.",
-      "Des macaques japonais se promènent librement entre les bambous.",
-      "Au lever du soleil, la lumière filtrée crée une atmosphère quasi magique, unique au monde.",
-    ],
-  },
-  {
-    id: "fushimi",
-    name: "Sanctuaire Fushimi Inari",
-    shortDesc: "Des milliers de torii orangés sur la montagne sacrée",
-    tag: "Temple",
-    image:
-      "https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=800&h=500&fit=crop&auto=format",
-    history:
-      "Fondé en 711, Fushimi Inari-taisha est l'un des sanctuaires shintoïstes les plus importants du Japon. Dédié à Inari, dieu du riz et du commerce, il est célèbre pour ses milliers de torii vermillon formant des tunnels sur 4 kilomètres de montagne.",
-    anecdotes: [
-      "Plus de 10 000 torii orangés ont été offerts par des commerçants et entreprises japonaises.",
-      "Les renards (kitsune) sont les messagers du dieu Inari — cherchez leurs statues !",
-      "La montée complète jusqu'au sommet dure environ 2h30 avec vue panoramique sur Kyoto.",
-    ],
-  },
-  {
-    id: "kinkakuji",
-    name: "Temple d'or Kinkaku-ji",
-    shortDesc: "Le pavillon doré qui se reflète dans l'étang Kyoko-chi",
-    tag: "Temple",
-    image:
-      "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800&h=500&fit=crop&auto=format",
-    history:
-      "Construit en 1397 comme villa de retraite du shogun Ashikaga Yoshimitsu, Kinkaku-ji est recouvert de feuilles d'or véritable. Brûlé en 1950 par un moine bouddhiste, il fut reconstruit à l'identique en 1955.",
-    anecdotes: [
-      "Les deux étages supérieurs sont recouverts de feuilles d'or 24 carats.",
-      "L'incendie de 1950 a inspiré un célèbre roman du grand écrivain Mishima Yukio.",
-      "Le reflet parfait dans l'étang crée l'illusion de deux pavillons dorés.",
-    ],
-  },
-];
-
-const QUESTIONS = [
-  {
-    q: "Combien de torii orangés trouve-t-on à Fushimi Inari ?",
-    options: ["Plus de 10 000", "Environ 1 000", "Exactement 5 000", "Moins de 500"],
-    correct: 0,
-    expl: "Plus de 10 000 torii ! Tous offerts par des commerçants et entreprises japonaises.",
-  },
-  {
-    q: "Quel animal symbolise le dieu Inari ?",
-    options: ["Le dragon 🐉", "Le tigre 🐯", "Le renard 🦊", "La grue 🦩"],
-    correct: 2,
-    expl: "Le renard (kitsune) est le messager du dieu Inari. Des statues gardent chaque torii !",
-  },
-  {
-    q: "Quelle est la hauteur max des bambous d'Arashiyama ?",
-    options: ["5 mètres", "15 mètres", "30 mètres", "50 mètres"],
-    correct: 2,
-    expl: "Certains bambous atteignent 30 mètres — plus haut qu'un immeuble de 10 étages !",
-  },
-  {
-    q: "En quelle année le Temple d'or a-t-il été incendié ?",
-    options: ["1945", "1950", "1960", "1970"],
-    correct: 1,
-    expl: "Kinkaku-ji a été brûlé en 1950, puis reconstruit à l'identique en 1955.",
-  },
-  {
-    q: "Quel son est classé patrimoine sonore du Japon ?",
-    options: ["La cloche du temple", "Le vent dans les bambous", "Le chant des cigales", "Le Shinkansen"],
-    correct: 1,
-    expl: "Le vent dans les bambous d'Arashiyama est officiellement classé patrimoine sonore national !",
-  },
-];
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -212,7 +133,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     id: "game",
     emoji: "🎮",
     title: "Jeu du jour",
-    subtitle: "Quiz Kyoto",
+    subtitle: "Quiz Turquie",
     colorBg: "bg-[#FFF3E0]",
     colorText: "text-[#E65100]",
   },
@@ -753,12 +674,12 @@ function DashboardScreen({
         <div className="rounded-2xl overflow-hidden h-44 bg-muted relative">
           <img
             src="https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=800&h=400&fit=crop&auto=format"
-            alt="Fushimi Inari, Kyoto"
+            alt="Sainte-Sophie, Istanbul"
             className="w-full h-full object-cover"
           />
           <div className="absolute bottom-3 left-3">
             <span className="bg-black/50 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
-              📍 Fushimi Inari, Kyoto
+              📍 Sainte-Sophie, Istanbul
             </span>
           </div>
         </div>
@@ -787,7 +708,7 @@ function GuideScreen({
           <ChevronLeft size={18} /> Accueil
         </button>
         <h1 className="relative z-10 text-2xl font-black">
-          Guide de Kyoto 📖
+          Guide de Turquie 📖
         </h1>
         <p className="relative z-10 text-sm opacity-90 mt-1">
           Jour {TRIP.currentDay} — {PLACES.length} lieux à découvrir
@@ -820,6 +741,14 @@ function GuideScreen({
                   <p className="text-sm text-muted-foreground mt-1">
                     {place.shortDesc}
                   </p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
+                    <span className="rounded-full bg-muted px-2.5 py-1">
+                      {place.photos?.length ?? 1} photos
+                    </span>
+                    <span className="rounded-full bg-muted px-2.5 py-1">
+                      {place.audioDuration ?? "Audio à venir"}
+                    </span>
+                  </div>
                 </div>
                 <ChevronRight
                   size={20}
@@ -840,19 +769,81 @@ function GuideScreen({
 function PlaceScreen({
   place,
   onBack,
-  isPlaying,
-  togglePlay,
 }: {
   place: (typeof PLACES)[0];
   onBack: () => void;
-  isPlaying: boolean;
-  togglePlay: () => void;
 }) {
+  const photos = place.photos?.length ? place.photos : [place.image];
+  const heroPhoto = photos[0] ?? place.image;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const canPlayAudio = Boolean(place.audioSrc);
+
+  useEffect(() => {
+    const audio = new Audio(place.audioSrc ?? "");
+    audioRef.current = audio;
+    setIsPlaying(false);
+    setProgress(0);
+    setAudioError(null);
+
+    const handleTimeUpdate = () => {
+      const duration = audio.duration || 0;
+      const nextProgress = duration > 0 ? (audio.currentTime / duration) * 100 : 0;
+      setProgress(nextProgress);
+    };
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setProgress(100);
+    };
+
+    const handleError = () => {
+      setIsPlaying(false);
+      setAudioError("Audio indisponible pour le moment.");
+    };
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("error", handleError);
+
+    return () => {
+      audio.pause();
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("error", handleError);
+      audioRef.current = null;
+    };
+  }, [place.audioSrc, place.id]);
+
+  const handleTogglePlay = async () => {
+    if (!canPlayAudio || !audioRef.current) {
+      setAudioError("Audio à ajouter pour ce lieu.");
+      return;
+    }
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    try {
+      await audioRef.current.play();
+      setIsPlaying(true);
+      setAudioError(null);
+    } catch {
+      setIsPlaying(false);
+      setAudioError("Lecture impossible pour le moment.");
+    }
+  };
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="relative h-64 bg-muted flex-shrink-0">
         <img
-          src={place.image}
+          src={heroPhoto}
           alt={place.name}
           className="w-full h-full object-cover"
         />
@@ -877,24 +868,49 @@ function PlaceScreen({
         {/* Audio player */}
         <div className="mx-4 mt-4 bg-primary/10 rounded-2xl p-4 flex items-center gap-4">
           <button
-            onClick={togglePlay}
+            onClick={handleTogglePlay}
+            disabled={!canPlayAudio}
             className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-md active:scale-95 transition-transform"
           >
             {isPlaying ? <Pause size={20} /> : <Play size={20} />}
           </button>
           <div className="flex-1">
             <p className="text-sm font-black text-foreground">
-              Narration audio
+              {place.audioTitle ?? "Narration audio"}
             </p>
-            <p className="text-xs text-muted-foreground">Durée : 3 min 24 sec</p>
+            <p className="text-xs text-muted-foreground">
+              Durée : {place.audioDuration ?? "3 min 24 sec"}
+            </p>
             <div className="mt-2 bg-border rounded-full h-1.5">
               <div
                 className="bg-primary h-1.5 rounded-full transition-all duration-1000"
-                style={{ width: isPlaying ? "35%" : "0%" }}
+                style={{ width: `${progress}%` }}
               />
             </div>
+            {!canPlayAudio && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Aucun fichier audio lié à ce lieu pour le moment.
+              </p>
+            )}
+            {audioError && (
+              <p className="text-xs text-destructive mt-2">{audioError}</p>
+            )}
           </div>
           <Volume2 size={18} className="text-primary" />
+        </div>
+
+        {/* Gallery */}
+        <div className="px-4 mt-5">
+          <h2 className="text-base font-black text-foreground mb-3">
+            📷 Galerie
+          </h2>
+          <div className="grid grid-cols-3 gap-2">
+            {photos.map((photo, index) => (
+              <div key={`${place.id}-photo-${index}`} className="aspect-square rounded-2xl overflow-hidden bg-muted">
+                <img src={photo} alt={`${place.name} photo ${index + 1}`} className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* History */}
@@ -973,16 +989,16 @@ function GameScreen({
             Jeu du jour 🎮
           </h1>
           <p className="relative z-10 text-sm opacity-90 mt-1">
-            Quiz Kyoto — Jour {TRIP.currentDay}
+            Quiz Turquie — Jour {TRIP.currentDay}
           </p>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-          <div className="text-8xl mb-6">🏯</div>
+          <div className="text-8xl mb-6">🕌</div>
           <h2 className="text-2xl font-black text-foreground mb-2">
             Prêts pour le défi ?
           </h2>
           <p className="text-sm text-muted-foreground mb-2">
-            {QUESTIONS.length} questions sur les lieux visités aujourd&apos;hui à Kyoto.
+            {QUESTIONS.length} questions sur les lieux visités aujourd&apos;hui en Turquie.
           </p>
           <p className="text-sm text-muted-foreground mb-10">
             Chaque bonne réponse rapporte{" "}
@@ -1155,10 +1171,10 @@ function ResultsScreen({
     },
   ];
   const dailyScores = [
-    { day: 1, location: "Tokyo", score: 80 },
-    { day: 2, location: "Tokyo", score: 95 },
-    { day: 3, location: "Nara", score: 75 },
-    { day: 4, location: "Kyoto", score: gameScore > 0 ? gameScore : 90 },
+    { day: 1, location: "Istanbul", score: 80 },
+    { day: 2, location: "Cappadoce", score: 95 },
+    { day: 3, location: "Pamukkale", score: 75 },
+    { day: 4, location: "Antalya", score: gameScore > 0 ? gameScore : 90 },
   ];
   const total = dailyScores.reduce((s, d) => s + d.score, 0);
   const maxTotal = dailyScores.length * 100;
@@ -1292,7 +1308,7 @@ function TipsScreen({ onBack }: { onBack: () => void }) {
           Conseils de voyage 💡
         </h1>
         <p className="relative z-10 text-sm opacity-90 mt-1">
-          Tout ce qu&apos;il faut savoir pour le Japon
+          Tout ce qu&apos;il faut savoir pour la Turquie
         </p>
       </div>
 
@@ -1560,7 +1576,6 @@ export default function App() {
   const [currentQ, setCurrentQ] = useState(0);
   const [selectedAns, setSelectedAns] = useState<number | null>(null);
   const [answers, setAnswers] = useState<number[]>([]);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     try {
@@ -1671,7 +1686,6 @@ export default function App() {
 
   const openPlace = (id: string) => {
     setSelectedPlaceId(id);
-    setIsPlaying(false);
     setScreen("place");
   };
 
@@ -1803,8 +1817,6 @@ export default function App() {
           <PlaceScreen
             place={place}
             onBack={() => goToScreen("guide")}
-            isPlaying={isPlaying}
-            togglePlay={() => setIsPlaying((p) => !p)}
           />
         ) : null;
       case "game":
