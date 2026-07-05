@@ -1,0 +1,71 @@
+# generated: 2026-07-05
+# last_updated: 2026-07-05
+# project: application de voyage 2026
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+#
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+generated: 2026-07-05
+last_updated: 2026-07-05
+project: application de voyage 2026
+project_key: NOKEY
+tracking_system: file-system
+story_location: {project-root}/_bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: done
+  1-1-creer-un-profil-local: done
+  1-2-gerer-le-profil-dans-parametres: done
+  1-3-configurer-le-code-proprietaire: done
+  1-4-debloquer-on-est-partis-avec-code: done
+  epic-1-retrospective: optional
+
+  epic-2: done
+  2-1-cocher-decocher-les-items-de-checklist: done
+  2-2-afficher-la-progression-globale-en-temps-reel: done
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-afficher-le-contexte-du-jour-sur-dashboard: backlog
+  3-2-naviguer-vers-modules-internes: backlog
+  3-3-ouvrir-wanderlog-et-polarsteps: backlog
+  3-4-consulter-conseils-voyage-par-onglets: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-externaliser-le-contenu-voyage: backlog
+  4-2-mettre-a-jour-tout-le-contenu-en-turquie: backlog
+  4-3-afficher-la-liste-des-lieux-dans-guide: backlog
+  4-4-afficher-une-fiche-lieu-detaillee-avec-galerie: backlog
+  4-5-lire-laudio-du-lieu: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-completer-le-quiz-du-jour: backlog
+  5-2-completer-une-enigme-du-jour: backlog
+  5-3-completer-un-defi-du-jour: backlog
+  5-4-calculer-et-afficher-resultats: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-activer-un-mode-hors-ligne-mvp: backlog
+  6-2-deployer-lapplication-sur-vercel: backlog
+  epic-6-retrospective: optional
