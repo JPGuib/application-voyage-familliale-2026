@@ -58,11 +58,11 @@ development_status:
   4-5-lire-laudio-du-lieu: done
   epic-4-retrospective: optional
 
-  epic-5: backlog
-  5-1-completer-le-quiz-du-jour: backlog
-  5-2-completer-une-enigme-du-jour: backlog
-  5-3-completer-un-defi-du-jour: backlog
-  5-4-calculer-et-afficher-resultats: backlog
+  epic-5: done
+  5-1-completer-le-quiz-du-jour: done
+  5-2-completer-une-enigme-du-jour: done
+  5-3-completer-un-defi-du-jour: done
+  5-4-calculer-et-afficher-resultats: done
   epic-5-retrospective: optional
 
   epic-6: backlog

@@ -1,3 +1,7 @@
+export const QUESTION_POINTS = 20;
+export const RIDDLE_POINTS = 20;
+export const CHALLENGE_POINTS = 20;
+
 export const QUESTIONS = [
   {
     q: "Quelle ville relie l'Europe et l'Asie par le Bosphore ?",
@@ -26,7 +30,20 @@ export const QUESTIONS = [
   {
     q: "Quelle ville est une ancienne capitale ottomane et se situe près du mont Uludağ ?",
     options: ["Bursa", "Pamukkale", "Éphèse", "Izmir"],
-    correct: 2,
+    correct: 0,
     expl: "Bursa a joué un rôle majeur dans l'histoire ottomane et est liée au mont Uludağ.",
   },
 ];
+
+export const DAILY_RIDDLE = {
+  question:
+    "Je suis un détroit qui sépare deux continents mais unit une même ville. Qui suis-je ?",
+  answer: "Bosphore",
+  hint: "Il traverse Istanbul.",
+};
+
+export const DAILY_CHALLENGE = {
+  title: "Défi photo du jour",
+  description:
+    "Prenez une photo de famille devant un monument emblématique et racontez un fait appris pendant la visite.",
+};

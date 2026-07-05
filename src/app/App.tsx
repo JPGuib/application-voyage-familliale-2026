@@ -19,8 +19,21 @@ import {
 } from "lucide-react";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
-import { QUESTIONS } from "../content/game";
+import {
+  CHALLENGE_POINTS,
+  DAILY_CHALLENGE,
+  DAILY_RIDDLE,
+  QUESTION_POINTS,
+  QUESTIONS,
+  RIDDLE_POINTS,
+} from "../content/game";
 import { TIPS } from "../content/tips";
+import {
+  computeBadges,
+  parseGameHistory,
+  type GameHistoryEntry,
+  upsertGameHistory,
+} from "./game-results";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -96,7 +109,7 @@ const CHECKLIST_ITEM_IDS = new Set(
 
 type Screen = "checklist" | "dashboard" | "guide" | "place" | "game" | "results" | "tips" | "settings";
 type QuickScreen = "guide" | "game" | "tips" | "results";
-type GameState = "intro" | "playing" | "done";
+type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Role = "proprietaire" | "utilisateur";
 type Profile = {
   surname: string;
@@ -191,6 +204,14 @@ function MemphisDecor() {
       <div className="absolute bottom-6 left-16 w-4 h-4 rotate-12 bg-white/10" />
     </div>
   );
+}
+
+function normalizeAnswer(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
 }
 
 function ActionCard({
@@ -956,10 +977,21 @@ function GameScreen({
   answers,
   correctCount,
   gameScore,
+  riddleAnswer,
+  riddleFeedback,
+  riddleValidated,
+  riddleSolved,
+  challengeDone,
   onStart,
   onAnswer,
   onBack,
   onReset,
+  onContinueToRiddle,
+  onRiddleAnswerChange,
+  onValidateRiddle,
+  onContinueToChallenge,
+  onCompleteChallenge,
+  onFinishSession,
 }: {
   gameState: GameState;
   currentQ: number;
@@ -967,10 +999,21 @@ function GameScreen({
   answers: number[];
   correctCount: number;
   gameScore: number;
+  riddleAnswer: string;
+  riddleFeedback: string | null;
+  riddleValidated: boolean;
+  riddleSolved: boolean;
+  challengeDone: boolean;
   onStart: () => void;
   onAnswer: (idx: number) => void;
   onBack: () => void;
   onReset: () => void;
+  onContinueToRiddle: () => void;
+  onRiddleAnswerChange: (value: string) => void;
+  onValidateRiddle: () => void;
+  onContinueToChallenge: () => void;
+  onCompleteChallenge: () => void;
+  onFinishSession: () => void;
 }) {
   const q = QUESTIONS[currentQ];
 
@@ -1002,7 +1045,7 @@ function GameScreen({
           </p>
           <p className="text-sm text-muted-foreground mb-10">
             Chaque bonne réponse rapporte{" "}
-            <strong className="text-primary">20 points</strong> à l&apos;équipe !
+            <strong className="text-primary">{QUESTION_POINTS} points</strong> à l&apos;équipe !
           </p>
           <button
             onClick={onStart}
@@ -1068,10 +1111,109 @@ function GameScreen({
             })}
           </div>
           <button
+            onClick={onContinueToRiddle}
+            className="w-full bg-primary text-primary-foreground rounded-2xl py-4 px-8 font-black active:scale-95 transition-transform"
+          >
+            Continuer vers l&apos;énigme 🧩
+          </button>
+          <button
             onClick={onReset}
-            className="bg-primary text-primary-foreground rounded-2xl py-4 px-8 font-black active:scale-95 transition-transform mb-6"
+            className="w-full mt-3 bg-muted text-foreground rounded-2xl py-4 px-8 font-black active:scale-95 transition-transform mb-6"
           >
             Rejouer 🔄
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (gameState === "riddle") {
+    return (
+      <div className="flex flex-col h-full overflow-y-auto">
+        <div className="relative bg-[#FF6B3D] text-white px-6 pt-12 pb-6 flex-shrink-0">
+          <MemphisDecor />
+          <h1 className="relative z-10 text-2xl font-black">Énigme du jour 🧩</h1>
+          <p className="relative z-10 text-sm opacity-90 mt-1">
+            Bonus de {RIDDLE_POINTS} points si la réponse est correcte
+          </p>
+        </div>
+        <div className="flex-1 px-4 py-5">
+          <div className="bg-card rounded-2xl border border-border p-5">
+            <p className="text-sm font-black text-foreground mb-2">Énigme</p>
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              {DAILY_RIDDLE.question}
+            </p>
+            <p className="text-xs text-muted-foreground mt-3">
+              Indice: {DAILY_RIDDLE.hint}
+            </p>
+            <input
+              value={riddleAnswer}
+              onChange={(e) => onRiddleAnswerChange(e.target.value)}
+              placeholder="Votre réponse"
+              className="mt-4 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+              disabled={riddleValidated}
+            />
+            {!riddleValidated && (
+              <button
+                onClick={onValidateRiddle}
+                className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+              >
+                Valider la réponse
+              </button>
+            )}
+            {riddleFeedback && (
+              <p
+                className={`mt-3 text-sm font-bold ${
+                  riddleSolved ? "text-[#2E7D32]" : "text-[#C62828]"
+                }`}
+              >
+                {riddleFeedback}
+              </p>
+            )}
+          </div>
+
+          {riddleValidated && (
+            <button
+              onClick={onContinueToChallenge}
+              className="mt-4 w-full bg-primary text-primary-foreground rounded-2xl py-4 text-sm font-black"
+            >
+              Continuer vers le défi 💪
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (gameState === "challenge") {
+    return (
+      <div className="flex flex-col h-full overflow-y-auto">
+        <div className="relative bg-[#FF6B3D] text-white px-6 pt-12 pb-6 flex-shrink-0">
+          <MemphisDecor />
+          <h1 className="relative z-10 text-2xl font-black">Défi du jour 💪</h1>
+          <p className="relative z-10 text-sm opacity-90 mt-1">
+            {CHALLENGE_POINTS} points si le défi est accompli
+          </p>
+        </div>
+        <div className="flex-1 px-4 py-5">
+          <div className="bg-card rounded-2xl border border-border p-5">
+            <p className="text-sm font-black text-foreground mb-2">{DAILY_CHALLENGE.title}</p>
+            <p className="text-sm text-foreground/80 leading-relaxed">
+              {DAILY_CHALLENGE.description}
+            </p>
+            <button
+              onClick={onCompleteChallenge}
+              disabled={challengeDone}
+              className="mt-4 w-full rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground disabled:opacity-50"
+            >
+              {challengeDone ? "Défi validé ✅" : "Marquer comme accompli"}
+            </button>
+          </div>
+          <button
+            onClick={onFinishSession}
+            className="mt-4 w-full bg-[#6B3DFF] text-white rounded-2xl py-4 text-sm font-black"
+          >
+            Voir les résultats 🏆
           </button>
         </div>
       </div>
@@ -1088,7 +1230,7 @@ function GameScreen({
             Question {currentQ + 1} / {QUESTIONS.length}
           </p>
           <p className="text-sm font-black bg-white/20 px-3 py-1 rounded-full">
-            {answers.filter((a, i) => a === QUESTIONS[i]?.correct).length * 20} pts
+            {answers.filter((a, i) => a === QUESTIONS[i]?.correct).length * QUESTION_POINTS} pts
           </p>
         </div>
         <div className="relative z-10 bg-white/20 rounded-full h-2">
@@ -1152,32 +1294,20 @@ function GameScreen({
 
 function ResultsScreen({
   onBack,
-  gameScore,
-  correctCount,
+  history,
 }: {
   onBack: () => void;
-  gameScore: number;
-  correctCount: number;
+  history: GameHistoryEntry[];
 }) {
-  const badges = [
-    { icon: "🏛️", name: "Maître Culture", desc: "5 quiz complétés", earned: true },
-    { icon: "🗺️", name: "Grand Explorateur", desc: "4 lieux découverts", earned: true },
-    { icon: "⚡", name: "Éclair", desc: "Quiz en moins de 2 min", earned: false },
-    {
-      icon: "🎯",
-      name: "Sans faute !",
-      desc: "Score parfait",
-      earned: correctCount === QUESTIONS.length,
-    },
-  ];
-  const dailyScores = [
-    { day: 1, location: "Istanbul", score: 80 },
-    { day: 2, location: "Cappadoce", score: 95 },
-    { day: 3, location: "Pamukkale", score: 75 },
-    { day: 4, location: "Antalya", score: gameScore > 0 ? gameScore : 90 },
-  ];
-  const total = dailyScores.reduce((s, d) => s + d.score, 0);
-  const maxTotal = dailyScores.length * 100;
+  const latestEntry = history.length > 0 ? history[history.length - 1] : null;
+  const badges = computeBadges(history, QUESTIONS.length);
+  const dailyScores = history.map((entry) => ({
+    day: entry.day,
+    location: entry.location,
+    score: entry.totalScore,
+  }));
+  const total = dailyScores.reduce((sum, entry) => sum + entry.score, 0);
+  const maxTotal = Math.max(dailyScores.length, 1) * 100;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -1198,6 +1328,36 @@ function ResultsScreen({
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {latestEntry && (
+          <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+              Dernière session
+            </p>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-xl bg-[#FFF3E0] p-3">
+                <p className="text-xs text-muted-foreground">Quiz</p>
+                <p className="font-black text-foreground">{latestEntry.quizScore} pts</p>
+              </div>
+              <div className="rounded-xl bg-[#E8F5E9] p-3">
+                <p className="text-xs text-muted-foreground">Énigme</p>
+                <p className="font-black text-foreground">
+                  {latestEntry.riddleSolved ? `+${RIDDLE_POINTS} pts` : "0 pt"}
+                </p>
+              </div>
+              <div className="rounded-xl bg-[#E3F2FD] p-3">
+                <p className="text-xs text-muted-foreground">Défi</p>
+                <p className="font-black text-foreground">
+                  {latestEntry.challengeDone ? `+${CHALLENGE_POINTS} pts` : "0 pt"}
+                </p>
+              </div>
+              <div className="rounded-xl bg-[#F3E5F5] p-3">
+                <p className="text-xs text-muted-foreground">Total session</p>
+                <p className="font-black text-foreground">{latestEntry.totalScore} pts</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Score summary */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
@@ -1222,33 +1382,39 @@ function ResultsScreen({
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
             Par journée
           </p>
-          <div className="space-y-3">
-            {dailyScores.map((d) => (
-              <div key={d.day} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-[#6B3DFF]/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-black text-[#6B3DFF]">
-                    J{d.day}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-bold text-foreground">
-                      {d.location}
-                    </span>
-                    <span className="text-sm font-black text-[#6B3DFF]">
-                      {d.score} pts
+          {dailyScores.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aucune session terminée pour le moment. Lancez un jeu du jour pour générer des résultats.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {dailyScores.map((d) => (
+                <div key={d.day} className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#6B3DFF]/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-black text-[#6B3DFF]">
+                      J{d.day}
                     </span>
                   </div>
-                  <div className="bg-muted rounded-full h-2">
-                    <div
-                      className="bg-[#6B3DFF] h-2 rounded-full transition-all"
-                      style={{ width: `${d.score}%` }}
-                    />
+                  <div className="flex-1">
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm font-bold text-foreground">
+                        {d.location}
+                      </span>
+                      <span className="text-sm font-black text-[#6B3DFF]">
+                        {d.score} pts
+                      </span>
+                    </div>
+                    <div className="bg-muted rounded-full h-2">
+                      <div
+                        className="bg-[#6B3DFF] h-2 rounded-full transition-all"
+                        style={{ width: `${Math.min(100, d.score)}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Badges */}
@@ -1576,6 +1742,20 @@ export default function App() {
   const [currentQ, setCurrentQ] = useState(0);
   const [selectedAns, setSelectedAns] = useState<number | null>(null);
   const [answers, setAnswers] = useState<number[]>([]);
+  const [quizStartedAt, setQuizStartedAt] = useState<number | null>(null);
+  const [quizDurationSec, setQuizDurationSec] = useState(0);
+  const [riddleAnswer, setRiddleAnswer] = useState("");
+  const [riddleFeedback, setRiddleFeedback] = useState<string | null>(null);
+  const [riddleValidated, setRiddleValidated] = useState(false);
+  const [riddleSolved, setRiddleSolved] = useState(false);
+  const [challengeDone, setChallengeDone] = useState(false);
+  const [gameHistory, setGameHistory] = useState<GameHistoryEntry[]>(() => {
+    try {
+      return parseGameHistory(localStorage.getItem("jp-game-history"));
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     try {
@@ -1588,6 +1768,7 @@ export default function App() {
         String(unlockFailedAttempts)
       );
       localStorage.setItem("jp-unlock-locked-until", String(unlockLockedUntil));
+      localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
     } catch {}
   }, [
     profile,
@@ -1596,6 +1777,7 @@ export default function App() {
     checked,
     unlockFailedAttempts,
     unlockLockedUntil,
+    gameHistory,
   ]);
 
   useEffect(() => {
@@ -1680,6 +1862,13 @@ export default function App() {
       setAnswers([]);
       setCurrentQ(0);
       setSelectedAns(null);
+      setQuizStartedAt(null);
+      setQuizDurationSec(0);
+      setRiddleAnswer("");
+      setRiddleFeedback(null);
+      setRiddleValidated(false);
+      setRiddleSolved(false);
+      setChallengeDone(false);
     }
     setScreen(s);
   };
@@ -1701,6 +1890,10 @@ export default function App() {
         setCurrentQ((q) => q + 1);
         setSelectedAns(null);
       } else {
+        if (quizStartedAt) {
+          const duration = Math.max(1, Math.round((Date.now() - quizStartedAt) / 1000));
+          setQuizDurationSec(duration);
+        }
         setGameState("done");
       }
     }, 1400);
@@ -1709,7 +1902,46 @@ export default function App() {
   const correctCount = answers.filter(
     (a, i) => a === QUESTIONS[i]?.correct
   ).length;
-  const gameScore = correctCount * 20;
+  const gameScore = correctCount * QUESTION_POINTS;
+  const riddleScore = riddleSolved ? RIDDLE_POINTS : 0;
+  const challengeScore = challengeDone ? CHALLENGE_POINTS : 0;
+
+  const validateRiddle = () => {
+    const normalizedInput = normalizeAnswer(riddleAnswer);
+    if (!normalizedInput) {
+      setRiddleFeedback("Entrez une réponse avant de valider.");
+      setRiddleSolved(false);
+      return;
+    }
+
+    const solved = normalizedInput === normalizeAnswer(DAILY_RIDDLE.answer);
+    setRiddleValidated(true);
+    setRiddleSolved(solved);
+    setRiddleFeedback(
+      solved
+        ? `Bonne réponse ! Vous gagnez ${RIDDLE_POINTS} points.`
+        : `Pas tout à fait. La bonne réponse était "${DAILY_RIDDLE.answer}".`
+    );
+  };
+
+  const finishGameSession = () => {
+    const entry: GameHistoryEntry = {
+      day: TRIP.currentDay,
+      location: TRIP.todayDestination,
+      quizScore: gameScore,
+      correctCount,
+      riddleSolved,
+      challengeDone,
+      durationSec: quizDurationSec,
+      totalScore: gameScore + riddleScore + challengeScore,
+      completedAt: new Date().toISOString(),
+    };
+
+    setGameHistory((previous) => {
+      return upsertGameHistory(previous, entry);
+    });
+    setScreen("results");
+  };
 
   const renderScreen = () => {
     if (!profileReady) {
@@ -1828,11 +2060,23 @@ export default function App() {
             answers={answers}
             correctCount={correctCount}
             gameScore={gameScore}
+            riddleAnswer={riddleAnswer}
+            riddleFeedback={riddleFeedback}
+            riddleValidated={riddleValidated}
+            riddleSolved={riddleSolved}
+            challengeDone={challengeDone}
             onStart={() => {
               setGameState("playing");
               setCurrentQ(0);
               setSelectedAns(null);
               setAnswers([]);
+              setQuizStartedAt(Date.now());
+              setQuizDurationSec(0);
+              setRiddleAnswer("");
+              setRiddleFeedback(null);
+              setRiddleValidated(false);
+              setRiddleSolved(false);
+              setChallengeDone(false);
             }}
             onAnswer={answerQ}
             onBack={() => goToScreen("dashboard")}
@@ -1841,15 +2085,30 @@ export default function App() {
               setAnswers([]);
               setCurrentQ(0);
               setSelectedAns(null);
+              setQuizStartedAt(null);
+              setQuizDurationSec(0);
+              setRiddleAnswer("");
+              setRiddleFeedback(null);
+              setRiddleValidated(false);
+              setRiddleSolved(false);
+              setChallengeDone(false);
             }}
+            onContinueToRiddle={() => setGameState("riddle")}
+            onRiddleAnswerChange={(value) => {
+              setRiddleAnswer(value);
+              if (riddleFeedback) setRiddleFeedback(null);
+            }}
+            onValidateRiddle={validateRiddle}
+            onContinueToChallenge={() => setGameState("challenge")}
+            onCompleteChallenge={() => setChallengeDone(true)}
+            onFinishSession={finishGameSession}
           />
         );
       case "results":
         return (
           <ResultsScreen
             onBack={() => goToScreen("dashboard")}
-            gameScore={gameScore}
-            correctCount={correctCount}
+            history={gameHistory}
           />
         );
       case "tips":
