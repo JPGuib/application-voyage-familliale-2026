@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import {
+  type LucideIcon,
   Check,
   ChevronRight,
   ChevronLeft,
@@ -16,6 +17,8 @@ import {
   Plane,
   Volume2,
 } from "lucide-react";
+import { TRIP } from "../content/trip";
+import { TIPS } from "../content/tips";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -86,14 +89,6 @@ const CHECKLIST_ITEM_IDS = new Set(
     category.items.map((item) => item.id)
   )
 );
-
-const TRIP = {
-  name: "Notre aventure au Japon 🇯🇵",
-  totalDays: 14,
-  currentDay: 4,
-  todayDestination: "Kyoto",
-  todaySubtitle: "Arashiyama & Fushimi Inari",
-};
 
 const PLACES = [
   {
@@ -176,80 +171,93 @@ const QUESTIONS = [
   },
 ];
 
-const TIPS = {
-  transport: [
-    {
-      icon: "🚄",
-      title: "JR Pass",
-      desc: "Votre sésame pour les Shinkansen (TGV japonais). Valide 14 jours — achetez-le avant le départ !",
-    },
-    {
-      icon: "🚇",
-      title: "IC Card (Suica)",
-      desc: "Carte rechargeable pour métro, bus et petits commerces. Indispensable !",
-    },
-    {
-      icon: "🚌",
-      title: "Bus de Kyoto",
-      desc: "Day pass à ¥700 pour voyager toute la journée sur tous les bus de la ville.",
-    },
-  ],
-  customs: [
-    {
-      icon: "🙏",
-      title: "Les salutations",
-      desc: "Une légère inclinaison de la tête remplace le bonjour. Plus on s'incline, plus c'est respectueux.",
-    },
-    {
-      icon: "👟",
-      title: "Les chaussures",
-      desc: "On enlève ses chaussures avant d'entrer dans les temples et certains restaurants.",
-    },
-    {
-      icon: "🔇",
-      title: "Silence partout",
-      desc: "Dans les transports, on ne téléphone pas et on parle très doucement.",
-    },
-    {
-      icon: "🗑️",
-      title: "Pas de poubelles !",
-      desc: "Les poubelles publiques sont rarissimes — gardez vos déchets dans votre sac jusqu'à l'hôtel.",
-    },
-  ],
-  practical: [
-    {
-      icon: "💴",
-      title: "Cash is King",
-      desc: "Le Japon reste très orienté cash. Retirez des yens aux distributeurs 7-Eleven.",
-    },
-    {
-      icon: "🌐",
-      title: "Wi-Fi Pocket",
-      desc: "Louez un routeur Wi-Fi portable pour rester connectés. Réservez avant le départ.",
-    },
-    {
-      icon: "🍱",
-      title: "Konbini = vos amis",
-      desc: "Les épiceries 24h (7-Eleven, Lawson) proposent des repas délicieux et peu chers.",
-    },
-  ],
-  weather: {
-    temp: "24°C",
-    condition: "Ensoleillé",
-    humidity: "68%",
-    tip: "Temps idéal ! Pensez à la bouteille d'eau.",
-  },
-};
-
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
 type Screen = "checklist" | "dashboard" | "guide" | "place" | "game" | "results" | "tips" | "settings";
+type QuickScreen = "guide" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done";
 type Role = "proprietaire" | "utilisateur";
 type Profile = {
   surname: string;
   role: Role | null;
 };
+
+type QuickAction = {
+  id: QuickScreen;
+  emoji: string;
+  title: string;
+  subtitle: string;
+  colorBg: string;
+  colorText: string;
+};
+
+type ExternalAppLink = {
+  href: string;
+  emoji: string;
+  title: string;
+  subtitle: string;
+  colorBg: string;
+};
+
+const QUICK_ACTIONS: QuickAction[] = [
+  {
+    id: "guide",
+    emoji: "📖",
+    title: "Guide de voyage",
+    subtitle: "Découvrir les lieux",
+    colorBg: "bg-[#E8F5E9]",
+    colorText: "text-[#2E7D32]",
+  },
+  {
+    id: "game",
+    emoji: "🎮",
+    title: "Jeu du jour",
+    subtitle: "Quiz Kyoto",
+    colorBg: "bg-[#FFF3E0]",
+    colorText: "text-[#E65100]",
+  },
+  {
+    id: "tips",
+    emoji: "💡",
+    title: "Conseils",
+    subtitle: "Tips & infos pratiques",
+    colorBg: "bg-[#E3F2FD]",
+    colorText: "text-[#1565C0]",
+  },
+  {
+    id: "results",
+    emoji: "🏆",
+    title: "Résultats",
+    subtitle: "Scores & badges",
+    colorBg: "bg-[#F3E5F5]",
+    colorText: "text-[#6A1B9A]",
+  },
+];
+
+const EXTERNAL_APP_LINKS: ExternalAppLink[] = [
+  {
+    href: "https://wanderlog.com",
+    emoji: "🗺️",
+    title: "Wanderlog",
+    subtitle: "Planification du voyage",
+    colorBg: "bg-[#E8F5E9]",
+  },
+  {
+    href: "https://polarsteps.com",
+    emoji: "📸",
+    title: "Polarsteps",
+    subtitle: "Journal de voyage",
+    colorBg: "bg-[#E3F2FD]",
+  },
+];
+
+const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> = [
+  { id: "dashboard", icon: Home, label: "Accueil" },
+  { id: "guide", icon: BookOpen, label: "Guide" },
+  { id: "game", icon: Gamepad2, label: "Jeu" },
+  { id: "tips", icon: Lightbulb, label: "Conseils" },
+  { id: "results", icon: Trophy, label: "Résultats" },
+];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -386,17 +394,10 @@ function BottomNav({
   current: Screen;
   onNavigate: (s: Screen) => void;
 }) {
-  const items = [
-    { id: "dashboard" as Screen, icon: Home, label: "Accueil" },
-    { id: "guide" as Screen, icon: BookOpen, label: "Guide" },
-    { id: "game" as Screen, icon: Gamepad2, label: "Jeu" },
-    { id: "tips" as Screen, icon: Lightbulb, label: "Conseils" },
-    { id: "results" as Screen, icon: Trophy, label: "Résultats" },
-  ];
   const activeId = current === "place" ? "guide" : current;
   return (
     <nav className="flex-shrink-0 bg-card border-t border-border flex items-center justify-around px-2 py-2">
-      {items.map((item) => {
+      {BOTTOM_NAV_ITEMS.map((item) => {
         const active = activeId === item.id;
         return (
           <button
@@ -698,38 +699,17 @@ function DashboardScreen({
           Accès rapides
         </p>
         <div className="grid grid-cols-2 gap-3">
-          <ActionCard
-            emoji="📖"
-            title="Guide de voyage"
-            subtitle="Découvrir les lieux"
-            colorBg="bg-[#E8F5E9]"
-            colorText="text-[#2E7D32]"
-            onClick={() => onNavigate("guide")}
-          />
-          <ActionCard
-            emoji="🎮"
-            title="Jeu du jour"
-            subtitle="Quiz Kyoto"
-            colorBg="bg-[#FFF3E0]"
-            colorText="text-[#E65100]"
-            onClick={() => onNavigate("game")}
-          />
-          <ActionCard
-            emoji="💡"
-            title="Conseils"
-            subtitle="Tips & infos pratiques"
-            colorBg="bg-[#E3F2FD]"
-            colorText="text-[#1565C0]"
-            onClick={() => onNavigate("tips")}
-          />
-          <ActionCard
-            emoji="🏆"
-            title="Résultats"
-            subtitle="Scores & badges"
-            colorBg="bg-[#F3E5F5]"
-            colorText="text-[#6A1B9A]"
-            onClick={() => onNavigate("results")}
-          />
+          {QUICK_ACTIONS.map((item) => (
+            <ActionCard
+              key={item.id}
+              emoji={item.emoji}
+              title={item.title}
+              subtitle={item.subtitle}
+              colorBg={item.colorBg}
+              colorText={item.colorText}
+              onClick={() => onNavigate(item.id)}
+            />
+          ))}
         </div>
       </div>
 
@@ -739,40 +719,29 @@ function DashboardScreen({
           Applications externes
         </p>
         <div className="space-y-2">
-          <a
-            href="https://wanderlog.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[#E8F5E9] flex items-center justify-between px-4 py-3.5 rounded-2xl active:scale-95 transition-transform"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🗺️</span>
-              <div>
-                <p className="font-black text-sm text-foreground">Wanderlog</p>
-                <p className="text-xs text-muted-foreground">
-                  Planification du voyage
-                </p>
+          {EXTERNAL_APP_LINKS.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              referrerPolicy="strict-origin-when-cross-origin"
+              className={`${item.colorBg} flex items-center justify-between px-4 py-3.5 rounded-2xl active:scale-95 transition-transform`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{item.emoji}</span>
+                <div>
+                  <p className="font-black text-sm text-foreground">
+                    {item.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {item.subtitle}
+                  </p>
+                </div>
               </div>
-            </div>
-            <ExternalLink size={16} className="text-muted-foreground" />
-          </a>
-          <a
-            href="https://polarsteps.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[#E3F2FD] flex items-center justify-between px-4 py-3.5 rounded-2xl active:scale-95 transition-transform"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">📸</span>
-              <div>
-                <p className="font-black text-sm text-foreground">Polarsteps</p>
-                <p className="text-xs text-muted-foreground">
-                  Journal de voyage
-                </p>
-              </div>
-            </div>
-            <ExternalLink size={16} className="text-muted-foreground" />
-          </a>
+              <ExternalLink size={16} className="text-muted-foreground" />
+            </a>
+          ))}
         </div>
       </div>
 
