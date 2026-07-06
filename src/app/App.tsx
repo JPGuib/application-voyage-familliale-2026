@@ -206,6 +206,16 @@ function MemphisDecor() {
   );
 }
 
+function OfflineBanner() {
+  return (
+    <div className="absolute left-1/2 top-4 z-50 -translate-x-1/2 px-4">
+      <div className="rounded-full bg-[#1F2937] px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white shadow-lg">
+        Hors ligne · contenu local disponible
+      </div>
+    </div>
+  );
+}
+
 function normalizeAnswer(value: string) {
   return value
     .normalize("NFD")
@@ -1668,6 +1678,12 @@ function SettingsScreen({
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [isOnline, setIsOnline] = useState(() => {
+    if (typeof navigator === "undefined") {
+      return true;
+    }
+    return navigator.onLine;
+  });
   const [profile, setProfile] = useState<Profile>(() => {
     try {
       const parsed = JSON.parse(localStorage.getItem("jp-profile") || "{}");
@@ -1785,6 +1801,19 @@ export default function App() {
     const id = setInterval(() => setNowTs(Date.now()), 500);
     return () => clearInterval(id);
   }, [unlockLockedUntil]);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   const profileReady = profile.surname.trim().length > 0 && profile.role !== null;
 
@@ -2154,6 +2183,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#B8A898] md:flex md:items-center md:justify-center md:p-6">
       <div className="relative w-full md:max-w-[390px] h-screen md:h-[844px] bg-background overflow-hidden flex flex-col md:rounded-[3rem] md:shadow-2xl">
+        {!isOnline && <OfflineBanner />}
         {renderScreen()}
         {phase === "during" && screen !== "checklist" && (
           <BottomNav current={screen} onNavigate={goToScreen} />
