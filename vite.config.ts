@@ -26,7 +26,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/icon-192.svg', 'icons/icon-512.svg'],
+      includeAssets: ['icons/icon-192.svg', 'icons/icon-512.svg', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {
         name: 'Application de voyage familiale 2026',
         short_name: 'Voyage 2026',
@@ -34,10 +34,26 @@ export default defineConfig({
         theme_color: '#B8A898',
         background_color: '#FFF8F1',
         display: 'standalone',
+        orientation: 'portrait',
         start_url: '/',
+        scope: '/',
         lang: 'fr',
         icons: [
           {
+            // PNG requis pour iOS et Android (SVG non garanti sur iOS)
+            src: 'icons/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+          {
+            // SVG en complément pour navigateurs modernes
             src: 'icons/icon-192.svg',
             sizes: '192x192',
             type: 'image/svg+xml',
@@ -66,4 +82,10 @@ export default defineConfig({
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
+
+  build: {
+    // Cible iOS 17 (Safari 17) + Chrome 120 (Android 16 / Samsung A53)
+    // Aucun transpileur legacy nécessaire pour ces versions modernes
+    target: ['safari17', 'chrome120'],
+  },
 })
