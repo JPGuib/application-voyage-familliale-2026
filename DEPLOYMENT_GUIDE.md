@@ -5,7 +5,36 @@
 ### Prérequis
 - Compte Vercel (gratuit)
 - Repository GitHub avec le code
-- Variables d'environnement : aucune requise en MVP
+- Projet Firebase avec Realtime Database activée
+- Variables d'environnement (local + Vercel):
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_DATABASE_URL`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_APP_ID`
+   - `VITE_FAMILY_SYNC_ID`
+
+### 1.0 Configuration `.env.local` (développement local)
+
+1. Copiez `.env.example` vers `.env.local`
+2. Renseignez les variables Firebase
+3. Choisissez une valeur unique pour `VITE_FAMILY_SYNC_ID` (ex: `famille-voyage-2026`)
+4. Utilisez exactement la même valeur sur tous les appareils de la famille
+
+Exemple:
+
+```bash
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_DATABASE_URL=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_APP_ID=...
+VITE_FAMILY_SYNC_ID=famille-voyage-2026
+```
+
+Important:
+- `.env.local` ne doit pas être versionné
+- sans ces variables, l'app fonctionne en mode local (pas de sync multi-appareil)
 
 ### Étapes
 
@@ -23,12 +52,24 @@ Vercel reconnaît **vite.config.ts** automatiquement. Les paramètres à vérifi
 - **Output Directory** : `dist` ✓ (défaut)
 - **Install Command** : `npm install` ✓ (défaut)
 
-#### 1.3 Déploiement
+#### 1.3 Variables d'environnement Vercel (obligatoire pour la sync)
+Dans **Project Settings -> Environment Variables**, ajoutez:
+
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_DATABASE_URL`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_APP_ID`
+- `VITE_FAMILY_SYNC_ID`
+
+Appliquez au minimum à `Production` et `Preview`, puis redéployez.
+
+#### 1.4 Déploiement
 1. Cliquez **"Deploy"**
 2. Attendez ~1-2 min
 3. Vercel fournit une URL `https://[project].vercel.app`
 
-#### 1.4 Accès en production
+#### 1.5 Accès en production
 - **URL publique** : `https://[project].vercel.app`
 - **Historique de déploiement** : Dashboard Vercel
 - **Mise à jour** : git push déclenche automatiquement un redéploiement
@@ -60,6 +101,13 @@ Vercel reconnaît **vite.config.ts** automatiquement. Les paramètres à vérifi
 - Icône PWA utilise `apple-touch-icon.png` (180×180 px)
 - Nom court : "Voyage 2026" (depuis `manifest.webmanifest`)
 - Fond : couleur thème "#FFF8F1" (depuis vite.config.ts)
+
+### 2.3 Mode opératoire famille (iOS)
+1. Vérifiez que l'URL Vercel est bien la version de production
+2. Vérifiez que `VITE_FAMILY_SYNC_ID` est la même que sur Android/desktop
+3. Le premier membre crée son profil et devient Propriétaire
+4. Les autres membres créent leur profil: ils sont automatiquement Utilisateur
+5. Si un ancien cache existe, forcez un rechargement Safari puis relancez l'app installée
 
 ### Fonctionnalités PWA disponibles
 
@@ -103,6 +151,12 @@ Vercel reconnaît **vite.config.ts** automatiquement. Les paramètres à vérifi
 - Nom court : "Voyage 2026"
 - Fond splash : couleur thème "#B8A898"
 
+### 3.3 Mode opératoire famille (Android)
+1. Ouvrez exactement la même URL Vercel que sur iOS
+2. Installez l'app via Chrome
+3. Vérifiez que le premier profil Android n'essaie pas de devenir propriétaire si owner déjà créé
+4. Si besoin, videz cache/site data Chrome et relancez l'app
+
 ### Fonctionnalités PWA disponibles
 
 | Fonction | Android 16 | Statut |
@@ -118,26 +172,25 @@ Vercel reconnaît **vite.config.ts** automatiquement. Les paramètres à vérifi
 
 ## 4. Architecture multi-device
 
-### État actuel (MVP)
-- **NO CLOUD SYNC** : Pas de continuité numérique entre appareils
-- Chaque appareil = environnement **indépendant** et **isolé**
-- **Stockage local uniquement** : localStorage par appareil
+### État actuel (MVP + sync minimale)
+- **Cloud sync activable** via Firebase Realtime Database
+- Si variables Firebase présentes: état famille partagé entre appareils
+- Si variables absentes: fallback localStorage (mode local isolé)
 
 ### Conséquences
-- **iPhone utilisateur 1** : Profil, checklist, résultats stockés localement
-- **iPad utilisateur 1** : Profil, checklist, résultats **différents** (pas de sync)
-- **Android (Galaxy A53)** : Profil, checklist, résultats **différents** (pas de sync)
+- **Avec cloud** : owner unique global + code propriétaire partagé
+- **Sans cloud** : chaque appareil reste indépendant
 
 ### Exemple
 1. Sam configure le profil "Sam (Propriétaire)" sur iPhone
    - Code propriétaire défini
-   - Checklist complétée à 50%
+   - État owner écrit dans Firebase
 2. Sam ouvre l'app sur l'iPad
-   - ❌ Pas de profil trouvé (premier lancement)
-   - ❌ Code propriétaire absent
-   - ❌ Checklist à 0%
+   - ✅ Le propriétaire global est déjà connu
+   - ✅ Le profil créé sur iPad devient automatiquement Utilisateur
+   - ✅ Le code propriétaire est identique
 
-**Solution pour v2** : Synchronisation cloud (Firebase, Supabase, etc.)
+**Prochaine étape v2** : étendre la sync à checklist, résultats et phase de voyage.
 
 ---
 
@@ -187,6 +240,11 @@ npm run build
 npm run test
 ```
 
+Checklist variables:
+- Vérifier `.env.local` en local
+- Vérifier les mêmes variables dans Vercel (Production)
+- Vérifier `VITE_FAMILY_SYNC_ID` identique pour tous les appareils
+
 ### Release sur Vercel
 ```bash
 # 1. Commit et push sur main
@@ -203,6 +261,11 @@ git push origin main
 # - Android : Installer via Chrome
 # - Bureau : https://[project].vercel.app
 ```
+
+Vérification post-déploiement (owner global):
+1. Appareil A (premier lancement): créer le profil propriétaire
+2. Appareil B (nouveau membre): vérifier création automatique en utilisateur
+3. Appareil B: vérifier qu'il ne peut pas modifier le code propriétaire
 
 ### Rollback d'urgence
 ```bash
@@ -266,6 +329,12 @@ git push origin main
 - Vider le cache du navigateur
 - Forcer le rechargement du SW : DevTools → unregister
 - Attendre ~24h pour la mise à jour auto-update (si activée)
+
+### Le propriétaire n'est pas le même selon les appareils
+- Vérifier que `VITE_FAMILY_SYNC_ID` est identique partout
+- Vérifier que les variables Firebase sont bien définies dans Vercel Production
+- Vérifier que la base Firebase Realtime Database est accessible en lecture/écriture
+- Vérifier que les appareils ouvrent la même URL de production
 
 ---
 

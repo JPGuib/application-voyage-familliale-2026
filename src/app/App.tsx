@@ -34,6 +34,18 @@ import {
   type GameHistoryEntry,
   upsertGameHistory,
 } from "./game-results";
+import {
+  assignRoleOnProfileCreation,
+  areSharedFamilyStatesEqual,
+  canUpdateOwnerCode,
+  createProfileId,
+  enforceOwnerUniqueness,
+  parseSharedFamilyState,
+  upsertProfile,
+  type Role,
+  type SharedFamilyState,
+} from "./owner-policy";
+import { useCloudSync } from "../hooks/useCloudSync";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -110,8 +122,8 @@ const CHECKLIST_ITEM_IDS = new Set(
 type Screen = "checklist" | "dashboard" | "guide" | "place" | "game" | "results" | "tips" | "settings";
 type QuickScreen = "guide" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
-type Role = "proprietaire" | "utilisateur";
 type Profile = {
+  id: string;
   surname: string;
   role: Role | null;
 };
@@ -253,15 +265,15 @@ function ActionCard({
 
 function ProfileSetupScreen({
   profile,
+  ownerAlreadyConfigured,
   error,
   onSurnameChange,
-  onRoleChange,
   onContinue,
 }: {
   profile: Profile;
+  ownerAlreadyConfigured: boolean;
   error: string | null;
   onSurnameChange: (v: string) => void;
-  onRoleChange: (v: Role) => void;
   onContinue: () => void;
 }) {
   return (
@@ -276,7 +288,7 @@ function ProfileSetupScreen({
             Créer votre profil
           </h1>
           <p className="text-sm opacity-90">
-            Entrez un surnom et choisissez votre rôle pour commencer.
+            Entrez un surnom pour commencer.
           </p>
         </div>
       </div>
@@ -296,27 +308,15 @@ function ProfileSetupScreen({
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-5 mb-2">
             Rôle
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => onRoleChange("proprietaire")}
-              className={`rounded-xl px-3 py-3 text-sm font-black transition-all border ${
-                profile.role === "proprietaire"
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card text-foreground border-border"
-              }`}
-            >
-              Propriétaire
-            </button>
-            <button
-              onClick={() => onRoleChange("utilisateur")}
-              className={`rounded-xl px-3 py-3 text-sm font-black transition-all border ${
-                profile.role === "utilisateur"
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card text-foreground border-border"
-              }`}
-            >
-              Utilisateur
-            </button>
+          <div className="rounded-xl border border-border bg-muted/30 px-3 py-3">
+            <p className="text-sm font-black text-foreground">
+              {ownerAlreadyConfigured ? "Utilisateur" : "Propriétaire"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {ownerAlreadyConfigured
+                ? "Un propriétaire existe déjà pour la famille. Votre profil sera créé en utilisateur."
+                : "Aucun propriétaire n'est défini. Le premier profil devient propriétaire."}
+            </p>
           </div>
 
           {error && (
@@ -1678,6 +1678,13 @@ function SettingsScreen({
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const {
+    cloudEnabled,
+    cloudReady,
+    cloudSnapshot,
+    pushSnapshot,
+    claimRoleForProfile,
+  } = useCloudSync();
   const [isOnline, setIsOnline] = useState(() => {
     if (typeof navigator === "undefined") {
       return true;
@@ -1692,11 +1699,20 @@ export default function App() {
           ? parsed.role
           : null;
       return {
+        id: typeof parsed?.id === "string" && parsed.id.trim() ? parsed.id : createProfileId(),
         surname: typeof parsed?.surname === "string" ? parsed.surname : "",
         role,
       };
     } catch {
-      return { surname: "", role: null };
+      return { id: createProfileId(), surname: "", role: null };
+    }
+  });
+  const [familyState, setFamilyState] = useState<SharedFamilyState>(() => {
+    try {
+      const fromStorage = parseSharedFamilyState(localStorage.getItem("jp-family-state"));
+      return enforceOwnerUniqueness(fromStorage);
+    } catch {
+      return parseSharedFamilyState(null);
     }
   });
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -1776,6 +1792,10 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem("jp-profile", JSON.stringify(profile));
+      localStorage.setItem(
+        "jp-family-state",
+        JSON.stringify(enforceOwnerUniqueness(familyState))
+      );
       localStorage.setItem("jp-owner-code", ownerCode);
       localStorage.setItem("jp-phase", phase);
       localStorage.setItem("jp-checklist", JSON.stringify(checked));
@@ -1788,6 +1808,7 @@ export default function App() {
     } catch {}
   }, [
     profile,
+    familyState,
     ownerCode,
     phase,
     checked,
@@ -1795,6 +1816,52 @@ export default function App() {
     unlockLockedUntil,
     gameHistory,
   ]);
+
+  useEffect(() => {
+    if (!cloudSnapshot) return;
+
+    const normalized = enforceOwnerUniqueness(cloudSnapshot.familyState);
+    setFamilyState((previous) =>
+      areSharedFamilyStatesEqual(previous, normalized) ? previous : normalized
+    );
+    setOwnerCode((previous) =>
+      previous === cloudSnapshot.ownerCode ? previous : cloudSnapshot.ownerCode
+    );
+  }, [cloudSnapshot]);
+
+  const lastCloudPushRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!cloudEnabled || !cloudReady) return;
+
+    const normalized = enforceOwnerUniqueness(familyState);
+    const payload = JSON.stringify({ familyState: normalized, ownerCode });
+    if (lastCloudPushRef.current === payload) {
+      return;
+    }
+
+    lastCloudPushRef.current = payload;
+    void pushSnapshot({ familyState: normalized, ownerCode });
+  }, [cloudEnabled, cloudReady, familyState, ownerCode, pushSnapshot]);
+
+  useEffect(() => {
+    if (!profile.role) return;
+
+    setFamilyState((previous) => {
+      const withProfile = upsertProfile(previous, {
+        id: profile.id,
+        role: profile.role,
+      });
+      const normalized = enforceOwnerUniqueness(withProfile);
+      const normalizedRole = normalized.ownerProfileId === profile.id ? "proprietaire" : "utilisateur";
+
+      if (normalizedRole !== profile.role) {
+        setProfile((current) => ({ ...current, role: normalizedRole }));
+      }
+
+      return normalized;
+    });
+  }, [profile.id, profile.role]);
 
   useEffect(() => {
     if (unlockLockedUntil <= Date.now()) return;
@@ -1848,7 +1915,7 @@ export default function App() {
   const lockRemainingSec = Math.ceil(lockRemainingMs / 1000);
 
   const confirmStartJourney = () => {
-    if (profile.role !== "proprietaire") {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
       setStartError("Seul le profil propriétaire peut débloquer le voyage.");
       return;
     }
@@ -1977,22 +2044,64 @@ export default function App() {
       return (
         <ProfileSetupScreen
           profile={profile}
+          ownerAlreadyConfigured={Boolean(familyState.ownerProfileId)}
           error={profileError}
           onSurnameChange={(v) => {
             setProfile((p) => ({ ...p, surname: v }));
             if (profileError) setProfileError(null);
           }}
-          onRoleChange={(v) => {
-            setProfile((p) => ({ ...p, role: v }));
-            if (profileError) setProfileError(null);
-          }}
           onContinue={() => {
-            if (!profile.surname.trim() || !profile.role) {
-              setProfileError("Le surnom et le rôle sont obligatoires.");
+            if (cloudEnabled && !cloudReady) {
+              setProfileError("Synchronisation cloud en cours. Patientez quelques secondes.");
               return;
             }
-            setProfile((p) => ({ ...p, surname: p.surname.trim() }));
-            setProfileError(null);
+
+            const normalizedSurname = profile.surname.trim();
+            if (!normalizedSurname) {
+              setProfileError("Le surnom est obligatoire.");
+              return;
+            }
+
+            const continueSetup = async () => {
+              let assignedRole = assignRoleOnProfileCreation(familyState);
+              let nextFamilyState: SharedFamilyState | null = null;
+
+              if (cloudEnabled) {
+                const result = await claimRoleForProfile(profile.id);
+                if (result) {
+                  assignedRole = result.assignedRole;
+                  nextFamilyState = result.familyState;
+                }
+              }
+
+              const nextProfile = {
+                ...profile,
+                surname: normalizedSurname,
+                role: assignedRole,
+              };
+
+              setProfile(nextProfile);
+
+              if (nextFamilyState) {
+                setFamilyState(enforceOwnerUniqueness(nextFamilyState));
+              } else {
+                setFamilyState((previous) => {
+                  const withProfile = upsertProfile(previous, {
+                    id: nextProfile.id,
+                    role: assignedRole,
+                  });
+                  const withOwner =
+                    assignedRole === "proprietaire"
+                      ? { ...withProfile, ownerProfileId: nextProfile.id }
+                      : withProfile;
+                  return enforceOwnerUniqueness(withOwner);
+                });
+              }
+
+              setProfileError(null);
+            };
+
+            void continueSetup();
           }}
         />
       );
@@ -2014,7 +2123,7 @@ export default function App() {
               return { ok: true, message: "Surnom mis à jour." };
             }}
             onSaveOwnerCode={(code) => {
-              if (profile.role !== "proprietaire") {
+              if (!canUpdateOwnerCode(familyState, profile.id)) {
                 return {
                   ok: false,
                   message: "Seul le profil propriétaire peut configurer le code.",
@@ -2157,7 +2266,7 @@ export default function App() {
               return { ok: true, message: "Surnom mis à jour." };
             }}
             onSaveOwnerCode={(code) => {
-              if (profile.role !== "proprietaire") {
+              if (!canUpdateOwnerCode(familyState, profile.id)) {
                 return {
                   ok: false,
                   message: "Seul le profil propriétaire peut configurer le code.",

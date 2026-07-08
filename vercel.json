@@ -1,6 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
+  "rewrites": [
+    { "source": "/((?!sw\\.js|workbox-[^/]+\\.js|manifest\\.webmanifest|assets/|icons/).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/sw.js",

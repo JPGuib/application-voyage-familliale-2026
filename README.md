@@ -7,6 +7,8 @@
 
   Run `npm i` to install the dependencies.
 
+  Copy `.env.example` to `.env.local` and fill Firebase variables if you want multi-device sync.
+
   Run `npm run dev` to start the development server.
 
   ## Epic 6
@@ -17,6 +19,8 @@
 
   - Build command: `npm run build`
   - Output directory: `dist`
+
+  Add the same environment variables in Vercel Project Settings (`VITE_FIREBASE_*` and `VITE_FAMILY_SYNC_ID`).
 
   The repository includes `vercel.json` for service worker and manifest headers.
   

@@ -65,7 +65,7 @@ development_status:
   5-4-calculer-et-afficher-resultats: done
   epic-5-retrospective: optional
 
-  epic-6: backlog
-  6-1-activer-un-mode-hors-ligne-mvp: backlog
-  6-2-deployer-lapplication-sur-vercel: backlog
+  epic-6: in-progress
+  6-1-activer-un-mode-hors-ligne-mvp: done
+  6-2-deployer-lapplication-sur-vercel: ready-for-dev
   epic-6-retrospective: optional
