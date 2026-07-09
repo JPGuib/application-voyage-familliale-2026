@@ -73,6 +73,28 @@ export function assignRoleOnProfileCreation(
   return state.ownerProfileId ? "utilisateur" : "proprietaire";
 }
 
+export function claimRoleFirstWriterWins(
+  state: SharedFamilyState,
+  profileId: string
+): { assignedRole: Role; state: SharedFamilyState } {
+  const ownerProfileId = state.ownerProfileId ?? profileId;
+  const assignedRole: Role = ownerProfileId === profileId ? "proprietaire" : "utilisateur";
+
+  const withProfile = upsertProfile(state, {
+    id: profileId,
+    role: assignedRole,
+  });
+  const normalized = enforceOwnerUniqueness({
+    ...withProfile,
+    ownerProfileId,
+  });
+
+  return {
+    assignedRole,
+    state: normalized,
+  };
+}
+
 export function canPromoteToOwner(
   state: SharedFamilyState,
   actorProfileId: string

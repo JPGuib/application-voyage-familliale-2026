@@ -397,3 +397,247 @@ Permettre au propriétaire de réinitialiser son code s'il l'oublie.
 - Tous les backlog items sont **complètement orthogonaux** → peuvent être implémentés indépendamment
 - BACKLOG-002 bloque BACKLOG-003 (dependency: cloud sync → multi-profil)
 - BACKLOG-001 (version "globale") nécessite BACKLOG-002 pour être strictement vraie sur tous les appareils
+
+---
+
+## EPIC 7: Continuité numérique multi-device
+
+### Vision
+Permettre à chaque membre de la famille de se reconnecter avec son profil depuis n'importe quel appareil, récupérer son contexte personnel (profil, historique, préférences) et se déconnecter pour changer de profil.
+
+### Scénario utilisateur complet
+1. **JPG crée le profil propriétaire sur Ordi** → stocke profil + code dans cloud
+2. **JPG ouvre l'app sur Galaxy A53** → reconnexion auto, récupère profil JPG, accès restauré
+3. **Épouse crée profil sur iPhone** → système reconnaît pas de JPG sur iPhone, crée nouveau profil associé
+4. **JPG veut se déconnecter sur Galaxy** → menu déconnexion → retour écran sélection profil
+5. **Épouse se connecte sur Galaxy** → voir son profil, récupérer son contexte
+6. **JPG se reconn ecte sur Galaxy** → retrouver son profil + état antérieur (checklist, scores, phase)
+
+### Dépendances
+- **Dépend de BACKLOG-002** (cloud sync): données persistées dans Firebase pour tous les profils
+- **Dépend de BACKLOG-001** (propriétaire unique): garantie de l'unicité globale du propriétaire
+
+### Impacté par
+- EPIC-6 (Vercel): déploiement cloud de l'app
+- EPIC-1 à EPIC-5 (toutes les features): données à synchroniser
+
+---
+
+## STORY 7.1: Synchroniser les données multi-device (Cloud Sync)
+
+### ID
+`7-1-synchroniser-donnees-multi-device-cloud-sync`
+
+### Titre
+Implémenter la synchronisation cloud Firebase pour tous les appareils
+
+### Description
+Mettre en place le système de synchronisation centralisé qui permet à chaque profil de récupérer et restaurer son état depuis la base de données Firebase Realtime Database.
+
+### Scope
+- **In scope**:
+  - Créer une couche de persistance cloud (Firebase Realtime DB)
+  - Implémenter `useCloudSync()` hook pour synchroniser profils, checklist, game results, phase
+  - Déterminer une clé unique par profil (`profileId` ou `profileKey`)
+  - Implémenter merge/conflict resolution (last-write-wins pour MVP)
+  - Gestion du mode offline (cache local + sync lors reconnexion)
+  - Intégration avec `owner-policy` pour propriétaire unique
+
+- **Out of scope**:
+  - Authentication (on suppose device_id ou anonymous login)
+  - Suppression de profils
+  - Historique complet de versions (optionnel v2)
+  - Chiffrement des données (optionnel v2)
+
+### Données à synchroniser
+```
+/families/{VITE_FAMILY_SYNC_ID}/
+  ├── profiles/
+  │   └── {profileId}/
+  │       ├── surname: string
+  │       ├── role: "owner" | "user"
+  │       ├── createdAt: timestamp
+  │       └── lastSyncAt: timestamp
+  ├── ownerProfileId: string | null
+  ├── ownerCodeHash: string | null
+  ├── checklists/
+  │   └── {profileId}/items.json (état complet)
+  ├── gameResults/
+  │   └── {profileId}/history.json
+  └── phase/
+      └── {profileId}/phase.txt ("before" | "during")
+```
+
+### Critères d'acceptation
+- [ ] Firebase Realtime DB configurée et accessible via env vars
+- [ ] `useCloudSync()` lit et écrit tous les champs importants
+- [ ] Profil créé localement se propage à Firebase dans les 2 secondes
+- [ ] Appareil B qui ouvre l'app récupère automatiquement l'état du profil depuis Firebase
+- [ ] Mode offline: changements se mettent en queue locale, sync au reconnexion
+- [ ] Propriétaire unique garanti par transactio n atomique (first-writer-wins)
+- [ ] Pas de régression sur mode localStorage (fallback si Firebase absent)
+
+### Fichiers à créer/modifier
+- **Créer**:
+  - `src/hooks/useCloudSync.ts` (amélioration de l'existant)
+  - `src/services/cloudSyncProvider.ts` (couche d'abstraction)
+  - `src/types/cloud.ts` (types partagés Cloud)
+- **Modifier**:
+  - `src/app/App.tsx` (remplacer localStorage par useCloudSync)
+  - `src/app/owner-policy.ts` (intégrer transaction atomique pour ownerProfileId)
+  - `vite.config.ts` (vérifier env vars)
+
+### Estimation
+- Implémentation: 2-3 jours
+- QA + tests offline: 1 jour
+- **Total: 3-4 jours**
+
+### Risques
+- ⚠️ **Race condition au premier owner**: 2 appareils créent owner simultanément
+  - **Mitigation**: Transaction atomique Firebase (`set()` avec `exists()` check)
+- ⚠️ **Perte de données offline**: changements locaux non syncés
+  - **Mitigation**: Mettre en queue les mutations, retry automatique
+- ⚠️ **Quotas Firebase**: usage quota gratuit dépassé
+  - **Mitigation**: Surveiller usage, optimiser fréquence sync (pas de sync trop rapide)
+
+---
+
+## STORY 7.2: Login et sélection de profil
+
+### ID
+`7-2-login-et-selection-profil`
+
+### Titre
+Implémenter un écran de sélection/connexion profil au lancement
+
+### Description
+Ajouter un écran intermédiaire (avant d'accéder au dashboard) qui permet:
+- De voir les profils existants pour ce device
+- De se "connecter" à un profil existant (récupérer son contexte)
+- De créer un nouveau profil si souhaité
+
+### Scope
+- **In scope**:
+  - Écran de sélection profil multiface
+  - Récupération profils de l'appareil depuis `useCloudSync()`
+  - Création d'une session "profil courant" pour cet appareil
+  - UX fluide (pas de friction pour reconnecter)
+
+- **Out of scope**:
+  - Authentification par mot de passe (v2)
+  - Avatar/photo du profil (v2)
+  - Historique de connexion (v2)
+
+### Flow UX
+```
+Lancement app
+  ├─ Si aucun profil cloud OU premier appareil → Écran création profil (EPIC-1)
+  └─ Si profils cloud existent
+      ├─ Afficher liste des profils de la famille
+      ├─ Sélectionner un profil existant → Récupérer contexte → Dashboard
+      └─ Bouton "Créer nouveau profil" → Écran création (EPIC-1)
+```
+
+### Critères d'acceptation
+- [ ] Écran de sélection s'affiche si profils existent dans cloud
+- [ ] Clique sur profil = restauration automatique du contexte (checklist, scores, phase)
+- [ ] Bouton "Créer nouveau" → flow création profile normal
+- [ ] Pas de re-création accidentelle d'un profil existant
+- [ ] Déconnexion depuis dashboard → retour écran sélection
+
+### Fichiers à créer/modifier
+- **Créer**:
+  - `src/app/screens/ProfileSelectionScreen.tsx`
+  - `src/app/screens/ProfileLoginScreen.tsx` (si besoin distincte)
+- **Modifier**:
+  - `src/app/App.tsx` (ajouter routage vers écran sélection)
+  - `src/hooks/useCloudSync.ts` (exposer fonction "lister profils disponibles")
+
+### Estimation
+- Design + UX: 4 heures
+- Implémentation: 1-2 jours
+- QA: 4-6 heures
+- **Total: 2-3 jours**
+
+---
+
+## STORY 7.3: Déconnexion et changement de profil
+
+### ID
+`7-3-deconnexion-et-changement-profil`
+
+### Titre
+Ajouter fonctionnalité de déconnexion et changement de profil
+
+### Description
+Permettre à l'utilisateur de se déconnecter volontairement de son profil courant pour revenir à l'écran de sélection et choisir un autre profil.
+
+### Scope
+- **In scope**:
+  - Ajouter menu "Déconnexion" dans paramètres ou header
+  - Supprimer la session du profil courant (mode local: localStorage effacé OU mode cloud: session_id invalidée)
+  - Retour à écran sélection profil
+
+- **Out of scope**:
+  - Suppression d'un profil (v2)
+  - Synchronisation de l'historique après déconnexion (v2)
+
+### Flux
+```
+Utilisateur dans Dashboard
+  → Menu Paramètres / Profil
+  → Bouton "Se déconnecter"
+  → Confirmation "Êtes-vous sûr?"
+  → Retour Écran Sélection Profil
+  → Peut sélectionner un autre profil ou créer nouveau
+```
+
+### Critères d'acceptation
+- [ ] Menu "Déconnexion" visible dans Paramètres (ou header/drawer)
+- [ ] Clique = dialog confirmation
+- [ ] Confirmation = nettoyage session + retour Sélection
+- [ ] État précédent du profil conservé dans cloud (pas de perte de données)
+- [ ] Pas d'accès au dashboard sans profil sélectionné
+
+### Fichiers à créer/modifier
+- **Modifier**:
+  - `src/app/screens/SettingsScreen.tsx` (ajouter bouton déconnexion)
+  - `src/app/App.tsx` (gérer transition vers écran sélection)
+  - `src/hooks/useCloudSync.ts` (fonction logout/clearSession)
+
+### Estimation
+- Implémentation: 1 jour
+- QA: 4 heures
+- **Total: 1.5 jours**
+
+---
+
+## Roadmap EPIC 7
+
+### Ordre recommandé
+1. **STORY 7.1** (Cloud Sync) — semaine 1-2
+   - Dépend de: Firebase setup en EPIC-6, BACKLOG-002 finalisation
+   - Bloque: STORY 7.2 et 7.3
+
+2. **STORY 7.2** (Sélection profil) — semaine 2-3
+   - Dépend de: STORY 7.1
+   - Bloque: fin d'EPIC-7
+
+3. **STORY 7.3** (Déconnexion) — semaine 3-4
+   - Dépend de: STORY 7.2
+   - Bloque: release v2
+
+### Estimation totale EPIC 7
+- STORY 7.1: 3-4 jours
+- STORY 7.2: 2-3 jours
+- STORY 7.3: 1.5 jours
+- **Total: ~7-10 jours** (1.5 semaine avec 5 jours/sem)
+
+### Definition of Done (EPIC-7)
+- [ ] Toutes les stories marquées "done"
+- [ ] Continuité numérique validée en E2E (créer profil → sync → autre appareil → retrouver profil)
+- [ ] Pas de perte de données entre déconnexion/reconnexion
+- [ ] Mode offline testé (créer profil sans réseau, puis sync au reconnexion)
+- [ ] Pas de régression sur EPIC 1-6
+- [ ] Documentation mise à jour (DEPLOYMENT_GUIDE.md section multi-device)
+- [ ] Build production vert

@@ -3,6 +3,7 @@ import {
   assignRoleOnProfileCreation,
   canPromoteToOwner,
   canUpdateOwnerCode,
+  claimRoleFirstWriterWins,
   enforceOwnerUniqueness,
   type SharedFamilyState,
 } from "./owner-policy";
@@ -72,5 +73,25 @@ describe("owner policy", () => {
     expect(normalized.profiles.find((profile) => profile.id === "owner-1")?.role).toBe("proprietaire");
     expect(normalized.profiles.find((profile) => profile.id === "owner-2")?.role).toBe("utilisateur");
     expect(normalized.profiles.find((profile) => profile.id === "user-1")?.role).toBe("utilisateur");
+  });
+
+  it("attribue proprietaire au premier profil via first-writer-wins", () => {
+    const result = claimRoleFirstWriterWins(makeState(), "owner-1");
+
+    expect(result.assignedRole).toBe("proprietaire");
+    expect(result.state.ownerProfileId).toBe("owner-1");
+    expect(result.state.profiles.find((profile) => profile.id === "owner-1")?.role).toBe("proprietaire");
+  });
+
+  it("attribue utilisateur si un owner existe deja via first-writer-wins", () => {
+    const state = makeState({
+      ownerProfileId: "owner-1",
+      profiles: [{ id: "owner-1", role: "proprietaire" }],
+    });
+    const result = claimRoleFirstWriterWins(state, "user-2");
+
+    expect(result.assignedRole).toBe("utilisateur");
+    expect(result.state.ownerProfileId).toBe("owner-1");
+    expect(result.state.profiles.find((profile) => profile.id === "user-2")?.role).toBe("utilisateur");
   });
 });

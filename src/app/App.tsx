@@ -128,6 +128,12 @@ type Profile = {
   role: Role | null;
 };
 
+type LoginCandidate = {
+  id: string;
+  surname: string;
+  role: Role;
+};
+
 type QuickAction = {
   id: QuickScreen;
   emoji: string;
@@ -236,6 +242,42 @@ function normalizeAnswer(value: string) {
     .toLowerCase();
 }
 
+function areChecklistStatesEqual(
+  left: Record<string, boolean>,
+  right: Record<string, boolean>
+): boolean {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
+  }
+
+  for (const key of leftKeys) {
+    if (left[key] !== right[key]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function areGameHistoriesEqual(
+  left: GameHistoryEntry[],
+  right: GameHistoryEntry[]
+): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  for (let i = 0; i < left.length; i += 1) {
+    if (JSON.stringify(left[i]) !== JSON.stringify(right[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function ActionCard({
   emoji,
   title,
@@ -332,6 +374,128 @@ function ProfileSetupScreen({
         >
           Continuer
         </button>
+      </div>
+    </div>
+  );
+}
+
+function CloudLoginScreen({
+  profiles,
+  selectedProfileId,
+  createSurname,
+  error,
+  onSelectProfile,
+  onCreateSurnameChange,
+  onLoginWithSelected,
+  onCreateAndContinue,
+}: {
+  profiles: LoginCandidate[];
+  selectedProfileId: string | null;
+  createSurname: string;
+  error: string | null;
+  onSelectProfile: (profileId: string) => void;
+  onCreateSurnameChange: (value: string) => void;
+  onLoginWithSelected: () => void;
+  onCreateAndContinue: () => void;
+}) {
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
+        <MemphisDecor />
+        <div className="relative z-10">
+          <p className="text-xs font-extrabold opacity-80 tracking-widest uppercase mb-1">
+            ☁️ Connexion famille
+          </p>
+          <h1 className="text-2xl font-black leading-tight mb-2">
+            Se connecter
+          </h1>
+          <p className="text-sm opacity-90">
+            Choisissez un profil existant ou créez le vôtre.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
+        {profiles.length > 0 && (
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+              Profils existants
+            </p>
+            <div className="space-y-2">
+              {profiles.map((candidate) => {
+                const isSelected = selectedProfileId === candidate.id;
+                return (
+                  <button
+                    key={candidate.id}
+                    onClick={() => onSelectProfile(candidate.id)}
+                    className={`w-full rounded-xl border px-3 py-3 text-left transition-colors ${
+                      isSelected
+                        ? "border-primary bg-primary/10"
+                        : "border-border bg-background"
+                    }`}
+                  >
+                    <p className="text-sm font-black text-foreground">{candidate.surname}</p>
+                    <p className="text-[11px] font-bold text-muted-foreground mt-0.5">
+                      {candidate.role === "proprietaire" ? "Propriétaire" : "Utilisateur"}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={onLoginWithSelected}
+              className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+            >
+              Se connecter avec ce profil
+            </button>
+          </div>
+        )}
+
+        <div className="bg-card rounded-2xl border border-border p-4">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+            Nouveau profil
+          </p>
+          <input
+            value={createSurname}
+            onChange={(e) => onCreateSurnameChange(e.target.value)}
+            placeholder="Ex: Maman, Papa, Léo"
+            className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+          />
+          <button
+            onClick={onCreateAndContinue}
+            className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
+          >
+            Créer un nouveau profil
+          </button>
+        </div>
+
+        {error && <p className="text-sm font-bold text-destructive">{error}</p>}
+      </div>
+    </div>
+  );
+}
+
+function CloudLoadingScreen() {
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
+        <MemphisDecor />
+        <div className="relative z-10">
+          <p className="text-xs font-extrabold opacity-80 tracking-widest uppercase mb-1">
+            ☁️ Synchronisation
+          </p>
+          <h1 className="text-2xl font-black leading-tight mb-2">Préparation du cloud</h1>
+          <p className="text-sm opacity-90">
+            Chargement des profils de la famille...
+          </p>
+        </div>
+      </div>
+      <div className="flex-1 px-4 py-5">
+        <div className="bg-card rounded-2xl border border-border p-4">
+          <p className="text-sm font-semibold text-muted-foreground">
+            Patientez quelques secondes.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -1554,12 +1718,16 @@ function SettingsScreen({
   onBack,
   onSaveSurname,
   onSaveOwnerCode,
+  onSwitchProfile,
+  cloudEnabled,
 }: {
   profile: Profile;
   ownerCodeConfigured: boolean;
   onBack: () => void;
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
   onSaveOwnerCode: (code: string) => { ok: boolean; message: string };
+  onSwitchProfile: () => void;
+  cloudEnabled: boolean;
 }) {
   const [surnameInput, setSurnameInput] = useState(profile.surname);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -1670,6 +1838,23 @@ function SettingsScreen({
             </p>
           </div>
         )}
+
+        {cloudEnabled && (
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+              Session
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Déconnectez-vous pour changer de profil sur cet appareil.
+            </p>
+            <button
+              onClick={onSwitchProfile}
+              className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
+            >
+              Se déconnecter / Changer de profil
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1678,6 +1863,7 @@ function SettingsScreen({
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const ACTIVE_PROFILE_ID_KEY = "jp-active-profile-id";
   const {
     cloudEnabled,
     cloudReady,
@@ -1716,6 +1902,10 @@ export default function App() {
     }
   });
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !cloudEnabled);
+  const [selectedLoginProfileId, setSelectedLoginProfileId] = useState<string | null>(null);
+  const [createProfileSurname, setCreateProfileSurname] = useState("");
   const [phase, setPhase] = useState<"before" | "during">(() => {
     try {
       return (
@@ -1790,6 +1980,44 @@ export default function App() {
   });
 
   useEffect(() => {
+    if (!cloudEnabled) {
+      setIsAuthenticated(true);
+      return;
+    }
+
+    if (!cloudReady || !cloudSnapshot) {
+      return;
+    }
+
+    if (isAuthenticated) {
+      return;
+    }
+
+    try {
+      const rememberedId = localStorage.getItem(ACTIVE_PROFILE_ID_KEY);
+      if (!rememberedId) {
+        return;
+      }
+
+      const rememberedProfile = cloudSnapshot.profiles[rememberedId];
+      if (!rememberedProfile) {
+        return;
+      }
+
+      setProfile((previous) => ({
+        ...previous,
+        id: rememberedProfile.profileId,
+        surname: rememberedProfile.surname,
+        role: rememberedProfile.role,
+      }));
+      setIsAuthenticated(true);
+      setAuthError(null);
+    } catch {
+      // Ignore storage errors and keep manual login flow available.
+    }
+  }, [ACTIVE_PROFILE_ID_KEY, cloudEnabled, cloudReady, cloudSnapshot, isAuthenticated]);
+
+  useEffect(() => {
     try {
       localStorage.setItem("jp-profile", JSON.stringify(profile));
       localStorage.setItem(
@@ -1805,8 +2033,12 @@ export default function App() {
       );
       localStorage.setItem("jp-unlock-locked-until", String(unlockLockedUntil));
       localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
+      if (isAuthenticated) {
+        localStorage.setItem(ACTIVE_PROFILE_ID_KEY, profile.id);
+      }
     } catch {}
   }, [
+    ACTIVE_PROFILE_ID_KEY,
     profile,
     familyState,
     ownerCode,
@@ -1815,6 +2047,7 @@ export default function App() {
     unlockFailedAttempts,
     unlockLockedUntil,
     gameHistory,
+    isAuthenticated,
   ]);
 
   useEffect(() => {
@@ -1825,7 +2058,33 @@ export default function App() {
       areSharedFamilyStatesEqual(previous, normalized) ? previous : normalized
     );
     setOwnerCode((previous) =>
-      previous === cloudSnapshot.ownerCode ? previous : cloudSnapshot.ownerCode
+      previous === cloudSnapshot.ownerCodeHash ? previous : cloudSnapshot.ownerCodeHash
+    );
+
+    const cloudProfile = cloudSnapshot.profiles[profile.id];
+    if (!cloudProfile) {
+      return;
+    }
+
+    setProfile((previous) => {
+      const nextRole = cloudProfile.role;
+      const nextSurname = cloudProfile.surname || previous.surname;
+      if (previous.role === nextRole && previous.surname === nextSurname) {
+        return previous;
+      }
+      return {
+        ...previous,
+        role: nextRole,
+        surname: nextSurname,
+      };
+    });
+
+    setPhase((previous) => (previous === cloudProfile.phase ? previous : cloudProfile.phase));
+    setChecked((previous) =>
+      areChecklistStatesEqual(previous, cloudProfile.checklist) ? previous : cloudProfile.checklist
+    );
+    setGameHistory((previous) =>
+      areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
   }, [cloudSnapshot]);
 
@@ -1833,16 +2092,48 @@ export default function App() {
 
   useEffect(() => {
     if (!cloudEnabled || !cloudReady) return;
+    if (!profile.role) return;
+    if (!profile.surname.trim()) return;
 
     const normalized = enforceOwnerUniqueness(familyState);
-    const payload = JSON.stringify({ familyState: normalized, ownerCode });
+    const payload = JSON.stringify({
+      familyState: normalized,
+      ownerCode,
+      profileId: profile.id,
+      surname: profile.surname,
+      role: profile.role,
+      checklist: checked,
+      phase,
+      gameHistory,
+    });
     if (lastCloudPushRef.current === payload) {
       return;
     }
 
     lastCloudPushRef.current = payload;
-    void pushSnapshot({ familyState: normalized, ownerCode });
-  }, [cloudEnabled, cloudReady, familyState, ownerCode, pushSnapshot]);
+    void pushSnapshot({
+      familyState: normalized,
+      ownerCodeHash: ownerCode,
+      profileId: profile.id,
+      surname: profile.surname,
+      role: profile.role,
+      checklist: checked,
+      gameResults: gameHistory,
+      phase,
+    });
+  }, [
+    checked,
+    cloudEnabled,
+    cloudReady,
+    familyState,
+    gameHistory,
+    ownerCode,
+    phase,
+    profile.id,
+    profile.role,
+    profile.surname,
+    pushSnapshot,
+  ]);
 
   useEffect(() => {
     if (!profile.role) return;
@@ -2039,7 +2330,83 @@ export default function App() {
     setScreen("results");
   };
 
+  const loginCandidates: LoginCandidate[] = cloudSnapshot
+    ? Object.values(cloudSnapshot.profiles)
+        .map((item) => ({
+          id: item.profileId,
+          surname: item.surname,
+          role: item.role,
+        }))
+        .sort((left, right) => left.surname.localeCompare(right.surname, "fr"))
+    : [];
+
   const renderScreen = () => {
+    if (cloudEnabled && !cloudReady) {
+      return <CloudLoadingScreen />;
+    }
+
+    if (cloudEnabled && !isAuthenticated) {
+      return (
+        <CloudLoginScreen
+          profiles={loginCandidates}
+          selectedProfileId={selectedLoginProfileId}
+          createSurname={createProfileSurname}
+          error={authError}
+          onSelectProfile={(profileId) => {
+            setSelectedLoginProfileId(profileId);
+            if (authError) setAuthError(null);
+          }}
+          onCreateSurnameChange={(value) => {
+            setCreateProfileSurname(value);
+            if (authError) setAuthError(null);
+          }}
+          onLoginWithSelected={() => {
+            if (!cloudSnapshot) {
+              setAuthError("Synchronisation cloud indisponible pour le moment.");
+              return;
+            }
+
+            if (!selectedLoginProfileId) {
+              setAuthError("Sélectionnez un profil pour continuer.");
+              return;
+            }
+
+            const selected = cloudSnapshot.profiles[selectedLoginProfileId];
+            if (!selected) {
+              setAuthError("Profil introuvable. Rechargez puis réessayez.");
+              return;
+            }
+
+            setProfile((previous) => ({
+              ...previous,
+              id: selected.profileId,
+              surname: selected.surname,
+              role: selected.role,
+            }));
+            setAuthError(null);
+            setIsAuthenticated(true);
+          }}
+          onCreateAndContinue={() => {
+            const normalizedSurname = createProfileSurname.trim();
+            if (!normalizedSurname) {
+              setAuthError("Le surnom est obligatoire pour créer un profil.");
+              return;
+            }
+
+            setProfile((previous) => ({
+              ...previous,
+              id: createProfileId(),
+              surname: normalizedSurname,
+              role: null,
+            }));
+            setProfileError(null);
+            setAuthError(null);
+            setIsAuthenticated(true);
+          }}
+        />
+      );
+    }
+
     if (!profileReady) {
       return (
         <ProfileSetupScreen
@@ -2067,7 +2434,7 @@ export default function App() {
               let nextFamilyState: SharedFamilyState | null = null;
 
               if (cloudEnabled) {
-                const result = await claimRoleForProfile(profile.id);
+                const result = await claimRoleForProfile(profile.id, normalizedSurname);
                 if (result) {
                   assignedRole = result.assignedRole;
                   nextFamilyState = result.familyState;
@@ -2113,6 +2480,7 @@ export default function App() {
           <SettingsScreen
             profile={profile}
             ownerCodeConfigured={ownerCode.length > 0}
+            cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("checklist")}
             onSaveSurname={(surname) => {
               const normalized = surname.trim();
@@ -2138,6 +2506,18 @@ export default function App() {
               }
               setOwnerCode(normalized);
               return { ok: true, message: "Code propriétaire mis à jour." };
+            }}
+            onSwitchProfile={() => {
+              try {
+                localStorage.removeItem(ACTIVE_PROFILE_ID_KEY);
+              } catch {
+                // Ignore local storage failures; in-memory state reset still works.
+              }
+              setSelectedLoginProfileId(null);
+              setCreateProfileSurname("");
+              setAuthError(null);
+              setProfileError(null);
+              setIsAuthenticated(false);
             }}
           />
         );
@@ -2256,6 +2636,7 @@ export default function App() {
           <SettingsScreen
             profile={profile}
             ownerCodeConfigured={ownerCode.length > 0}
+            cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("dashboard")}
             onSaveSurname={(surname) => {
               const normalized = surname.trim();
@@ -2281,6 +2662,18 @@ export default function App() {
               }
               setOwnerCode(normalized);
               return { ok: true, message: "Code propriétaire mis à jour." };
+            }}
+            onSwitchProfile={() => {
+              try {
+                localStorage.removeItem(ACTIVE_PROFILE_ID_KEY);
+              } catch {
+                // Ignore local storage failures; in-memory state reset still works.
+              }
+              setSelectedLoginProfileId(null);
+              setCreateProfileSurname("");
+              setAuthError(null);
+              setProfileError(null);
+              setIsAuthenticated(false);
             }}
           />
         );
