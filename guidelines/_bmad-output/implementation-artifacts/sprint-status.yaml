@@ -24,7 +24,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-07-05
-last_updated: 2026-07-09
+last_updated: 2026-07-10
 project: application de voyage 2026
 project_key: NOKEY
 tracking_system: file-system
@@ -75,3 +75,9 @@ development_status:
   7-2-login-et-selection-profil: in-progress
   7-3-deconnexion-et-changement-profil: in-progress
   epic-7-retrospective: optional
+
+  epic-8: done
+  8-1-stocker-un-hash-du-code-proprietaire: done
+  8-2-bloquer-promotion-manuelle-vers-proprietaire: done
+  8-3-couvrir-invariants-owner-unique-en-integration-et-e2e: done
+  epic-8-retrospective: optional

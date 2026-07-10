@@ -35,6 +35,7 @@ import {
   upsertGameHistory,
 } from "./game-results";
 import {
+  applyProfileRoleMutation,
   assignRoleOnProfileCreation,
   areSharedFamilyStatesEqual,
   canUpdateOwnerCode,
@@ -45,6 +46,11 @@ import {
   type Role,
   type SharedFamilyState,
 } from "./owner-policy";
+import {
+  hashOwnerCode,
+  isOwnerCodeHash,
+  verifyOwnerCode,
+} from "./owner-code";
 import { useCloudSync } from "../hooks/useCloudSync";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
@@ -568,7 +574,7 @@ function ChecklistScreen({
   onOpenSettings: () => void;
   onStart: () => void;
   onStartCodeChange: (v: string) => void;
-  onConfirmStart: () => void;
+  onConfirmStart: () => void | Promise<void>;
   onCancelStartPrompt: () => void;
 }) {
   const remainingItems = Math.max(totalItems - checkedCount, 0);
@@ -733,7 +739,9 @@ function ChecklistScreen({
                 Annuler
               </button>
               <button
-                onClick={onConfirmStart}
+                onClick={() => {
+                  void onConfirmStart();
+                }}
                 className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
               >
                 Valider
@@ -1725,7 +1733,7 @@ function SettingsScreen({
   ownerCodeConfigured: boolean;
   onBack: () => void;
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
-  onSaveOwnerCode: (code: string) => { ok: boolean; message: string };
+  onSaveOwnerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
   onSwitchProfile: () => void;
   cloudEnabled: boolean;
 }) {
@@ -1815,8 +1823,8 @@ function SettingsScreen({
               className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
             <button
-              onClick={() => {
-                const result = onSaveOwnerCode(ownerCodeInput);
+              onClick={async () => {
+                const result = await onSaveOwnerCode(ownerCodeInput);
                 setOwnerCodeFeedback(result.message);
                 if (result.ok) setOwnerCodeInput("");
               }}
@@ -1934,8 +1942,14 @@ export default function App() {
     }
   });
   const [gameState, setGameState] = useState<GameState>("intro");
-  const [ownerCode, setOwnerCode] = useState<string>(() => {
+  const [ownerCodeHash, setOwnerCodeHash] = useState<string>(() => {
     try {
+      const hashFromStorage = localStorage.getItem("jp-owner-code-hash") || "";
+      if (hashFromStorage) {
+        return hashFromStorage;
+      }
+
+      // Legacy fallback, migrated to hash in a dedicated effect.
       return localStorage.getItem("jp-owner-code") || "";
     } catch {
       return "";
@@ -2018,13 +2032,30 @@ export default function App() {
   }, [ACTIVE_PROFILE_ID_KEY, cloudEnabled, cloudReady, cloudSnapshot, isAuthenticated]);
 
   useEffect(() => {
+    const migrateLegacyOwnerCode = async () => {
+      if (!ownerCodeHash || isOwnerCodeHash(ownerCodeHash)) {
+        return;
+      }
+
+      const nextHash = await hashOwnerCode(ownerCodeHash);
+      if (import.meta.env.DEV) {
+        console.info("[owner-code] Migrated legacy clear-text owner code to hash.");
+      }
+      setOwnerCodeHash(nextHash);
+    };
+
+    void migrateLegacyOwnerCode();
+  }, [ownerCodeHash]);
+
+  useEffect(() => {
     try {
       localStorage.setItem("jp-profile", JSON.stringify(profile));
       localStorage.setItem(
         "jp-family-state",
         JSON.stringify(enforceOwnerUniqueness(familyState))
       );
-      localStorage.setItem("jp-owner-code", ownerCode);
+      localStorage.setItem("jp-owner-code-hash", ownerCodeHash);
+      localStorage.removeItem("jp-owner-code");
       localStorage.setItem("jp-phase", phase);
       localStorage.setItem("jp-checklist", JSON.stringify(checked));
       localStorage.setItem(
@@ -2041,7 +2072,7 @@ export default function App() {
     ACTIVE_PROFILE_ID_KEY,
     profile,
     familyState,
-    ownerCode,
+    ownerCodeHash,
     phase,
     checked,
     unlockFailedAttempts,
@@ -2057,7 +2088,7 @@ export default function App() {
     setFamilyState((previous) =>
       areSharedFamilyStatesEqual(previous, normalized) ? previous : normalized
     );
-    setOwnerCode((previous) =>
+    setOwnerCodeHash((previous) =>
       previous === cloudSnapshot.ownerCodeHash ? previous : cloudSnapshot.ownerCodeHash
     );
 
@@ -2098,7 +2129,7 @@ export default function App() {
     const normalized = enforceOwnerUniqueness(familyState);
     const payload = JSON.stringify({
       familyState: normalized,
-      ownerCode,
+      ownerCodeHash,
       profileId: profile.id,
       surname: profile.surname,
       role: profile.role,
@@ -2113,7 +2144,7 @@ export default function App() {
     lastCloudPushRef.current = payload;
     void pushSnapshot({
       familyState: normalized,
-      ownerCodeHash: ownerCode,
+      ownerCodeHash,
       profileId: profile.id,
       surname: profile.surname,
       role: profile.role,
@@ -2127,7 +2158,7 @@ export default function App() {
     cloudReady,
     familyState,
     gameHistory,
-    ownerCode,
+    ownerCodeHash,
     phase,
     profile.id,
     profile.role,
@@ -2139,18 +2170,19 @@ export default function App() {
     if (!profile.role) return;
 
     setFamilyState((previous) => {
-      const withProfile = upsertProfile(previous, {
-        id: profile.id,
-        role: profile.role,
-      });
-      const normalized = enforceOwnerUniqueness(withProfile);
-      const normalizedRole = normalized.ownerProfileId === profile.id ? "proprietaire" : "utilisateur";
+      const mutation = applyProfileRoleMutation(previous, profile.id, profile.role);
+      if (mutation.rejected && import.meta.env.DEV) {
+        console.info(
+          `[owner-policy] Role mutation rejected (${mutation.reason}) for profile ${profile.id}.`
+        );
+      }
+      const normalizedRole = mutation.role;
 
       if (normalizedRole !== profile.role) {
         setProfile((current) => ({ ...current, role: normalizedRole }));
       }
 
-      return normalized;
+      return mutation.state;
     });
   }, [profile.id, profile.role]);
 
@@ -2205,12 +2237,12 @@ export default function App() {
   const lockRemainingMs = Math.max(0, unlockLockedUntil - nowTs);
   const lockRemainingSec = Math.ceil(lockRemainingMs / 1000);
 
-  const confirmStartJourney = () => {
+  const confirmStartJourney = async () => {
     if (!canUpdateOwnerCode(familyState, profile.id)) {
       setStartError("Seul le profil propriétaire peut débloquer le voyage.");
       return;
     }
-    if (!ownerCode) {
+    if (!ownerCodeHash) {
       setStartError("Configurez d'abord un code propriétaire dans Paramètres.");
       return;
     }
@@ -2219,7 +2251,8 @@ export default function App() {
       return;
     }
 
-    if (startCodeInput.trim() !== ownerCode) {
+    const isCodeValid = await verifyOwnerCode(startCodeInput, ownerCodeHash);
+    if (!isCodeValid) {
       const nextAttempts = unlockFailedAttempts + 1;
       if (nextAttempts >= 3) {
         const nextLock = Date.now() + 30000;
@@ -2453,15 +2486,18 @@ export default function App() {
                 setFamilyState(enforceOwnerUniqueness(nextFamilyState));
               } else {
                 setFamilyState((previous) => {
-                  const withProfile = upsertProfile(previous, {
-                    id: nextProfile.id,
-                    role: assignedRole,
-                  });
-                  const withOwner =
-                    assignedRole === "proprietaire"
-                      ? { ...withProfile, ownerProfileId: nextProfile.id }
-                      : withProfile;
-                  return enforceOwnerUniqueness(withOwner);
+                  const mutation = applyProfileRoleMutation(previous, nextProfile.id, assignedRole);
+                  if (mutation.rejected && import.meta.env.DEV) {
+                    console.info(
+                      `[owner-policy] Setup role mutation rejected (${mutation.reason}) for profile ${nextProfile.id}.`
+                    );
+                  }
+
+                  if (mutation.role !== assignedRole) {
+                    setProfile((current) => ({ ...current, role: mutation.role }));
+                  }
+
+                  return mutation.state;
                 });
               }
 
@@ -2479,7 +2515,7 @@ export default function App() {
         return (
           <SettingsScreen
             profile={profile}
-            ownerCodeConfigured={ownerCode.length > 0}
+            ownerCodeConfigured={ownerCodeHash.length > 0}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("checklist")}
             onSaveSurname={(surname) => {
@@ -2490,7 +2526,7 @@ export default function App() {
               setProfile((p) => ({ ...p, surname: normalized }));
               return { ok: true, message: "Surnom mis à jour." };
             }}
-            onSaveOwnerCode={(code) => {
+            onSaveOwnerCode={async (code) => {
               if (!canUpdateOwnerCode(familyState, profile.id)) {
                 return {
                   ok: false,
@@ -2504,7 +2540,8 @@ export default function App() {
                   message: "Le code doit contenir au moins 4 caractères.",
                 };
               }
-              setOwnerCode(normalized);
+              const nextHash = await hashOwnerCode(normalized);
+              setOwnerCodeHash(nextHash);
               return { ok: true, message: "Code propriétaire mis à jour." };
             }}
             onSwitchProfile={() => {
@@ -2635,7 +2672,7 @@ export default function App() {
         return (
           <SettingsScreen
             profile={profile}
-            ownerCodeConfigured={ownerCode.length > 0}
+            ownerCodeConfigured={ownerCodeHash.length > 0}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("dashboard")}
             onSaveSurname={(surname) => {
@@ -2646,7 +2683,7 @@ export default function App() {
               setProfile((p) => ({ ...p, surname: normalized }));
               return { ok: true, message: "Surnom mis à jour." };
             }}
-            onSaveOwnerCode={(code) => {
+            onSaveOwnerCode={async (code) => {
               if (!canUpdateOwnerCode(familyState, profile.id)) {
                 return {
                   ok: false,
@@ -2660,7 +2697,8 @@ export default function App() {
                   message: "Le code doit contenir au moins 4 caractères.",
                 };
               }
-              setOwnerCode(normalized);
+              const nextHash = await hashOwnerCode(normalized);
+              setOwnerCodeHash(nextHash);
               return { ok: true, message: "Code propriétaire mis à jour." };
             }}
             onSwitchProfile={() => {

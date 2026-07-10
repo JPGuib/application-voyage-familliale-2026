@@ -67,6 +67,73 @@ export function upsertProfile(
   };
 }
 
+export type RoleMutationResult = {
+  state: SharedFamilyState;
+  role: Role;
+  rejected: boolean;
+  reason: "owner-already-exists" | "cannot-demote-owner" | null;
+};
+
+export function applyProfileRoleMutation(
+  state: SharedFamilyState,
+  targetProfileId: string,
+  requestedRole: Role
+): RoleMutationResult {
+  const normalized = enforceOwnerUniqueness(state);
+  const existingRole =
+    normalized.profiles.find((profile) => profile.id === targetProfileId)?.role ?? "utilisateur";
+
+  if (
+    requestedRole === "proprietaire" &&
+    normalized.ownerProfileId &&
+    normalized.ownerProfileId !== targetProfileId
+  ) {
+    const withProfile = upsertProfile(normalized, {
+      id: targetProfileId,
+      role: existingRole,
+    });
+    return {
+      state: enforceOwnerUniqueness(withProfile),
+      role: existingRole,
+      rejected: true,
+      reason: "owner-already-exists",
+    };
+  }
+
+  if (requestedRole === "utilisateur" && normalized.ownerProfileId === targetProfileId) {
+    const withProfile = upsertProfile(normalized, {
+      id: targetProfileId,
+      role: "proprietaire",
+    });
+    return {
+      state: enforceOwnerUniqueness(withProfile),
+      role: "proprietaire",
+      rejected: true,
+      reason: "cannot-demote-owner",
+    };
+  }
+
+  const withProfile = upsertProfile(normalized, {
+    id: targetProfileId,
+    role: requestedRole,
+  });
+  const withOwner =
+    requestedRole === "proprietaire"
+      ? { ...withProfile, ownerProfileId: targetProfileId }
+      : withProfile;
+
+  const nextState = enforceOwnerUniqueness(withOwner);
+  const nextRole =
+    nextState.ownerProfileId === targetProfileId ? "proprietaire" : "utilisateur";
+
+  return {
+    state: nextState,
+    role: nextRole,
+    rejected: false,
+    reason: null,
+  };
+}
+
 export function assignRoleOnProfileCreation(
   state: SharedFamilyState
 ): Role {
@@ -77,21 +144,11 @@ export function claimRoleFirstWriterWins(
   state: SharedFamilyState,
   profileId: string
 ): { assignedRole: Role; state: SharedFamilyState } {
-  const ownerProfileId = state.ownerProfileId ?? profileId;
-  const assignedRole: Role = ownerProfileId === profileId ? "proprietaire" : "utilisateur";
-
-  const withProfile = upsertProfile(state, {
-    id: profileId,
-    role: assignedRole,
-  });
-  const normalized = enforceOwnerUniqueness({
-    ...withProfile,
-    ownerProfileId,
-  });
+  const mutation = applyProfileRoleMutation(state, profileId, "proprietaire");
 
   return {
-    assignedRole,
-    state: normalized,
+    assignedRole: mutation.role,
+    state: mutation.state,
   };
 }
 

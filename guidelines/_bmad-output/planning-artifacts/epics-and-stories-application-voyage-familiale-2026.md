@@ -71,6 +71,8 @@ Ce document decompose le PRD en epics et stories implementables pour le MVP de l
 - Epic 4: Contenu Turquie (guide, fiche lieu, media)
 - Epic 5: Jeu du jour et resultats
 - Epic 6: Hors ligne et deploiement
+- Epic 7: Synchronisation cloud et authentification multi-profils
+- Epic 8: Durcissement proprietaire unique global
 
 ## Epic 1: Identite, roles et deblocage securise
 
@@ -366,3 +368,89 @@ So that la famille dispose d une URL de production stable.
 **When** un commit est pousse sur la branche principale
 **Then** un deploiement de production est execute
 **And** l URL de production est accessible
+
+## Epic 7: Synchronisation cloud et authentification multi-profils
+
+Objectif: Partager les donnees famille entre appareils et permettre la connexion/deconnexion de profils sur un meme device.
+
+### Story 7.1: Synchroniser donnees multi-device (cloud sync)
+As a famille en voyage,
+I want partager mes donnees entre appareils,
+So that profil, checklist, jeux et phase restent coherents partout.
+
+**Acceptance Criteria:**
+
+**Given** un profil met a jour ses donnees sur un appareil
+**When** un second appareil ouvre l application
+**Then** les donnees synchronisees sont visibles
+**And** la lecture fonctionne meme apres reconnexion reseau
+
+### Story 7.2: Login et selection profil
+As a membre de la famille,
+I want selectionner un profil existant ou en creer un,
+So that je me connecte avec mon identite.
+
+**Acceptance Criteria:**
+
+**Given** des profils existent deja dans la famille
+**When** j arrive sur l ecran de connexion
+**Then** je peux selectionner un profil et continuer
+
+**Given** je cree un nouveau profil
+**When** je valide un surnom
+**Then** un profil est cree et connecte
+
+### Story 7.3: Deconnexion et changement profil
+As a utilisateur partageant un appareil,
+I want me deconnecter puis changer de profil,
+So that chaque membre utilise son espace.
+
+**Acceptance Criteria:**
+
+**Given** je suis connecte
+**When** je choisis de me deconnecter
+**Then** je reviens a l ecran de selection profil
+**And** je peux me reconnecter avec un autre profil
+
+## Epic 8: Durcissement proprietaire unique global
+
+Objectif: Clore BACKLOG-001 en finalisant les points securite et qualite restants autour du proprietaire unique.
+
+### Story 8.1: Stocker un hash du code proprietaire
+As a proprietaire,
+I want stocker une empreinte du code au lieu du code en clair,
+So that la securite des donnees est renforcee.
+
+**Acceptance Criteria:**
+
+**Given** un code proprietaire est cree ou modifie
+**When** il est persiste localement/cloud
+**Then** seule sa version hashee est stockee
+**And** aucune valeur en clair n est ecrite dans la source partagee
+
+### Story 8.2: Bloquer explicitement toute promotion manuelle vers proprietaire
+As a mainteneur,
+I want appliquer un garde-fou central sur toutes les mutations de role,
+So that aucun bypass UI ne permette de promouvoir un utilisateur.
+
+**Acceptance Criteria:**
+
+**Given** un owner existe deja
+**When** une mutation tente de promouvoir un autre profil
+**Then** la mutation est refusee
+**And** l evenement est journalise en mode developpement
+
+### Story 8.3: Couvrir les invariants par tests d integration et E2E
+As a equipe produit,
+I want automatiser les cas owner unique critiques,
+So that la regression est detectee avant release.
+
+**Acceptance Criteria:**
+
+**Given** un scenario multi-device concurrent est execute
+**When** deux profils tentent le bootstrap owner
+**Then** un seul owner final est conserve
+
+**Given** un utilisateur non owner tente de modifier le code
+**When** la requete est executee
+**Then** la mutation est rejetee systematiquement

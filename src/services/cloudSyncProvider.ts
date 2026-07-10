@@ -150,19 +150,29 @@ export async function pushCloudSnapshot(
   payload: CloudSyncWritePayload
 ): Promise<void> {
   const timestamp = Date.now();
+  const normalizedFamilyState = enforceOwnerUniqueness(payload.familyState);
+  const effectiveRole: Role =
+    normalizedFamilyState.ownerProfileId === payload.profileId ? "proprietaire" : "utilisateur";
+
+  if (import.meta.env.DEV && payload.role !== effectiveRole) {
+    console.info(
+      `[owner-policy] Cloud role sanitized for profile ${payload.profileId}: ${payload.role} -> ${effectiveRole}.`
+    );
+  }
+
   const updates: Record<string, unknown> = {
-    ownerProfileId: payload.familyState.ownerProfileId,
+    ownerProfileId: normalizedFamilyState.ownerProfileId,
     ownerCodeHash: payload.ownerCodeHash,
     updatedAt: timestamp,
     [`profiles/${payload.profileId}/surname`]: payload.surname,
-    [`profiles/${payload.profileId}/role`]: payload.role,
+    [`profiles/${payload.profileId}/role`]: effectiveRole,
     [`profiles/${payload.profileId}/lastSyncAt`]: timestamp,
     [`checklists/${payload.profileId}`]: payload.checklist,
     [`gameResults/${payload.profileId}`]: payload.gameResults,
     [`phase/${payload.profileId}`]: payload.phase,
   };
 
-  for (const profile of payload.familyState.profiles) {
+  for (const profile of normalizedFamilyState.profiles) {
     updates[`profiles/${profile.id}/role`] = profile.role;
   }
 

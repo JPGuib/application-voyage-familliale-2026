@@ -2,6 +2,13 @@
 
 ## BACKLOG-001: Propriétaire unique global (toute l'application)
 
+### Statut
+- Statut backlog: LIVRE
+- Epic de livraison: Epic 8 - Durcissement proprietaire unique global
+- Stories de livraison: 8-1, 8-2, 8-3
+- Date de livraison: 2026-07-10
+- Remarque: la regle de proprietaire unique global est implementee et validee (tests + build verts), avec tracabilite dans les artefacts Epic 8.
+
 ### Objectif
 Appliquer la règle métier suivante: un seul membre de la famille est Propriétaire pour toute l'application, et tous les autres profils sont Utilisateurs.
 
@@ -308,7 +315,7 @@ Permettre au propriétaire de réinitialiser son code s'il l'oublie.
 ## Priorités recommandées
 
 ### v1.1 (patch urgent)
-- ☐ **BACKLOG-001** : Propriétaire unique global (règle métier)
+- ☑ **BACKLOG-001** : Propriétaire unique global (livré Epic 8: 8-1, 8-2, 8-3)
 - ☐ **BACKLOG-004** : Réinitialisation d'urgence (UX critical)
 
 ### v2 (prochaine itération majeure)

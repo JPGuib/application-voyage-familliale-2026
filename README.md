@@ -11,6 +11,13 @@
 
   Run `npm run dev` to start the development server.
 
+  ## Tests
+
+  Run `npm run test` to execute unit and integration tests.
+
+  Owner governance integration tests are in `src/app/owner-governance.integration.test.ts`.
+  They do not require a Firebase emulator because they validate the core policy layer and hashing flow directly.
+
   ## Epic 6
 
   The app now ships with a PWA service worker generated at build time. Run `npm run build` to produce the offline shell and precached assets.

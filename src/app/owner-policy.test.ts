@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyProfileRoleMutation,
   assignRoleOnProfileCreation,
   canPromoteToOwner,
   canUpdateOwnerCode,
@@ -93,5 +94,36 @@ describe("owner policy", () => {
     expect(result.assignedRole).toBe("utilisateur");
     expect(result.state.ownerProfileId).toBe("owner-1");
     expect(result.state.profiles.find((profile) => profile.id === "user-2")?.role).toBe("utilisateur");
+  });
+
+  it("refuse explicitement la promotion manuelle vers proprietaire", () => {
+    const state = makeState({
+      ownerProfileId: "owner-1",
+      profiles: [
+        { id: "owner-1", role: "proprietaire" },
+        { id: "user-2", role: "utilisateur" },
+      ],
+    });
+
+    const result = applyProfileRoleMutation(state, "user-2", "proprietaire");
+
+    expect(result.rejected).toBe(true);
+    expect(result.reason).toBe("owner-already-exists");
+    expect(result.role).toBe("utilisateur");
+    expect(result.state.ownerProfileId).toBe("owner-1");
+  });
+
+  it("refuse la demotion du proprietaire en utilisateur", () => {
+    const state = makeState({
+      ownerProfileId: "owner-1",
+      profiles: [{ id: "owner-1", role: "proprietaire" }],
+    });
+
+    const result = applyProfileRoleMutation(state, "owner-1", "utilisateur");
+
+    expect(result.rejected).toBe(true);
+    expect(result.reason).toBe("cannot-demote-owner");
+    expect(result.role).toBe("proprietaire");
+    expect(result.state.ownerProfileId).toBe("owner-1");
   });
 });
