@@ -356,14 +356,14 @@ Objectif: disposer d'une URL stable de test et d'une URL de production, avec val
 ### 10.1 Branches recommandées
 
 - `main`: production
-- `develop`: environnement de test / preproduction
+- `test-env`: environnement de test / preproduction
 - `feature/*`: developpement de fonctionnalites
 
 Flux recommande:
 1. Travail sur `feature/*`
-2. Pull Request vers `develop` (tests + preview Vercel)
+2. Pull Request vers `test-env` (tests + preview Vercel)
 3. Validation fonctionnelle sur URL de test
-4. Pull Request `develop` -> `main`
+4. Pull Request `test-env` -> `main`
 5. Release en production
 
 ### 10.2 CI GitHub Actions (deja ajoutee au repository)
@@ -377,15 +377,15 @@ Ce workflow execute automatiquement:
 - `npm run build`
 
 Declencheurs:
-- `push` sur `main` et `develop`
-- `pull_request` vers `main` et `develop`
+- `push` sur `main` et `test-env`
+- `pull_request` vers `main` et `test-env`
 
 ### 10.3 Configuration Vercel conseillee
 
 Option la plus lisible: 2 projets Vercel relies au meme repository.
 
 1. Projet `application-voyage-test`
-- Production Branch: `develop`
+- Production Branch: `test-env`
 - URL stable de test (ex: `test-...vercel.app`)
 - Variables d'environnement: valeurs de test (Firebase test si possible)
 
@@ -421,7 +421,7 @@ Pour `main`:
 - Require status checks to pass before merging
 - Selectionner le check `CI / test-and-build`
 
-Pour `develop` (recommande):
+Pour `test-env` (recommande):
 - Require a pull request before merging
 - Require status checks to pass before merging
 - Selectionner le check `CI / test-and-build`
@@ -430,7 +430,7 @@ Pour `develop` (recommande):
 
 1. Developpement
 - push sur `feature/*`
-- ouvrir PR vers `develop`
+- ouvrir PR vers `test-env`
 
 2. Validation test
 - verifier CI verte
@@ -438,7 +438,7 @@ Pour `develop` (recommande):
 - realiser recette fonctionnelle sur URL test
 
 3. Passage en production
-- PR `develop` -> `main`
+- PR `test-env` -> `main`
 - verifier CI verte
 - merger
 - verifier deployment Vercel production
