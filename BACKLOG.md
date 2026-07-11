@@ -759,3 +759,715 @@ Utilisateur dans Dashboard
 - [ ] Pas de régression sur EPIC 1-6
 - [ ] Documentation mise à jour (DEPLOYMENT_GUIDE.md section multi-device)
 - [ ] Build production vert
+
+---
+
+## EPIC-10: Gestion avancée des profils et personnalisation de la checklist
+
+### Vision
+Créer une expérience utilisateur sophistiquée avec des règles d'accès granulaires, une authentification optionnelle par profil, une checklist adaptée au contexte (voyage, genre, rôle), et une persistance complète des données.
+
+### Objectif épique
+Transformer le système de voyage en une plateforme multi-profil avec contrôle d'accès intelligent et une checklist hyper-personnalisée selon les besoins réels de chaque membre de la famille.
+
+### Scénario utilisateur complet
+1. **JPG (propriétaire)** crée profil → accès immédiat à TOUTES les rubriques
+2. **Épouse (utilisateur)** crée profil + word de passe optionnel → voit uniquement checklist au départ
+3. **Épouse déverrouille** via code propriétaire → accès aux jeux, conseils, résultats
+4. **Enfant garçon** crée profil → voit checklist filtrée (pas d'habits fille, pas d'items parents)
+5. **Enfant fille** crée profil → voit checklist filtrée différente + items parents (si elle a 16+)
+6. **En voyage** → checklist reste consultable pour todos de retour
+7. **Retour** → retrouve même checklist pour défaire les valises
+
+### Dépendances
+- **Dépend de BACKLOG-001** (propriétaire unique): règles de visibilité basées sur ce rôle
+- **Dépend de BACKLOG-002** (cloud sync): persistance des profils et états de déblocage
+- **Recommandé**: BACKLOG-003 (multi-profil par appareil)
+- **Dépend de EPIC-9** (récupération d'urgence du code)
+
+### Impacté par
+- EPIC-1 à EPIC-7: toutes les données/rubriques nécessitent des gardes d'accès
+
+---
+
+## STORY 10.1: Règles de visibilité des rubriques selon rôle et déblocage
+
+### ID
+`10-1-regles-visibilite-rubriques-role-deblocage`
+
+### Titre
+Implémenter le contrôle d'accès granulaire aux rubriques selon profil et déblocage
+
+### Description
+Définir et coder les règles de visibilité des rubriques (Checklist, Jeux, Conseils, Résultats, Paramètres, Code Propriétaire) selon:
+- Rôle du profil (propriétaire vs utilisateur)
+- État de déblocage du code propriétaire
+
+### Scope
+- **In scope**:
+  - Créer matrice d'accès aux rubriques
+  - Implémenter fonction `canAccessRubric(rubricName, userRole, isOwnerCodeUnlocked)`
+  - Adapter routing/menu dynamiquement
+  - Ajouter messages explicites quand rubrique masquée
+  - Implémenter gardes à tous les niveaux (UI + logique)
+
+- **Out of scope**:
+  - Authentification par mot de passe (Story 10.2)
+  - Filtrage items par genre/rôle (Story 10.4)
+  - Modification contenu checklist (Story 10.5)
+
+### Matrice d'accès
+| Rubrique | Owner (no code) | Owner (with code) | User (before unlock) | User (after unlock) |
+|----------|-----------------|-------------------|----------------------|---------------------|
+| Checklist | ✅ | ✅ | ✅ | ✅ |
+| Jeux | ✅ | ✅ | ❌ | ✅ |
+| Conseils/Tips | ✅ | ✅ | ❌ | ✅ |
+| Résultats Jeux | ✅ | ✅ | ❌ | ✅ |
+| Paramètres | ✅ | ✅ | ✅ | ✅ |
+| Code Propriétaire | ✅ | ✅ | ❌ | ❌ |
+
+### Critères d'acceptation
+- [ ] Propriétaire voit TOUTES les rubriques dès le départ (sans déblocage)
+- [ ] Utilisateur avant déblocage: voit UNIQUEMENT Checklist + Paramètres personnels
+- [ ] Utilisateur après déblocage: voit tout SAUF Code Propriétaire
+- [ ] Menu/onglets s'adapte dynamiquement selon profil
+- [ ] Pas d'accès direct via URL (gardes en place)
+- [ ] Messages explicites quand rubrique masquée ("Déverrouillez pour voir les jeux")
+- [ ] État de déblocage persiste après rechargement
+- [ ] Aucune régression sur les flows existants
+
+### Fichiers à créer/modifier
+- **Créer**:
+  - `src/services/accessControlService.ts`: logique d'accès
+- **Modifier**:
+  - `src/types/cloud.ts`: ajouter `isOwnerCodeUnlocked: boolean`
+  - `src/app/App.tsx`: routing + gardes
+  - `src/app/screens/DashboardScreen.tsx`: affichage menu adaptés
+  - `src/services/cloudSyncProvider.ts`: sync `isOwnerCodeUnlocked`
+
+### Estimation
+- Implémentation: 2-3 jours
+- QA/tests: 1-2 jours
+- **Total: 3-5 jours**
+
+---
+
+## STORY 10.2: Authentification par mot de passe par utilisateur
+
+### ID
+`10-2-authentification-mot-de-passe-par-profil`
+
+### Titre
+Ajouter protection optionnelle par mot de passe au niveau de chaque profil
+
+### Description
+Permettre à chaque profil utilisateur de définir optionnellement un mot de passe avec récupération en cas d'oubli (via phrase configurée).
+
+### Scope
+- **In scope**:
+  - Option "Protéger ce profil" lors création
+  - Interface gestion mot de passe dans Paramètres
+  - Écran d'authentification à la sélection du profil
+  - Mécanisme de récupération par phrase
+  - Stockage sécurisé (hash)
+
+- **Out of scope**:
+  - Authentification multi-facteur
+  - Récupération par email/SMS
+  - Biométrie
+
+### Flux UX
+1. Création profil: option "Protéger par mot de passe?" (optionnel)
+2. Paramètres: gérer/modifier mot de passe + configurer phrase récupération
+3. Sélection profil: si protégé, demander mot de passe
+4. Mot de passe oublié: vérifier phrase → réinitialiser
+
+### Critères d'acceptation
+- [ ] Profil peut optionnellement avoir mot de passe
+- [ ] Mot de passe stocké en hash (jamais en clair)
+- [ ] Sélection profil demande mot de passe si défini
+- [ ] Phrase de récupération configurée en Paramètres
+- [ ] Interface simple et intuitive
+- [ ] Pas d'impact si profil sans mot de passe
+- [ ] Message d'erreur sécurisé (pas d'info sur compte existant)
+
+### Fichiers à créer/modifier
+- `src/types/cloud.ts`: ajouter champs mot de passe
+- `src/app/screens/ProfileSelectionScreen.tsx`: écran authentification
+- `src/app/screens/SettingsScreen.tsx`: gestion mot de passe
+- `src/services/authService.ts`: hash/verify
+
+### Estimation
+- Implémentation: 3-4 jours
+- QA/tests: 1-2 jours
+- **Total: 4-6 jours**
+
+---
+
+## STORY 10.3: Checklist persistante après déblocage
+
+### ID
+`10-3-checklist-persistante-apres-deblocage`
+
+### Titre
+Rendre la checklist consultable même après déblocage de la phase "Pendant voyage"
+
+### Description
+Garantir que la checklist reste visible et modifiable même après déblocage, pour utilisation avant voyage ET au retour.
+
+### Scope
+- **In scope**:
+  - Checklist visible en phase "Avant" ET "Pendant"
+  - Modifications toujours acceptées
+  - Accès facile depuis menu/onglet
+  - Contexte adapté (avant vs pendant)
+
+- **Out of scope**:
+  - Filtrage par profil (Story 10.4)
+  - Modification contenu (Story 10.5)
+
+### Critères d'acceptation
+- [ ] Checklist visible phase "Avant voyage"
+- [ ] Checklist visible phase "Pendant voyage"
+- [ ] Modifications acceptées dans les deux phases
+- [ ] État items persistant
+- [ ] Accès facile depuis tous les écrans
+- [ ] Pas de régression sur déblocage
+
+### Fichiers à modifier
+- `src/app/App.tsx`: garder accès checklist
+- `src/app/screens/ChecklistScreen.tsx`: adapter affichage
+- `src/types/cloud.ts`: ajouter `phaseContext`
+
+### Estimation
+- Implémentation: 1-2 jours
+- QA/tests: 0.5-1 jour
+- **Total: 1.5-3 jours**
+
+---
+
+## STORY 10.4: Adaptation de la checklist par profil utilisateur
+
+### ID
+`10-4-adaptation-checklist-par-profil`
+
+### Titre
+Filtrer la checklist selon genre, rôle parental et propriétaire
+
+### Description
+Adapter le contenu de la checklist selon:
+- Genre du profil (M/F/autre)
+- Rôle parental (parent/enfant/ado)
+- Rôle système (propriétaire/utilisateur)
+
+### Scope
+- **In scope**:
+  - Questions genre + rôle parental lors création
+  - Filtrage items par profil
+  - Affichage uniquement items pertinents
+  - Propriétaire peut voir tous les items
+
+- **Out of scope**:
+  - Modification contenu items (Story 10.5)
+  - Suppression items
+
+### Critères d'acceptation
+- [ ] Profil création: questions genre + rôle parental
+- [ ] Checklist filtrée selon profil courant
+- [ ] Propriétaire voit tous les items
+- [ ] Pas d'items vides dans catégories
+- [ ] UX claire (badges "Parents only", etc.)
+- [ ] Testée avec 5+ combinaisons profil
+
+### Fichiers à modifier
+- `src/types/cloud.ts`: ajouter `userGender`, `userRole`
+- `src/app/screens/ProfileCreationScreen.tsx`: questions
+- `src/app/screens/ChecklistScreen.tsx`: filtrage
+
+### Estimation
+- Design/spec: 1 jour
+- Implémentation: 2-3 jours
+- QA/tests: 1-2 jours
+- **Total: 4-6 jours**
+
+---
+
+## STORY 10.5: Mise à jour du contenu checklist par genre et rôle
+
+### ID
+`10-5-mise-a-jour-contenu-checklist`
+
+### Titre
+Enrichir la checklist avec items adaptés par genre et rôle
+
+### Description
+Mettre à jour `docs/liste à prendre.docx` et `src/content/places.ts` avec:
+- Items filtrés par genre (habits homme/femme)
+- Items filtrés par rôle parental (parents only, kids only)
+- Items propriétaire uniquement
+- Au moins 50+ items variés
+
+### Scope
+- **In scope**:
+  - Curation contenu Word
+  - Mapping vers TypeScript
+  - Classification par genre/rôle
+  - Validation couverture
+
+- **Out of scope**:
+  - Création nouvelles catégories
+  - Suppression items existants
+
+### Critères d'acceptation
+- [ ] Word structuré avec colonnes Genre/Rôle/Propriétaire
+- [ ] 50+ items minimum
+- [ ] Couverture équilibrée (docs, habits, toilette, électronique, loisirs)
+- [ ] Chaque rôle a ≥20 items pertinents
+- [ ] Genre M/F distinction claire
+- [ ] 5-10 owner-only items
+- [ ] Word et `places.ts` en sync
+- [ ] Testée en UI avec filtrage
+
+### Fichiers à modifier
+- `docs/liste à prendre.docx`: enrichissement
+- `src/content/places.ts`: mapping
+
+### Estimation
+- Curation: 4-6 heures
+- Mapping: 2-3 heures
+- QA: 2-3 heures
+- **Total: 1-2 jours**
+
+---
+
+## Roadmap EPIC-10
+
+### Ordre recommandé
+1. **STORY 10.1** (Visibilité rubriques) — semaine 1
+   - Dépend de: BACKLOG-001, BACKLOG-002
+   - Bloque: toutes autres stories
+
+2. **STORY 10.3** (Checklist persistante) — semaine 1
+   - Dépend de: STORY 10.1
+   - Indépendant: peut être parallèle
+
+3. **STORY 10.2** (Mot de passe) — semaine 2
+   - Dépend de: BACKLOG-002, BACKLOG-003
+   - Optionnel pour MVP
+
+4. **STORY 10.4** (Filtrage par profil) — semaine 2-3
+   - Dépend de: STORY 10.1
+   - Bloque: STORY 10.5
+
+5. **STORY 10.5** (Contenu checklist) — semaine 3
+   - Dépend de: STORY 10.4
+   - Peut commencer en parallèle (curation indépendante)
+
+### Estimation totale EPIC-10
+- STORY 10.1: 3-5 jours
+- STORY 10.2: 4-6 jours
+- STORY 10.3: 1.5-3 jours
+- STORY 10.4: 4-6 jours
+- STORY 10.5: 1-2 jours
+- **Total: ~14-22 jours** (3-4 semaines avec 5 jours/sem)
+
+### Definition of Done (EPIC-10)
+- [ ] Toutes les stories marquées "done"
+- [ ] Matrice d'accès validée (propriétaire = accès complet, user = accès progressif)
+- [ ] Checklist visible avant ET après déblocage
+- [ ] Checklists filtrées testées pour 5+ combinaisons (genre x rôle x déblocage)
+- [ ] 50+ items dans checklist avec classification complète
+- [ ] Pas d'accès direct aux rubriques via URL (gardes en place)
+- [ ] Messages UX explicites pour rubriques masquées
+- [ ] Pas de régression sur EPIC 1-7
+- [ ] Documentation mise à jour
+- [ ] Build production vert
+
+### Fichiers à modifier
+- `src/types/cloud.ts`: ajouter champs mot de passe
+- `src/app/screens/ProfileSelectionScreen.tsx`: ajouter écran de saisie mot de passe
+- `src/app/screens/ProfileSettingsScreen.tsx`: ajouter section gestion mot de passe
+- `src/services/cloudSyncProvider.ts`: synchroniser les mots de passe
+- Services d'authentification: valider mot de passe à chaque login
+
+### Critères d'acceptation
+- [ ] Chaque profil peut optionnellement définir un mot de passe
+- [ ] Mot de passe stocké en hash sécurisé (jamais en clair)
+- [ ] Sélection profil protégée par mot de passe si défini
+- [ ] Mécanisme de récupération via phrase configurée
+- [ ] Interface intuitive dans Paramètres
+- [ ] Pas d'impact si profil sans mot de passe
+
+### Effort estimé
+- Implémentation: 3-4 jours
+- QA/tests: 1-2 jours
+- **Total: 4-6 jours**
+
+### Dépendances
+- BACKLOG-002 (cloud sync)
+- BACKLOG-003 (multi-profil par appareil)
+
+---
+
+## BACKLOG-006: Checklist persistante après déblocage
+
+### Statut
+- Statut backlog: BACKLOG
+- Date de création: 2026-07-11
+- Remarque: Qualité de vie pour les utilisateurs – avoir accès à la checklist même après déblocage de la phase "On est partis"
+
+### Objectif
+Garantir que la checklist reste consultable et modifiable même après avoir déverrouillé la phase "Pendant voyage" avec le code propriétaire.
+
+### Problème actuel
+- **Phase verrouillée**: Avant déblocage, la checklist est bloquée
+- **Phase ouverte**: Après déblocage "On est partis", l'interface change et la checklist peut ne pas être visible
+- **Cas d'usage**: Lors du retour de vacances, l'utilisateur souhaite retrouver la checklist pour vérifier ce qui doit être rangé
+
+### Impact
+- **UX**: Meilleure accessibilité à la checklist en permanence
+- **Voyage**: Utilité de la checklist avant ET pendant le voyage
+- **Retour**: Permet de vérifier les items au retour (défaire les valises, ranger)
+
+### Solution proposée (v2)
+
+#### Modèle
+- La checklist n'est jamais masquée, même en phase "Pendant voyage"
+- Deux contextes: phase "Avant voyage" et "Pendant voyage"
+- Items restent modifiables dans les deux phases
+
+#### Flux UX
+1. **Avant voyage** (phase "Avant"):
+   - Utiliser normalement la checklist (cocher/décocher)
+   - Voir le bouton de déblocage "On est partis"
+
+2. **Après déblocage** (phase "Pendant"):
+   - Dashboard change pour afficher contenu "voyage"
+   - Accès à la checklist depuis menu/onglet/drawer
+   - Peut toujours consulter et cocher items
+
+3. **Retour de voyage**:
+   - Même checklist accessible
+   - Peut réinitialiser l'état de certains items
+
+#### Données
+- Aucune modification de stockage
+- La checklist reste complète dans `localStorage` ou `cloud sync`
+- Ajouter flag: `phaseContext` ("before" | "during") pour adapter affichage
+
+### Fichiers à modifier
+- `src/app/App.tsx`: 
+  - Garder accès à checklist même en phase "Pendant"
+  - Ajouter navigation/onglet pour accéder à checklist
+- `src/app/components/ChecklistScreen.tsx`: 
+  - Adapter affichage selon phase
+  - Toujours accepter les modifications
+- `src/types/cloud.ts`: ajouter `phaseContext`
+
+### Critères d'acceptation
+- [ ] Checklist visible lors de phase "Avant voyage"
+- [ ] Checklist visible lors de phase "Pendant voyage"
+- [ ] Modifications toujours acceptées dans les deux phases
+- [ ] Items restent coché/décoché selon leur état
+- [ ] Accès facile depuis tous les écrans
+- [ ] Pas de régression sur le flow de déblocage
+
+### Effort estimé
+- Implémentation: 1-2 jours
+- QA/tests: 0.5-1 jour
+- **Total: 1.5-3 jours**
+
+### Dépendances
+- Aucune dépendance majeure (peut être implémenté indépendamment)
+
+---
+
+## BACKLOG-007: Adaptation de la checklist par profil utilisateur
+
+### Statut
+- Statut backlog: BACKLOG
+- Date de création: 2026-07-11
+- Remarque: Permet de personnaliser la checklist en fonction du profil (genre, rôle parent/enfant)
+
+### Objectif
+Adapter le contenu et la visibilité de la checklist selon le profil de l'utilisateur (propriétaire, genre, rôle familial).
+
+### Problème actuel
+- **Checklist générique**: Tous les profils voient la même checklist
+- **Items non pertinents**: Les enfants voient les articles réservés aux adultes
+- **Genres non respectés**: Pas de distinction homme/femme sur les vêtements
+- **Responsabilités**: Certains items (ex: documents administratifs) ne concernent que les parents
+
+### Impact
+- **UX**: Checklist plus pertinente et moins surcharge cognitive
+- **Précision**: Chaque profil voit uniquement ce qui le concerne
+- **Gamification**: Meilleure motivation (items réalistes pour chacun)
+
+### Solution proposée (v2)
+
+#### Profils et attributs
+Chaque profil utilisateur déclare:
+1. **Rôle familial**: "owner" | "user"
+2. **Genre**: "male" | "female" | "other" (déclaré lors création)
+3. **Rôle parental**: "parent" | "enfant" | "ado"
+
+#### Catégories d'articles dans la checklist
+- **Communs**: Tous les profils voient (ex: passeport, billet avion)
+- **Par genre**: Spécifiques hommes ou femmes (ex: vêtements, articles toilette)
+- **Par rôle parental**: 
+  - "Parent only": Documents, médicaments responsabilité
+  - "Enfants/ados": Jouets, gadgets enfants
+  - "All ages": Habits génériques, livres de voyage
+- **Owner only**: Propriétaire seul voit (ex: codes de réservation, contrats)
+
+#### Données étendues pour chaque profil
+- `userGender: "male" | "female" | "other"`
+- `userRole: "parent" | "enfant" | "ado"`
+
+#### Données étendues pour chaque item checklist
+- `visibility: "all" | "owner-only" | "parents-only" | "kids-only" | "males-only" | "females-only"`
+- `applicableGenders: string[]` (ex: ["male", "other"])
+- `applicableRoles: string[]` (ex: ["parent", "ado"])
+
+### Fichiers à modifier
+- `src/types/cloud.ts`: 
+  - Étendre `Profile` avec `userGender`, `userRole`
+  - Étendre `ChecklistItem` avec `visibility`, `applicableGenders`, `applicableRoles`
+- `src/app/screens/ProfileCreationScreen.tsx`:
+  - Ajouter questions: "Quel est votre genre?" et "Êtes-vous un parent ou un enfant?"
+- `src/app/screens/ChecklistScreen.tsx`:
+  - Filtrer items selon profil courant
+  - Afficher uniquement items pertinents
+- `src/content/places.ts` (ou équivalent):
+  - Mettre à jour items checklist avec attributs `visibility`
+  - Ajouter catégories par genre/rôle
+- Mettre à jour `docs/liste à prendre.docx`: Ajouter colonne "Genre" et "Rôle" pour chaque item
+
+### Critères d'acceptation
+- [ ] Profil création: questions genre et rôle parental
+- [ ] Checklist filtrée: affiche uniquement items pertinents pour le profil
+- [ ] Propriétaire: voit tous les items ("view all" si souhaité)
+- [ ] Items "communs": visibles pour tous
+- [ ] Items genrés: visibles uniquement pour le genre approprié
+- [ ] Items parentaux: visibles uniquement pour parents/ados selon rôle
+- [ ] Pas d'items vides: aucune catégorie vide ne s'affiche
+- [ ] UX intuitive: explication claire des items masqués (optionnel: badges "Parents only", etc.)
+
+### Effort estimé
+- Design/spec: 1 jour
+- Implémentation données: 1-2 jours
+- Implémentation UI/filtrage: 2-3 jours
+- QA/tests: 1-2 jours
+- **Total: 5-8 jours**
+
+### Dépendances
+- BACKLOG-002 (cloud sync) pour persistance des profils
+- Recommandé: BACKLOG-005 (profils optionnels avec mot de passe)
+
+---
+
+## BACKLOG-008: Mise à jour du contenu checklist par genre et rôle
+
+### Statut
+- Statut backlog: BACKLOG
+- Date de création: 2026-07-11
+- Remarque: Tâche de content/curation pour remplir la checklist adaptée par profil
+
+### Objectif
+Mettre à jour le fichier source `docs/liste à prendre.docx` et le contenu applicatif pour refléter les différentes catégories par genre, rôle parental et propriétaire.
+
+### Problème actuel
+- **Checklist statique**: Le fichier `docs/liste à prendre.docx` contient une liste générique
+- **Pas de distinction**: Aucune marque de genre ou rôle parental
+- **Contenu technique**: Pas encore intégré dans `src/content/places.ts` avec les attributs de visibilité
+
+### Impact
+- **Contenu**:  Checklist réelle alignée avec les besoins réels de la famille
+- **Maintenance**: Source unique (`docs/liste à prendre.docx`) pour mise à jour future
+- **Implémentation**: Mapping clair entre contenu et code
+
+### Solution proposée (v2)
+
+#### Tâche 1: Mettre à jour le fichier Word
+**Fichier**: `docs/liste à prendre.docx`
+
+**Structure proposée**:
+| Item | Catégorie | Genre | Rôle Parental | Propriétaire Only | Notes |
+|------|-----------|-------|---------------|------------------|-------|
+| Passeport | Documents | All | All | No | Commun |
+| Visas | Documents | All | Parent | No | Parent only |
+| Cartes d'assurance | Documents | All | Parent | Yes | Owner + parent |
+| ... | ... | ... | ... | ... | ... |
+
+**Colonnes à ajouter**:
+- `Genre`: "All", "Male", "Female", "Other"
+- `Rôle Parental`: "All", "Parent", "Enfant", "Ado"
+- `Propriétaire only`: "Yes"/"No"
+- `Catégorie`: groupement (Documents, Habits, Toilette, Électronique, Loisirs, etc.)
+
+#### Tâche 2: Enrichir `src/content/places.ts`
+**Fichier**: `src/content/places.ts`
+
+Mettre à jour la structure `ChecklistItem`:
+```typescript
+export interface ChecklistItem {
+  id: string;
+  name: string;
+  category: "documents" | "habits" | "toilette" | "electronics" | "loisirs" | "misc";
+  visibility: "all" | "owner-only" | "parents-only" | "kids-only";
+  applicableGenders: ("male" | "female" | "other")[];
+  applicableRoles: ("parent" | "enfant" | "ado")[];
+  notes?: string;
+}
+```
+
+Remplir avec les données du fichier Word en mappant les colonnes appropriées.
+
+#### Tâche 3: Valider et tester
+- Relire le fichier Word pour complétude
+- Vérifier la pertinence culturelle/familiale des items
+- Tester en UI (filtrage par profil)
+- Valider qu'aucune catégorie n'est vide pour les rôles principaux
+
+### Fichiers à modifier
+- `docs/liste à prendre.docx`: 
+  - Ajouter colonnes de classification
+  - Complétude du contenu
+  - Ajouter explications/notes si nécessaire
+- `src/content/places.ts`:
+  - Enrichir structure ChecklistItem
+  - Mapper toutes les entrées Word vers TypeScript
+
+### Critères d'acceptation
+- [ ] Fichier Word structuré avec colonnes de classification
+- [ ] Au moins 50+ items dans la liste
+- [ ] Couverture équilibrée: documents, habits, toilette, électronique, loisirs
+- [ ] Chaque rôle (parent, enfant, ado) a ≥20 items pertinents
+- [ ] Genre M/F a distinction claire sur habits/toilette
+- [ ] Owner-only items: au moins 5-10 items (codes, réservations, etc.)
+- [ ] Fichier Word et `places.ts` en sync (pas de divergence)
+- [ ] QA: Tester filtrage complet par profil (5+ combinaisons)
+
+### Effort estimé
+- Curation contenu Word: 4-6 heures
+- Mapping vers TypeScript: 2-3 heures
+- QA/validation: 2-3 heures
+- **Total: 1-2 jours**
+
+### Notes
+- Peut être fait partiellement en parallèle avec BACKLOG-007
+- Après mise à jour initiale, approche "wiki community" pour future maintenance
+- Considérer versioning du contenu (dates de MAJ dans Word)
+
+### Dépendances
+- Attend: BACKLOG-007 (structure technique pour visibilité)
+- Peut commencer en parallèle: Curation contenu independent de la tech
+
+---
+
+## BACKLOG-009: Règles de visibilité des rubriques selon rôle et déblocage
+
+### Statut
+- Statut backlog: BACKLOG
+- Date de création: 2026-07-11
+- Remarque: Règle métier critique sur l'accès aux rubriques selon rôle et état de déblocage
+
+### Objectif
+Définir et implémenter les règles de visibilité des rubriques de l'application selon le profil utilisateur (propriétaire vs utilisateur) et l'état de déblocage du code propriétaire.
+
+### Problème actuel
+- **Accès inconsistent**: Pas de règle claire sur qui voit quoi avant/après déblocage
+- **UX confusion**: Utilisateurs ne savent pas pourquoi certaines rubriques sont masquées
+- **Rôle propriétaire**: Le propriétaire devrait avoir accès complet, indépendamment du code
+
+### Impact
+- Clarté métier sur les droits d'accès
+- Meilleure UX: propriétaire a accès complet dès le démarrage
+- Sécurité: utilisateurs ne voient que ce qui est autorisé
+
+### Solution proposée
+
+#### Règles de visibilité (matrice d'accès)
+
+| Rubrique | Propriétaire (sans déblocage) | Utilisateur (avant déblocage) | Utilisateur (après déblocage) | Propriétaire (après déblocage) |
+|----------|-------------------------------|------------------------------|-------------------------------|-------------------------------|
+| Checklist | ✅ Visible | ✅ Visible | ✅ Visible | ✅ Visible |
+| Jeux | ✅ Visible | ❌ Masqué | ✅ Visible | ✅ Visible |
+| Conseils/Tips | ✅ Visible | ❌ Masqué | ✅ Visible | ✅ Visible |
+| Résultats Jeux | ✅ Visible | ❌ Masqué | ✅ Visible | ✅ Visible |
+| Paramètres | ✅ Visible | ✅ Visible | ✅ Visible | ✅ Visible |
+| Code Propriétaire | ✅ Visible | ❌ Masqué | ❌ Masqué | ✅ Visible |
+
+#### Détails des règles
+
+**Propriétaire**:
+- Voir TOUTES les rubriques TOUT LE TEMPS (avant et après déblocage du code)
+- Pas de contrainte liée au code
+- Accès complet aux paramètres (y compris gestion du code)
+
+**Utilisateur (avant déblocage du code propriétaire)**:
+- Voir uniquement:
+  - Checklist (lecture/modification)
+  - Paramètres personnels (profil, surnom)
+- Masqué:
+  - Jeux
+  - Conseils/Tips
+  - Résultats jeux
+  - Code propriétaire
+  - Toute autre rubrique hors voyage
+
+**Utilisateur (après déblocage du code propriétaire)**:
+- Voir toutes les rubriques SAUF:
+  - Code propriétaire (reste masqué)
+  - Gestion du code (reste réservé au propriétaire)
+- Voir:
+  - Checklist (lecture/modification)
+  - Jeux
+  - Conseils/Tips
+  - Résultats jeux
+  - Paramètres personnels
+
+#### État de déblocage
+- État global: `isOwnerCodeUnlocked: boolean`
+- Stocké dans cloud sync
+- Initialisé à `false` au premier lancement
+- Basculé à `true` après validation réussie du code propriétaire
+- Jamais réinitialisé (jusqu'à suppression de données)
+
+### Fichiers à modifier
+- `src/types/cloud.ts`: 
+  - Ajouter `isOwnerCodeUnlocked: boolean` dans l'état global
+- `src/app/App.tsx`:
+  - Créer fonction `canAccessRubric(rubricName, userRole, isOwnerCodeUnlocked)` pour les gardes d'accès
+  - Adapter le routing/menu selon les droits
+- `src/app/screens/DashboardScreen.tsx` (ou équivalent):
+  - Afficher/masquer les onglets et sections selon les droits
+  - Afficher message explicite si rubrique masquée (ex: "Déverrouillez le voyage pour voir les jeux")
+- `src/services/cloudSyncProvider.ts`:
+  - Synchroniser l'état de déblocage
+- Tous les écrans/rubriques:
+  - Ajouter gardes de sécurité (ne jamais afficher hors des conditions d'accès)
+
+### Critères d'acceptation
+- [ ] Propriétaire voit toutes les rubriques même sans déblocage
+- [ ] Utilisateur voit uniquement checklist + paramètres avant déblocage
+- [ ] Utilisateur voit toutes les rubriques après déblocage (sauf code propriétaire)
+- [ ] Menu/onglets adapté dynamiquement selon les droits
+- [ ] Pas d'accès direct via URL (gardes en place)
+- [ ] Messages UX explicites quand rubrique masquée (ex: message incitatif)
+- [ ] Pas de régression sur les autres flows
+- [ ] État de déblocage persiste après reload
+
+### Effort estimé
+- Implémentation: 2-3 jours
+- QA/tests: 1-2 jours
+- **Total: 3-5 jours**
+
+### Dépendances
+- BACKLOG-001 (propriétaire unique)
+- BACKLOG-002 (cloud sync pour persister `isOwnerCodeUnlocked`)
+
+### Notes
+- Cette règle doit être implémentée en même temps que le déblocage du code (sinon utilisateurs verront rubriques verrouillées sans explication)
+- Considérer une transition UX fluide: animation ou message toast quand déblocage réussit
+- Peut être implémenté avant BACKLOG-005/007 (orthogonal)
