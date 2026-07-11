@@ -1,0 +1,6 @@
+OneNote a évolué ? 
+
+backlog / bug : 
+la checklist doit être instanciée par profil ! 
+Vérifier que les réponses au jeu sont aussi par profil ? 
+
