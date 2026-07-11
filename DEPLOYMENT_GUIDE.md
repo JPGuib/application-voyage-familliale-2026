@@ -346,3 +346,99 @@ Vérification post-déploiement (owner global):
 - [iOS PWA Support](https://webkit.org/blog/15459/the-future-of-web-apps-on-ios/)
 - [Vite PWA Plugin](https://vite-pwa-org.netlify.app/)
 - [Chrome DevTools PWA](https://developer.chrome.com/docs/devtools/progressive-web-apps/)
+
+---
+
+## 10. Mise en place Test vs Production (GitHub + Vercel)
+
+Objectif: disposer d'une URL stable de test et d'une URL de production, avec validation automatique des tests avant merge.
+
+### 10.1 Branches recommandées
+
+- `main`: production
+- `develop`: environnement de test / preproduction
+- `feature/*`: developpement de fonctionnalites
+
+Flux recommande:
+1. Travail sur `feature/*`
+2. Pull Request vers `develop` (tests + preview Vercel)
+3. Validation fonctionnelle sur URL de test
+4. Pull Request `develop` -> `main`
+5. Release en production
+
+### 10.2 CI GitHub Actions (deja ajoutee au repository)
+
+Fichier:
+- `.github/workflows/ci.yml`
+
+Ce workflow execute automatiquement:
+- `npm ci`
+- `npm run test`
+- `npm run build`
+
+Declencheurs:
+- `push` sur `main` et `develop`
+- `pull_request` vers `main` et `develop`
+
+### 10.3 Configuration Vercel conseillee
+
+Option la plus lisible: 2 projets Vercel relies au meme repository.
+
+1. Projet `application-voyage-test`
+- Production Branch: `develop`
+- URL stable de test (ex: `test-...vercel.app`)
+- Variables d'environnement: valeurs de test (Firebase test si possible)
+
+2. Projet `application-voyage-prod`
+- Production Branch: `main`
+- URL stable de production
+- Variables d'environnement: valeurs de production
+
+Dans les 2 projets, conserver:
+- Build Command: `npm run build`
+- Output Directory: `dist`
+
+### 10.4 Variables d'environnement (Test et Production)
+
+Configurer dans chaque projet Vercel:
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_DATABASE_URL`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_APP_ID`
+- `VITE_FAMILY_SYNC_ID`
+
+Important:
+- Valeurs possibles differentes entre test et prod (recommande)
+- `VITE_FAMILY_SYNC_ID` doit etre coherent a l'interieur d'un meme environnement
+
+### 10.5 Protections GitHub a activer
+
+Dans GitHub -> Settings -> Branches:
+
+Pour `main`:
+- Require a pull request before merging
+- Require status checks to pass before merging
+- Selectionner le check `CI / test-and-build`
+
+Pour `develop` (recommande):
+- Require a pull request before merging
+- Require status checks to pass before merging
+- Selectionner le check `CI / test-and-build`
+
+### 10.6 Processus operationnel
+
+1. Developpement
+- push sur `feature/*`
+- ouvrir PR vers `develop`
+
+2. Validation test
+- verifier CI verte
+- verifier deployment Vercel de test
+- realiser recette fonctionnelle sur URL test
+
+3. Passage en production
+- PR `develop` -> `main`
+- verifier CI verte
+- merger
+- verifier deployment Vercel production
