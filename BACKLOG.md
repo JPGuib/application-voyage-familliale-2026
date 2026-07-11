@@ -292,6 +292,13 @@ Permettre plusieurs profils utilisateur sur un même appareil (ex: famille = 4 p
 
 ## BACKLOG-004: Mécanisme de réinitialisation d'urgence
 
+### Statut
+- Statut backlog: PRET A PLANIFIER
+- Epic de livraison propose: Epic 9 - Recuperation d urgence du code proprietaire
+- Stories proposees: 9-1, 9-2, 9-3
+- Date de preparation: 2026-07-10
+- Remarque: preparation effectuee sur la base du systeme owner unique + code hashe deja en place.
+
 ### Objectif
 Permettre au propriétaire de réinitialiser son code s'il l'oublie.
 
@@ -301,14 +308,118 @@ Permettre au propriétaire de réinitialiser son code s'il l'oublie.
 - Aucun mécanisme de "réinitialiser mon code"
 
 ### Solution proposée (v1.1 ou v2)
-1. Écran "Oublié le code?" depuis écran de déblocage
-2. Vérification d'identité (ex: question secrète, email, etc.)
-3. Réinitialisation du code stocké
-4. Nouveau code envoyé / affiché
+1. Écran "Code oublié ?" depuis l écran de déblocage
+2. Vérification d identité via une phrase de recuperation definie par le proprietaire
+3. Réinitialisation du code stocké après verification réussie
+4. Nouveau code saisi directement dans l application puis re-stocke en hash
+
+### Option produit retenue pour preparation
+Pour ce projet, la solution la plus realiste et la moins intrusive est:
+- une **phrase de recuperation** configuree par le proprietaire dans Parametres,
+- stockee sous forme de hash local/cloud,
+- verifiee uniquement si le **profil actif est bien le proprietaire**.
+
+Cette approche evite d introduire un systeme email/SMS externe et reste compatible avec le MVP actuel.
+
+### Critères d'acceptation
+- Si le profil actif est proprietaire, un lien "Code oublié ?" est visible depuis la popup de validation.
+- Si aucune phrase de recuperation n est configuree, l application explique qu il faut la definir dans Parametres.
+- Si la phrase de recuperation est correcte, le proprietaire peut definir un nouveau code.
+- Le nouveau code est stocke uniquement sous forme de hash.
+- Un utilisateur non proprietaire ne peut jamais reinitialiser le code proprietaire.
+- Les erreurs de verification affichent un message explicite sans divulguer d information sensible.
+
+### Mini-spéc technique (prête à implémenter)
+
+#### Données minimales
+- `ownerCodeHash: string | null`
+- `ownerRecoveryHash: string | null`
+- `ownerRecoveryConfiguredAt: number | null`
+
+#### Règles métier codées
+- Invariant 1: seule l identite `ownerProfileId` peut configurer ou reinitialiser le code proprietaire.
+- Invariant 2: la phrase de recuperation n est jamais stockee en clair.
+- Invariant 3: la reinitialisation du code ne debloque pas automatiquement la phase voyage; elle remplace seulement le secret.
+- Invariant 4: si aucune phrase de recuperation n est configuree, aucun reset d urgence n est autorise.
+
+#### Flux Paramètres
+1. Proprietaire ouvre Parametres.
+2. Il peut definir ou mettre a jour:
+   - le code proprietaire
+   - la phrase de recuperation
+3. Les deux valeurs sont hashees avant persistance.
+
+#### Flux "Code oublié ?"
+1. Depuis la popup "Validation proprietaire", le proprietaire clique "Code oublié ?".
+2. L application verifie que `profile.id === ownerProfileId`.
+3. L application demande la phrase de recuperation.
+4. Si verification OK:
+   - ouvrir un ecran/modal de redefinition du code
+   - demander le nouveau code + confirmation
+   - sauvegarder le nouveau `ownerCodeHash`
+5. Si verification KO:
+   - afficher erreur
+   - conserver la phase verrouillee
+
+#### Migration / compatibilité
+- Les proprietaires existants sans phrase de recuperation doivent voir un message incitatif dans Parametres.
+- Le lien "Code oublié ?" reste visible, mais oriente vers la configuration prealable si `ownerRecoveryHash` est absent.
+
+### Fichiers à modifier
+- `src/app/App.tsx`
+  - popup de validation: ajouter CTA "Code oublié ?"
+  - Parametres proprietaire: ajouter configuration phrase de recuperation
+  - flow de reinitialisation: saisie phrase + nouveau code
+- `src/app/owner-code.ts`
+  - reutiliser hash/verify pour la phrase de recuperation
+- `src/types/cloud.ts`
+  - etendre le snapshot/payload avec `ownerRecoveryHash`
+- `src/services/cloudSyncProvider.ts`
+  - lire/ecrire `ownerRecoveryHash`
+
+### Plan d'implémentation (tickets prêts à exécuter)
+
+#### Lot 1 - Modèle et persistance
+- [ ] T1. Ajouter `ownerRecoveryHash` et `ownerRecoveryConfiguredAt` aux donnees partagees.
+- [ ] T2. Etendre le stockage local/cloud pour synchroniser ces champs.
+- [ ] T3. Ajouter helpers de hash/verification reutilisables pour la phrase de recuperation.
+
+#### Lot 2 - Intégration UI
+- [ ] T4. Ajouter une section "Phrase de recuperation" dans Parametres proprietaire.
+- [ ] T5. Ajouter un CTA "Code oublié ?" dans la popup de validation.
+- [ ] T6. Ajouter le flow de reset: verification phrase puis nouveau code + confirmation.
+- [ ] T7. Ajouter messages UX explicites si phrase absente ou verification invalide.
+
+#### Lot 3 - Gardes métier et qualité
+- [ ] T8. Bloquer le flow de reset pour tout profil non proprietaire.
+- [ ] T9. Empêcher toute persistance en clair de la phrase de recuperation.
+- [ ] T10. Ajouter tests unitaires/integration sur verification, reset, refus user non-owner.
+
+### Plan de tests détaillé
+
+##### Tests unitaires
+- [ ] U1. Hash/verify de la phrase de recuperation.
+- [ ] U2. Refus de reset si `ownerRecoveryHash` absent.
+- [ ] U3. Refus de reset si profil actif != owner.
+
+##### Tests d'intégration
+- [ ] I1. Owner configure une phrase de recuperation puis reset son code avec succes.
+- [ ] I2. User non-owner ne voit pas ou ne peut pas utiliser le flow.
+- [ ] I3. Phrase invalide -> code non modifie.
+
+##### Tests E2E
+- [ ] E1. Parcours complet: owner oublie son code, verifie sa phrase, definit un nouveau code, puis debloque la phase.
+
+### Definition of Done (DoD)
+- [ ] DoD-1. Reset d urgence disponible pour owner avec phrase configuree.
+- [ ] DoD-2. Aucun secret de recuperation en clair dans stockage local/cloud.
+- [ ] DoD-3. User non-owner bloque sur tous les chemins du flow.
+- [ ] DoD-4. Tests et build verts.
 
 ### Effort estimé
-- Frontend : ~2-3 heures
-- Logique : ~1 heure
+- Frontend : ~3-4 heures
+- Logique : ~2-3 heures
+- QA/tests : ~2 heures
 
 ---
 

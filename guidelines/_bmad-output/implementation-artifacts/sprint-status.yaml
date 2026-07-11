@@ -81,3 +81,9 @@ development_status:
   8-2-bloquer-promotion-manuelle-vers-proprietaire: done
   8-3-couvrir-invariants-owner-unique-en-integration-et-e2e: done
   epic-8-retrospective: optional
+
+  epic-9: in-progress
+  9-1-configurer-une-phrase-de-recuperation-proprietaire: ready-for-dev
+  9-2-reinitialiser-le-code-via-le-flow-code-oublie: ready-for-dev
+  9-3-couvrir-les-gardes-de-recuperation-par-tests: ready-for-dev
+  epic-9-retrospective: optional

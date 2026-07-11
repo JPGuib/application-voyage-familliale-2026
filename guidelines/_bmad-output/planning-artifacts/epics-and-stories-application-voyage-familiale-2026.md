@@ -73,6 +73,7 @@ Ce document decompose le PRD en epics et stories implementables pour le MVP de l
 - Epic 6: Hors ligne et deploiement
 - Epic 7: Synchronisation cloud et authentification multi-profils
 - Epic 8: Durcissement proprietaire unique global
+- Epic 9: Recuperation d urgence du code proprietaire
 
 ## Epic 1: Identite, roles et deblocage securise
 
@@ -454,3 +455,51 @@ So that la regression est detectee avant release.
 **Given** un utilisateur non owner tente de modifier le code
 **When** la requete est executee
 **Then** la mutation est rejetee systematiquement
+
+## Epic 9: Recuperation d urgence du code proprietaire
+
+Objectif: Permettre au proprietaire de recuperer un acces legitime lorsqu il a oublie son code, sans introduire de faille pour les autres profils.
+
+### Story 9.1: Configurer une phrase de recuperation proprietaire
+As a proprietaire,
+I want definir une phrase de recuperation,
+So that je puisse reinitialiser mon code si je l oublie.
+
+**Acceptance Criteria:**
+
+**Given** je suis connecte avec le profil proprietaire
+**When** j ouvre Parametres
+**Then** je peux definir ou mettre a jour une phrase de recuperation
+**And** elle est stockee uniquement sous forme hashee
+
+### Story 9.2: Reinitialiser le code via le flow "Code oublie ?"
+As a proprietaire,
+I want verifier ma phrase de recuperation puis definir un nouveau code,
+So that je retrouve l acces au deblocage du voyage.
+
+**Acceptance Criteria:**
+
+**Given** je suis le proprietaire et j ai configure une phrase de recuperation
+**When** j utilise le flow "Code oublie ?" et je saisis la bonne phrase
+**Then** je peux definir un nouveau code proprietaire
+**And** le nouveau code est persiste sous forme hashee
+
+**Given** la phrase de recuperation est incorrecte
+**When** je valide
+**Then** la reinitialisation est refusee
+**And** la phase reste verrouillee
+
+### Story 9.3: Couvrir les gardes de recuperation par tests
+As a equipe produit,
+I want automatiser les cas critiques du flow de recuperation,
+So that une regression de securite soit detectee avant livraison.
+
+**Acceptance Criteria:**
+
+**Given** un user non-owner tente d utiliser le flow
+**When** le test est execute
+**Then** l action est refusee
+
+**Given** aucun secret de recuperation n est configure
+**When** le proprietaire clique "Code oublie ?"
+**Then** l application oriente vers Parametres au lieu de reinitialiser le code

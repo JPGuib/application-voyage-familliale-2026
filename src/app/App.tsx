@@ -53,30 +53,92 @@ import {
 } from "./owner-code";
 import { useCloudSync } from "../hooks/useCloudSync";
 
+const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
+
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
 const CHECKLIST_CATEGORIES = [
   {
-    id: "bagages",
-    emoji: "🧳",
-    label: "Bagages",
+    id: "vetements-hommes",
+    emoji: "👔",
+    label: "Vêtements pour les hommes",
     items: [
-      { id: "valise", label: "Valise principale" },
-      { id: "cabine", label: "Bagage cabine" },
-      { id: "sac-dos", label: "Sac à dos" },
-      { id: "cadenas", label: "Cadenas TSA" },
+      { id: "hommes-tenue-toulouse-nantes", label: "Tenue pour Toulouse-Nantes le samedi 15 août" },
+      { id: "hommes-tenue-avion", label: "Tenue pour avion aller et retour" },
+      { id: "hommes-pyjama", label: "Pyjama" },
+      { id: "hommes-calecons", label: "Caleçons pour les 10 jours" },
+      { id: "hommes-tshirts", label: "T-shirts légers (dont 2 manches longues)" },
+      { id: "hommes-shorts", label: "Shorts légers (dont quelques-uns confortables respirants pour les journées d'excursions)" },
+      { id: "hommes-tenues-soir", label: "Tenues légères plus habillées pour les restaurants / sorties du soir" },
+      { id: "hommes-socquettes", label: "10 paires de socquettes" },
+      { id: "hommes-chaussettes", label: "1 paire de chaussettes (mi-hautes ou hautes)" },
+      { id: "hommes-pantalons", label: "1 ou 2 pantalons légers" },
+      { id: "hommes-pulls", label: "Quelques pulls dont 1 polaire (ou sweat)" },
+      { id: "hommes-gants", label: "1 paire de gants légers" },
+      { id: "hommes-coupe-vent", label: "1 coupe-vent ou style Jott" },
+      { id: "hommes-jean", label: "1 pantalon type jean" },
+      { id: "hommes-linge-sale", label: "Sacs pour le linge sale" },
     ],
   },
   {
-    id: "documents",
-    emoji: "📄",
-    label: "Documents",
+    id: "vetements-femmes",
+    emoji: "👗",
+    label: "Vêtements pour les femmes",
     items: [
-      { id: "passeports", label: "Passeports valides" },
-      { id: "visas", label: "Visa e-visa Turquie" },
-      { id: "billets", label: "Billets d'avion imprimés" },
-      { id: "hotels", label: "Réservations hôtels" },
-      { id: "assurance", label: "Assurance voyage" },
+      { id: "femmes-tenue-toulouse-nantes", label: "Tenue pour Toulouse-Nantes le samedi 15 août" },
+      { id: "femmes-tenue-avion", label: "Tenue pour avion aller et retour" },
+      { id: "femmes-pyjama", label: "Pyjama" },
+      { id: "femmes-lingerie", label: "Lingerie pour les 10 jours" },
+      { id: "femmes-tshirts", label: "T-shirts légers (dont 2 manches longues)" },
+      { id: "femmes-shorts-jupes-robes", label: "Shorts / jupes / robes légers (dont 2 confortables respirants pas trop courts pour les journées d'excursion)" },
+      { id: "femmes-tenues-soir", label: "Tenues légères plus habillées pour les restaurants du soir" },
+      { id: "femmes-socquettes", label: "10 paires de chaussettes ou socquettes fines" },
+      { id: "femmes-chaussettes", label: "1 paire de chaussettes" },
+      { id: "femmes-pantalons", label: "1 ou 2 pantalons légers" },
+      { id: "femmes-pulls", label: "Quelques pulls dont 1 polaire (ou sweat)" },
+      { id: "femmes-gants", label: "1 paire de gants légers" },
+      { id: "femmes-coupe-vent", label: "1 coupe-vent ou style Jott" },
+      { id: "femmes-jean", label: "1 pantalon type jean" },
+      { id: "femmes-linge-sale", label: "Sacs pour le linge sale" },
+    ],
+  },
+  {
+    id: "chaussures",
+    emoji: "👟",
+    label: "Chaussures",
+    items: [
+      { id: "chaussures-baskets-1", label: "2 paires de baskets pour les promenades / excursions (dont celle pour l'avion)" },
+      { id: "chaussures-soir", label: "1 paire de chaussures pour le soir" },
+      { id: "chaussures-tongs", label: "1 paire de tongs" },
+    ],
+  },
+  {
+    id: "baignade-soleil",
+    emoji: "☀️",
+    label: "Baignade et soleil",
+    items: [
+      { id: "baignade-maillots", label: "1 ou 2 maillots / shorts de bain" },
+      { id: "baignade-pareo", label: "(Optionnel pour les femmes) : paréo" },
+      { id: "baignade-serviette", label: "1 serviette de bain Decathlon" },
+      { id: "baignade-lunettes", label: "Lunettes de soleil" },
+      { id: "baignade-casquette", label: "Casquette" },
+      { id: "baignade-gourde", label: "Gourde isotherme de petite ou moyenne taille" },
+    ],
+  },
+  {
+    id: "toilette-sante",
+    emoji: "🧴",
+    label: "Trousse de toilette et santé",
+    items: [
+      { id: "toilette-medicaments", label: "Médicaments personnels (dont pilule et traitement asthmatique)" },
+      { id: "toilette-affaires", label: "Affaires de toilette" },
+      { id: "toilette-creme", label: "Crème hydratante corps" },
+      { id: "toilette-soins-cheveux", label: "(Optionnel) Soins cheveux" },
+      { id: "toilette-mains", label: "(Optionnel) Crème pour les mains" },
+      { id: "toilette-apres-soleil", label: "(Optionnel) Après-soleil" },
+      { id: "toilette-ventilateur", label: "(Optionnel mais recommandé) mini ventilateur ou éventail" },
+      { id: "toilette-pharmacie-famille", label: "Pour toute la famille : petite pharmacie de voyage (=> KG s'en occupe)" },
+      { id: "toilette-fer-famille", label: "1 pour toute la famille : mini fer à repasser (=> KG s'en occupe)" },
     ],
   },
   {
@@ -84,35 +146,58 @@ const CHECKLIST_CATEGORIES = [
     emoji: "🔌",
     label: "Électronique",
     items: [
-      { id: "phones", label: "Téléphones chargés" },
-      { id: "adaptateurs", label: "Adaptateurs prise Type C/F" },
-      { id: "powerbank", label: "Power bank" },
-      { id: "photo", label: "Appareil photo + chargeur" },
-      { id: "sim", label: "Carte SIM ou eSIM" },
+      { id: "elec-telephone", label: "Téléphone et son chargeur" },
+      { id: "elec-attache-cou", label: "Attache-cou pour téléphone" },
+      { id: "elec-perche-selfie", label: "Perche Selfie (1 pour toute la famille => JP s'en charge)" },
+      { id: "elec-batterie-externe", label: "Batterie externe et son chargeur" },
+      { id: "elec-ecouteurs", label: "Écouteurs et/ou casque" },
+      { id: "elec-tablette-ordi", label: "Tablette ou ordinateur rouge pour regarder des films" },
+      { id: "elec-films-series", label: "Films, séries et playlists téléchargés avant le départ (=> donner la liste assez vite à JP)" },
+      { id: "elec-multiprise", label: "1 multiprise pour hôtel (chacun en prend 1)" },
+      { id: "elec-montre-connectee", label: "Emma (optionnel) : montre connectée et son chargeur" },
+      { id: "elec-ssd", label: "(Optionnel) SSD externe compact pour sauvegarder les photos et câble associé (=> voir avec JP)" },
+      { id: "elec-cle-usb-c", label: "(Optionnel) Clé USB-C (=> voir avec JP)" },
+      { id: "elec-livre", label: "(Optionnel) Livre (ou livre numérique), magazine, ..." },
+      { id: "elec-thomas-oral", label: "Thomas : fichier d'oral de stage pour révision pendant le trajet retour" },
+      { id: "elec-gopro", label: "Gopro (=> JP)" },
     ],
   },
   {
-    id: "indispensables",
-    emoji: "⭐",
-    label: "Indispensables",
+    id: "documents",
+    emoji: "📄",
+    label: "Documents",
     items: [
-      { id: "pharmacie", label: "Trousse à pharmacie" },
-      { id: "yens", label: "Lires turques ou carte bancaire" },
-      { id: "carte-banque", label: "Carte bancaire internationale" },
-      { id: "snacks", label: "Snacks pour l'avion" },
+      { id: "doc-passeport-carte-id", label: "Passeport + carte d'identité" },
+      { id: "doc-carte-bancaire", label: "Carte bancaire" },
     ],
   },
   {
-    id: "personnels",
-    emoji: "👗",
-    label: "Effets personnels",
+    id: "transport",
+    emoji: "🚌",
+    label: "Confort pendant le transport",
     items: [
-      { id: "vetements", label: "Vêtements légers (7 tenues)" },
-      { id: "chaussures", label: "Chaussures confortables" },
-      { id: "impermeable", label: "Casquette ou chapeau" },
-      { id: "toilette", label: "Trousse de toilette" },
-      { id: "lunettes", label: "Lunettes de soleil" },
-      { id: "creme", label: "Crème solaire SPF 50" },
+      { id: "transport-masque-sommeil", label: "(Optionnel) Masque de sommeil pour les yeux" },
+      { id: "transport-bouchons-oreilles", label: "Bouchons d'oreilles (=> les récupérer auprès de KG)" },
+      { id: "transport-oreiller-cou", label: "Oreiller de cou gonflable (=> le récupérer auprès de KG)" },
+      { id: "transport-couverture", label: "Petite couverture légère" },
+      { id: "transport-gel", label: "Pour toute la famille : 1 gel hydroalcoolique (=> KG s'en charge)" },
+      { id: "transport-mouchoirs", label: "Mouchoirs" },
+      { id: "transport-lingettes", label: "Lingettes rafraîchissantes" },
+      { id: "transport-chewing-gum", label: "Optionnel : chewing-gum" },
+      { id: "transport-sacs-zip", label: "Quelques sacs congélation zip pour protéger les objets ou transporter des liquides" },
+    ],
+  },
+  {
+    id: "bagages",
+    emoji: "🧳",
+    label: "Bagages",
+    items: [
+      { id: "bagages-sac-dos", label: "Petit sac à dos pour les excursions (obligatoire)" },
+      { id: "bagages-sac-main", label: "(Optionnel pour les femmes) Sac à main pour le soir" },
+      { id: "bagages-sac-banane", label: "(Optionnel) Sac banane" },
+      { id: "bagages-sac-cabine", label: "Pour chacun : petit sac cabine (qui peut être le sac à dos) de dimensions 30x40x15 cm max" },
+      { id: "bagages-valise-cabine", label: "Pour chacun : petite valise cabine de dimensions 55x35x25 cm max et poids max 12kg" },
+      { id: "bagages-valise-soute", label: "Pour chacun : grande valise en soute de dimensions 158 cm (L+l+h) max et poids max 23kg" },
     ],
   },
 ];
@@ -1926,7 +2011,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("checklist");
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Set<string>>(
-    new Set(["bagages"])
+    new Set([CHECKLIST_CATEGORIES[0]?.id ?? "vetements-hommes"])
   );
   const [checked, setChecked] = useState<Record<string, boolean>>(() => {
     try {
@@ -2038,7 +2123,7 @@ export default function App() {
       }
 
       const nextHash = await hashOwnerCode(ownerCodeHash);
-      if (import.meta.env.DEV) {
+      if (IS_DEV) {
         console.info("[owner-code] Migrated legacy clear-text owner code to hash.");
       }
       setOwnerCodeHash(nextHash);
@@ -2167,11 +2252,12 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (!profile.role) return;
+    const currentRole = profile.role;
+    if (!currentRole) return;
 
     setFamilyState((previous) => {
-      const mutation = applyProfileRoleMutation(previous, profile.id, profile.role);
-      if (mutation.rejected && import.meta.env.DEV) {
+      const mutation = applyProfileRoleMutation(previous, profile.id, currentRole);
+      if (mutation.rejected && IS_DEV) {
         console.info(
           `[owner-policy] Role mutation rejected (${mutation.reason}) for profile ${profile.id}.`
         );
@@ -2487,7 +2573,7 @@ export default function App() {
               } else {
                 setFamilyState((previous) => {
                   const mutation = applyProfileRoleMutation(previous, nextProfile.id, assignedRole);
-                  if (mutation.rejected && import.meta.env.DEV) {
+                  if (mutation.rejected && IS_DEV) {
                     console.info(
                       `[owner-policy] Setup role mutation rejected (${mutation.reason}) for profile ${nextProfile.id}.`
                     );
