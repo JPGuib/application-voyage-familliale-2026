@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-      - develop
+      - test-env
   pull_request:
     branches:
       - main
-      - develop
+      - test-env
   workflow_dispatch:
 
 jobs:
