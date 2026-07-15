@@ -1474,6 +1474,53 @@ Définir et implémenter les règles de visibilité des rubriques de l'applicati
 
 ---
 
+## BACKLOG-010: Migration Auth Firebase Anonyme -> Google (durcissement securite)
+
+### Statut
+- Statut backlog: BACKLOG
+- Date de creation: 2026-07-15
+- Priorite: P2 (apres stabilisation continuite numerique)
+
+### Objectif
+Remplacer progressivement la session anonyme par une authentification Google pour renforcer la securite, la tracabilite et la fiabilite des sessions multi-appareils.
+
+### Contexte
+- L authentification anonyme est activee pour debloquer rapidement la production.
+- Firebase recommande un provider federé pour reduire les risques d abus et de sessions jetables.
+
+### Portee
+1. Ajouter Google Sign-In dans Firebase Authentication.
+2. Adapter le flux applicatif pour supporter:
+  - login Google
+  - fallback anonyme transitoire (feature flag)
+3. Lier les profils famille existants a un uid Google stable.
+4. Durcir les regles RTDB sur uid authentifie non-anonyme (phase finale).
+
+### Plan de migration recommande
+1. Phase A (compatibilite): Google + anonyme coexistent.
+2. Phase B (adoption): nouvel onboarding privilegie Google.
+3. Phase C (durcissement): ecriture sensible reservee aux comptes Google.
+4. Phase D (final): suppression progressive du fallback anonyme.
+
+### Critères d'acceptation
+- [ ] Login Google disponible et fonctionnel en web mobile/desktop.
+- [ ] Aucun profil famille existant perdu lors de la migration.
+- [ ] Les sessions restent persistantes apres refresh/changement navigateur.
+- [ ] Les ecritures sensibles (phase/deblocage) sont rejetees pour sessions non conformes.
+- [ ] Tests non-regression cloud + rules verts (emulateur Firebase).
+
+### Effort estimé
+- Setup Firebase + UI login: 0.5-1 jour
+- Migration profils + policy/rules: 1-2 jours
+- QA multi-appareils: 0.5-1 jour
+- Total: 2-4 jours
+
+### Dépendances
+- Stabilisation complete Epic 11 (continuite numerique)
+- Validation recette multi-appareils 11-8
+
+---
+
 ## Consolidation et repriorisation globale (2026-07-15)
 
 Source de consolidation:

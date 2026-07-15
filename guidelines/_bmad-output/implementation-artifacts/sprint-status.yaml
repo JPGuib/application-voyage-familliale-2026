@@ -103,6 +103,6 @@ development_status:
   11-4-isolation-stricte-switch-profil-et-garde-push-auth: done
   11-5-auditer-versionner-security-rules-firebase: done
   11-6-decider-et-appliquer-deblocage-famille-wide: done
-  11-7-finaliser-deprecation-code-owner-legacy-clair: in-progress
-  11-8-recette-non-regression-multi-appareils: ready-for-dev
+  11-7-finaliser-deprecation-code-owner-legacy-clair: review
+  11-8-recette-non-regression-multi-appareils: review
   epic-11-retrospective: optional

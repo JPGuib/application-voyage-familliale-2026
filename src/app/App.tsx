@@ -2082,13 +2082,7 @@ export default function App() {
     }
 
     try {
-      const hashFromStorage = localStorage.getItem("jp-owner-code-hash") || "";
-      if (hashFromStorage) {
-        return hashFromStorage;
-      }
-
-      // Legacy fallback, migrated to hash in a dedicated effect.
-      return localStorage.getItem("jp-owner-code") || "";
+      return localStorage.getItem("jp-owner-code-hash") || "";
     } catch {
       return "";
     }
@@ -2192,20 +2186,51 @@ export default function App() {
   ]);
 
   useEffect(() => {
+    if (cloudEnabled) {
+      return;
+    }
+
     const migrateLegacyOwnerCode = async () => {
-      if (!ownerCodeHash || isOwnerCodeHash(ownerCodeHash)) {
+      const normalizedCurrentHash = ownerCodeHash.trim();
+      let legacyClearCode = "";
+
+      try {
+        legacyClearCode = localStorage.getItem("jp-owner-code") || "";
+      } catch {
         return;
       }
 
-      const nextHash = await hashOwnerCode(ownerCodeHash);
+      if (!legacyClearCode) {
+        return;
+      }
+
+      if (normalizedCurrentHash && isOwnerCodeHash(normalizedCurrentHash)) {
+        if (IS_DEV) {
+          console.info("[owner-code] Legacy clear-text owner code key detected and purged.");
+        }
+        try {
+          localStorage.removeItem("jp-owner-code");
+        } catch {
+          // Ignore storage cleanup failures; hash storage remains authoritative.
+        }
+        return;
+      }
+
+      const sourceCode = normalizedCurrentHash || legacyClearCode;
+      const nextHash = await hashOwnerCode(sourceCode);
       if (IS_DEV) {
-        console.info("[owner-code] Migrated legacy clear-text owner code to hash.");
+        console.warn("[owner-code] Legacy clear-text owner code migrated to hash-only storage.");
       }
       setOwnerCodeHash(nextHash);
+      try {
+        localStorage.removeItem("jp-owner-code");
+      } catch {
+        // Ignore storage cleanup failures; hash storage remains authoritative.
+      }
     };
 
     void migrateLegacyOwnerCode();
-  }, [ownerCodeHash]);
+  }, [cloudEnabled, ownerCodeHash]);
 
   useEffect(() => {
     try {

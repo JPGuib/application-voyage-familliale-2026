@@ -25,11 +25,10 @@ export async function verifyOwnerCode(candidateCode: string, storedHashOrLegacyC
     return false;
   }
 
-  if (isOwnerCodeHash(normalizedStored)) {
-    const candidateHash = await hashOwnerCode(normalizedCandidate);
-    return candidateHash === normalizedStored;
+  if (!isOwnerCodeHash(normalizedStored)) {
+    return false;
   }
 
-  // Legacy compatibility path while old clear-text values are migrating.
-  return normalizedCandidate === normalizedStored;
+  const candidateHash = await hashOwnerCode(normalizedCandidate);
+  return candidateHash === normalizedStored;
 }
