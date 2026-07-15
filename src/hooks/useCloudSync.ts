@@ -79,6 +79,9 @@ export function useCloudSync() {
 
   const [isReady, setIsReady] = useState<boolean>(() => !cloudRuntimeAvailable);
   const [isAuthReady, setIsAuthReady] = useState<boolean>(() => !cloudRuntimeAvailable);
+  const [isAuthBootstrapping, setIsAuthBootstrapping] = useState<boolean>(
+    () => cloudRuntimeAvailable
+  );
   const [cloudAuthError, setCloudAuthError] = useState<string | null>(null);
   const [cloudUserUid, setCloudUserUid] = useState<string | null>(null);
   const [cloudSnapshot, setCloudSnapshot] = useState<CloudSyncSnapshot | null>(null);
@@ -92,6 +95,7 @@ export function useCloudSync() {
 
     let cancelled = false;
     setIsAuthReady(false);
+    setIsAuthBootstrapping(true);
     setCloudUserUid(null);
 
     const unsubscribe = observeFirebaseUser(
@@ -101,10 +105,9 @@ export function useCloudSync() {
         }
 
         setCloudUserUid(user?.uid ?? null);
-        setCloudAuthError((previous) =>
-          user && previous === "auth-required" ? null : previous
-        );
-        setIsAuthReady(true);
+        if (user) {
+          setCloudAuthError(null);
+        }
       },
       () => {
         if (cancelled) {
@@ -123,9 +126,15 @@ export function useCloudSync() {
         return;
       }
 
-      // Let auth observer settle first. If no user is observed,
-      // downstream effects will surface auth-required.
-      setCloudAuthError((previous) => previous ?? "auth-unavailable");
+      setCloudAuthError("auth-unavailable");
+      setIsReady(true);
+    }).finally(() => {
+      if (cancelled) {
+        return;
+      }
+
+      setIsAuthBootstrapping(false);
+      setIsAuthReady(true);
     });
 
     return () => {
@@ -173,13 +182,13 @@ export function useCloudSync() {
       return;
     }
 
-    if (!isAuthReady) {
+    if (!isAuthReady || isAuthBootstrapping) {
       setIsReady(false);
       return;
     }
 
     if (!cloudUserUid) {
-      setCloudAuthError("auth-required");
+      setCloudAuthError((previous) => previous ?? "auth-required");
       setIsReady(true);
       return;
     }
@@ -199,7 +208,14 @@ export function useCloudSync() {
     );
 
     return () => unsubscribe();
-  }, [cloudRuntimeAvailable, cloudUserUid, database, familyId, isAuthReady]);
+  }, [
+    cloudRuntimeAvailable,
+    cloudUserUid,
+    database,
+    familyId,
+    isAuthBootstrapping,
+    isAuthReady,
+  ]);
 
   useEffect(() => {
     if (!cloudRuntimeAvailable || !isAuthReady || !cloudUserUid) {
