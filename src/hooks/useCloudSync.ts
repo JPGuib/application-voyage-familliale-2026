@@ -10,6 +10,7 @@ import {
   getFirebaseAuthInstance,
   getFirebaseDatabaseInstance,
   isFirebaseConfigured,
+  observeFirebaseUser,
 } from "../services/firebaseConfig";
 import type {
   ChecklistState,
@@ -79,6 +80,7 @@ export function useCloudSync() {
   const [isReady, setIsReady] = useState<boolean>(() => !cloudRuntimeAvailable);
   const [isAuthReady, setIsAuthReady] = useState<boolean>(() => !cloudRuntimeAvailable);
   const [cloudAuthError, setCloudAuthError] = useState<string | null>(null);
+  const [cloudUserUid, setCloudUserUid] = useState<string | null>(null);
   const [cloudSnapshot, setCloudSnapshot] = useState<CloudSyncSnapshot | null>(null);
   const isFlushingQueueRef = useRef(false);
 
@@ -90,40 +92,50 @@ export function useCloudSync() {
 
     let cancelled = false;
     setIsAuthReady(false);
+    setCloudUserUid(null);
 
-    void ensureFirebaseAnonymousAuth()
-      .then((user) => {
+    const unsubscribe = observeFirebaseUser(
+      (user) => {
         if (cancelled) {
           return;
         }
 
-        if (!user) {
-          setCloudAuthError("auth-unavailable");
-          setIsAuthReady(true);
-          setIsReady(true);
-          return;
-        }
-
-        setCloudAuthError(null);
+        setCloudUserUid(user?.uid ?? null);
+        setCloudAuthError((previous) =>
+          user && previous === "auth-required" ? null : previous
+        );
         setIsAuthReady(true);
-      })
-      .catch(() => {
+      },
+      () => {
         if (cancelled) {
           return;
         }
 
+        setCloudUserUid(null);
         setCloudAuthError("auth-unavailable");
         setIsAuthReady(true);
         setIsReady(true);
-      });
+      }
+    );
+
+    void ensureFirebaseAnonymousAuth().catch(() => {
+      if (cancelled) {
+        return;
+      }
+
+      // Let auth observer settle first. If no user is observed,
+      // downstream effects will surface auth-required.
+      setCloudAuthError((previous) => previous ?? "auth-unavailable");
+    });
 
     return () => {
       cancelled = true;
+      unsubscribe();
     };
   }, [cloudRuntimeAvailable]);
 
   const flushPendingQueue = useCallback(async () => {
-    if (!isEnabled || !database || !auth?.currentUser) {
+    if (!isEnabled || !database || !cloudUserUid) {
       return;
     }
     if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -153,7 +165,7 @@ export function useCloudSync() {
     } finally {
       isFlushingQueueRef.current = false;
     }
-  }, [auth, database, familyId, isEnabled, pendingQueueKey]);
+  }, [cloudUserUid, database, familyId, isEnabled, pendingQueueKey]);
 
   useEffect(() => {
     if (!cloudRuntimeAvailable) {
@@ -166,7 +178,7 @@ export function useCloudSync() {
       return;
     }
 
-    if (!auth?.currentUser) {
+    if (!cloudUserUid) {
       setCloudAuthError("auth-required");
       setIsReady(true);
       return;
@@ -187,10 +199,10 @@ export function useCloudSync() {
     );
 
     return () => unsubscribe();
-  }, [auth, cloudRuntimeAvailable, database, familyId, isAuthReady]);
+  }, [cloudRuntimeAvailable, cloudUserUid, database, familyId, isAuthReady]);
 
   useEffect(() => {
-    if (!cloudRuntimeAvailable || !isAuthReady || !auth?.currentUser) {
+    if (!cloudRuntimeAvailable || !isAuthReady || !cloudUserUid) {
       return;
     }
 
@@ -204,7 +216,7 @@ export function useCloudSync() {
     return () => {
       window.removeEventListener("online", handleOnline);
     };
-  }, [auth, cloudRuntimeAvailable, database, flushPendingQueue, isAuthReady]);
+  }, [cloudRuntimeAvailable, cloudUserUid, database, flushPendingQueue, isAuthReady]);
 
   const enqueuePendingMutation = useCallback(
     (mutation: CloudSyncWritePayload) => {
@@ -217,7 +229,7 @@ export function useCloudSync() {
 
   const pushSnapshot = useCallback(
     async (snapshot: PushSnapshotInput) => {
-      if (!isEnabled || !database || !auth?.currentUser) {
+      if (!isEnabled || !database || !cloudUserUid) {
         setCloudAuthError("auth-required");
         return;
       }
@@ -248,12 +260,12 @@ export function useCloudSync() {
         enqueuePendingMutation(mutation);
       }
     },
-    [auth, database, enqueuePendingMutation, familyId, isEnabled]
+    [cloudUserUid, database, enqueuePendingMutation, familyId, isEnabled]
   );
 
   const claimRoleForProfile = useCallback(
     async (profileId: string, surname: string): Promise<ClaimRoleResult | null> => {
-      if (!isEnabled || !database || !auth?.currentUser) {
+      if (!isEnabled || !database || !cloudUserUid) {
         setCloudAuthError("auth-required");
         return null;
       }
@@ -264,7 +276,7 @@ export function useCloudSync() {
           familyId,
           profileId,
           surname,
-          auth.currentUser.uid
+          cloudUserUid
         );
         setCloudAuthError(null);
         return result;
@@ -273,14 +285,14 @@ export function useCloudSync() {
         return null;
       }
     },
-    [auth, database, familyId, isEnabled]
+    [cloudUserUid, database, familyId, isEnabled]
   );
 
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
     cloudAuthError,
-    cloudActorUid: auth?.currentUser?.uid ?? null,
+    cloudActorUid: cloudUserUid,
     cloudSnapshot,
     pushSnapshot,
     claimRoleForProfile,
