@@ -70,10 +70,10 @@ development_status:
   6-2-deployer-lapplication-sur-vercel: done
   epic-6-retrospective: optional
 
-  epic-7: in-progress
+  epic-7: done
   7-1-synchroniser-donnees-multi-device-cloud-sync: done
-  7-2-login-et-selection-profil: in-progress
-  7-3-deconnexion-et-changement-profil: in-progress
+  7-2-login-et-selection-profil: done
+  7-3-deconnexion-et-changement-profil: done
   epic-7-retrospective: optional
 
   epic-8: done

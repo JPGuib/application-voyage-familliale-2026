@@ -55,6 +55,7 @@ import {
   shouldHydrateFromCloudSnapshot,
   shouldPushCloudSnapshot,
 } from "./cloud-hydration";
+import { findDuplicateProfileBySurname } from "./profile-login";
 import { useCloudSync } from "../hooks/useCloudSync";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
@@ -1860,6 +1861,7 @@ function SettingsScreen({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [ownerCodeInput, setOwnerCodeInput] = useState("");
   const [ownerCodeFeedback, setOwnerCodeFeedback] = useState<string | null>(null);
+  const [showSwitchProfilePrompt, setShowSwitchProfilePrompt] = useState(false);
 
   const roleLabel = profile.role === "proprietaire" ? "Propriétaire" : "Utilisateur";
 
@@ -1975,7 +1977,7 @@ function SettingsScreen({
               Déconnectez-vous pour changer de profil sur cet appareil.
             </p>
             <button
-              onClick={onSwitchProfile}
+              onClick={() => setShowSwitchProfilePrompt(true)}
               className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
             >
               Se déconnecter / Changer de profil
@@ -1983,6 +1985,34 @@ function SettingsScreen({
           </div>
         )}
       </div>
+
+      {showSwitchProfilePrompt && (
+        <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-20">
+          <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
+            <p className="text-sm font-black text-foreground">Confirmer la déconnexion</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Voulez-vous vraiment vous déconnecter et revenir à la sélection de profil ?
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setShowSwitchProfilePrompt(false)}
+                className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  setShowSwitchProfilePrompt(false);
+                  onSwitchProfile();
+                }}
+                className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
+              >
+                Oui, se déconnecter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2742,6 +2772,18 @@ export default function App() {
             const normalizedSurname = createProfileSurname.trim();
             if (!normalizedSurname) {
               setAuthError("Le surnom est obligatoire pour créer un profil.");
+              return;
+            }
+
+            const duplicateCandidate = findDuplicateProfileBySurname(
+              loginCandidates,
+              normalizedSurname
+            );
+            if (duplicateCandidate) {
+              setSelectedLoginProfileId(duplicateCandidate.id);
+              setAuthError(
+                "Ce profil existe déjà. Sélectionnez-le dans la liste puis appuyez sur Se connecter."
+              );
               return;
             }
 
