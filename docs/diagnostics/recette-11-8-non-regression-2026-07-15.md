@@ -64,3 +64,25 @@ Worksheet terrain cree pour validation multi-appareils reelle:
 
 Condition de cloture finale recommandee:
 - completer D1..D5 avec evidences, puis passer la story 11-8 de `review` a `done`.
+
+## 7. Incident KO releve en execution manuelle
+
+KO constate sur D3 (switch profil A/B):
+- symptome: retour au flux checklist a debloquer apres switch owner -> utilisateur -> owner, alors que la phase etait deja `during`.
+
+Cause probable analysee:
+- la rehydratation depuis `cloudSnapshot` etait declenchee uniquement sur changement de snapshot,
+  pas sur changement d authentification/profil; apres switch, l etat local pouvait rester sur `before`.
+
+Correctif applique:
+- `src/app/App.tsx`: effet de rehydratation cloud declenche aussi sur `isAuthenticated` et `profile.id`.
+- `src/app/cloud-hydration.ts`: extraction de la logique de decision de rehydratation.
+- `src/app/cloud-hydration.test.ts`: test unitaire de non-regression sur la decision de rehydratation.
+
+Validation technique post-fix:
+- `npm run test -- src/app/cloud-hydration.test.ts src/services/cloudSyncProvider.test.ts src/app/owner-governance.integration.test.ts` => PASS.
+- `npm run test` => PASS (RTDB rules toujours skip sans emulateur).
+- `npm run build` => PASS.
+
+Action restante:
+- rejouer D3 manuellement (et idealement D1..D5 rapide) pour confirmer le GO terrain avant passage story 11-8 en `done`.
