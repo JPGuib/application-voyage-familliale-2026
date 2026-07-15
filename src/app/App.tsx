@@ -51,7 +51,10 @@ import {
   isOwnerCodeHash,
   verifyOwnerCode,
 } from "./owner-code";
-import { shouldHydrateFromCloudSnapshot } from "./cloud-hydration";
+import {
+  shouldHydrateFromCloudSnapshot,
+  shouldPushCloudSnapshot,
+} from "./cloud-hydration";
 import { useCloudSync } from "../hooks/useCloudSync";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
@@ -2305,6 +2308,8 @@ export default function App() {
       return;
     }
 
+    hydratedCloudProfileIdRef.current = profile.id;
+
     setProfile((previous) => {
       const nextRole = cloudProfile.role;
       const nextSurname = cloudProfile.surname || previous.surname;
@@ -2327,18 +2332,33 @@ export default function App() {
   }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id]);
 
   const lastCloudPushRef = useRef<string | null>(null);
+  const hydratedCloudProfileIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!cloudEnabled || !cloudReady) return;
-    if (!isAuthenticated || isAuthBootstrapPending) {
+
+    const hasCloudProfile = Boolean(cloudSnapshot?.profiles[profile.id]);
+    const canPush = shouldPushCloudSnapshot({
+      cloudEnabled,
+      isAuthenticated,
+      isAuthBootstrapPending,
+      hasActorUid: Boolean(cloudActorUid),
+      hasRole: Boolean(profile.role),
+      hasSurname: profile.surname.trim().length > 0,
+      hasCloudProfile,
+      currentProfileId: profile.id,
+      hydratedProfileId: hydratedCloudProfileIdRef.current,
+    });
+    if (!canPush) {
       if (IS_DEV) {
-        console.info("[cloud-sync] Push skipped: profile is not authenticated or still bootstrapping.");
+        console.info(
+          "[cloud-sync] Push skipped: profile not ready or awaiting cloud hydration after switch."
+        );
       }
       return;
     }
-    if (!profile.role) return;
-    if (!profile.surname.trim()) return;
-    if (!cloudActorUid) return;
+
+    if (!profile.role || !cloudActorUid) return;
 
     const normalized = enforceOwnerUniqueness(familyState);
     const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
@@ -2374,6 +2394,7 @@ export default function App() {
   }, [
     checked,
     cloudEnabled,
+    cloudSnapshot,
     cloudReady,
     cloudActorUid,
     familyState,
@@ -2563,6 +2584,7 @@ export default function App() {
     setUnlockLockedUntil(0);
 
     lastCloudPushRef.current = null;
+  hydratedCloudProfileIdRef.current = null;
     setSelectedLoginProfileId(null);
     setCreateProfileSurname("");
     setAuthError(null);

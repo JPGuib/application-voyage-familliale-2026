@@ -86,3 +86,29 @@ Validation technique post-fix:
 
 Action restante:
 - rejouer D3 manuellement (et idealement D1..D5 rapide) pour confirmer le GO terrain avant passage story 11-8 en `done`.
+
+## 8. Second KO terrain et correctif complementaire
+
+KO complementaire observe:
+- scenario: owner debloque -> switch utilisateur -> retour owner.
+- symptome: ecran alterne entre etat debloque et checklist, puis retour stable debloque seulement apres refresh manuel.
+
+Cause probable analysee:
+- course entre rehydratation cloud et push cloud au moment du retour owner.
+- un push pouvait partir avant rehydratation complete du profil existant, avec un etat local transitoire (`phase=before`).
+
+Correctif complementaire applique:
+- `src/app/cloud-hydration.ts`: ajout `shouldPushCloudSnapshot` pour bloquer les pushes avant preconditions de rehydratation.
+- `src/app/App.tsx`:
+    - memorisation du `hydratedCloudProfileId` applique,
+    - blocage push tant que le profil cloud courant n est pas rehydrate,
+    - reset explicite de ce marqueur lors du switch profil.
+- `src/app/cloud-hydration.test.ts`: ajout tests de non-regression sur les decisions de push.
+
+Validation technique post-fix #2:
+- tests cibles: PASS (`cloud-hydration`, `cloudSyncProvider`, `owner-governance`).
+- suite complete: PASS (RTDB rules skip sans emulateur).
+- build: PASS.
+
+Action restante finale:
+- rejouer D3 manuel (owner -> user -> owner) sans refresh, puis confirmer GO/NO-GO.
