@@ -2310,9 +2310,6 @@ export default function App() {
     }
 
     hydratedCloudProfileIdRef.current = profile.id;
-    if (cloudEnabled && isAuthenticated) {
-      setIsProfileHydrationPending(false);
-    }
 
     setProfile((previous) => {
       const nextRole = cloudProfile.role;
@@ -2345,8 +2342,9 @@ export default function App() {
 
     const hasCloudProfile = Boolean(cloudSnapshot?.profiles[profile.id]);
     const isHydratedProfile = hydratedCloudProfileIdRef.current === profile.id;
-    setIsProfileHydrationPending(hasCloudProfile && !isHydratedProfile);
-  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id]);
+    const isPhaseSynced = cloudSnapshot ? phase === cloudSnapshot.phase : false;
+    setIsProfileHydrationPending(hasCloudProfile && (!isHydratedProfile || !isPhaseSynced));
+  }, [cloudEnabled, cloudSnapshot, isAuthenticated, phase, profile.id]);
 
   useEffect(() => {
     if (!cloudEnabled || !cloudReady) return;
@@ -2374,6 +2372,13 @@ export default function App() {
     }
 
     if (!profile.role || !cloudActorUid) return;
+
+    if (hasCloudProfile && cloudSnapshot && phase !== cloudSnapshot.phase) {
+      if (IS_DEV) {
+        console.info("[cloud-sync] Push skipped: awaiting phase synchronization with cloud snapshot.");
+      }
+      return;
+    }
 
     const normalized = enforceOwnerUniqueness(familyState);
     const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);

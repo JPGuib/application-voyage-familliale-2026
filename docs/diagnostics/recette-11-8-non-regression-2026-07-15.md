@@ -137,3 +137,24 @@ Validation post-ajustement:
 
 Action terrain attendue:
 - rejouer D3 strictement sans refresh manuel et confirmer stabilite.
+
+## 10. Ajustement final (oscillation persistante owner -> user -> owner)
+
+Symptome remonte:
+- oscillation checklist/debloque au retour owner,
+- et parfois phase `before` persistante apres refresh.
+
+Cause probable:
+- le push cloud pouvait encore partir dans une fenetre ou `phase` locale n etait pas encore alignee sur `cloudSnapshot.phase`.
+
+Correctif applique:
+- garde stricte avant push: si profil cloud existant et `phase !== cloudSnapshot.phase`, push bloque.
+- `isProfileHydrationPending` maintenu actif tant que le profil n est pas hydrate ET que la phase n est pas synchronisee.
+
+Fichier impacte:
+- `src/app/App.tsx`
+
+Validation post-fix:
+- tests cibles: PASS
+- suite complete: PASS
+- build: PASS
