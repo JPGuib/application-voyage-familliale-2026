@@ -112,3 +112,28 @@ Validation technique post-fix #2:
 
 Action restante finale:
 - rejouer D3 manuel (owner -> user -> owner) sans refresh, puis confirmer GO/NO-GO.
+
+## 9. Troisieme ajustement (scintillement persistant + refresh KO)
+
+Symptome remonte:
+- scintillement checklist <-> ecran debloque au retour owner,
+- puis apres refresh, retour sur checklist (phase `before`).
+
+Durcissement applique:
+- blocage total des pushes cloud si `cloudSnapshot` absent,
+- maintien d un etat `isProfileHydrationPending` pour masquer l UI metier tant que le profil connecte n est pas hydrate,
+- ecran de chargement affiche pendant cette fenetre pour eliminer le clignotement,
+- reinitialisation explicite des marqueurs de push/hydratation au switch profil.
+
+Fichiers impactes:
+- `src/app/App.tsx`
+- `src/app/cloud-hydration.ts`
+- `src/app/cloud-hydration.test.ts`
+
+Validation post-ajustement:
+- tests cibles: PASS
+- suite complete: PASS
+- build: PASS
+
+Action terrain attendue:
+- rejouer D3 strictement sans refresh manuel et confirmer stabilite.

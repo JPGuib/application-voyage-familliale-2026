@@ -6,6 +6,7 @@ type CloudHydrationDecisionInput = {
 
 type CloudPushDecisionInput = {
   cloudEnabled: boolean;
+  hasSnapshot: boolean;
   isAuthenticated: boolean;
   isAuthBootstrapPending: boolean;
   hasActorUid: boolean;
@@ -33,6 +34,10 @@ export function shouldHydrateFromCloudSnapshot(
 export function shouldPushCloudSnapshot(input: CloudPushDecisionInput): boolean {
   if (!input.cloudEnabled) {
     return true;
+  }
+
+  if (!input.hasSnapshot) {
+    return false;
   }
 
   if (!input.isAuthenticated || input.isAuthBootstrapPending) {
