@@ -37,11 +37,14 @@ export type CloudProfileState = {
 export type CloudSyncSnapshot = {
   familyState: SharedFamilyState;
   ownerCodeHash: string;
+  phase: TravelPhase;
   profiles: Record<string, CloudProfileState>;
   updatedAt: number;
 };
 
 export type CloudSyncWritePayload = {
+  actorUid: string;
+  canWriteFamilyState: boolean;
   familyState: SharedFamilyState;
   ownerCodeHash: string;
   profileId: string;

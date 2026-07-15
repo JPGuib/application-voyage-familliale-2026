@@ -6,6 +6,8 @@ import {
   pushCloudSnapshot,
 } from "../services/cloudSyncProvider";
 import {
+  ensureFirebaseAnonymousAuth,
+  getFirebaseAuthInstance,
   getFirebaseDatabaseInstance,
   isFirebaseConfigured,
 } from "../services/firebaseConfig";
@@ -23,6 +25,8 @@ type ClaimRoleResult = {
 };
 
 type PushSnapshotInput = {
+  actorUid: string;
+  canWriteFamilyState: boolean;
   familyState: SharedFamilyState;
   ownerCodeHash: string;
   profileId: string;
@@ -67,15 +71,59 @@ function writePendingQueue(key: string, queue: CloudSyncWritePayload[]): void {
 export function useCloudSync() {
   const isEnabled = isFirebaseConfigured();
   const database = useMemo(() => getFirebaseDatabaseInstance(), []);
+  const auth = useMemo(() => getFirebaseAuthInstance(), []);
   const familyId = (import.meta.env.VITE_FAMILY_SYNC_ID as string | undefined) || "famille-voyage-2026";
   const pendingQueueKey = useMemo(() => getPendingQueueKey(familyId), [familyId]);
+  const cloudRuntimeAvailable = isEnabled && Boolean(database) && Boolean(auth);
 
-  const [isReady, setIsReady] = useState<boolean>(() => !isEnabled || !database);
+  const [isReady, setIsReady] = useState<boolean>(() => !cloudRuntimeAvailable);
+  const [isAuthReady, setIsAuthReady] = useState<boolean>(() => !cloudRuntimeAvailable);
+  const [cloudAuthError, setCloudAuthError] = useState<string | null>(null);
   const [cloudSnapshot, setCloudSnapshot] = useState<CloudSyncSnapshot | null>(null);
   const isFlushingQueueRef = useRef(false);
 
+  useEffect(() => {
+    if (!cloudRuntimeAvailable) {
+      setIsAuthReady(true);
+      return;
+    }
+
+    let cancelled = false;
+    setIsAuthReady(false);
+
+    void ensureFirebaseAnonymousAuth()
+      .then((user) => {
+        if (cancelled) {
+          return;
+        }
+
+        if (!user) {
+          setCloudAuthError("auth-unavailable");
+          setIsAuthReady(true);
+          setIsReady(true);
+          return;
+        }
+
+        setCloudAuthError(null);
+        setIsAuthReady(true);
+      })
+      .catch(() => {
+        if (cancelled) {
+          return;
+        }
+
+        setCloudAuthError("auth-unavailable");
+        setIsAuthReady(true);
+        setIsReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cloudRuntimeAvailable]);
+
   const flushPendingQueue = useCallback(async () => {
-    if (!isEnabled || !database) {
+    if (!isEnabled || !database || !auth?.currentUser) {
       return;
     }
     if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -105,10 +153,21 @@ export function useCloudSync() {
     } finally {
       isFlushingQueueRef.current = false;
     }
-  }, [database, familyId, isEnabled, pendingQueueKey]);
+  }, [auth, database, familyId, isEnabled, pendingQueueKey]);
 
   useEffect(() => {
-    if (!isEnabled || !database) {
+    if (!cloudRuntimeAvailable) {
+      setIsReady(true);
+      return;
+    }
+
+    if (!isAuthReady) {
+      setIsReady(false);
+      return;
+    }
+
+    if (!auth?.currentUser) {
+      setCloudAuthError("auth-required");
       setIsReady(true);
       return;
     }
@@ -117,19 +176,21 @@ export function useCloudSync() {
       database,
       familyId,
       (snapshot) => {
+        setCloudAuthError(null);
         setCloudSnapshot(snapshot);
         setIsReady(true);
       },
       () => {
+        setCloudAuthError("permission-denied");
         setIsReady(true);
       }
     );
 
     return () => unsubscribe();
-  }, [database, familyId, isEnabled]);
+  }, [auth, cloudRuntimeAvailable, database, familyId, isAuthReady]);
 
   useEffect(() => {
-    if (!isEnabled || !database) {
+    if (!cloudRuntimeAvailable || !isAuthReady || !auth?.currentUser) {
       return;
     }
 
@@ -143,7 +204,7 @@ export function useCloudSync() {
     return () => {
       window.removeEventListener("online", handleOnline);
     };
-  }, [database, flushPendingQueue, isEnabled]);
+  }, [auth, cloudRuntimeAvailable, database, flushPendingQueue, isAuthReady]);
 
   const enqueuePendingMutation = useCallback(
     (mutation: CloudSyncWritePayload) => {
@@ -156,11 +217,14 @@ export function useCloudSync() {
 
   const pushSnapshot = useCallback(
     async (snapshot: PushSnapshotInput) => {
-      if (!isEnabled || !database) {
+      if (!isEnabled || !database || !auth?.currentUser) {
+        setCloudAuthError("auth-required");
         return;
       }
 
       const mutation: CloudSyncWritePayload = {
+        actorUid: snapshot.actorUid,
+        canWriteFamilyState: snapshot.canWriteFamilyState,
         familyState: snapshot.familyState,
         ownerCodeHash: snapshot.ownerCodeHash,
         profileId: snapshot.profileId,
@@ -178,27 +242,45 @@ export function useCloudSync() {
 
       try {
         await pushCloudSnapshot(database, familyId, mutation);
+        setCloudAuthError(null);
       } catch {
+        setCloudAuthError("permission-denied");
         enqueuePendingMutation(mutation);
       }
     },
-    [database, enqueuePendingMutation, familyId, isEnabled]
+    [auth, database, enqueuePendingMutation, familyId, isEnabled]
   );
 
   const claimRoleForProfile = useCallback(
     async (profileId: string, surname: string): Promise<ClaimRoleResult | null> => {
-      if (!isEnabled || !database) {
+      if (!isEnabled || !database || !auth?.currentUser) {
+        setCloudAuthError("auth-required");
         return null;
       }
 
-      return claimProfileRole(database, familyId, profileId, surname);
+      try {
+        const result = await claimProfileRole(
+          database,
+          familyId,
+          profileId,
+          surname,
+          auth.currentUser.uid
+        );
+        setCloudAuthError(null);
+        return result;
+      } catch {
+        setCloudAuthError("permission-denied");
+        return null;
+      }
     },
-    [database, familyId, isEnabled]
+    [auth, database, familyId, isEnabled]
   );
 
   return {
-    cloudEnabled: isEnabled && Boolean(database),
+    cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
+    cloudAuthError,
+    cloudActorUid: auth?.currentUser?.uid ?? null,
     cloudSnapshot,
     pushSnapshot,
     claimRoleForProfile,

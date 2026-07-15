@@ -1471,3 +1471,38 @@ Définir et implémenter les règles de visibilité des rubriques de l'applicati
 - Cette règle doit être implémentée en même temps que le déblocage du code (sinon utilisateurs verront rubriques verrouillées sans explication)
 - Considérer une transition UX fluide: animation ou message toast quand déblocage réussit
 - Peut être implémenté avant BACKLOG-005/007 (orthogonal)
+
+---
+
+## Consolidation et repriorisation globale (2026-07-15)
+
+Source de consolidation:
+- `docs/backlog-epics-stories.md` (diagnostic continuite et backlog post-tests)
+- backlog existante des epics 9 et 10 (ce fichier)
+
+### Priorites globales
+
+1. P0 - Stabiliser la continuite numerique (nouvel epic prioritaire: ecran blanc, source de verite cloud, isolation de state, security rules)
+2. P1 - Finaliser Epic 9 (recuperation d'urgence du code proprietaire)
+3. P1 - Corriger regressions guide/photos et fiabilite dashboard
+4. P1 - Checklist persistante apres deblocage (item 10.3 / BACKLOG-006)
+5. P2 - Reste Epic 10 (auth profil, filtrage checklist, enrichissement contenu)
+
+### Mapping de priorite Epic 9 et Epic 10
+
+- Epic 9
+  - 9.1 Configurer phrase de recuperation: P1
+  - 9.2 Reinitialiser le code via code oublie: P1
+  - 9.3 Couvrir les gardes par tests: P1
+
+- Epic 10
+  - 10.1 Regles visibilite rubriques: P2
+  - 10.2 Authentification mot de passe par profil: P2
+  - 10.3 Checklist persistante apres deblocage: P1
+  - 10.4 Adaptation checklist par profil: P2
+  - 10.5 Mise a jour contenu checklist: P2
+
+### Rationalisation des doublons
+
+- Les sujets d'isolation des donnees par profil (checklist/jeux) doivent etre traites dans l'epic de continuite numerique avant d'ouvrir des stories correctives paralleles.
+- L'audit des Security Rules est un pre-requis de securite pour les epics 9 et 10.

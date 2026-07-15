@@ -278,6 +278,43 @@ Vérification post-déploiement (owner global):
 
 ## 7. Checklist de compatibilité
 
+---
+
+## 8. Security Rules Firebase (Story 11.5)
+
+Les rules sont maintenant versionnees dans le repository:
+
+- `firebase/database.rules.test.json`
+- `firebase/database.rules.prod.json`
+- `firebase/firestore.rules.test`
+- `firebase/firestore.rules.prod`
+- `firebase.json`
+
+Guide d audit associe:
+
+- `docs/security/firebase-rules-audit.md`
+
+### Important avant deploiement
+
+- Les profils de rules prod reposent sur `auth.uid` + membership famille.
+- Si l application n active pas l authentification Firebase (au moins anonymous), les acces cloud seront bloques.
+
+### Deploiement rules (sequence conseillee)
+
+1. Deployer et verifier en environnement test
+2. Valider checklist d audit
+3. Deployer en production
+
+Commandes type:
+
+```bash
+firebase use application-voyage-test
+firebase deploy --only database,firestore:rules
+
+firebase use voyage-familiale-2026
+firebase deploy --only database,firestore:rules
+```
+
 ### iOS 17+ (Safari)
 
 - ✅ JavaScript ES2022 (target: safari17)
@@ -442,3 +479,143 @@ Pour `test-env` (recommande):
 - verifier CI verte
 - merger
 - verifier deployment Vercel production
+
+---
+
+## 11. Guide de reinitialisation de la production (pas a pas)
+
+Objectif: revenir a un etat vide en production (plus de profils, plus de code proprietaire, plus de progression).
+
+### 11.1 Choisir la strategie
+
+Deux options possibles:
+
+1. Reinitialisation definitive (suppression des donnees)
+- Vous supprimez les donnees de production dans Firebase.
+- Resultat: retour a zero complet.
+
+2. Reinitialisation reversible (recommandee)
+- Vous changez `VITE_FAMILY_SYNC_ID` dans Vercel Production.
+- Resultat: l'application repart a vide sans supprimer l'ancien historique.
+
+### 11.2 Procedure recommandee: reset reversible
+
+1. Ouvrir le projet Vercel de production
+- Vercel -> projet production -> Settings -> Environment Variables.
+
+2. Modifier la variable de production
+- Editer `VITE_FAMILY_SYNC_ID` dans le scope `Production`.
+- Mettre une nouvelle valeur (ex: `famille-voyage-2026-prod-reset-1`).
+
+3. Redployer la production
+- Aller dans Deployments.
+- Lancer un `Redeploy` du dernier deployment.
+
+4. Verifier le resultat
+- Ouvrir l'URL de production en navigation privee.
+- Verifier que l'app propose une creation de profil (etat neuf).
+
+5. Nettoyer les anciens appareils
+- Sur les appareils deja utilises: vider les donnees du site (cache + stockage local) si l'ancien etat apparait encore.
+
+### 11.3 Procedure definitive: suppression Firebase
+
+1. Verifier l'identifiant de sync de production
+- Confirmer la valeur `VITE_FAMILY_SYNC_ID` active dans Vercel Production.
+
+2. Ouvrir Firebase Realtime Database
+- Firebase Console -> Build -> Realtime Database -> Data.
+
+3. Supprimer la branche de production
+- Naviguer vers `families/<VITE_FAMILY_SYNC_ID>`.
+- Supprimer cette branche uniquement.
+
+4. Redployer (optionnel mais recommande)
+- Relancer un deployment de production pour repartir proprement.
+
+5. Verifier en production
+- Ouvrir l'app en navigation privee.
+- Verifier qu'il n'y a plus de profils ni de code proprietaire.
+
+### 11.4 Checklist de validation post-reset
+
+- L'app en production redemarre sur un etat vierge.
+- Aucun ancien profil n'est visible.
+- Aucun ancien code proprietaire n'est actif.
+- Un nouveau profil peut etre cree normalement.
+- Les environnements `test-env` et `main` restent separes.
+
+### 11.5 Precautions importantes
+
+- Effectuer le reset hors plage d'utilisation famille.
+- Verifier deux fois le projet cible (Vercel prod et Firebase prod).
+- En cas de doute, utiliser la methode reversible avant suppression definitive.
+
+### 11.6 Procedure complete (17 etapes) pour un reset total fiable
+
+Cette procedure evite la reinjection des anciennes donnees depuis le cache local des appareils.
+
+1. Annoncer une fenetre de maintenance (5 a 10 minutes).
+2. Demander aux utilisateurs de fermer l'application sur tous les appareils.
+3. Ouvrir Vercel projet production.
+4. Noter la valeur actuelle de `VITE_FAMILY_SYNC_ID` (ancienne valeur).
+5. Definir une nouvelle valeur de reset pour `VITE_FAMILY_SYNC_ID` dans le scope Production.
+6. Lancer un redeploy production.
+7. Verifier que le nouveau deployment est bien actif sur l'URL prod.
+8. Ouvrir Firebase Realtime Database de production.
+9. Supprimer `families/<ANCIEN_SYNC_ID>`.
+10. Verifier que `families/<ANCIEN_SYNC_ID>` n'existe plus.
+11. Verifier que `families/<NOUVEAU_SYNC_ID>` est absent (ou vide).
+12. Sur un navigateur desktop, ouvrir l'URL prod en navigation privee.
+13. Verifier que l'ecran de creation de profil apparait (etat neuf).
+14. Purger les donnees locales sur chaque appareil deja utilise (voir 11.7).
+15. Reouvrir l'app sur ces appareils et verifier qu'aucune ancienne donnee ne revient.
+16. Creer un profil de verification (ex: `reset-check`) et verifier la sync normale.
+17. Clore la maintenance et informer que la production est reinitialisee.
+
+### 11.7 Checklist de purge exacte par navigateur
+
+Objectif: supprimer toutes les donnees locales susceptibles de recharger un ancien etat.
+
+#### 11.7.1 Chrome Desktop (Windows/macOS)
+
+1. Ouvrir l'URL de production dans Chrome.
+2. Appuyer sur `F12` pour ouvrir DevTools.
+3. Aller dans l'onglet `Application`.
+4. Dans `Storage`, cliquer `Clear site data`.
+5. Dans `Service Workers`, cliquer `Unregister` si un worker est present.
+6. Dans `Local Storage`, verifier que la cle du domaine est vide.
+7. Dans `IndexedDB`, verifier qu'aucune base de l'app ne reste.
+8. Faire `Ctrl+Shift+R` (hard reload).
+9. Verifier que l'app redemarre a vide.
+
+#### 11.7.2 Safari iOS (iPhone/iPad)
+
+1. Fermer la PWA si elle est ouverte.
+2. Ouvrir `Reglages` > `Safari` > `Avance` > `Donnees de sites`.
+3. Rechercher le domaine de production.
+4. Supprimer l'entree du domaine.
+5. Revenir a l'ecran d'accueil et supprimer l'icome PWA installee.
+6. Ouvrir Safari et retourner sur l'URL production.
+7. Verifier l'etat vierge (creation de profil).
+8. Reinstaller la PWA (Partager > Sur l'ecran d'accueil).
+
+#### 11.7.3 Chrome Android
+
+1. Ouvrir Chrome sur Android.
+2. Aller sur le domaine de production.
+3. Appuyer sur l'icone cadenas (ou reglages du site).
+4. Ouvrir `Parametres du site`.
+5. Appuyer `Effacer et reinitialiser`.
+6. Confirmer la suppression des donnees du site.
+7. Si la PWA est installee, la desinstaller depuis l'ecran d'accueil.
+8. Rouvrir Chrome sur l'URL production.
+9. Verifier l'etat vierge puis reinstaller la PWA.
+
+#### 11.7.4 Verification finale multi-appareils
+
+1. Ouvrir production sur un desktop (navigateur prive) et un mobile.
+2. Creer un profil test sur appareil A.
+3. Verifier sa presence sur appareil B.
+4. Verifier qu'aucun ancien profil/code ne reapparait.
+5. Verifier que l'environnement `test-env` n'est pas impacte.

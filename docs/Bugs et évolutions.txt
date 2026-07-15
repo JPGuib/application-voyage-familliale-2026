@@ -1,6 +1,77 @@
 OneNote a évolué ? 
 
 backlog / bug : 
-la checklist doit être instanciée par profil ! 
-Vérifier que les réponses au jeu sont aussi par profil ? 
 
+Checklist : 
+-----------
+* la checklist doit être instanciée par profil ! (je pense que c'est le cas)
+* Quand je change de user, faudrait sortir de "Profil & paramètres"
+* Cheklist C1 pour U1, C2 pour U2, je suis avec U1 sur l'ordi et U2 sur le téléphone. Au niveau du tel, je passe sur U1, alors il C1 devient identique à C2 
+* proposer de rajouter ces propres items : chaque utiliteur peut soit se créer une ou plusieurs catégories et rajouter des items par catégories, soit rajouter des items dans une catégorie. 
+
+Gestion du code :
+---------------
+* Quand on met à jour le code, faudrait pouvoir rentrer l'ancien puis demander de rentrer le nouveau avec une vérification en demandant de le rentrer 2 fois
+* le code est secret, faudrait pouvoir l'affichier sur demande => faire comme une gestion de mot de passe ? Des étoiles et un clique sur un œil pour pouvoir le voir ? 
+
+Une fois l'écran débloqué (étant d'accueil) : 
+---------------------------------------------
+* le jour qui s'affiche en haut : il faut bien s'assurer que Jour 1 = le premier jour du voyage, c'est à dire au moment où le propriétaire débloque avec le code. Ensuite les jours s'incrémentent suivant les jours réels (donc à minuit heure locale de l'appareil - ordinateur ou smartphone, on passe au jour Suivant)
+* Destination du jour => voir comment c'est mis à jour et à partir de quel fichier / paramètre dans l'application ? Il faut bien une table qui dit pour chaque jour la destination
+* en bas l'ordre doit être accueil, guide, conseils, jeux, résultats
+
+Ecran guide de Turquie : 
+---------------------
+* les photos ne s'affichent pas sauf la photo du site d'Ephèse
+* Quand on clique sur les lieux, toutes les photos ne s'affichent pas non plus
+* En dessous de Guide de Turquie, il y a le jour suivi du nombre de lieux à découvrir, j'aimerais plutôt avoir un liste déroulante, on clique sur le bouton est on peut voir chaque jour. Par défaut c'est le jour actuel qui s'affiche. Dans cette liste il faut qu'on puisse faire apparaître aussi des généralités comme l'histoire de la Turquie, la géographie de la turquie, le gouvernement etc. des rubriques que je peux facilement créer 
+* Pour chaque lieu : il est indiqué le nombre de photos et le timing, à retirer ca n'apporte rien
+* Quand le lieu est un monument visité : il faudrait en plus de Histoire et le savais-tu ? Il faudrait avoir un rubrique guide de visite qui du texte avec photo assez détaillé
+
+Continuité numérique : 
+----------------------
+* je débloque l'application avec le code sur le web (ordinateur), je vais sur le smartphone => ce n'est pas à jour sur le smartphone. Je retourne sur l'ordinateur et là j'ai un écran blanc (comme une confusion dans les données). J'utilise Chrome. Il faut alors que je supprime les données de Chrome pour retrouver un affichage. Et là, l'application n'est pas débloquée.  
+* Globalement c'est le cas sur d'autres situations, les contextes sont perdus, les écrans sont blancs et faut supprimer les cahces et données. Et quand on revient on se retrouve avec la checklist et il faut encore débloquer l'application.
+* J'utilise sur mon ordinateur Chrome, je ferme chrome et je passe sur Edge, là j'ai pas du tout les mêmes utilisateurs et il n'y aucune continuité numérique
+
+Boutons Wanderlog et polarsteps : 
+-------------------------------
+* Quand je suis sur l'ordinateur, cela doit ouvrir le site wanderlog, si l'application est installée => l'appli sinon l'url. 
+* idem pour polasteps
+* Faudrait que les ouvertures soient réalisées sur une autre fenêtre du browser, sinon ca bloque l'application
+
+Sur smartphone: 
+---------------
+* Sur Android, comme sur mon ordinateur, non testé sur iOS, quand je fais un refresh du browser (avec Chrome sur le téléphone, Chrome et EDGE a le même fonctionnement sur ordinateur) : si je suis sur le premier écran qui me demande de sélectionner un utilisateur => pas de souci, si je suis sur la préparation des bagages => pas de souci, les pages sont rafraîchies et les données sont bien préservées. Je rentre le code pour débloquer, je suis sur le nouvel écran (et tous les écrans qu'on peut activer depuis ce menu c'est pareil), je rafraîchis => écran blanc. Je suis obligé de supprimer les données de l'application. Et donc je perds ma session et où j'en étais. Et j'ai remarqué que si au lieu de rafraîchir, je sors de l'application et la réouvre => c'est pareil, écran blanc. 
+
+
+Vérifier que les réponses au jeu sont aussi par profil ? 
+Méteo => si on garde faudrait que ce soit celle du jour ! 
+
+----
+
+https://vercel.com/jpguibert-9718s-projects/application-voyage-familliale-2026/
+https://console.firebase.google.com/u/0/project/voyage-familiale-2026/settings/general/web:YmMyYzNkZDMtMDVhYy00N2M1LWJhNTgtZGQxM2E4YzFkOTA1
+https://github.com/JPGuib/application-voyage-familliale-2026/tree/main
+
+VITE_FAMILY_SYNC_ID=famille-voyage-2026-V2
+
+----
+TEST 
+ apiKey: "AIzaSyAnLGDjatPysNJh_TzckaBURvTbl1zmjyk",
+  authDomain: "application-voyage-test.firebaseapp.com",
+  databaseURL: "https://application-voyage-test-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "application-voyage-test",
+  storageBucket: "application-voyage-test.firebasestorage.app",
+  messagingSenderId: "1072370075341",
+  appId: "1:1072370075341:web:afa8e6ae8980b928680b84"
+
+PROD : 
+apiKey: "AIzaSyCOsL9M4v6uLTxPJbGXJkDMfA9u-nEndmA",
+  authDomain: "voyage-familiale-2026.firebaseapp.com",
+  databaseURL: "https://voyage-familiale-2026-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "voyage-familiale-2026",
+  storageBucket: "voyage-familiale-2026.firebasestorage.app",
+  messagingSenderId: "525458216487",
+  appId: "1:525458216487:web:9bc6084a2025d55add2002"
+};

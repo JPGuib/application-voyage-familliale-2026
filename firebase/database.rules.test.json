@@ -1,0 +1,80 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "familyMembers": {
+      "$familyId": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "families": {
+      "$familyId": {
+        ".read": "auth != null",
+        ".write": false,
+        "ownerUid": {
+          ".write": "auth != null && (!data.exists() || data.val() === auth.uid)",
+          ".validate": "newData.val() === null || (newData.isString() && newData.val() === auth.uid)"
+        },
+        "ownerCodeHash": {
+          ".write": "auth != null && newData.parent().child('ownerUid').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^sha256:[0-9a-f]{64}$/)"
+        },
+        "ownerProfileId": {
+          ".write": "auth != null",
+          ".validate": "newData.val() === null || newData.isString()"
+        },
+        "updatedAt": {
+          ".write": "auth != null",
+          ".validate": "newData.isNumber()"
+        },
+        "profiles": {
+          "$profileId": {
+            ".write": "auth != null",
+            "surname": {
+              ".validate": "newData.isString() && newData.val().length <= 80"
+            },
+            "role": {
+              ".validate": "newData.val() === 'proprietaire' || newData.val() === 'utilisateur'"
+            },
+            "createdAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "lastSyncAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "checklists": {
+          "$profileId": {
+            ".write": "auth != null",
+            "$itemId": {
+              ".validate": "newData.isBoolean()"
+            }
+          }
+        },
+        "gameResults": {
+          "$profileId": {
+            ".write": "auth != null",
+            "$index": {
+              ".validate": "newData.hasChildren(['day','location','quizScore','correctCount','riddleSolved','challengeDone','durationSec','totalScore','completedAt'])"
+            }
+          }
+        },
+        "phase": {
+          ".write": "auth != null && newData.parent().child('ownerUid').val() === auth.uid",
+          ".validate": "newData.val() === 'before' || newData.val() === 'during'"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}

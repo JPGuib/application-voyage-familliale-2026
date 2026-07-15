@@ -1,0 +1,35 @@
+{
+  "database": {
+    "rules": "firebase/database.rules.prod.json"
+  },
+  "firestore": {
+    "rules": "firebase/firestore.rules.prod",
+    "indexes": "firebase/firestore.indexes.json"
+  },
+  "targets": {
+    "application-voyage-test": {
+      "database": {
+        "default": [
+          "application-voyage-test"
+        ]
+      },
+      "firestore": {
+        "default": [
+          "application-voyage-test"
+        ]
+      }
+    },
+    "voyage-familiale-2026": {
+      "database": {
+        "default": [
+          "voyage-familiale-2026"
+        ]
+      },
+      "firestore": {
+        "default": [
+          "voyage-familiale-2026"
+        ]
+      }
+    }
+  }
+}
