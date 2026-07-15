@@ -51,6 +51,7 @@ describe("cloud push decision", () => {
     expect(
       shouldPushCloudSnapshot({
         cloudEnabled: true,
+        hasSnapshot: true,
         isAuthenticated: false,
         isAuthBootstrapPending: true,
         hasActorUid: true,
@@ -67,6 +68,7 @@ describe("cloud push decision", () => {
     expect(
       shouldPushCloudSnapshot({
         cloudEnabled: true,
+        hasSnapshot: true,
         isAuthenticated: true,
         isAuthBootstrapPending: false,
         hasActorUid: true,
@@ -83,6 +85,7 @@ describe("cloud push decision", () => {
     expect(
       shouldPushCloudSnapshot({
         cloudEnabled: true,
+        hasSnapshot: true,
         isAuthenticated: true,
         isAuthBootstrapPending: false,
         hasActorUid: true,
@@ -93,5 +96,22 @@ describe("cloud push decision", () => {
         hydratedProfileId: "profile-a",
       })
     ).toBe(true);
+  });
+
+  it("blocks push when cloud snapshot is unavailable", () => {
+    expect(
+      shouldPushCloudSnapshot({
+        cloudEnabled: true,
+        hasSnapshot: false,
+        isAuthenticated: true,
+        isAuthBootstrapPending: false,
+        hasActorUid: true,
+        hasRole: true,
+        hasSurname: true,
+        hasCloudProfile: true,
+        currentProfileId: "profile-a",
+        hydratedProfileId: "profile-a",
+      })
+    ).toBe(false);
   });
 });

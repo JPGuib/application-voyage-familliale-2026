@@ -2042,6 +2042,7 @@ export default function App() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !cloudEnabled);
   const [isAuthBootstrapPending, setIsAuthBootstrapPending] = useState<boolean>(() => cloudEnabled);
+  const [isProfileHydrationPending, setIsProfileHydrationPending] = useState(false);
   const [selectedLoginProfileId, setSelectedLoginProfileId] = useState<string | null>(null);
   const [createProfileSurname, setCreateProfileSurname] = useState("");
   const [phase, setPhase] = useState<"before" | "during">(() => {
@@ -2309,6 +2310,9 @@ export default function App() {
     }
 
     hydratedCloudProfileIdRef.current = profile.id;
+    if (cloudEnabled && isAuthenticated) {
+      setIsProfileHydrationPending(false);
+    }
 
     setProfile((previous) => {
       const nextRole = cloudProfile.role;
@@ -2335,11 +2339,22 @@ export default function App() {
   const hydratedCloudProfileIdRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (!cloudEnabled || !isAuthenticated) {
+      return;
+    }
+
+    const hasCloudProfile = Boolean(cloudSnapshot?.profiles[profile.id]);
+    const isHydratedProfile = hydratedCloudProfileIdRef.current === profile.id;
+    setIsProfileHydrationPending(hasCloudProfile && !isHydratedProfile);
+  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id]);
+
+  useEffect(() => {
     if (!cloudEnabled || !cloudReady) return;
 
     const hasCloudProfile = Boolean(cloudSnapshot?.profiles[profile.id]);
     const canPush = shouldPushCloudSnapshot({
       cloudEnabled,
+      hasSnapshot: Boolean(cloudSnapshot),
       isAuthenticated,
       isAuthBootstrapPending,
       hasActorUid: Boolean(cloudActorUid),
@@ -2584,7 +2599,8 @@ export default function App() {
     setUnlockLockedUntil(0);
 
     lastCloudPushRef.current = null;
-  hydratedCloudProfileIdRef.current = null;
+    hydratedCloudProfileIdRef.current = null;
+    setIsProfileHydrationPending(false);
     setSelectedLoginProfileId(null);
     setCreateProfileSurname("");
     setAuthError(null);
@@ -2671,7 +2687,7 @@ export default function App() {
       return <CloudAccessErrorScreen reason={cloudAuthError} />;
     }
 
-    if (cloudEnabled && (!cloudReady || isAuthBootstrapPending)) {
+    if (cloudEnabled && (!cloudReady || isAuthBootstrapPending || isProfileHydrationPending)) {
       return <CloudLoadingScreen />;
     }
 
@@ -2713,6 +2729,7 @@ export default function App() {
               surname: selected.surname,
               role: selected.role,
             }));
+            setIsProfileHydrationPending(true);
             setAuthError(null);
             setIsAuthenticated(true);
           }}
