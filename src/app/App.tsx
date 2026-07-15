@@ -2382,6 +2382,14 @@ export default function App() {
   }, [unlockLockedUntil]);
 
   useEffect(() => {
+    // In cloud mode, phase can already be "during" at bootstrap.
+    // Avoid landing on checklist with a no-op CTA.
+    if (phase === "during" && screen === "checklist") {
+      setScreen("dashboard");
+    }
+  }, [phase, screen]);
+
+  useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
