@@ -56,22 +56,3 @@ https://github.com/JPGuib/application-voyage-familliale-2026/tree/main
 
 VITE_FAMILY_SYNC_ID=famille-voyage-2026-V2
 
-----
-TEST 
- apiKey: "AIzaSyAnLGDjatPysNJh_TzckaBURvTbl1zmjyk",
-  authDomain: "application-voyage-test.firebaseapp.com",
-  databaseURL: "https://application-voyage-test-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "application-voyage-test",
-  storageBucket: "application-voyage-test.firebasestorage.app",
-  messagingSenderId: "1072370075341",
-  appId: "1:1072370075341:web:afa8e6ae8980b928680b84"
-
-PROD : 
-apiKey: "AIzaSyCOsL9M4v6uLTxPJbGXJkDMfA9u-nEndmA",
-  authDomain: "voyage-familiale-2026.firebaseapp.com",
-  databaseURL: "https://voyage-familiale-2026-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "voyage-familiale-2026",
-  storageBucket: "voyage-familiale-2026.firebasestorage.app",
-  messagingSenderId: "525458216487",
-  appId: "1:525458216487:web:9bc6084a2025d55add2002"
-};

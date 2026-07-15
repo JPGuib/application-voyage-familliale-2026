@@ -17,8 +17,8 @@ describe("owner code hashing", () => {
     await expect(verifyOwnerCode("abce", hash)).resolves.toBe(false);
   });
 
-  it("supports legacy clear-text compatibility", async () => {
-    await expect(verifyOwnerCode(" 4321 ", "4321")).resolves.toBe(true);
+  it("rejects legacy clear-text stored values", async () => {
+    await expect(verifyOwnerCode("4321", "4321")).resolves.toBe(false);
     await expect(verifyOwnerCode("9999", "4321")).resolves.toBe(false);
   });
 });
