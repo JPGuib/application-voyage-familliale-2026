@@ -93,6 +93,17 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const gameResultRecords = asRecord(root.gameResults);
   const phaseRecords = asRecord(root.phase);
 
+  const hasFamilyWidePhase = root.phase === "before" || root.phase === "during";
+  const legacyPhaseCandidates = Object.values(phaseRecords).map((candidate) =>
+    toTravelPhase(candidate)
+  );
+  const legacyFallbackPhase: TravelPhase = legacyPhaseCandidates.includes("during")
+    ? "during"
+    : "before";
+  const sharedPhase = hasFamilyWidePhase
+    ? toTravelPhase(root.phase)
+    : legacyFallbackPhase;
+
   const profiles: CloudSyncSnapshot["profiles"] = {};
   const familyProfiles: Array<{ id: string; role: Role }> = [];
 
@@ -125,6 +136,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   return {
     familyState,
     ownerCodeHash: typeof root.ownerCodeHash === "string" ? root.ownerCodeHash : "",
+    phase: sharedPhase,
     profiles,
     updatedAt: toFiniteNumber(root.updatedAt, 0),
   };
@@ -151,8 +163,8 @@ export async function pushCloudSnapshot(
 ): Promise<void> {
   const timestamp = Date.now();
   const normalizedFamilyState = enforceOwnerUniqueness(payload.familyState);
-  const effectiveRole: Role =
-    normalizedFamilyState.ownerProfileId === payload.profileId ? "proprietaire" : "utilisateur";
+  const isPayloadOwner = normalizedFamilyState.ownerProfileId === payload.profileId;
+  const effectiveRole: Role = isPayloadOwner ? "proprietaire" : "utilisateur";
 
   if (import.meta.env.DEV && payload.role !== effectiveRole) {
     console.info(
@@ -161,19 +173,23 @@ export async function pushCloudSnapshot(
   }
 
   const updates: Record<string, unknown> = {
-    ownerProfileId: normalizedFamilyState.ownerProfileId,
-    ownerCodeHash: payload.ownerCodeHash,
-    updatedAt: timestamp,
     [`profiles/${payload.profileId}/surname`]: payload.surname,
     [`profiles/${payload.profileId}/role`]: effectiveRole,
     [`profiles/${payload.profileId}/lastSyncAt`]: timestamp,
     [`checklists/${payload.profileId}`]: payload.checklist,
     [`gameResults/${payload.profileId}`]: payload.gameResults,
-    [`phase/${payload.profileId}`]: payload.phase,
   };
 
-  for (const profile of normalizedFamilyState.profiles) {
-    updates[`profiles/${profile.id}/role`] = profile.role;
+  if (payload.canWriteFamilyState && isPayloadOwner) {
+    updates.ownerProfileId = normalizedFamilyState.ownerProfileId;
+    updates.ownerUid = payload.actorUid;
+    updates.ownerCodeHash = payload.ownerCodeHash;
+    updates.phase = payload.phase;
+    updates.updatedAt = timestamp;
+
+    for (const profile of normalizedFamilyState.profiles) {
+      updates[`profiles/${profile.id}/role`] = profile.role;
+    }
   }
 
   await update(ref(database, familyPath(familyId)), updates);
@@ -183,7 +199,8 @@ export async function claimProfileRole(
   database: Database,
   familyId: string,
   profileId: string,
-  surname: string
+  surname: string,
+  actorUid: string
 ): Promise<ClaimRoleResult> {
   const rootRef = ref(database, familyPath(familyId));
 
@@ -218,6 +235,12 @@ export async function claimProfileRole(
     return {
       ...base,
       ownerProfileId: nextFamilyState.ownerProfileId,
+      ownerUid:
+        typeof base.ownerUid === "string"
+          ? base.ownerUid
+          : nextFamilyState.ownerProfileId === profileId
+            ? actorUid
+            : null,
       profiles: nextProfiles,
       updatedAt: timestamp,
     };

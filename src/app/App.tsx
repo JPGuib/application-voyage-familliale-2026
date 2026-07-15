@@ -592,6 +592,36 @@ function CloudLoadingScreen() {
   );
 }
 
+function CloudAccessErrorScreen({ reason }: { reason: string }) {
+  const detailsByReason: Record<string, string> = {
+    "auth-required": "Authentification cloud requise mais session non disponible.",
+    "auth-unavailable": "Authentification cloud indisponible pour le moment.",
+    "permission-denied": "Acces cloud refuse. Verifiez les regles Firebase et l appartenance famille.",
+  };
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
+        <MemphisDecor />
+        <div className="relative z-10">
+          <p className="text-xs font-extrabold opacity-80 tracking-widest uppercase mb-1">
+            ☁️ Synchronisation
+          </p>
+          <h1 className="text-2xl font-black leading-tight mb-2">Acces cloud bloque</h1>
+          <p className="text-sm opacity-90">L application attend une session cloud valide.</p>
+        </div>
+      </div>
+      <div className="flex-1 px-4 py-5">
+        <div className="bg-card rounded-2xl border border-border p-4">
+          <p className="text-sm font-semibold text-muted-foreground">
+            {detailsByReason[reason] || "Erreur cloud non documentee."}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── BOTTOM NAV ──────────────────────────────────────────────────────────────
 
 function BottomNav({
@@ -1960,6 +1990,8 @@ export default function App() {
   const {
     cloudEnabled,
     cloudReady,
+    cloudAuthError,
+    cloudActorUid,
     cloudSnapshot,
     pushSnapshot,
     claimRoleForProfile,
@@ -1971,6 +2003,10 @@ export default function App() {
     return navigator.onLine;
   });
   const [profile, setProfile] = useState<Profile>(() => {
+    if (cloudEnabled) {
+      return { id: createProfileId(), surname: "", role: null };
+    }
+
     try {
       const parsed = JSON.parse(localStorage.getItem("jp-profile") || "{}");
       const role =
@@ -1987,6 +2023,10 @@ export default function App() {
     }
   });
   const [familyState, setFamilyState] = useState<SharedFamilyState>(() => {
+    if (cloudEnabled) {
+      return parseSharedFamilyState(null);
+    }
+
     try {
       const fromStorage = parseSharedFamilyState(localStorage.getItem("jp-family-state"));
       return enforceOwnerUniqueness(fromStorage);
@@ -1997,9 +2037,14 @@ export default function App() {
   const [profileError, setProfileError] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !cloudEnabled);
+  const [isAuthBootstrapPending, setIsAuthBootstrapPending] = useState<boolean>(() => cloudEnabled);
   const [selectedLoginProfileId, setSelectedLoginProfileId] = useState<string | null>(null);
   const [createProfileSurname, setCreateProfileSurname] = useState("");
   const [phase, setPhase] = useState<"before" | "during">(() => {
+    if (cloudEnabled) {
+      return "before";
+    }
+
     try {
       return (
         (localStorage.getItem("jp-phase") as "before" | "during") || "before"
@@ -2014,6 +2059,10 @@ export default function App() {
     new Set([CHECKLIST_CATEGORIES[0]?.id ?? "vetements-hommes"])
   );
   const [checked, setChecked] = useState<Record<string, boolean>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
     try {
       const parsed = JSON.parse(localStorage.getItem("jp-checklist") || "{}");
       if (!parsed || typeof parsed !== "object") return {};
@@ -2028,6 +2077,10 @@ export default function App() {
   });
   const [gameState, setGameState] = useState<GameState>("intro");
   const [ownerCodeHash, setOwnerCodeHash] = useState<string>(() => {
+    if (cloudEnabled) {
+      return "";
+    }
+
     try {
       const hashFromStorage = localStorage.getItem("jp-owner-code-hash") || "";
       if (hashFromStorage) {
@@ -2071,6 +2124,10 @@ export default function App() {
   const [riddleSolved, setRiddleSolved] = useState(false);
   const [challengeDone, setChallengeDone] = useState(false);
   const [gameHistory, setGameHistory] = useState<GameHistoryEntry[]>(() => {
+    if (cloudEnabled) {
+      return [];
+    }
+
     try {
       return parseGameHistory(localStorage.getItem("jp-game-history"));
     } catch {
@@ -2081,25 +2138,35 @@ export default function App() {
   useEffect(() => {
     if (!cloudEnabled) {
       setIsAuthenticated(true);
+      setIsAuthBootstrapPending(false);
       return;
     }
 
-    if (!cloudReady || !cloudSnapshot) {
+    if (!cloudReady) {
+      setIsAuthBootstrapPending(true);
       return;
     }
 
     if (isAuthenticated) {
+      setIsAuthBootstrapPending(false);
       return;
     }
 
     try {
       const rememberedId = localStorage.getItem(ACTIVE_PROFILE_ID_KEY);
       if (!rememberedId) {
+        setIsAuthBootstrapPending(false);
+        return;
+      }
+
+      if (!cloudSnapshot) {
+        setIsAuthBootstrapPending(false);
         return;
       }
 
       const rememberedProfile = cloudSnapshot.profiles[rememberedId];
       if (!rememberedProfile) {
+        setIsAuthBootstrapPending(false);
         return;
       }
 
@@ -2113,8 +2180,16 @@ export default function App() {
       setAuthError(null);
     } catch {
       // Ignore storage errors and keep manual login flow available.
+    } finally {
+      setIsAuthBootstrapPending(false);
     }
-  }, [ACTIVE_PROFILE_ID_KEY, cloudEnabled, cloudReady, cloudSnapshot, isAuthenticated]);
+  }, [
+    ACTIVE_PROFILE_ID_KEY,
+    cloudEnabled,
+    cloudReady,
+    cloudSnapshot,
+    isAuthenticated,
+  ]);
 
   useEffect(() => {
     const migrateLegacyOwnerCode = async () => {
@@ -2134,27 +2209,40 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem("jp-profile", JSON.stringify(profile));
-      localStorage.setItem(
-        "jp-family-state",
-        JSON.stringify(enforceOwnerUniqueness(familyState))
-      );
-      localStorage.setItem("jp-owner-code-hash", ownerCodeHash);
-      localStorage.removeItem("jp-owner-code");
-      localStorage.setItem("jp-phase", phase);
-      localStorage.setItem("jp-checklist", JSON.stringify(checked));
+      if (cloudEnabled) {
+        // Cloud-authoritative mode: clear deprecated shared local keys.
+        localStorage.removeItem("jp-profile");
+        localStorage.removeItem("jp-family-state");
+        localStorage.removeItem("jp-owner-code-hash");
+        localStorage.removeItem("jp-owner-code");
+        localStorage.removeItem("jp-phase");
+        localStorage.removeItem("jp-checklist");
+        localStorage.removeItem("jp-game-history");
+      } else {
+        localStorage.setItem("jp-profile", JSON.stringify(profile));
+        localStorage.setItem(
+          "jp-family-state",
+          JSON.stringify(enforceOwnerUniqueness(familyState))
+        );
+        localStorage.setItem("jp-owner-code-hash", ownerCodeHash);
+        localStorage.removeItem("jp-owner-code");
+        localStorage.setItem("jp-phase", phase);
+        localStorage.setItem("jp-checklist", JSON.stringify(checked));
+        localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
+      }
+
       localStorage.setItem(
         "jp-unlock-failed-attempts",
         String(unlockFailedAttempts)
       );
       localStorage.setItem("jp-unlock-locked-until", String(unlockLockedUntil));
-      localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
       if (isAuthenticated) {
         localStorage.setItem(ACTIVE_PROFILE_ID_KEY, profile.id);
       }
     } catch {}
   }, [
     ACTIVE_PROFILE_ID_KEY,
+    cloudEnabled,
     profile,
     familyState,
     ownerCodeHash,
@@ -2170,6 +2258,7 @@ export default function App() {
     if (!cloudSnapshot) return;
 
     const normalized = enforceOwnerUniqueness(cloudSnapshot.familyState);
+    setPhase((previous) => (previous === cloudSnapshot.phase ? previous : cloudSnapshot.phase));
     setFamilyState((previous) =>
       areSharedFamilyStatesEqual(previous, normalized) ? previous : normalized
     );
@@ -2195,7 +2284,6 @@ export default function App() {
       };
     });
 
-    setPhase((previous) => (previous === cloudProfile.phase ? previous : cloudProfile.phase));
     setChecked((previous) =>
       areChecklistStatesEqual(previous, cloudProfile.checklist) ? previous : cloudProfile.checklist
     );
@@ -2208,11 +2296,21 @@ export default function App() {
 
   useEffect(() => {
     if (!cloudEnabled || !cloudReady) return;
+    if (!isAuthenticated || isAuthBootstrapPending) {
+      if (IS_DEV) {
+        console.info("[cloud-sync] Push skipped: profile is not authenticated or still bootstrapping.");
+      }
+      return;
+    }
     if (!profile.role) return;
     if (!profile.surname.trim()) return;
+    if (!cloudActorUid) return;
 
     const normalized = enforceOwnerUniqueness(familyState);
+    const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
     const payload = JSON.stringify({
+      actorUid: cloudActorUid,
+      canWriteFamilyState,
       familyState: normalized,
       ownerCodeHash,
       profileId: profile.id,
@@ -2228,6 +2326,8 @@ export default function App() {
 
     lastCloudPushRef.current = payload;
     void pushSnapshot({
+      actorUid: cloudActorUid,
+      canWriteFamilyState,
       familyState: normalized,
       ownerCodeHash,
       profileId: profile.id,
@@ -2241,8 +2341,11 @@ export default function App() {
     checked,
     cloudEnabled,
     cloudReady,
+    cloudActorUid,
     familyState,
     gameHistory,
+    isAuthenticated,
+    isAuthBootstrapPending,
     ownerCodeHash,
     phase,
     profile.id,
@@ -2386,6 +2489,46 @@ export default function App() {
 
   const place = PLACES.find((p) => p.id === selectedPlaceId);
 
+  const resetForProfileSwitch = () => {
+    try {
+      localStorage.removeItem(ACTIVE_PROFILE_ID_KEY);
+    } catch {
+      // Ignore local storage failures; in-memory state reset still works.
+    }
+
+    setProfile({ id: createProfileId(), surname: "", role: null });
+    setPhase("before");
+    setScreen("checklist");
+    setSelectedPlaceId(null);
+    setOpenCategories(new Set([CHECKLIST_CATEGORIES[0]?.id ?? "vetements-hommes"]));
+    setChecked({});
+    setGameHistory([]);
+    setGameState("intro");
+    setAnswers([]);
+    setCurrentQ(0);
+    setSelectedAns(null);
+    setQuizStartedAt(null);
+    setQuizDurationSec(0);
+    setRiddleAnswer("");
+    setRiddleFeedback(null);
+    setRiddleValidated(false);
+    setRiddleSolved(false);
+    setChallengeDone(false);
+    setShowStartPrompt(false);
+    setStartCodeInput("");
+    setStartError(null);
+    setUnlockFailedAttempts(0);
+    setUnlockLockedUntil(0);
+
+    lastCloudPushRef.current = null;
+    setSelectedLoginProfileId(null);
+    setCreateProfileSurname("");
+    setAuthError(null);
+    setProfileError(null);
+    setIsAuthBootstrapPending(false);
+    setIsAuthenticated(false);
+  };
+
   const answerQ = (idx: number) => {
     if (selectedAns !== null) return;
     setSelectedAns(idx);
@@ -2460,7 +2603,11 @@ export default function App() {
     : [];
 
   const renderScreen = () => {
-    if (cloudEnabled && !cloudReady) {
+    if (cloudEnabled && cloudAuthError) {
+      return <CloudAccessErrorScreen reason={cloudAuthError} />;
+    }
+
+    if (cloudEnabled && (!cloudReady || isAuthBootstrapPending)) {
       return <CloudLoadingScreen />;
     }
 
@@ -2630,18 +2777,7 @@ export default function App() {
               setOwnerCodeHash(nextHash);
               return { ok: true, message: "Code propriétaire mis à jour." };
             }}
-            onSwitchProfile={() => {
-              try {
-                localStorage.removeItem(ACTIVE_PROFILE_ID_KEY);
-              } catch {
-                // Ignore local storage failures; in-memory state reset still works.
-              }
-              setSelectedLoginProfileId(null);
-              setCreateProfileSurname("");
-              setAuthError(null);
-              setProfileError(null);
-              setIsAuthenticated(false);
-            }}
+            onSwitchProfile={resetForProfileSwitch}
           />
         );
       }
@@ -2676,6 +2812,36 @@ export default function App() {
       );
     }
     switch (screen) {
+      case "checklist":
+        return (
+          <ChecklistScreen
+            categories={CHECKLIST_CATEGORIES}
+            checked={checked}
+            openCategories={openCategories}
+            toggleItem={toggleItem}
+            toggleCategory={toggleCategory}
+            pct={pct}
+            checkedCount={checkedCount}
+            totalItems={totalItems}
+            startPromptOpen={false}
+            startCode=""
+            startError={null}
+            lockRemainingSec={0}
+            onOpenSettings={() => goToScreen("settings")}
+            onStart={() => {
+              // No-op during travel phase: checklist remains consultable but unlock flow is not exposed.
+            }}
+            onStartCodeChange={() => {
+              // No-op during travel phase.
+            }}
+            onConfirmStart={async () => {
+              // No-op during travel phase.
+            }}
+            onCancelStartPrompt={() => {
+              // No-op during travel phase.
+            }}
+          />
+        );
       case "dashboard":
         return <DashboardScreen onNavigate={goToScreen} />;
       case "guide":
@@ -2787,22 +2953,14 @@ export default function App() {
               setOwnerCodeHash(nextHash);
               return { ok: true, message: "Code propriétaire mis à jour." };
             }}
-            onSwitchProfile={() => {
-              try {
-                localStorage.removeItem(ACTIVE_PROFILE_ID_KEY);
-              } catch {
-                // Ignore local storage failures; in-memory state reset still works.
-              }
-              setSelectedLoginProfileId(null);
-              setCreateProfileSurname("");
-              setAuthError(null);
-              setProfileError(null);
-              setIsAuthenticated(false);
-            }}
+            onSwitchProfile={resetForProfileSwitch}
           />
         );
       default:
-        return null;
+        if (IS_DEV) {
+          console.info(`[navigation] Unknown screen "${screen}" in phase "${phase}". Falling back to dashboard.`);
+        }
+        return <DashboardScreen onNavigate={goToScreen} />;
     }
   };
 

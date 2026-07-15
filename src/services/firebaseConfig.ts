@@ -1,4 +1,11 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInAnonymously,
+  type Auth,
+  type User,
+} from "firebase/auth";
 import { getDatabase, type Database } from "firebase/database";
 
 type FirebaseEnv = {
@@ -53,4 +60,40 @@ export function getFirebaseDatabaseInstance(): Database | null {
   }
 
   return getDatabase(app);
+}
+
+export function getFirebaseAuthInstance(): Auth | null {
+  const app = getFirebaseApp();
+  if (!app) {
+    return null;
+  }
+
+  return getAuth(app);
+}
+
+export async function ensureFirebaseAnonymousAuth(): Promise<User | null> {
+  const auth = getFirebaseAuthInstance();
+  if (!auth) {
+    return null;
+  }
+
+  if (auth.currentUser) {
+    return auth.currentUser;
+  }
+
+  const credential = await signInAnonymously(auth);
+  return credential.user;
+}
+
+export function observeFirebaseUser(
+  onUser: (user: User | null) => void,
+  onError?: () => void
+): () => void {
+  const auth = getFirebaseAuthInstance();
+  if (!auth) {
+    onUser(null);
+    return () => {};
+  }
+
+  return onAuthStateChanged(auth, onUser, () => onError?.());
 }
