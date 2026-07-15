@@ -96,13 +96,13 @@ development_status:
   10-5-mise-a-jour-contenu-checklist: backlog
   epic-10-retrospective: optional
 
-  epic-11: in-progress
+  epic-11: done
   11-1-corriger-contrat-rendu-phase-screen-ecran-blanc: done
   11-2-initialisation-atomique-avant-rendu-metier: done
   11-3-source-de-verite-cloud-pour-state-partage: done
   11-4-isolation-stricte-switch-profil-et-garde-push-auth: done
   11-5-auditer-versionner-security-rules-firebase: done
   11-6-decider-et-appliquer-deblocage-famille-wide: done
-  11-7-finaliser-deprecation-code-owner-legacy-clair: review
-  11-8-recette-non-regression-multi-appareils: in-progress
+  11-7-finaliser-deprecation-code-owner-legacy-clair: done
+  11-8-recette-non-regression-multi-appareils: done
   epic-11-retrospective: optional

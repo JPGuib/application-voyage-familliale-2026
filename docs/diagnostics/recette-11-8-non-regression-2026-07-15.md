@@ -158,3 +158,17 @@ Validation post-fix:
 - tests cibles: PASS
 - suite complete: PASS
 - build: PASS
+
+## 11. Validation terrain finale
+
+Resultat final utilisateur:
+- scenario owner -> user -> owner valide,
+- plus d oscillation checklist/debloque,
+- etat debloque maintenu apres refresh.
+
+Decision:
+- GO recette manuelle 11-8.
+
+Cloture:
+- story 11-8 passee en `done` dans le sprint status,
+- epic-11 conserve `in-progress` tant que 11-7 reste en `review`.

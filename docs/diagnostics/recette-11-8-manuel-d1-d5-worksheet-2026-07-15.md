@@ -59,15 +59,15 @@ Observe:
 
 ### D3 - Switch profil A/B sans contamination
 
-- [KO] Sur A: changer de profil puis revenir.
-- [KO] Sur B: changer de profil puis revenir.
+- [x] Sur A: changer de profil puis revenir.
+- [x] Sur B: changer de profil puis revenir.
 
 Attendu:
 - pas de re-verrouillage involontaire
 - pas de contamination de checklist/resultats entre profils
 
 Observe:
-- Resultat:Problème quand je change et que je passe de owner à utilisateur, puis je reviens sur owner, alors que j'étais sur les écrans de voyage (checklist débloquée), il me remet sur la checklist à débloquer. Ce n'est pas normal. 
+- Resultat: OK apres correctifs. Le switch owner -> utilisateur -> owner ne rebascule plus durablement sur la checklist; l etat debloque est conserve sans refresh.
 - Notes:
 - Timestamp:
 - Evidence (screenshot/log):
@@ -110,30 +110,30 @@ Observe:
 
 - D1: GO
 - D2: GO
-- D3: NOGO
+- D3: GO
 - D4: GO
 - D5: GO
 
 Criteres Go obligatoires:
-- [ ] 0 divergence de phase apres stabilisation reseau
-- [ ] 0 ecriture non-owner acceptee sur phase partagee
-- [ ] 0 re-verrouillage involontaire apres switch profil
+- [x] 0 divergence de phase apres stabilisation reseau
+- [x] 0 ecriture non-owner acceptee sur phase partagee
+- [x] 0 re-verrouillage involontaire apres switch profil
 
 Decision finale:
-- [ ] GO
-- [X] NO-GO
+- [x] GO
+- [ ] NO-GO
 
 Motif de decision:
 
 ## 5) Actions de cloture
 
 Si GO:
-- [ ] Mettre story 11-8 en done
+- [x] Mettre story 11-8 en done
 - [ ] Mettre epic-11 en done (si aucun autre point ouvert)
-- [ ] Mettre a jour last_updated dans sprint-status
+- [x] Mettre a jour last_updated dans sprint-status
 
 Si NO-GO:
-- [X] Ouvrir incident avec cause probable
+- [ ] Ouvrir incident avec cause probable
 - [ ] Lister corrections necessaires
 - [ ] Replanifier une nouvelle execution D1..D5
 
