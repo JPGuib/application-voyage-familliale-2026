@@ -51,6 +51,7 @@ import {
   isOwnerCodeHash,
   verifyOwnerCode,
 } from "./owner-code";
+import { shouldHydrateFromCloudSnapshot } from "./cloud-hydration";
 import { useCloudSync } from "../hooks/useCloudSync";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
@@ -2280,7 +2281,15 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    if (!cloudSnapshot) return;
+    if (
+      !shouldHydrateFromCloudSnapshot({
+        cloudEnabled,
+        isAuthenticated,
+        hasSnapshot: Boolean(cloudSnapshot),
+      })
+    ) {
+      return;
+    }
 
     const normalized = enforceOwnerUniqueness(cloudSnapshot.familyState);
     setPhase((previous) => (previous === cloudSnapshot.phase ? previous : cloudSnapshot.phase));
@@ -2315,7 +2324,7 @@ export default function App() {
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
-  }, [cloudSnapshot]);
+  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id]);
 
   const lastCloudPushRef = useRef<string | null>(null);
 

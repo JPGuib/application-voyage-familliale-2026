@@ -7,30 +7,30 @@ Objectif: valider en conditions reelles la non-regression multi-appareils avant 
 
 ## 1) Preconditions
 
-- [ ] Build local vert.
-- [ ] Test env deploye et accessible.
-- [ ] Appareil A disponible (owner).
-- [ ] Appareil B disponible (non-owner).
-- [ ] Meme Family Sync ID sur A et B.
-- [ ] Logs navigateur consultables sur A et B.
+- [x] Build local vert.
+- [x] Test env deploye et accessible.
+- [x] Appareil A disponible (owner).
+- [x] Appareil B disponible (non-owner).
+- [x] Meme Family Sync ID sur A et B.
+- [x] Logs navigateur consultables sur A et B.
 
 ## 2) Configuration de test
 
-- Family ID:
-- Appareil A (owner):
-- Appareil B (non-owner):
-- Navigateur A:
-- Navigateur B:
-- URL test env:
+- Family ID: application-voyage-familliale-2026
+- Appareil A (owner): ADMIN
+- Appareil B (non-owner): JPG
+- Navigateur A: edge
+- Navigateur B: chrome sur Andriod
+- URL test env: 
 - Heure debut:
 
 ## 3) Scenarios D1..D5
 
 ### D1 - Deblocage owner depuis A
 
-- [ ] A se connecte avec profil owner.
-- [ ] A declenche le deblocage vers phase during.
-- [ ] A reste sans ecran blanc.
+- [x] A se connecte avec profil owner.
+- [x] A declenche le deblocage vers phase during.
+- [x] A reste sans ecran blanc.
 
 Attendu:
 - phase= during sur A
@@ -44,8 +44,8 @@ Observe:
 
 ### D2 - Verification non-owner sur B
 
-- [ ] B se connecte comme non-owner sur la meme famille.
-- [ ] B voit phase during sans action owner.
+- [x] B se connecte comme non-owner sur la meme famille.
+- [x] B voit phase during sans action owner.
 
 Attendu:
 - phase coherente avec A
@@ -59,24 +59,24 @@ Observe:
 
 ### D3 - Switch profil A/B sans contamination
 
-- [ ] Sur A: changer de profil puis revenir.
-- [ ] Sur B: changer de profil puis revenir.
+- [KO] Sur A: changer de profil puis revenir.
+- [KO] Sur B: changer de profil puis revenir.
 
 Attendu:
 - pas de re-verrouillage involontaire
 - pas de contamination de checklist/resultats entre profils
 
 Observe:
-- Resultat:
+- Resultat:Problème quand je change et que je passe de owner à utilisateur, puis je reviens sur owner, alors que j'étais sur les écrans de voyage (checklist débloquée), il me remet sur la checklist à débloquer. Ce n'est pas normal. 
 - Notes:
 - Timestamp:
 - Evidence (screenshot/log):
 
 ### D4 - Offline stale action sur B puis reconnexion
 
-- [ ] Mettre B offline.
-- [ ] Tenter une action stale sur B.
-- [ ] Reconnecter B.
+- [X] Mettre B offline.
+- [X] Tenter une action stale sur B.
+- [X] Reconnecter B.
 
 Attendu:
 - convergence apres reconnexion
@@ -91,9 +91,9 @@ Observe:
 
 ### D5 - Verification convergence finale
 
-- [ ] Verifier phase finale identique sur A et B.
-- [ ] Verifier absence de downgrade de phase.
-- [ ] Verifier coherence owner uniqueness.
+- [X] Verifier phase finale identique sur A et B.
+- [X] Verifier absence de downgrade de phase.
+- [X] Verifier coherence owner uniqueness.
 
 Attendu:
 - phase identique A/B
@@ -108,11 +108,11 @@ Observe:
 
 ## 4) Tableau de synthese Go/No-Go
 
-- D1:
-- D2:
-- D3:
-- D4:
-- D5:
+- D1: GO
+- D2: GO
+- D3: NOGO
+- D4: GO
+- D5: GO
 
 Criteres Go obligatoires:
 - [ ] 0 divergence de phase apres stabilisation reseau
@@ -121,7 +121,7 @@ Criteres Go obligatoires:
 
 Decision finale:
 - [ ] GO
-- [ ] NO-GO
+- [X] NO-GO
 
 Motif de decision:
 
@@ -133,7 +133,7 @@ Si GO:
 - [ ] Mettre a jour last_updated dans sprint-status
 
 Si NO-GO:
-- [ ] Ouvrir incident avec cause probable
+- [X] Ouvrir incident avec cause probable
 - [ ] Lister corrections necessaires
 - [ ] Replanifier une nouvelle execution D1..D5
 
