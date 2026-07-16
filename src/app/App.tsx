@@ -52,6 +52,11 @@ import {
   verifyOwnerCode,
 } from "./owner-code";
 import {
+  hashOwnerRecoveryPhrase,
+  isOwnerRecoveryHash,
+  verifyOwnerRecoveryPhrase,
+} from "./owner-recovery";
+import {
   shouldHydrateFromCloudSnapshot,
   shouldPushCloudSnapshot,
 } from "./cloud-hydration";
@@ -1843,17 +1848,21 @@ function TipsScreen({ onBack }: { onBack: () => void }) {
 function SettingsScreen({
   profile,
   ownerCodeConfigured,
+  ownerRecoveryConfigured,
   onBack,
   onSaveSurname,
   onSaveOwnerCode,
+  onSaveOwnerRecoveryPhrase,
   onSwitchProfile,
   cloudEnabled,
 }: {
   profile: Profile;
   ownerCodeConfigured: boolean;
+  ownerRecoveryConfigured: boolean;
   onBack: () => void;
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
   onSaveOwnerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
+  onSaveOwnerRecoveryPhrase: (phrase: string) => Promise<{ ok: boolean; message: string }>;
   onSwitchProfile: () => void;
   cloudEnabled: boolean;
 }) {
@@ -1861,6 +1870,8 @@ function SettingsScreen({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [ownerCodeInput, setOwnerCodeInput] = useState("");
   const [ownerCodeFeedback, setOwnerCodeFeedback] = useState<string | null>(null);
+  const [ownerRecoveryInput, setOwnerRecoveryInput] = useState("");
+  const [ownerRecoveryFeedback, setOwnerRecoveryFeedback] = useState<string | null>(null);
   const [showSwitchProfilePrompt, setShowSwitchProfilePrompt] = useState(false);
 
   const roleLabel = profile.role === "proprietaire" ? "Propriétaire" : "Utilisateur";
@@ -1964,6 +1975,51 @@ function SettingsScreen({
             </p>
             <p className="text-xs text-muted-foreground mt-2">
               Seul un profil propriétaire peut configurer ce code.
+            </p>
+          </div>
+        )}
+
+        {profile.role === "proprietaire" ? (
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+              Phrase de récupération
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              {ownerRecoveryConfigured
+                ? "Une phrase est déjà configurée. Vous pouvez la remplacer."
+                : "Aucune phrase configurée pour le moment."}
+            </p>
+            <input
+              type="password"
+              value={ownerRecoveryInput}
+              onChange={(e) => {
+                setOwnerRecoveryInput(e.target.value);
+                if (ownerRecoveryFeedback) setOwnerRecoveryFeedback(null);
+              }}
+              placeholder="Votre phrase personnelle (min. 5 caractères)"
+              className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+            <button
+              onClick={async () => {
+                const result = await onSaveOwnerRecoveryPhrase(ownerRecoveryInput);
+                setOwnerRecoveryFeedback(result.message);
+                if (result.ok) setOwnerRecoveryInput("");
+              }}
+              className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+            >
+              {ownerRecoveryConfigured ? "Mettre à jour la phrase" : "Définir la phrase"}
+            </button>
+            {ownerRecoveryFeedback && (
+              <p className="mt-2 text-xs font-bold text-muted-foreground">{ownerRecoveryFeedback}</p>
+            )}
+          </div>
+        ) : (
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+              Phrase de récupération
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Seul un profil propriétaire peut configurer cette phrase.
             </p>
           </div>
         )}
@@ -2122,6 +2178,19 @@ export default function App() {
       return "";
     }
   });
+  const [ownerRecoveryHash, setOwnerRecoveryHash] = useState<string>(() => {
+    if (cloudEnabled) {
+      return "";
+    }
+
+    try {
+      const stored = localStorage.getItem("jp-owner-recovery-hash");
+      return stored && typeof stored === 'string' ? stored : "";
+    } catch (e) {
+      if (IS_DEV) console.warn("Failed to read recovery hash from localStorage:", e);
+      return "";
+    }
+  });
   const [showStartPrompt, setShowStartPrompt] = useState(false);
   const [startCodeInput, setStartCodeInput] = useState("");
   const [startError, setStartError] = useState<string | null>(null);
@@ -2275,6 +2344,7 @@ export default function App() {
         localStorage.removeItem("jp-family-state");
         localStorage.removeItem("jp-owner-code-hash");
         localStorage.removeItem("jp-owner-code");
+        localStorage.removeItem("jp-owner-recovery-hash");
         localStorage.removeItem("jp-phase");
         localStorage.removeItem("jp-checklist");
         localStorage.removeItem("jp-game-history");
@@ -2284,11 +2354,16 @@ export default function App() {
           "jp-family-state",
           JSON.stringify(enforceOwnerUniqueness(familyState))
         );
-        localStorage.setItem("jp-owner-code-hash", ownerCodeHash);
-        localStorage.removeItem("jp-owner-code");
-        localStorage.setItem("jp-phase", phase);
-        localStorage.setItem("jp-checklist", JSON.stringify(checked));
-        localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
+        try {
+          localStorage.setItem("jp-owner-code-hash", ownerCodeHash);
+          localStorage.setItem("jp-owner-recovery-hash", ownerRecoveryHash);
+          localStorage.removeItem("jp-owner-code");
+          localStorage.setItem("jp-phase", phase);
+          localStorage.setItem("jp-checklist", JSON.stringify(checked));
+          localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
+        } catch (e) {
+          if (IS_DEV) console.warn("localStorage quota exceeded or unavailable:", e);
+        }
       }
 
       localStorage.setItem(
@@ -2306,6 +2381,7 @@ export default function App() {
     profile,
     familyState,
     ownerCodeHash,
+    ownerRecoveryHash,
     phase,
     checked,
     unlockFailedAttempts,
@@ -2332,6 +2408,9 @@ export default function App() {
     );
     setOwnerCodeHash((previous) =>
       previous === cloudSnapshot.ownerCodeHash ? previous : cloudSnapshot.ownerCodeHash
+    );
+    setOwnerRecoveryHash((previous) =>
+      previous === (cloudSnapshot.ownerRecoveryHash || "") ? previous : (cloudSnapshot.ownerRecoveryHash || "")
     );
 
     const cloudProfile = cloudSnapshot.profiles[profile.id];
@@ -2417,6 +2496,8 @@ export default function App() {
       canWriteFamilyState,
       familyState: normalized,
       ownerCodeHash,
+      ownerRecoveryHash,
+      ownerRecoveryConfiguredAt: ownerRecoveryHash ? true : false,
       profileId: profile.id,
       surname: profile.surname,
       role: profile.role,
@@ -2434,6 +2515,8 @@ export default function App() {
       canWriteFamilyState,
       familyState: normalized,
       ownerCodeHash,
+      ownerRecoveryHash,
+      ownerRecoveryConfiguredAt: undefined,
       profileId: profile.id,
       surname: profile.surname,
       role: profile.role,
@@ -2452,6 +2535,7 @@ export default function App() {
     isAuthenticated,
     isAuthBootstrapPending,
     ownerCodeHash,
+    ownerRecoveryHash,
     phase,
     profile.id,
     profile.role,
@@ -2877,6 +2961,7 @@ export default function App() {
           <SettingsScreen
             profile={profile}
             ownerCodeConfigured={ownerCodeHash.length > 0}
+            ownerRecoveryConfigured={ownerRecoveryHash.length > 0}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("checklist")}
             onSaveSurname={(surname) => {
@@ -2904,6 +2989,29 @@ export default function App() {
               const nextHash = await hashOwnerCode(normalized);
               setOwnerCodeHash(nextHash);
               return { ok: true, message: "Code propriétaire mis à jour." };
+            }}
+            onSaveOwnerRecoveryPhrase={async (phrase) => {
+              if (!canUpdateOwnerCode(familyState, profile.id)) {
+                return {
+                  ok: false,
+                  message: "Seul le profil propriétaire peut configurer la phrase.",
+                };
+              }
+              const normalized = phrase.trim();
+              if (normalized.length < 5) {
+                return {
+                  ok: false,
+                  message: "La phrase doit contenir au moins 5 caractères.",
+                };
+              }
+              try {
+                const nextHash = await hashOwnerRecoveryPhrase(normalized);
+                setOwnerRecoveryHash(nextHash);
+                return { ok: true, message: "Phrase de récupération mise à jour." };
+              } catch (e) {
+                const message = e instanceof Error ? e.message : "Erreur lors du hachage de la phrase.";
+                return { ok: false, message };
+              }
             }}
             onSwitchProfile={resetForProfileSwitch}
           />
@@ -3053,6 +3161,7 @@ export default function App() {
           <SettingsScreen
             profile={profile}
             ownerCodeConfigured={ownerCodeHash.length > 0}
+            ownerRecoveryConfigured={ownerRecoveryHash.length > 0}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("dashboard")}
             onSaveSurname={(surname) => {
@@ -3080,6 +3189,29 @@ export default function App() {
               const nextHash = await hashOwnerCode(normalized);
               setOwnerCodeHash(nextHash);
               return { ok: true, message: "Code propriétaire mis à jour." };
+            }}
+            onSaveOwnerRecoveryPhrase={async (phrase) => {
+              if (!canUpdateOwnerCode(familyState, profile.id)) {
+                return {
+                  ok: false,
+                  message: "Seul le profil propriétaire peut configurer la phrase.",
+                };
+              }
+              const normalized = phrase.trim();
+              if (normalized.length < 5) {
+                return {
+                  ok: false,
+                  message: "La phrase doit contenir au moins 5 caractères.",
+                };
+              }
+              try {
+                const nextHash = await hashOwnerRecoveryPhrase(normalized);
+                setOwnerRecoveryHash(nextHash);
+                return { ok: true, message: "Phrase de récupération mise à jour." };
+              } catch (e) {
+                const message = e instanceof Error ? e.message : "Erreur lors du hachage de la phrase.";
+                return { ok: false, message };
+              }
             }}
             onSwitchProfile={resetForProfileSwitch}
           />
