@@ -677,12 +677,23 @@ function ChecklistScreen({
   startPromptOpen,
   startCode,
   startError,
+  recoveryPromptOpen,
+  recoveryPhrase,
+  recoveryNewCode,
+  recoveryCodeConfirm,
+  recoveryError,
   lockRemainingSec,
   onOpenSettings,
   onStart,
+  onOpenForgotCode,
   onStartCodeChange,
+  onRecoveryPhraseChange,
+  onRecoveryNewCodeChange,
+  onRecoveryCodeConfirmChange,
   onConfirmStart,
+  onConfirmRecoveryReset,
   onCancelStartPrompt,
+  onCancelRecoveryPrompt,
 }: {
   categories: typeof CHECKLIST_CATEGORIES;
   checked: Record<string, boolean>;
@@ -695,12 +706,23 @@ function ChecklistScreen({
   startPromptOpen: boolean;
   startCode: string;
   startError: string | null;
+  recoveryPromptOpen: boolean;
+  recoveryPhrase: string;
+  recoveryNewCode: string;
+  recoveryCodeConfirm: string;
+  recoveryError: string | null;
   lockRemainingSec: number;
   onOpenSettings: () => void;
   onStart: () => void;
+  onOpenForgotCode: () => void;
   onStartCodeChange: (v: string) => void;
+  onRecoveryPhraseChange: (v: string) => void;
+  onRecoveryNewCodeChange: (v: string) => void;
+  onRecoveryCodeConfirmChange: (v: string) => void;
   onConfirmStart: () => void | Promise<void>;
+  onConfirmRecoveryReset: () => void | Promise<void>;
   onCancelStartPrompt: () => void;
+  onCancelRecoveryPrompt: () => void;
 }) {
   const remainingItems = Math.max(totalItems - checkedCount, 0);
 
@@ -846,6 +868,13 @@ function ChecklistScreen({
               className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
 
+            <button
+              onClick={onOpenForgotCode}
+              className="mt-3 text-xs font-black text-primary underline underline-offset-4"
+            >
+              Code oublié ?
+            </button>
+
             {lockRemainingSec > 0 && (
               <p className="mt-2 text-xs font-bold text-destructive">
                 Trop de tentatives. Réessayez dans {lockRemainingSec}s.
@@ -870,6 +899,60 @@ function ChecklistScreen({
                 className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
               >
                 Valider
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {recoveryPromptOpen && (
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-30">
+          <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
+            <p className="text-sm font-black text-foreground">Réinitialiser le code propriétaire</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Vérifiez votre phrase de récupération puis définissez un nouveau code.
+            </p>
+
+            <input
+              type="password"
+              value={recoveryPhrase}
+              onChange={(e) => onRecoveryPhraseChange(e.target.value)}
+              placeholder="Phrase de récupération"
+              className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+            <input
+              type="password"
+              value={recoveryNewCode}
+              onChange={(e) => onRecoveryNewCodeChange(e.target.value)}
+              placeholder="Nouveau code propriétaire"
+              className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+            <input
+              type="password"
+              value={recoveryCodeConfirm}
+              onChange={(e) => onRecoveryCodeConfirmChange(e.target.value)}
+              placeholder="Confirmer le nouveau code"
+              className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+
+            {recoveryError && (
+              <p className="mt-2 text-xs font-bold text-destructive">{recoveryError}</p>
+            )}
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button
+                onClick={onCancelRecoveryPrompt}
+                className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  void onConfirmRecoveryReset();
+                }}
+                className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
+              >
+                Réinitialiser le code
               </button>
             </div>
           </div>
@@ -2194,6 +2277,11 @@ export default function App() {
   const [showStartPrompt, setShowStartPrompt] = useState(false);
   const [startCodeInput, setStartCodeInput] = useState("");
   const [startError, setStartError] = useState<string | null>(null);
+  const [showRecoveryPrompt, setShowRecoveryPrompt] = useState(false);
+  const [recoveryPhraseInput, setRecoveryPhraseInput] = useState("");
+  const [recoveryNewCodeInput, setRecoveryNewCodeInput] = useState("");
+  const [recoveryCodeConfirmInput, setRecoveryCodeConfirmInput] = useState("");
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
   const [unlockFailedAttempts, setUnlockFailedAttempts] = useState<number>(() => {
     try {
       const raw = localStorage.getItem("jp-unlock-failed-attempts");
@@ -2620,6 +2708,13 @@ export default function App() {
     setShowStartPrompt(true);
   };
 
+  const resetRecoveryPromptState = () => {
+    setRecoveryPhraseInput("");
+    setRecoveryNewCodeInput("");
+    setRecoveryCodeConfirmInput("");
+    setRecoveryError(null);
+  };
+
   const lockRemainingMs = Math.max(0, unlockLockedUntil - nowTs);
   const lockRemainingSec = Math.ceil(lockRemainingMs / 1000);
 
@@ -2658,6 +2753,75 @@ export default function App() {
     setStartError(null);
     setShowStartPrompt(false);
     setStartCodeInput("");
+    setPhase("during");
+    setScreen("dashboard");
+  };
+
+  const openForgotCodeFlow = () => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      setStartError("Seul le profil propriétaire peut débloquer le voyage.");
+      return;
+    }
+
+    if (!ownerRecoveryHash) {
+      setShowStartPrompt(false);
+      setStartCodeInput("");
+      setStartError(null);
+      resetRecoveryPromptState();
+      setScreen("settings");
+      return;
+    }
+
+    resetRecoveryPromptState();
+    setShowRecoveryPrompt(true);
+  };
+
+  const confirmRecoveryReset = async () => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      setRecoveryError("Seul le profil propriétaire peut réinitialiser le code.");
+      return;
+    }
+
+    if (!ownerRecoveryHash) {
+      setRecoveryError("Aucune phrase de récupération configurée.");
+      return;
+    }
+
+    const phrase = recoveryPhraseInput.trim();
+    if (!phrase) {
+      setRecoveryError("Entrez la phrase de récupération.");
+      return;
+    }
+
+    const nextCode = recoveryNewCodeInput.trim();
+    const confirmCode = recoveryCodeConfirmInput.trim();
+
+    if (nextCode.length < 4) {
+      setRecoveryError("Le code doit contenir au moins 4 caractères.");
+      return;
+    }
+
+    if (nextCode !== confirmCode) {
+      setRecoveryError("La confirmation du code ne correspond pas.");
+      return;
+    }
+
+    const phraseMatches = await verifyOwnerRecoveryPhrase(phrase, ownerRecoveryHash);
+    if (!phraseMatches) {
+      setRecoveryError("Phrase incorrecte. Le code propriétaire n'a pas été modifié.");
+      return;
+    }
+
+    const nextHash = await hashOwnerCode(nextCode);
+    setOwnerCodeHash(nextHash);
+    setUnlockFailedAttempts(0);
+    setUnlockLockedUntil(0);
+    setNowTs(Date.now());
+    setShowRecoveryPrompt(false);
+    setShowStartPrompt(false);
+    setStartCodeInput("");
+    setStartError(null);
+    resetRecoveryPromptState();
     setPhase("during");
     setScreen("dashboard");
   };
@@ -2714,6 +2878,8 @@ export default function App() {
     setShowStartPrompt(false);
     setStartCodeInput("");
     setStartError(null);
+    setShowRecoveryPrompt(false);
+    resetRecoveryPromptState();
     setUnlockFailedAttempts(0);
     setUnlockLockedUntil(0);
 
@@ -3031,18 +3197,41 @@ export default function App() {
           startPromptOpen={showStartPrompt}
           startCode={startCodeInput}
           startError={startError}
+          recoveryPromptOpen={showRecoveryPrompt}
+          recoveryPhrase={recoveryPhraseInput}
+          recoveryNewCode={recoveryNewCodeInput}
+          recoveryCodeConfirm={recoveryCodeConfirmInput}
+          recoveryError={recoveryError}
           lockRemainingSec={lockRemainingSec}
           onOpenSettings={() => goToScreen("settings")}
           onStart={startJourney}
+          onOpenForgotCode={openForgotCodeFlow}
           onStartCodeChange={(v) => {
             setStartCodeInput(v);
             if (startError) setStartError(null);
           }}
+          onRecoveryPhraseChange={(v) => {
+            setRecoveryPhraseInput(v);
+            if (recoveryError) setRecoveryError(null);
+          }}
+          onRecoveryNewCodeChange={(v) => {
+            setRecoveryNewCodeInput(v);
+            if (recoveryError) setRecoveryError(null);
+          }}
+          onRecoveryCodeConfirmChange={(v) => {
+            setRecoveryCodeConfirmInput(v);
+            if (recoveryError) setRecoveryError(null);
+          }}
           onConfirmStart={confirmStartJourney}
+          onConfirmRecoveryReset={confirmRecoveryReset}
           onCancelStartPrompt={() => {
             setShowStartPrompt(false);
             setStartCodeInput("");
             setStartError(null);
+          }}
+          onCancelRecoveryPrompt={() => {
+            setShowRecoveryPrompt(false);
+            resetRecoveryPromptState();
           }}
         />
       );
@@ -3062,18 +3251,41 @@ export default function App() {
             startPromptOpen={false}
             startCode=""
             startError={null}
+            recoveryPromptOpen={false}
+            recoveryPhrase=""
+            recoveryNewCode=""
+            recoveryCodeConfirm=""
+            recoveryError={null}
             lockRemainingSec={0}
             onOpenSettings={() => goToScreen("settings")}
             onStart={() => {
               // No-op during travel phase: checklist remains consultable but unlock flow is not exposed.
             }}
+            onOpenForgotCode={() => {
+              // No-op during travel phase.
+            }}
             onStartCodeChange={() => {
+              // No-op during travel phase.
+            }}
+            onRecoveryPhraseChange={() => {
+              // No-op during travel phase.
+            }}
+            onRecoveryNewCodeChange={() => {
+              // No-op during travel phase.
+            }}
+            onRecoveryCodeConfirmChange={() => {
               // No-op during travel phase.
             }}
             onConfirmStart={async () => {
               // No-op during travel phase.
             }}
+            onConfirmRecoveryReset={async () => {
+              // No-op during travel phase.
+            }}
             onCancelStartPrompt={() => {
+              // No-op during travel phase.
+            }}
+            onCancelRecoveryPrompt={() => {
               // No-op during travel phase.
             }}
           />
