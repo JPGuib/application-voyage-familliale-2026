@@ -61,6 +61,11 @@ import {
   shouldHydrateFromCloudSnapshot,
   shouldPushCloudSnapshot,
 } from "./cloud-hydration";
+import {
+  canAccessScreen,
+  getAccessDeniedMessage,
+  getSafeScreen,
+} from "./access-control";
 import { findDuplicateProfileBySurname } from "./profile-login";
 import { useCloudSync } from "../hooks/useCloudSync";
 
@@ -637,15 +642,17 @@ function CloudAccessErrorScreen({ reason }: { reason: string }) {
 
 function BottomNav({
   current,
+  items,
   onNavigate,
 }: {
   current: Screen;
+  items: Array<{ id: Screen; icon: LucideIcon; label: string }>;
   onNavigate: (s: Screen) => void;
 }) {
   const activeId = current === "place" ? "guide" : current;
   return (
     <nav className="flex-shrink-0 bg-card border-t border-border flex items-center justify-around px-2 py-2">
-      {BOTTOM_NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const active = activeId === item.id;
         return (
           <button
@@ -994,8 +1001,10 @@ function ChecklistScreen({
 // ─── DASHBOARD SCREEN ────────────────────────────────────────────────────────
 
 function DashboardScreen({
+  quickActions,
   onNavigate,
 }: {
+  quickActions: QuickAction[];
   onNavigate: (s: Screen) => void;
 }) {
   return (
@@ -1060,7 +1069,7 @@ function DashboardScreen({
           Accès rapides
         </p>
         <div className="grid grid-cols-2 gap-3">
-          {QUICK_ACTIONS.map((item) => (
+          {quickActions.map((item) => (
             <ActionCard
               key={item.id}
               emoji={item.emoji}
@@ -2271,6 +2280,7 @@ export default function App() {
     }
   });
   const [screen, setScreen] = useState<Screen>("checklist");
+  const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Set<string>>(
     new Set([CHECKLIST_CATEGORIES[0]?.id ?? "vetements-hommes"])
@@ -2702,12 +2712,33 @@ export default function App() {
   }, [unlockLockedUntil]);
 
   useEffect(() => {
-    // In cloud mode, phase can already be "during" at bootstrap.
-    // Avoid landing on checklist with a no-op CTA.
-    if (phase === "during" && screen === "checklist") {
+    if (phase === "during" && canAccessScreen(profile.role, phase, "dashboard") && screen === "checklist") {
       setScreen("dashboard");
+      return;
     }
-  }, [phase, screen]);
+
+    if (!canAccessScreen(profile.role, phase, screen)) {
+      setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, screen));
+      const safeScreen = getSafeScreen(profile.role, phase);
+      if (safeScreen !== screen) {
+        setScreen(safeScreen);
+      }
+    }
+  }, [phase, profile.role, screen]);
+
+  useEffect(() => {
+    if (!accessDeniedMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setAccessDeniedMessage(null);
+    }, 4500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [accessDeniedMessage]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -2894,6 +2925,13 @@ export default function App() {
   };
 
   const goToScreen = (s: Screen) => {
+    if (!canAccessScreen(profile.role, phase, s)) {
+      setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, s));
+      setScreen(getSafeScreen(profile.role, phase));
+      return;
+    }
+
+    setAccessDeniedMessage(null);
     if (s === "game") {
       setGameState("intro");
       setAnswers([]);
@@ -2911,6 +2949,13 @@ export default function App() {
   };
 
   const openPlace = (id: string) => {
+    if (!canAccessScreen(profile.role, phase, "place")) {
+      setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, "place"));
+      setScreen(getSafeScreen(profile.role, phase));
+      return;
+    }
+
+    setAccessDeniedMessage(null);
     setSelectedPlaceId(id);
     setScreen("place");
   };
@@ -3033,6 +3078,16 @@ export default function App() {
         }))
         .sort((left, right) => left.surname.localeCompare(right.surname, "fr"))
     : [];
+
+  const visibleQuickActions = QUICK_ACTIONS.filter((item) =>
+    canAccessScreen(profile.role, phase, item.id)
+  );
+  const visibleBottomNavItems = BOTTOM_NAV_ITEMS.filter((item) =>
+    canAccessScreen(profile.role, phase, item.id)
+  );
+  const effectiveScreen = canAccessScreen(profile.role, phase, screen)
+    ? screen
+    : getSafeScreen(profile.role, phase);
 
   const renderScreen = () => {
     if (cloudEnabled && cloudAuthError) {
@@ -3251,6 +3306,96 @@ export default function App() {
         );
       }
 
+      if (effectiveScreen === "dashboard") {
+        return <DashboardScreen quickActions={visibleQuickActions} onNavigate={goToScreen} />;
+      }
+
+      if (effectiveScreen === "guide") {
+        return (
+          <GuideScreen
+            onBack={() => goToScreen("dashboard")}
+            onPlaceSelect={openPlace}
+          />
+        );
+      }
+
+      if (effectiveScreen === "place") {
+        return place ? (
+          <PlaceScreen
+            place={place}
+            onBack={() => goToScreen("guide")}
+          />
+        ) : null;
+      }
+
+      if (effectiveScreen === "game") {
+        return (
+          <GameScreen
+            gameState={gameState}
+            currentQ={currentQ}
+            selectedAns={selectedAns}
+            answers={answers}
+            correctCount={correctCount}
+            gameScore={gameScore}
+            riddleAnswer={riddleAnswer}
+            riddleFeedback={riddleFeedback}
+            riddleValidated={riddleValidated}
+            riddleSolved={riddleSolved}
+            challengeDone={challengeDone}
+            onStart={() => {
+              setGameState("playing");
+              setCurrentQ(0);
+              setSelectedAns(null);
+              setAnswers([]);
+              setQuizStartedAt(Date.now());
+              setQuizDurationSec(0);
+              setRiddleAnswer("");
+              setRiddleFeedback(null);
+              setRiddleValidated(false);
+              setRiddleSolved(false);
+              setChallengeDone(false);
+            }}
+            onAnswer={answerQ}
+            onBack={() => goToScreen("dashboard")}
+            onReset={() => {
+              setGameState("intro");
+              setAnswers([]);
+              setCurrentQ(0);
+              setSelectedAns(null);
+              setQuizStartedAt(null);
+              setQuizDurationSec(0);
+              setRiddleAnswer("");
+              setRiddleFeedback(null);
+              setRiddleValidated(false);
+              setRiddleSolved(false);
+              setChallengeDone(false);
+            }}
+            onContinueToRiddle={() => setGameState("riddle")}
+            onRiddleAnswerChange={(value) => {
+              setRiddleAnswer(value);
+              if (riddleFeedback) setRiddleFeedback(null);
+            }}
+            onValidateRiddle={validateRiddle}
+            onContinueToChallenge={() => setGameState("challenge")}
+            onCompleteChallenge={() => setChallengeDone(true)}
+            onFinishSession={finishGameSession}
+          />
+        );
+      }
+
+      if (effectiveScreen === "results") {
+        return (
+          <ResultsScreen
+            onBack={() => goToScreen("dashboard")}
+            history={gameHistory}
+          />
+        );
+      }
+
+      if (effectiveScreen === "tips") {
+        return <TipsScreen onBack={() => goToScreen("dashboard")} />;
+      }
+
       return (
         <ChecklistScreen
           categories={CHECKLIST_CATEGORIES}
@@ -3303,7 +3448,7 @@ export default function App() {
         />
       );
     }
-    switch (screen) {
+    switch (effectiveScreen) {
       case "checklist":
         return (
           <ChecklistScreen
@@ -3358,7 +3503,7 @@ export default function App() {
           />
         );
       case "dashboard":
-        return <DashboardScreen onNavigate={goToScreen} />;
+        return <DashboardScreen quickActions={visibleQuickActions} onNavigate={goToScreen} />;
       case "guide":
         return (
           <GuideScreen
@@ -3499,7 +3644,7 @@ export default function App() {
         if (IS_DEV) {
           console.info(`[navigation] Unknown screen "${screen}" in phase "${phase}". Falling back to dashboard.`);
         }
-        return <DashboardScreen onNavigate={goToScreen} />;
+        return <DashboardScreen quickActions={visibleQuickActions} onNavigate={goToScreen} />;
     }
   };
 
@@ -3507,9 +3652,16 @@ export default function App() {
     <div className="min-h-screen bg-[#B8A898] md:flex md:items-center md:justify-center md:p-6">
       <div className="relative w-full md:max-w-[390px] h-screen md:h-[844px] bg-background overflow-hidden flex flex-col md:rounded-[3rem] md:shadow-2xl">
         {!isOnline && <OfflineBanner />}
+        {accessDeniedMessage && (
+          <div className="absolute left-1/2 top-4 z-50 -translate-x-1/2 px-4">
+            <div className="rounded-full bg-destructive px-4 py-2 text-xs font-black tracking-[0.02em] text-destructive-foreground shadow-lg">
+              {accessDeniedMessage}
+            </div>
+          </div>
+        )}
         {renderScreen()}
-        {phase === "during" && screen !== "checklist" && (
-          <BottomNav current={screen} onNavigate={goToScreen} />
+        {visibleBottomNavItems.length > 0 && (effectiveScreen !== "checklist" || canAccessScreen(profile.role, phase, "dashboard")) && (
+          <BottomNav current={effectiveScreen} items={visibleBottomNavItems} onNavigate={goToScreen} />
         )}
       </div>
     </div>
