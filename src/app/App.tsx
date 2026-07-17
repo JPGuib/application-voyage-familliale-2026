@@ -1144,7 +1144,7 @@ function ChecklistScreen({
                           )}
                         </div>
                       </button>
-                      {role === "proprietaire" && (
+                      {(role === "proprietaire" || item.visibleToProfileId === currentProfileId) && (
                         <button
                           onClick={() => onDeleteItem(item.id)}
                           className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-destructive"
@@ -3546,7 +3546,34 @@ export default function App() {
   };
 
   const deleteChecklistItem = (itemId: string) => {
-    if (profile.role !== "proprietaire") {
+    if (profile.role !== "proprietaire" && profile.role !== "utilisateur") {
+      return;
+    }
+
+    if (profile.role === "utilisateur") {
+      const current = customChecklistItemsByProfile[profile.id] ?? [];
+      const isOwnItem = current.some(
+        (item) => item.id === itemId && item.visibleToProfileId === profile.id
+      );
+      if (!isOwnItem) {
+        return;
+      }
+
+      setCustomChecklistItemsByProfile((previous) => {
+        const existing = previous[profile.id] ?? [];
+        return {
+          ...previous,
+          [profile.id]: existing.filter((item) => item.id !== itemId),
+        };
+      });
+      setChecked((previous) => {
+        if (!(itemId in previous)) {
+          return previous;
+        }
+        const next = { ...previous };
+        delete next[itemId];
+        return next;
+      });
       return;
     }
 

@@ -296,7 +296,8 @@ export function useCloudSync() {
         await pushCloudSnapshot(database, familyId, mutation);
         setCloudAuthError(null);
       } catch {
-        setCloudAuthError("permission-denied");
+        // Keep the app usable on transient write failures; read-subscription errors
+        // still control the blocking cloud access state.
         enqueuePendingMutation(mutation);
       }
     },
