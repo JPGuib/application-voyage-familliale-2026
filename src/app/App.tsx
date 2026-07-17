@@ -73,6 +73,15 @@ import {
 } from "./access-control";
 import { findDuplicateProfileBySurname } from "./profile-login";
 import { useCloudSync } from "../hooks/useCloudSync";
+import {
+  filterCategoriesForProfile,
+  getItemBadges,
+  getCategoryBadges,
+  getVisibleItemIds,
+  type Gender,
+  type HouseholdRole,
+  type ProfileFilterInput,
+} from "./checklist-filter";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -84,21 +93,21 @@ const CHECKLIST_CATEGORIES = [
     emoji: "👔",
     label: "Vêtements pour les hommes",
     items: [
-      { id: "hommes-tenue-toulouse-nantes", label: "Tenue pour Toulouse-Nantes le samedi 15 août" },
-      { id: "hommes-tenue-avion", label: "Tenue pour avion aller et retour" },
-      { id: "hommes-pyjama", label: "Pyjama" },
-      { id: "hommes-calecons", label: "Caleçons pour les 10 jours" },
-      { id: "hommes-tshirts", label: "T-shirts légers (dont 2 manches longues)" },
-      { id: "hommes-shorts", label: "Shorts légers (dont quelques-uns confortables respirants pour les journées d'excursions)" },
-      { id: "hommes-tenues-soir", label: "Tenues légères plus habillées pour les restaurants / sorties du soir" },
-      { id: "hommes-socquettes", label: "10 paires de socquettes" },
-      { id: "hommes-chaussettes", label: "1 paire de chaussettes (mi-hautes ou hautes)" },
-      { id: "hommes-pantalons", label: "1 ou 2 pantalons légers" },
-      { id: "hommes-pulls", label: "Quelques pulls dont 1 polaire (ou sweat)" },
-      { id: "hommes-gants", label: "1 paire de gants légers" },
-      { id: "hommes-coupe-vent", label: "1 coupe-vent ou style Jott" },
-      { id: "hommes-jean", label: "1 pantalon type jean" },
-      { id: "hommes-linge-sale", label: "Sacs pour le linge sale" },
+      { id: "hommes-tenue-toulouse-nantes", label: "Tenue pour Toulouse-Nantes le samedi 15 août", genderTargets: "male" as const },
+      { id: "hommes-tenue-avion", label: "Tenue pour avion aller et retour", genderTargets: "male" as const },
+      { id: "hommes-pyjama", label: "Pyjama", genderTargets: "male" as const },
+      { id: "hommes-calecons", label: "Caleçons pour les 10 jours", genderTargets: "male" as const },
+      { id: "hommes-tshirts", label: "T-shirts légers (dont 2 manches longues)", genderTargets: "male" as const },
+      { id: "hommes-shorts", label: "Shorts légers (dont quelques-uns confortables respirants pour les journées d'excursions)", genderTargets: "male" as const },
+      { id: "hommes-tenues-soir", label: "Tenues légères plus habillées pour les restaurants / sorties du soir", genderTargets: "male" as const },
+      { id: "hommes-socquettes", label: "10 paires de socquettes", genderTargets: "male" as const },
+      { id: "hommes-chaussettes", label: "1 paire de chaussettes (mi-hautes ou hautes)", genderTargets: "male" as const },
+      { id: "hommes-pantalons", label: "1 ou 2 pantalons légers", genderTargets: "male" as const },
+      { id: "hommes-pulls", label: "Quelques pulls dont 1 polaire (ou sweat)", genderTargets: "male" as const },
+      { id: "hommes-gants", label: "1 paire de gants légers", genderTargets: "male" as const },
+      { id: "hommes-coupe-vent", label: "1 coupe-vent ou style Jott", genderTargets: "male" as const },
+      { id: "hommes-jean", label: "1 pantalon type jean", genderTargets: "male" as const },
+      { id: "hommes-linge-sale", label: "Sacs pour le linge sale", genderTargets: "male" as const },
     ],
   },
   {
@@ -106,21 +115,21 @@ const CHECKLIST_CATEGORIES = [
     emoji: "👗",
     label: "Vêtements pour les femmes",
     items: [
-      { id: "femmes-tenue-toulouse-nantes", label: "Tenue pour Toulouse-Nantes le samedi 15 août" },
-      { id: "femmes-tenue-avion", label: "Tenue pour avion aller et retour" },
-      { id: "femmes-pyjama", label: "Pyjama" },
-      { id: "femmes-lingerie", label: "Lingerie pour les 10 jours" },
-      { id: "femmes-tshirts", label: "T-shirts légers (dont 2 manches longues)" },
-      { id: "femmes-shorts-jupes-robes", label: "Shorts / jupes / robes légers (dont 2 confortables respirants pas trop courts pour les journées d'excursion)" },
-      { id: "femmes-tenues-soir", label: "Tenues légères plus habillées pour les restaurants du soir" },
-      { id: "femmes-socquettes", label: "10 paires de chaussettes ou socquettes fines" },
-      { id: "femmes-chaussettes", label: "1 paire de chaussettes" },
-      { id: "femmes-pantalons", label: "1 ou 2 pantalons légers" },
-      { id: "femmes-pulls", label: "Quelques pulls dont 1 polaire (ou sweat)" },
-      { id: "femmes-gants", label: "1 paire de gants légers" },
-      { id: "femmes-coupe-vent", label: "1 coupe-vent ou style Jott" },
-      { id: "femmes-jean", label: "1 pantalon type jean" },
-      { id: "femmes-linge-sale", label: "Sacs pour le linge sale" },
+      { id: "femmes-tenue-toulouse-nantes", label: "Tenue pour Toulouse-Nantes le samedi 15 août", genderTargets: "female" as const },
+      { id: "femmes-tenue-avion", label: "Tenue pour avion aller et retour", genderTargets: "female" as const },
+      { id: "femmes-pyjama", label: "Pyjama", genderTargets: "female" as const },
+      { id: "femmes-lingerie", label: "Lingerie pour les 10 jours", genderTargets: "female" as const },
+      { id: "femmes-tshirts", label: "T-shirts légers (dont 2 manches longues)", genderTargets: "female" as const },
+      { id: "femmes-shorts-jupes-robes", label: "Shorts / jupes / robes légers (dont 2 confortables respirants pas trop courts pour les journées d'excursion)", genderTargets: "female" as const },
+      { id: "femmes-tenues-soir", label: "Tenues légères plus habillées pour les restaurants du soir", genderTargets: "female" as const },
+      { id: "femmes-socquettes", label: "10 paires de chaussettes ou socquettes fines", genderTargets: "female" as const },
+      { id: "femmes-chaussettes", label: "1 paire de chaussettes", genderTargets: "female" as const },
+      { id: "femmes-pantalons", label: "1 ou 2 pantalons légers", genderTargets: "female" as const },
+      { id: "femmes-pulls", label: "Quelques pulls dont 1 polaire (ou sweat)", genderTargets: "female" as const },
+      { id: "femmes-gants", label: "1 paire de gants légers", genderTargets: "female" as const },
+      { id: "femmes-coupe-vent", label: "1 coupe-vent ou style Jott", genderTargets: "female" as const },
+      { id: "femmes-jean", label: "1 pantalon type jean", genderTargets: "female" as const },
+      { id: "femmes-linge-sale", label: "Sacs pour le linge sale", genderTargets: "female" as const },
     ],
   },
   {
@@ -139,7 +148,7 @@ const CHECKLIST_CATEGORIES = [
     label: "Baignade et soleil",
     items: [
       { id: "baignade-maillots", label: "1 ou 2 maillots / shorts de bain" },
-      { id: "baignade-pareo", label: "(Optionnel pour les femmes) : paréo" },
+      { id: "baignade-pareo", label: "(Optionnel pour les femmes) : paréo", genderTargets: "female" as const },
       { id: "baignade-serviette", label: "1 serviette de bain Decathlon" },
       { id: "baignade-lunettes", label: "Lunettes de soleil" },
       { id: "baignade-casquette", label: "Casquette" },
@@ -214,7 +223,7 @@ const CHECKLIST_CATEGORIES = [
     label: "Bagages",
     items: [
       { id: "bagages-sac-dos", label: "Petit sac à dos pour les excursions (obligatoire)" },
-      { id: "bagages-sac-main", label: "(Optionnel pour les femmes) Sac à main pour le soir" },
+      { id: "bagages-sac-main", label: "(Optionnel pour les femmes) Sac à main pour le soir", genderTargets: "female" as const },
       { id: "bagages-sac-banane", label: "(Optionnel) Sac banane" },
       { id: "bagages-sac-cabine", label: "Pour chacun : petit sac cabine (qui peut être le sac à dos) de dimensions 30x40x15 cm max" },
       { id: "bagages-valise-cabine", label: "Pour chacun : petite valise cabine de dimensions 55x35x25 cm max et poids max 12kg" },
@@ -238,6 +247,8 @@ type Profile = {
   id: string;
   surname: string;
   role: Role | null;
+  gender: Gender;
+  householdRole: HouseholdRole;
 };
 
 type LoginCandidate = {
@@ -431,12 +442,16 @@ function ProfileSetupScreen({
   ownerAlreadyConfigured,
   error,
   onSurnameChange,
+  onGenderChange,
+  onHouseholdRoleChange,
   onContinue,
 }: {
   profile: Profile;
   ownerAlreadyConfigured: boolean;
   error: string | null;
   onSurnameChange: (v: string) => void;
+  onGenderChange: (v: Gender) => void;
+  onHouseholdRoleChange: (v: HouseholdRole) => void;
   onContinue: () => void;
 }) {
   return (
@@ -467,6 +482,46 @@ function ProfileSetupScreen({
             placeholder="Ex: Maman, Papa, Léo"
             className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
           />
+
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-5 mb-2">
+            Genre (optionnel)
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {(["unspecified", "male", "female"] as const).map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => onGenderChange(g)}
+                className={`rounded-xl py-2 text-xs font-black border transition-colors ${
+                  profile.gender === g
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-foreground"
+                }`}
+              >
+                {g === "unspecified" ? "Non précisé" : g === "male" ? "Homme" : "Femme"}
+              </button>
+            ))}
+          </div>
+
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-5 mb-2">
+            Rôle familial (optionnel)
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {(["member", "parent", "teen", "child"] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => onHouseholdRoleChange(r)}
+                className={`rounded-xl py-2 text-xs font-black border transition-colors ${
+                  profile.householdRole === r
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-foreground"
+                }`}
+              >
+                {r === "member" ? "Non précisé" : r === "parent" ? "Parent" : r === "teen" ? "Ado" : "Enfant"}
+              </button>
+            ))}
+          </div>
 
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-5 mb-2">
             Rôle
@@ -844,6 +899,7 @@ function ChecklistScreen({
           const catChecked = cat.items.filter((i) => checked[i.id]).length;
           const isOpen = openCategories.has(cat.id);
           const allDone = catChecked === cat.items.length;
+          const catBadges = getCategoryBadges(cat.items);
           return (
             <div
               key={cat.id}
@@ -860,6 +916,18 @@ function ChecklistScreen({
                     <p className="text-xs text-muted-foreground">
                       {catChecked} / {cat.items.length}
                     </p>
+                    {catBadges.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {catBadges.map((badge) => (
+                          <span
+                            key={badge}
+                            className="inline-block text-[9px] font-black uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5"
+                          >
+                            {badge}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -878,7 +946,9 @@ function ChecklistScreen({
               </button>
               {isOpen && (
                 <div className="border-t border-border px-4 pb-3 pt-2 space-y-1.5">
-                  {cat.items.map((item) => (
+                  {cat.items.map((item) => {
+                    const badges = getItemBadges(item);
+                    return (
                     <button
                       key={item.id}
                       onClick={() => toggleItem(item.id)}
@@ -895,17 +965,32 @@ function ChecklistScreen({
                           <Check size={13} className="text-white" />
                         )}
                       </div>
-                      <span
-                        className={`text-sm font-semibold transition-all ${
-                          checked[item.id]
-                            ? "line-through text-muted-foreground"
-                            : "text-foreground"
-                        }`}
-                      >
-                        {item.label}
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span
+                          className={`text-sm font-semibold transition-all ${
+                            checked[item.id]
+                              ? "line-through text-muted-foreground"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                        {badges.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-0.5">
+                            {badges.map((badge) => (
+                              <span
+                                key={badge}
+                                className="inline-block text-[9px] font-black uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5"
+                              >
+                                {badge}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -2046,6 +2131,7 @@ function SettingsScreen({
   profileRecoveryConfigured,
   onBack,
   onSaveSurname,
+  onSaveProfileMetadata,
   onSaveOwnerCode,
   onSaveOwnerRecoveryPhrase,
   onSaveProfilePassword,
@@ -2061,6 +2147,7 @@ function SettingsScreen({
   profileRecoveryConfigured: boolean;
   onBack: () => void;
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
+  onSaveProfileMetadata: (gender: Gender, householdRole: HouseholdRole) => void;
   onSaveOwnerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
   onSaveOwnerRecoveryPhrase: (phrase: string) => Promise<{ ok: boolean; message: string }>;
   onSaveProfilePassword: (password: string) => Promise<{ ok: boolean; message: string }>;
@@ -2071,6 +2158,9 @@ function SettingsScreen({
 }) {
   const [surnameInput, setSurnameInput] = useState(profile.surname);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [selectedGender, setSelectedGender] = useState<Gender>(profile.gender);
+  const [selectedHouseholdRole, setSelectedHouseholdRole] = useState<HouseholdRole>(profile.householdRole);
+  const [metadataFeedback, setMetadataFeedback] = useState<string | null>(null);
   const [ownerCodeInput, setOwnerCodeInput] = useState("");
   const [ownerCodeFeedback, setOwnerCodeFeedback] = useState<string | null>(null);
   const [ownerRecoveryInput, setOwnerRecoveryInput] = useState("");
@@ -2130,6 +2220,65 @@ function SettingsScreen({
           </button>
           {feedback && (
             <p className="mt-2 text-xs font-bold text-muted-foreground">{feedback}</p>
+          )}
+        </div>
+
+        <div className="bg-card rounded-2xl border border-border p-4">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+            Profil de préparation
+          </p>
+          <p className="text-xs text-muted-foreground mb-3">
+            Ces informations permettent d'adapter la checklist à votre profil (optionnel).
+          </p>
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-2">
+            Genre
+          </p>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {(["unspecified", "male", "female"] as const).map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setSelectedGender(g)}
+                className={`rounded-xl py-2 text-xs font-black border transition-colors ${
+                  selectedGender === g
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-foreground"
+                }`}
+              >
+                {g === "unspecified" ? "Non précisé" : g === "male" ? "Homme" : "Femme"}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-2">
+            Rôle familial
+          </p>
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {(["member", "parent", "teen", "child"] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setSelectedHouseholdRole(r)}
+                className={`rounded-xl py-2 text-xs font-black border transition-colors ${
+                  selectedHouseholdRole === r
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-foreground"
+                }`}
+              >
+                {r === "member" ? "Non précisé" : r === "parent" ? "Parent" : r === "teen" ? "Ado" : "Enfant"}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              onSaveProfileMetadata(selectedGender, selectedHouseholdRole);
+              setMetadataFeedback("Profil de préparation mis à jour.");
+            }}
+            className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+          >
+            Enregistrer le profil de préparation
+          </button>
+          {metadataFeedback && (
+            <p className="mt-2 text-xs font-bold text-muted-foreground">{metadataFeedback}</p>
           )}
         </div>
 
@@ -2413,7 +2562,7 @@ export default function App() {
   });
   const [profile, setProfile] = useState<Profile>(() => {
     if (cloudEnabled) {
-      return { id: createProfileId(), surname: "", role: null };
+      return { id: createProfileId(), surname: "", role: null, gender: "unspecified", householdRole: "member" };
     }
 
     try {
@@ -2422,13 +2571,23 @@ export default function App() {
         parsed?.role === "proprietaire" || parsed?.role === "utilisateur"
           ? parsed.role
           : null;
+      const gender: Gender =
+        parsed?.gender === "male" || parsed?.gender === "female"
+          ? parsed.gender
+          : "unspecified";
+      const householdRole: HouseholdRole =
+        parsed?.householdRole === "parent" || parsed?.householdRole === "teen" || parsed?.householdRole === "child"
+          ? parsed.householdRole
+          : "member";
       return {
         id: typeof parsed?.id === "string" && parsed.id.trim() ? parsed.id : createProfileId(),
         surname: typeof parsed?.surname === "string" ? parsed.surname : "",
         role,
+        gender,
+        householdRole,
       };
     } catch {
-      return { id: createProfileId(), surname: "", role: null };
+      return { id: createProfileId(), surname: "", role: null, gender: "unspecified", householdRole: "member" };
     }
   });
   const [familyState, setFamilyState] = useState<SharedFamilyState>(() => {
@@ -2548,6 +2707,12 @@ export default function App() {
   const [recoveryNewCodeInput, setRecoveryNewCodeInput] = useState("");
   const [recoveryCodeConfirmInput, setRecoveryCodeConfirmInput] = useState("");
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
+
+  const applyProfileMetadata = (gender: Gender, householdRole: HouseholdRole) => {
+    setProfile((p) => ({ ...p, gender, householdRole }));
+    const firstCategoryId = CHECKLIST_CATEGORIES[0]?.id;
+    setOpenCategories(firstCategoryId ? new Set([firstCategoryId]) : new Set());
+  };
   const [unlockFailedAttempts, setUnlockFailedAttempts] = useState<number>(() => {
     try {
       const raw = localStorage.getItem("jp-unlock-failed-attempts");
@@ -2643,6 +2808,8 @@ export default function App() {
         id: rememberedProfile.profileId,
         surname: rememberedProfile.surname,
         role: rememberedProfile.role,
+        gender: rememberedProfile.gender ?? "unspecified",
+        householdRole: rememberedProfile.householdRole ?? "member",
       }));
       const nextPhase = rememberedProfile.phase || cloudSnapshot.phase;
       setPhase(nextPhase);
@@ -2829,13 +2996,22 @@ export default function App() {
     setProfile((previous) => {
       const nextRole = cloudProfile.role;
       const nextSurname = cloudProfile.surname || previous.surname;
-      if (previous.role === nextRole && previous.surname === nextSurname) {
+      const nextGender: Gender = cloudProfile.gender ?? "unspecified";
+      const nextHouseholdRole: HouseholdRole = cloudProfile.householdRole ?? "member";
+      if (
+        previous.role === nextRole &&
+        previous.surname === nextSurname &&
+        previous.gender === nextGender &&
+        previous.householdRole === nextHouseholdRole
+      ) {
         return previous;
       }
       return {
         ...previous,
         role: nextRole,
         surname: nextSurname,
+        gender: nextGender,
+        householdRole: nextHouseholdRole,
       };
     });
 
@@ -2909,6 +3085,8 @@ export default function App() {
       profileId: profile.id,
       surname: profile.surname,
       role: profile.role,
+      gender: profile.gender,
+      householdRole: profile.householdRole,
       profilePasswordHash,
       profileRecoveryHash,
       checklist: checked,
@@ -2933,6 +3111,8 @@ export default function App() {
       profilePasswordHash,
       profileRecoveryHash,
       profileRecoveryConfiguredAt: profileRecoveryHash ? Date.now() : undefined,
+      gender: profile.gender,
+      householdRole: profile.householdRole,
       checklist: checked,
       gameResults: gameHistory,
       phase,
@@ -2955,6 +3135,8 @@ export default function App() {
     profile.id,
     profile.role,
     profile.surname,
+    profile.gender,
+    profile.householdRole,
     pushSnapshot,
   ]);
 
@@ -3035,11 +3217,19 @@ export default function App() {
       return n;
     });
 
-  const totalItems = CHECKLIST_CATEGORIES.reduce(
+  const profileFilterInput: ProfileFilterInput = {
+    role: profile.role ?? "utilisateur",
+    gender: profile.gender,
+    householdRole: profile.householdRole,
+  };
+  const visibleCategories = filterCategoriesForProfile(CHECKLIST_CATEGORIES, profileFilterInput);
+  const visibleItemIds = getVisibleItemIds(CHECKLIST_CATEGORIES, profileFilterInput);
+
+  const totalItems = visibleCategories.reduce(
     (s, c) => s + c.items.length,
     0
   );
-  const checkedCount = Array.from(CHECKLIST_ITEM_IDS).filter(
+  const checkedCount = Array.from(visibleItemIds).filter(
     (id) => checked[id]
   ).length;
   const pctRaw = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
@@ -3238,7 +3428,7 @@ export default function App() {
       // Ignore local storage failures; in-memory state reset still works.
     }
 
-    setProfile({ id: createProfileId(), surname: "", role: null });
+    setProfile({ id: createProfileId(), surname: "", role: null, gender: "unspecified", householdRole: "member" });
     setPhase("before");
     setScreen("checklist");
     setSelectedPlaceId(null);
@@ -3532,6 +3722,8 @@ export default function App() {
             setProfile((p) => ({ ...p, surname: v }));
             if (profileError) setProfileError(null);
           }}
+          onGenderChange={(v) => setProfile((p) => ({ ...p, gender: v }))}
+          onHouseholdRoleChange={(v) => setProfile((p) => ({ ...p, householdRole: v }))}
           onContinue={() => {
             if (cloudEnabled && !cloudReady) {
               setProfileError("Synchronisation cloud en cours. Patientez quelques secondes.");
@@ -3610,6 +3802,9 @@ export default function App() {
               }
               setProfile((p) => ({ ...p, surname: normalized }));
               return { ok: true, message: "Surnom mis à jour." };
+            }}
+            onSaveProfileMetadata={(gender, householdRole) => {
+              applyProfileMetadata(gender, householdRole);
             }}
             onSaveOwnerCode={async (code) => {
               if (!canUpdateOwnerCode(familyState, profile.id)) {
@@ -3790,7 +3985,7 @@ export default function App() {
 
       return (
         <ChecklistScreen
-          categories={CHECKLIST_CATEGORIES}
+          categories={visibleCategories}
           checked={checked}
           openCategories={openCategories}
           toggleItem={toggleItem}
@@ -3845,7 +4040,7 @@ export default function App() {
       case "checklist":
         return (
           <ChecklistScreen
-            categories={CHECKLIST_CATEGORIES}
+            categories={visibleCategories}
             checked={checked}
             openCategories={openCategories}
             toggleItem={toggleItem}
@@ -3991,6 +4186,9 @@ export default function App() {
               }
               setProfile((p) => ({ ...p, surname: normalized }));
               return { ok: true, message: "Surnom mis à jour." };
+            }}
+            onSaveProfileMetadata={(gender, householdRole) => {
+              applyProfileMetadata(gender, householdRole);
             }}
             onSaveOwnerCode={async (code) => {
               if (!canUpdateOwnerCode(familyState, profile.id)) {

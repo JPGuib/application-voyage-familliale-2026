@@ -380,3 +380,102 @@ describe("App cloud login flow", () => {
     }
   });
 });
+
+// ─── Metadata hydration (story 10.4) ─────────────────────────────────────────
+
+describe("App profile metadata hydration (story 10.4)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    cloudSyncMock.mockReset();
+  });
+
+  it("hydrates gender and householdRole from cloud snapshot on auto-login", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    const snapshotWithMeta = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          gender: "female" as const,
+          householdRole: "parent" as const,
+        },
+      },
+    };
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshotWithMeta,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    // After hydration the female user should NOT see mens clothing
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Vêtements pour les femmes/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Vêtements pour les hommes/i)).not.toBeInTheDocument();
+  });
+
+  it("profile switch resets checklist metadata state to defaults", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    const snapshotWithMeta = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          gender: "female" as const,
+          householdRole: "parent" as const,
+        },
+      },
+    };
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshotWithMeta,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    // Switch profile
+    fireEvent.click(screen.getByText(/Paramètres/i));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Se déconnecter \/ Changer de profil/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Oui, se déconnecter" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Oui, se déconnecter" }));
+
+    // After reset, the login screen should be shown (no auto-login for new blank profile)
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Se connecter/i })).toBeInTheDocument();
+    });
+  });
+});

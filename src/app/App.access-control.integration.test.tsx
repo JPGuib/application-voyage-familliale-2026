@@ -277,3 +277,134 @@ describe("App access-control integration", () => {
     expect(screen.queryByText(/Code oublié/i)).not.toBeInTheDocument();
   });
 });
+
+// ─── Checklist filtering (story 10.4) ────────────────────────────────────────
+
+type ProfileGender = "unspecified" | "male" | "female";
+type ProfileHouseholdRole = "member" | "parent" | "teen" | "child";
+
+function makeSnapshotWithMetadata(
+  phase: "before" | "during",
+  profileId: "p1" | "p2",
+  gender: ProfileGender,
+  householdRole: ProfileHouseholdRole
+) {
+  const snapshot = makeSnapshot(phase);
+  const target = snapshot.profiles[profileId] as
+    | (typeof snapshot.profiles)["p1"]
+    | (typeof snapshot.profiles)["p2"]
+    | undefined;
+  if (target) {
+    target.gender = gender;
+    target.householdRole = householdRole;
+  }
+  return snapshot;
+}
+
+describe("App checklist filtering integration (story 10.4)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    cloudSyncMock.mockReset();
+  });
+
+  it("male user sees mens clothing category but not womens clothing category", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    const snapshot = makeSnapshotWithMetadata("before", "p2", "male", "parent");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Vêtements pour les hommes/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Vêtements pour les femmes/i)).not.toBeInTheDocument();
+  });
+
+  it("female user sees womens clothing category but not mens clothing category", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    const snapshot = makeSnapshotWithMetadata("before", "p2", "female", "parent");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Vêtements pour les femmes/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Vêtements pour les hommes/i)).not.toBeInTheDocument();
+  });
+
+  it("user with default metadata (unspecified/member) sees both gender categories", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    const snapshot = makeSnapshotWithMetadata("before", "p2", "unspecified", "member");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Vêtements pour les hommes/i)).toBeInTheDocument();
+    expect(screen.getByText(/Vêtements pour les femmes/i)).toBeInTheDocument();
+  });
+
+  it("owner profile (p1) keeps both gender categories visible with explicit female metadata", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    // Owner with female metadata still sees mens clothing
+    const snapshot = makeSnapshotWithMetadata("before", "p1", "female", "parent");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Vêtements pour les hommes/i)).toBeInTheDocument();
+    expect(screen.getByText(/Vêtements pour les femmes/i)).toBeInTheDocument();
+  });
+});

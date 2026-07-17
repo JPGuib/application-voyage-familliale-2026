@@ -17,6 +17,8 @@ import type {
   CloudGameHistoryEntry,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
+  ProfileGender,
+  ProfileHouseholdRole,
   TravelPhase,
 } from "../types/cloud";
 
@@ -38,6 +40,8 @@ type PushSnapshotInput = {
   profilePasswordHash?: string;
   profileRecoveryHash?: string;
   profileRecoveryConfiguredAt?: number;
+  gender?: ProfileGender;
+  householdRole?: ProfileHouseholdRole;
   checklist: ChecklistState;
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;
@@ -268,6 +272,8 @@ export function useCloudSync() {
         profilePasswordHash: snapshot.profilePasswordHash,
         profileRecoveryHash: snapshot.profileRecoveryHash,
         profileRecoveryConfiguredAt: snapshot.profileRecoveryConfiguredAt,
+        gender: snapshot.gender,
+        householdRole: snapshot.householdRole,
         checklist: snapshot.checklist,
         gameResults: snapshot.gameResults,
         phase: snapshot.phase,

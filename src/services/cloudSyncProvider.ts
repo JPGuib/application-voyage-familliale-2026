@@ -17,6 +17,8 @@ import type {
   CloudProfileRecord,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
+  ProfileGender,
+  ProfileHouseholdRole,
   TravelPhase,
 } from "../types/cloud";
 
@@ -75,6 +77,16 @@ function parseGameResults(value: unknown): CloudGameHistoryEntry[] {
   return value.filter(isCloudGameEntry).sort((left, right) => left.day - right.day);
 }
 
+function toProfileGender(value: unknown): ProfileGender {
+  if (value === "male" || value === "female") return value;
+  return "unspecified";
+}
+
+function toProfileHouseholdRole(value: unknown): ProfileHouseholdRole {
+  if (value === "parent" || value === "teen" || value === "child") return value;
+  return "member";
+}
+
 function parseProfileRecord(value: unknown): CloudProfileRecord | null {
   const record = asRecord(value);
   const role = record.role === "proprietaire" || record.role === "utilisateur" ? record.role : null;
@@ -98,6 +110,8 @@ function parseProfileRecord(value: unknown): CloudProfileRecord | null {
       Number.isFinite(record.recoveryConfiguredAt)
         ? record.recoveryConfiguredAt
         : undefined,
+    gender: record.gender !== undefined ? toProfileGender(record.gender) : undefined,
+    householdRole: record.householdRole !== undefined ? toProfileHouseholdRole(record.householdRole) : undefined,
   };
 }
 
@@ -142,6 +156,8 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
       passwordHash: record.passwordHash,
       recoveryHash: record.recoveryHash,
       recoveryConfiguredAt: record.recoveryConfiguredAt,
+      gender: record.gender,
+      householdRole: record.householdRole,
       checklist: parseChecklist(checklistRecords[profileId]),
       gameResults: parseGameResults(gameResultRecords[profileId]),
       phase: toTravelPhase(phaseRecords[profileId]),
@@ -218,6 +234,10 @@ export async function pushCloudSnapshot(
       updates[`profiles/${payload.profileId}/recoveryConfiguredAt`] = null;
     }
   }
+
+  // Write profile metadata with backward-compatible defaults
+  updates[`profiles/${payload.profileId}/gender`] = payload.gender ?? "unspecified";
+  updates[`profiles/${payload.profileId}/householdRole`] = payload.householdRole ?? "member";
 
   if (payload.canWriteFamilyState && isPayloadOwner) {
     updates.ownerProfileId = normalizedFamilyState.ownerProfileId;
