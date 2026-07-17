@@ -92,8 +92,8 @@ development_status:
   10-2-authentification-mot-de-passe-par-profil: done
   10-3-checklist-persistante-apres-deblocage: done
   10-4-adaptation-checklist-par-profil: done
-  10-5-mise-a-jour-contenu-checklist: review
-  10-6-recuperation-mot-de-passe-par-question-reponse-par-profil: backlog
+  10-5-mise-a-jour-contenu-checklist: done
+  10-6-recuperation-mot-de-passe-par-question-reponse-par-profil: done
   10-7-mot-de-passe-oublie-au-changement-profil-via-recovery: backlog
   10-8-changement-mot-de-passe-en-session-ancien-ou-recovery: backlog
   10-9-afficher-masquer-les-saisies-sensibles-sans-revelation-stockee: backlog

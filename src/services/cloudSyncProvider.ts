@@ -155,6 +155,7 @@ function parseProfileRecord(value: unknown): CloudProfileRecord | null {
   const now = Date.now();
   const passwordHash = toOptionalNonEmptyString(record.passwordHash);
   const recoveryHash = toOptionalNonEmptyString(record.recoveryHash);
+  const recoveryQuestion = toOptionalNonEmptyString(record.recoveryQuestion);
   return {
     surname: typeof record.surname === "string" ? record.surname : "",
     role,
@@ -162,6 +163,7 @@ function parseProfileRecord(value: unknown): CloudProfileRecord | null {
     lastSyncAt: toFiniteNumber(record.lastSyncAt, now),
     passwordHash,
     recoveryHash,
+    recoveryQuestion: recoveryHash ? recoveryQuestion : undefined,
     recoveryConfiguredAt:
       recoveryHash &&
       typeof record.recoveryConfiguredAt === "number" &&
@@ -215,6 +217,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
       lastSyncAt: record.lastSyncAt,
       passwordHash: record.passwordHash,
       recoveryHash: record.recoveryHash,
+      recoveryQuestion: record.recoveryQuestion,
       recoveryConfiguredAt: record.recoveryConfiguredAt,
       gender: record.gender,
       householdRole: record.householdRole,
@@ -294,10 +297,13 @@ export async function pushCloudSnapshot(
     const normalizedRecoveryHash = payload.profileRecoveryHash.trim();
     if (normalizedRecoveryHash.length > 0) {
       updates[`profiles/${payload.profileId}/recoveryHash`] = payload.profileRecoveryHash;
+      updates[`profiles/${payload.profileId}/recoveryQuestion`] =
+        payload.profileRecoveryQuestion?.trim() || null;
       updates[`profiles/${payload.profileId}/recoveryConfiguredAt`] =
         payload.profileRecoveryConfiguredAt ?? timestamp;
     } else {
       updates[`profiles/${payload.profileId}/recoveryHash`] = null;
+      updates[`profiles/${payload.profileId}/recoveryQuestion`] = null;
       updates[`profiles/${payload.profileId}/recoveryConfiguredAt`] = null;
     }
   }

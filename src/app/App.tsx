@@ -254,6 +254,7 @@ export const CHECKLIST_CATEGORIES: ChecklistCategory[] = [
 const CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY = "jp-custom-checklist-items-by-profile";
 const OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY = "jp-owner-global-checklist-additions";
 const OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY = "jp-owner-global-checklist-removals";
+const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -2294,6 +2295,7 @@ function SettingsScreen({
   ownerRecoveryConfigured,
   profilePasswordConfigured,
   profileRecoveryConfigured,
+  profileRecoveryQuestion,
   onBack,
   onSaveSurname,
   onSaveProfileMetadata,
@@ -2301,7 +2303,7 @@ function SettingsScreen({
   onSaveOwnerRecoveryPhrase,
   onSaveProfilePassword,
   onRemoveProfilePassword,
-  onSaveProfileRecoveryPhrase,
+  onSaveProfileRecoveryData,
   onSwitchProfile,
   cloudEnabled,
 }: {
@@ -2310,6 +2312,7 @@ function SettingsScreen({
   ownerRecoveryConfigured: boolean;
   profilePasswordConfigured: boolean;
   profileRecoveryConfigured: boolean;
+  profileRecoveryQuestion: string;
   onBack: () => void;
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
   onSaveProfileMetadata: (gender: Gender, householdRole: HouseholdRole) => void;
@@ -2317,7 +2320,10 @@ function SettingsScreen({
   onSaveOwnerRecoveryPhrase: (phrase: string) => Promise<{ ok: boolean; message: string }>;
   onSaveProfilePassword: (password: string) => Promise<{ ok: boolean; message: string }>;
   onRemoveProfilePassword: () => Promise<{ ok: boolean; message: string }>;
-  onSaveProfileRecoveryPhrase: (phrase: string) => Promise<{ ok: boolean; message: string }>;
+  onSaveProfileRecoveryData: (
+    question: string,
+    answer: string
+  ) => Promise<{ ok: boolean; message: string }>;
   onSwitchProfile: () => void;
   cloudEnabled: boolean;
 }) {
@@ -2332,6 +2338,10 @@ function SettingsScreen({
   const [ownerRecoveryFeedback, setOwnerRecoveryFeedback] = useState<string | null>(null);
   const [profilePasswordInput, setProfilePasswordInput] = useState("");
   const [profilePasswordFeedback, setProfilePasswordFeedback] = useState<string | null>(null);
+  const [profileRecoveryQuestionInput, setProfileRecoveryQuestionInput] = useState(profileRecoveryQuestion);
+  useEffect(() => {
+    setProfileRecoveryQuestionInput(profileRecoveryQuestion);
+  }, [profileRecoveryQuestion]);
   const [profileRecoveryInput, setProfileRecoveryInput] = useState("");
   const [profileRecoveryFeedback, setProfileRecoveryFeedback] = useState<string | null>(null);
   const [showOwnerCodeInput, setShowOwnerCodeInput] = useState(false);
@@ -2516,13 +2526,24 @@ function SettingsScreen({
 
         <div className="bg-card rounded-2xl border border-border p-4">
             <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
-              Phrase de récupération du profil
+              Récupération du mot de passe profil
             </p>
             <p className="text-xs text-muted-foreground mt-2">
               {profileRecoveryConfigured
-                ? "Une phrase de récupération est configurée pour ce profil."
-                : "Aucune phrase de récupération configurée pour ce profil."}
+                ? "Une question/réponse de récupération est configurée pour ce profil."
+                : "Aucune récupération configurée pour ce profil."}
             </p>
+            <input
+              type="text"
+              value={profileRecoveryQuestionInput}
+              onChange={(e) => {
+                setProfileRecoveryQuestionInput(e.target.value);
+                if (profileRecoveryFeedback) setProfileRecoveryFeedback(null);
+              }}
+              placeholder="Ex: Quel est votre plat préféré ?"
+              maxLength={200}
+              className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
             <input
               type={showProfileRecoveryInput ? "text" : "password"}
               value={profileRecoveryInput}
@@ -2530,7 +2551,7 @@ function SettingsScreen({
                 setProfileRecoveryInput(e.target.value);
                 if (profileRecoveryFeedback) setProfileRecoveryFeedback(null);
               }}
-              placeholder="Votre phrase personnelle (min. 5 caractères)"
+              placeholder="Votre réponse personnelle (min. 5 caractères)"
               className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
             <button
@@ -2541,13 +2562,16 @@ function SettingsScreen({
             </button>
             <button
               onClick={async () => {
-                const result = await onSaveProfileRecoveryPhrase(profileRecoveryInput);
+                const result = await onSaveProfileRecoveryData(
+                  profileRecoveryQuestionInput,
+                  profileRecoveryInput
+                );
                 setProfileRecoveryFeedback(result.message);
                 if (result.ok) setProfileRecoveryInput("");
               }}
               className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
             >
-              {profileRecoveryConfigured ? "Mettre à jour la phrase" : "Définir la phrase"}
+              {profileRecoveryConfigured ? "Mettre à jour la récupération" : "Définir la récupération"}
             </button>
             {profileRecoveryFeedback && (
               <p className="mt-2 text-xs font-bold text-muted-foreground">{profileRecoveryFeedback}</p>
@@ -2916,6 +2940,19 @@ export default function App() {
       return {};
     }
   });
+  const [profileRecoveryQuestions, setProfileRecoveryQuestions] = useState<Record<string, string>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const raw = localStorage.getItem(PROFILE_RECOVERY_QUESTION_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, string>) : {};
+    } catch {
+      return {};
+    }
+  });
   const [passwordPromptProfileId, setPasswordPromptProfileId] = useState<string | null>(null);
   const [passwordPromptInput, setPasswordPromptInput] = useState("");
   const [passwordPromptError, setPasswordPromptError] = useState<string | null>(null);
@@ -3107,6 +3144,7 @@ export default function App() {
         localStorage.removeItem("jp-owner-recovery-hash");
         localStorage.removeItem("jp-profile-password-hashes");
         localStorage.removeItem("jp-profile-recovery-hashes");
+        localStorage.removeItem(PROFILE_RECOVERY_QUESTION_STORAGE_KEY);
         localStorage.removeItem("jp-phase");
         localStorage.removeItem("jp-checklist");
         localStorage.removeItem("jp-game-history");
@@ -3130,6 +3168,10 @@ export default function App() {
           localStorage.setItem(
             "jp-profile-recovery-hashes",
             JSON.stringify(profileRecoveryHashes)
+          );
+          localStorage.setItem(
+            PROFILE_RECOVERY_QUESTION_STORAGE_KEY,
+            JSON.stringify(profileRecoveryQuestions)
           );
           localStorage.setItem("jp-phase", phase);
           localStorage.setItem("jp-checklist", JSON.stringify(checked));
@@ -3169,6 +3211,7 @@ export default function App() {
     ownerRecoveryHash,
     profilePasswordHashes,
     profileRecoveryHashes,
+    profileRecoveryQuestions,
     phase,
     checked,
     customChecklistItemsByProfile,
@@ -3226,6 +3269,16 @@ export default function App() {
       return {
         ...previous,
         [profile.id]: nextHash,
+      };
+    });
+    setProfileRecoveryQuestions((previous) => {
+      const nextQuestion = cloudProfile.recoveryQuestion || "";
+      if ((previous[profile.id] || "") === nextQuestion) {
+        return previous;
+      }
+      return {
+        ...previous,
+        [profile.id]: nextQuestion,
       };
     });
 
@@ -3334,6 +3387,7 @@ export default function App() {
     const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
     const profilePasswordHash = profilePasswordHashes[profile.id] || "";
     const profileRecoveryHash = profileRecoveryHashes[profile.id] || "";
+    const profileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";
     const profileCustomChecklistItems = customChecklistItemsByProfile[profile.id] ?? [];
     const payload = JSON.stringify({
       actorUid: cloudActorUid,
@@ -3349,6 +3403,7 @@ export default function App() {
       householdRole: profile.householdRole,
       profilePasswordHash,
       profileRecoveryHash,
+      profileRecoveryQuestion,
       checklist: checked,
       profileCustomChecklistItems,
       ownerGlobalChecklistAdditions,
@@ -3373,6 +3428,7 @@ export default function App() {
       role: profile.role,
       profilePasswordHash,
       profileRecoveryHash,
+      profileRecoveryQuestion,
       profileRecoveryConfiguredAt: profileRecoveryHash ? Date.now() : undefined,
       gender: profile.gender,
       householdRole: profile.householdRole,
@@ -3397,6 +3453,7 @@ export default function App() {
     ownerRecoveryHash,
     profilePasswordHashes,
     profileRecoveryHashes,
+    profileRecoveryQuestions,
     customChecklistItemsByProfile,
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
@@ -3928,6 +3985,7 @@ export default function App() {
 
   const currentProfilePasswordHash = profilePasswordHashes[profile.id] || "";
   const currentProfileRecoveryHash = profileRecoveryHashes[profile.id] || "";
+  const currentProfileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";
 
   const visibleQuickActions = QUICK_ACTIONS.filter((item) =>
     canAccessScreen(profile.role, phase, item.id)
@@ -4177,6 +4235,7 @@ export default function App() {
             ownerRecoveryConfigured={ownerRecoveryHash.length > 0}
             profilePasswordConfigured={currentProfilePasswordHash.length > 0}
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
+            profileRecoveryQuestion={currentProfileRecoveryQuestion}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("checklist")}
             onSaveSurname={(surname) => {
@@ -4257,20 +4316,42 @@ export default function App() {
               });
               return { ok: true, message: "Mot de passe du profil retiré." };
             }}
-            onSaveProfileRecoveryPhrase={async (phrase) => {
-              const normalized = phrase.trim();
-              if (normalized.length < 5) {
+            onSaveProfileRecoveryData={async (question, answer) => {
+              const normalizedQuestion = question.trim();
+              if (normalizedQuestion.length < 8) {
                 return {
                   ok: false,
-                  message: "La phrase doit contenir au moins 5 caractères.",
+                  message: "La question doit contenir au moins 8 caractères.",
                 };
               }
-              const nextHash = await hashOwnerRecoveryPhrase(normalized);
+              if (normalizedQuestion.length > 200) {
+                return {
+                  ok: false,
+                  message: "La question ne doit pas dépasser 200 caractères.",
+                };
+              }
+
+              const normalizedAnswer = answer.trim();
+              if (normalizedAnswer.length < 5) {
+                return {
+                  ok: false,
+                  message: "La réponse doit contenir au moins 5 caractères.",
+                };
+              }
+
+              const nextHash = await hashOwnerRecoveryPhrase(normalizedAnswer);
               setProfileRecoveryHashes((previous) => ({
                 ...previous,
                 [profile.id]: nextHash,
               }));
-              return { ok: true, message: "Phrase de récupération du profil mise à jour." };
+              setProfileRecoveryQuestions((previous) => ({
+                ...previous,
+                [profile.id]: normalizedQuestion,
+              }));
+              return {
+                ok: true,
+                message: "Question et réponse de récupération du profil mises à jour.",
+              };
             }}
             onSwitchProfile={resetForProfileSwitch}
           />
@@ -4573,6 +4654,7 @@ export default function App() {
             ownerRecoveryConfigured={ownerRecoveryHash.length > 0}
             profilePasswordConfigured={currentProfilePasswordHash.length > 0}
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
+            profileRecoveryQuestion={currentProfileRecoveryQuestion}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("dashboard")}
             onSaveSurname={(surname) => {
@@ -4653,20 +4735,42 @@ export default function App() {
               });
               return { ok: true, message: "Mot de passe du profil retiré." };
             }}
-            onSaveProfileRecoveryPhrase={async (phrase) => {
-              const normalized = phrase.trim();
-              if (normalized.length < 5) {
+            onSaveProfileRecoveryData={async (question, answer) => {
+              const normalizedQuestion = question.trim();
+              if (normalizedQuestion.length < 8) {
                 return {
                   ok: false,
-                  message: "La phrase doit contenir au moins 5 caractères.",
+                  message: "La question doit contenir au moins 8 caractères.",
                 };
               }
-              const nextHash = await hashOwnerRecoveryPhrase(normalized);
+              if (normalizedQuestion.length > 200) {
+                return {
+                  ok: false,
+                  message: "La question ne doit pas dépasser 200 caractères.",
+                };
+              }
+
+              const normalizedAnswer = answer.trim();
+              if (normalizedAnswer.length < 5) {
+                return {
+                  ok: false,
+                  message: "La réponse doit contenir au moins 5 caractères.",
+                };
+              }
+
+              const nextHash = await hashOwnerRecoveryPhrase(normalizedAnswer);
               setProfileRecoveryHashes((previous) => ({
                 ...previous,
                 [profile.id]: nextHash,
               }));
-              return { ok: true, message: "Phrase de récupération du profil mise à jour." };
+              setProfileRecoveryQuestions((previous) => ({
+                ...previous,
+                [profile.id]: normalizedQuestion,
+              }));
+              return {
+                ok: true,
+                message: "Question et réponse de récupération du profil mises à jour.",
+              };
             }}
             onSwitchProfile={resetForProfileSwitch}
           />
