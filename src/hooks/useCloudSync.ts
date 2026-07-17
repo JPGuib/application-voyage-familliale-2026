@@ -13,6 +13,8 @@ import {
   observeFirebaseUser,
 } from "../services/firebaseConfig";
 import type {
+  ChecklistCustomItem,
+  ChecklistRemovalState,
   ChecklistState,
   CloudGameHistoryEntry,
   CloudSyncSnapshot,
@@ -43,6 +45,9 @@ type PushSnapshotInput = {
   gender?: ProfileGender;
   householdRole?: ProfileHouseholdRole;
   checklist: ChecklistState;
+  profileCustomChecklistItems: ChecklistCustomItem[];
+  ownerGlobalChecklistAdditions: ChecklistCustomItem[];
+  ownerGlobalChecklistRemovals: ChecklistRemovalState;
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;
 };
@@ -275,6 +280,9 @@ export function useCloudSync() {
         gender: snapshot.gender,
         householdRole: snapshot.householdRole,
         checklist: snapshot.checklist,
+        profileCustomChecklistItems: snapshot.profileCustomChecklistItems,
+        ownerGlobalChecklistAdditions: snapshot.ownerGlobalChecklistAdditions,
+        ownerGlobalChecklistRemovals: snapshot.ownerGlobalChecklistRemovals,
         gameResults: snapshot.gameResults,
         phase: snapshot.phase,
       };

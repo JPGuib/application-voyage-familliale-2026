@@ -46,9 +46,41 @@
             "lastSyncAt": {
               ".validate": "newData.isNumber()"
             },
+            "passwordHash": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().matches(/^sha256:[0-9a-f]{64}$/))"
+            },
+            "recoveryHash": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().matches(/^sha256:[0-9a-f]{64}$/))"
+            },
+            "recoveryConfiguredAt": {
+              ".validate": "newData.val() === null || newData.isNumber()"
+            },
+            "gender": {
+              ".validate": "newData.val() === 'unspecified' || newData.val() === 'male' || newData.val() === 'female'"
+            },
+            "householdRole": {
+              ".validate": "newData.val() === 'member' || newData.val() === 'parent' || newData.val() === 'child'"
+            },
+            "customChecklistItems": {
+              "$itemId": {
+                ".validate": "newData.hasChildren(['id','label','categoryId']) && newData.child('id').isString() && newData.child('label').isString() && newData.child('categoryId').isString() && (!newData.child('genderTargets').exists() || newData.child('genderTargets').val() === 'all' || newData.child('genderTargets').val() === 'male' || newData.child('genderTargets').val() === 'female') && (!newData.child('householdRoleTargets').exists() || newData.child('householdRoleTargets').val() === 'all' || newData.child('householdRoleTargets').val() === 'parent' || newData.child('householdRoleTargets').val() === 'child') && (!newData.child('ownerOnly').exists() || newData.child('ownerOnly').isBoolean()) && (!newData.child('visibleToProfileId').exists() || newData.child('visibleToProfileId').isString())"
+              }
+            },
             "$other": {
               ".validate": false
             }
+          }
+        },
+        "checklistCatalogAdditions": {
+          ".write": "auth != null && newData.parent().child('ownerUid').val() === auth.uid",
+          "$itemId": {
+            ".validate": "newData.hasChildren(['id','label','categoryId']) && newData.child('id').isString() && newData.child('label').isString() && newData.child('categoryId').isString() && (!newData.child('genderTargets').exists() || newData.child('genderTargets').val() === 'all' || newData.child('genderTargets').val() === 'male' || newData.child('genderTargets').val() === 'female') && (!newData.child('householdRoleTargets').exists() || newData.child('householdRoleTargets').val() === 'all' || newData.child('householdRoleTargets').val() === 'parent' || newData.child('householdRoleTargets').val() === 'child') && (!newData.child('ownerOnly').exists() || newData.child('ownerOnly').isBoolean()) && (!newData.child('visibleToProfileId').exists() || newData.child('visibleToProfileId').isString())"
+          }
+        },
+        "checklistCatalogRemovals": {
+          ".write": "auth != null && newData.parent().child('ownerUid').val() === auth.uid",
+          "$itemId": {
+            ".validate": "newData.isBoolean()"
           }
         },
         "checklists": {

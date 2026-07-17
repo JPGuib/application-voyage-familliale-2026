@@ -12,6 +12,17 @@ import {
 // ─── isItemVisibleForProfile ─────────────────────────────────────────────────
 
 describe("isItemVisibleForProfile - owner override", () => {
+  it("hides item scoped to another profile even for owner", () => {
+    const item: ChecklistItemTargeting = { visibleToProfileId: "profile-a" };
+    const owner: ProfileFilterInput = {
+      profileId: "profile-owner",
+      role: "proprietaire",
+      gender: "unspecified",
+      householdRole: "member",
+    };
+    expect(isItemVisibleForProfile(item, owner)).toBe(false);
+  });
+
   it("shows ownerOnly item to owner", () => {
     const item: ChecklistItemTargeting = { ownerOnly: true };
     const owner: ProfileFilterInput = {
@@ -385,9 +396,8 @@ describe("getItemBadges", () => {
     expect(getItemBadges({ genderTargets: "female" })).toEqual(["Femmes", "Parents", "Enfants"]);
   });
 
-  it("returns owner badge plus default targeting badges for ownerOnly item", () => {
+  it("ownerOnly does not add a dedicated badge", () => {
     expect(getItemBadges({ ownerOnly: true })).toEqual([
-      "Propriétaire uniquement",
       "Hommes",
       "Femmes",
       "Parents",
@@ -410,7 +420,6 @@ describe("getItemBadges", () => {
 
   it("ownerOnly keeps other targeting badges", () => {
     const badges = getItemBadges({ ownerOnly: true, genderTargets: "male" });
-    expect(badges).toContain("Propriétaire uniquement");
     expect(badges).toContain("Hommes");
     expect(badges).toContain("Parents");
     expect(badges).toContain("Enfants");
