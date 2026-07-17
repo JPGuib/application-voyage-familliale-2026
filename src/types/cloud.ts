@@ -16,6 +16,9 @@ export type CloudGameHistoryEntry = {
   completedAt: string;
 };
 
+export type ProfileGender = "unspecified" | "male" | "female";
+export type ProfileHouseholdRole = "member" | "parent" | "teen" | "child";
+
 export type CloudProfileRecord = {
   surname: string;
   role: Role;
@@ -24,6 +27,8 @@ export type CloudProfileRecord = {
   passwordHash?: string;
   recoveryHash?: string;
   recoveryConfiguredAt?: number;
+  gender?: ProfileGender;
+  householdRole?: ProfileHouseholdRole;
 };
 
 export type CloudProfileState = {
@@ -35,6 +40,8 @@ export type CloudProfileState = {
   passwordHash?: string;
   recoveryHash?: string;
   recoveryConfiguredAt?: number;
+  gender?: ProfileGender;
+  householdRole?: ProfileHouseholdRole;
   checklist: ChecklistState;
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;
@@ -63,6 +70,8 @@ export type CloudSyncWritePayload = {
   profilePasswordHash?: string;
   profileRecoveryHash?: string;
   profileRecoveryConfiguredAt?: number;
+  gender?: ProfileGender;
+  householdRole?: ProfileHouseholdRole;
   checklist: ChecklistState;
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;

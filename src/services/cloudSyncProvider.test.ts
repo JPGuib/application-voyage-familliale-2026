@@ -188,3 +188,88 @@ describe("cloudSyncProvider phase migration", () => {
     expect(snapshot.profiles["profile-a"]?.recoveryConfiguredAt).toBeUndefined();
   });
 });
+
+describe("cloudSyncProvider metadata (story 10.4)", () => {
+  it("parses gender and householdRole when present", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      profiles: {
+        "profile-a": {
+          surname: "A",
+          role: "utilisateur",
+          createdAt: 1,
+          lastSyncAt: 2,
+          gender: "female",
+          householdRole: "parent",
+        },
+      },
+    });
+
+    expect(snapshot.profiles["profile-a"]?.gender).toBe("female");
+    expect(snapshot.profiles["profile-a"]?.householdRole).toBe("parent");
+  });
+
+  it("returns undefined gender/householdRole when absent (backward compat)", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      profiles: {
+        "profile-a": {
+          surname: "A",
+          role: "utilisateur",
+          createdAt: 1,
+          lastSyncAt: 2,
+        },
+      },
+    });
+
+    // Older profiles without metadata fields should not have them set
+    expect(snapshot.profiles["profile-a"]?.gender).toBeUndefined();
+    expect(snapshot.profiles["profile-a"]?.householdRole).toBeUndefined();
+  });
+
+  it("normalizes unknown gender value to unspecified", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      profiles: {
+        "profile-a": {
+          surname: "A",
+          role: "utilisateur",
+          createdAt: 1,
+          lastSyncAt: 2,
+          gender: "other",
+        },
+      },
+    });
+
+    expect(snapshot.profiles["profile-a"]?.gender).toBe("unspecified");
+  });
+
+  it("normalizes unknown householdRole value to member", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      profiles: {
+        "profile-a": {
+          surname: "A",
+          role: "utilisateur",
+          createdAt: 1,
+          lastSyncAt: 2,
+          householdRole: "grandparent",
+        },
+      },
+    });
+
+    expect(snapshot.profiles["profile-a"]?.householdRole).toBe("member");
+  });
+
+  it("parses all householdRole values correctly", () => {
+    for (const role of ["parent", "teen", "child"] as const) {
+      const snapshot = parseCloudSnapshot({
+        phase: "before",
+        profiles: {
+          p: { surname: "X", role: "utilisateur", createdAt: 1, lastSyncAt: 2, householdRole: role },
+        },
+      });
+      expect(snapshot.profiles["p"]?.householdRole).toBe(role);
+    }
+  });
+});
