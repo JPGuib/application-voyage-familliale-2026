@@ -1,5 +1,18 @@
-import { describe, expect, it } from "vitest";
-import { parseCloudSnapshot } from "./cloudSyncProvider";
+import { describe, expect, it, vi } from "vitest";
+import { parseCloudSnapshot, pushCloudSnapshot } from "./cloudSyncProvider";
+
+const mockUpdate = vi.fn().mockResolvedValue(undefined);
+const mockRef = vi.fn().mockReturnValue({});
+vi.mock("firebase/database", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("firebase/database")>();
+  return {
+    ...actual,
+    ref: () => mockRef(),
+    update: (_ref: unknown, updates: Record<string, unknown>) => mockUpdate(updates),
+    onValue: vi.fn(),
+    runTransaction: vi.fn(),
+  };
+});
 
 describe("cloudSyncProvider phase migration", () => {
   it("uses family-wide phase when available", () => {
@@ -159,6 +172,7 @@ describe("cloudSyncProvider phase migration", () => {
           lastSyncAt: 2,
           passwordHash: "sha256:" + "a".repeat(64),
           recoveryHash: "sha256:" + "b".repeat(64),
+          recoveryQuestion: "Quel est le nom de votre premier animal ?",
           recoveryConfiguredAt: 123,
         },
       },
@@ -166,6 +180,9 @@ describe("cloudSyncProvider phase migration", () => {
 
     expect(snapshot.profiles["profile-a"]?.passwordHash).toBe("sha256:" + "a".repeat(64));
     expect(snapshot.profiles["profile-a"]?.recoveryHash).toBe("sha256:" + "b".repeat(64));
+    expect(snapshot.profiles["profile-a"]?.recoveryQuestion).toBe(
+      "Quel est le nom de votre premier animal ?"
+    );
     expect(snapshot.profiles["profile-a"]?.recoveryConfiguredAt).toBe(123);
   });
 
@@ -185,7 +202,28 @@ describe("cloudSyncProvider phase migration", () => {
     });
 
     expect(snapshot.profiles["profile-a"]?.recoveryHash).toBeUndefined();
+    expect(snapshot.profiles["profile-a"]?.recoveryQuestion).toBeUndefined();
     expect(snapshot.profiles["profile-a"]?.recoveryConfiguredAt).toBeUndefined();
+  });
+
+  it("drops recovery question when value is blank", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      profiles: {
+        "profile-a": {
+          surname: "A",
+          role: "proprietaire",
+          createdAt: 1,
+          lastSyncAt: 2,
+          recoveryHash: "sha256:" + "c".repeat(64),
+          recoveryQuestion: "   ",
+          recoveryConfiguredAt: 123,
+        },
+      },
+    });
+
+    expect(snapshot.profiles["profile-a"]?.recoveryHash).toBe("sha256:" + "c".repeat(64));
+    expect(snapshot.profiles["profile-a"]?.recoveryQuestion).toBeUndefined();
   });
 });
 
@@ -282,5 +320,80 @@ describe("cloudSyncProvider metadata (story 10.4)", () => {
     });
 
     expect(snapshot.profiles["p"]?.householdRole).toBe("child");
+  });
+});
+
+describe("pushCloudSnapshot write path (story 10.6)", () => {
+  const db = {} as import("firebase/database").Database;
+  const familyId = "famille-test";
+  const basePayload = {
+    actorUid: "uid-1",
+    canWriteFamilyState: false,
+    familyState: { version: 1, ownerProfileId: null, profiles: [] } as import("../app/owner-policy").SharedFamilyState,
+    ownerCodeHash: "",
+    ownerRecoveryHash: "",
+    ownerRecoveryConfiguredAt: undefined,
+    profileId: "profile-1",
+    surname: "Maman",
+    role: "utilisateur" as import("../app/owner-policy").Role,
+    profilePasswordHash: "",
+    gender: "female" as const,
+    householdRole: "parent" as const,
+    checklist: {},
+    profileCustomChecklistItems: [],
+    ownerGlobalChecklistAdditions: [],
+    ownerGlobalChecklistRemovals: {},
+    gameResults: [],
+    phase: "before" as const,
+  };
+
+  it("writes recoveryQuestion alongside recoveryHash when hash is non-empty", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      profileRecoveryHash: "sha256:" + "a".repeat(64),
+      profileRecoveryQuestion: "Quel est votre dessert préféré ?",
+      profileRecoveryConfiguredAt: 12345,
+    });
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["profiles/profile-1/recoveryHash"]).toBe("sha256:" + "a".repeat(64));
+    expect(updates["profiles/profile-1/recoveryQuestion"]).toBe("Quel est votre dessert préféré ?");
+    expect(updates["profiles/profile-1/recoveryConfiguredAt"]).toBe(12345);
+  });
+
+  it("writes null for recoveryQuestion when question is empty", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      profileRecoveryHash: "sha256:" + "b".repeat(64),
+      profileRecoveryQuestion: "",
+      profileRecoveryConfiguredAt: 12345,
+    });
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["profiles/profile-1/recoveryHash"]).toBe("sha256:" + "b".repeat(64));
+    expect(updates["profiles/profile-1/recoveryQuestion"]).toBeNull();
+  });
+
+  it("writes null for both recoveryHash and recoveryQuestion when hash is empty", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      profileRecoveryHash: "",
+      profileRecoveryQuestion: "Quel est votre dessert préféré ?",
+      profileRecoveryConfiguredAt: undefined,
+    });
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["profiles/profile-1/recoveryHash"]).toBeNull();
+    expect(updates["profiles/profile-1/recoveryQuestion"]).toBeNull();
+    expect(updates["profiles/profile-1/recoveryConfiguredAt"]).toBeNull();
   });
 });

@@ -479,3 +479,106 @@ describe("App profile metadata hydration (story 10.4)", () => {
     });
   });
 });
+
+describe("App profile recovery question settings (story 10.6)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    cloudSyncMock.mockReset();
+    claimRoleForProfileMock.mockReset();
+    claimRoleForProfileMock.mockResolvedValue(null);
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: baseSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+  });
+
+  it("requires a recovery question and answer and confirms save", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+
+    fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+      target: { value: "Quel est votre dessert préféré ?" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+      target: { value: "Tiramisu" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Définir la récupération" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Question et réponse de récupération du profil mises à jour.")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("rejects a recovery question shorter than 8 characters", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+
+    fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+      target: { value: "Court ?" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+      target: { value: "Tiramisu" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Définir la récupération" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("La question doit contenir au moins 8 caractères.")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("rejects a recovery answer shorter than 5 characters", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+
+    fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+      target: { value: "Quel est votre dessert préféré ?" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+      target: { value: "Non" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Définir la récupération" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("La réponse doit contenir au moins 5 caractères.")
+      ).toBeInTheDocument();
+    });
+  });
+});
