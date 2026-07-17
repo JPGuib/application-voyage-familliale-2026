@@ -56,6 +56,11 @@ import {
   isOwnerRecoveryHash,
   verifyOwnerRecoveryPhrase,
 } from "./owner-recovery";
+import {
+  hashProfilePassword,
+  isProfilePasswordHash,
+  verifyProfilePassword,
+} from "./profile-password";
 import { evaluateOwnerRecoveryGuards } from "./owner-recovery-guards";
 import {
   shouldHydrateFromCloudSnapshot,
@@ -239,6 +244,7 @@ type LoginCandidate = {
   id: string;
   surname: string;
   role: Role;
+  passwordHash?: string;
 };
 
 type QuickAction = {
@@ -491,19 +497,31 @@ function CloudLoginScreen({
   selectedProfileId,
   createSurname,
   error,
+  passwordPromptProfileSurname,
+  passwordPromptValue,
+  passwordPromptError,
   onSelectProfile,
   onCreateSurnameChange,
   onLoginWithSelected,
   onCreateAndContinue,
+  onPasswordPromptValueChange,
+  onConfirmPasswordPrompt,
+  onCancelPasswordPrompt,
 }: {
   profiles: LoginCandidate[];
   selectedProfileId: string | null;
   createSurname: string;
   error: string | null;
+  passwordPromptProfileSurname: string | null;
+  passwordPromptValue: string;
+  passwordPromptError: string | null;
   onSelectProfile: (profileId: string) => void;
   onCreateSurnameChange: (value: string) => void;
   onLoginWithSelected: () => void;
   onCreateAndContinue: () => void;
+  onPasswordPromptValueChange: (value: string) => void;
+  onConfirmPasswordPrompt: () => void;
+  onCancelPasswordPrompt: () => void;
 }) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -544,6 +562,7 @@ function CloudLoginScreen({
                     <p className="text-sm font-black text-foreground">{candidate.surname}</p>
                     <p className="text-[11px] font-bold text-muted-foreground mt-0.5">
                       {candidate.role === "proprietaire" ? "Propriétaire" : "Utilisateur"}
+                      {candidate.passwordHash ? " · Protégé" : ""}
                     </p>
                   </button>
                 );
@@ -578,6 +597,41 @@ function CloudLoginScreen({
 
         {error && <p className="text-sm font-bold text-destructive">{error}</p>}
       </div>
+
+      {passwordPromptProfileSurname && (
+        <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-20">
+          <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
+            <p className="text-sm font-black text-foreground">Profil protégé</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Saisissez le mot de passe du profil {passwordPromptProfileSurname}.
+            </p>
+            <input
+              type="password"
+              value={passwordPromptValue}
+              onChange={(e) => onPasswordPromptValueChange(e.target.value)}
+              placeholder="Mot de passe"
+              className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+            {passwordPromptError && (
+              <p className="mt-2 text-xs font-bold text-destructive">{passwordPromptError}</p>
+            )}
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button
+                onClick={onCancelPasswordPrompt}
+                className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={onConfirmPasswordPrompt}
+                className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
+              >
+                Se connecter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1970,20 +2024,30 @@ function SettingsScreen({
   profile,
   ownerCodeConfigured,
   ownerRecoveryConfigured,
+  profilePasswordConfigured,
+  profileRecoveryConfigured,
   onBack,
   onSaveSurname,
   onSaveOwnerCode,
   onSaveOwnerRecoveryPhrase,
+  onSaveProfilePassword,
+  onRemoveProfilePassword,
+  onSaveProfileRecoveryPhrase,
   onSwitchProfile,
   cloudEnabled,
 }: {
   profile: Profile;
   ownerCodeConfigured: boolean;
   ownerRecoveryConfigured: boolean;
+  profilePasswordConfigured: boolean;
+  profileRecoveryConfigured: boolean;
   onBack: () => void;
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
   onSaveOwnerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
   onSaveOwnerRecoveryPhrase: (phrase: string) => Promise<{ ok: boolean; message: string }>;
+  onSaveProfilePassword: (password: string) => Promise<{ ok: boolean; message: string }>;
+  onRemoveProfilePassword: () => Promise<{ ok: boolean; message: string }>;
+  onSaveProfileRecoveryPhrase: (phrase: string) => Promise<{ ok: boolean; message: string }>;
   onSwitchProfile: () => void;
   cloudEnabled: boolean;
 }) {
@@ -1993,8 +2057,14 @@ function SettingsScreen({
   const [ownerCodeFeedback, setOwnerCodeFeedback] = useState<string | null>(null);
   const [ownerRecoveryInput, setOwnerRecoveryInput] = useState("");
   const [ownerRecoveryFeedback, setOwnerRecoveryFeedback] = useState<string | null>(null);
+  const [profilePasswordInput, setProfilePasswordInput] = useState("");
+  const [profilePasswordFeedback, setProfilePasswordFeedback] = useState<string | null>(null);
+  const [profileRecoveryInput, setProfileRecoveryInput] = useState("");
+  const [profileRecoveryFeedback, setProfileRecoveryFeedback] = useState<string | null>(null);
   const [showOwnerCodeInput, setShowOwnerCodeInput] = useState(false);
   const [showOwnerRecoveryInput, setShowOwnerRecoveryInput] = useState(false);
+  const [showProfilePasswordInput, setShowProfilePasswordInput] = useState(false);
+  const [showProfileRecoveryInput, setShowProfileRecoveryInput] = useState(false);
   const [showSwitchProfilePrompt, setShowSwitchProfilePrompt] = useState(false);
 
   const roleLabel = profile.role === "proprietaire" ? "Propriétaire" : "Utilisateur";
@@ -2055,6 +2125,102 @@ function SettingsScreen({
           <p className="text-xs text-muted-foreground mt-2">
             Le rôle est défini à la création du profil pour ce MVP.
           </p>
+        </div>
+
+        <div className="bg-card rounded-2xl border border-border p-4">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+              Mot de passe du profil
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              {profilePasswordConfigured
+                ? "Un mot de passe est déjà configuré pour ce profil."
+                : "Aucun mot de passe configuré. Ce profil reste accessible sans mot de passe."}
+            </p>
+            <input
+              type={showProfilePasswordInput ? "text" : "password"}
+              value={profilePasswordInput}
+              onChange={(e) => {
+                setProfilePasswordInput(e.target.value);
+                if (profilePasswordFeedback) setProfilePasswordFeedback(null);
+              }}
+              placeholder="Minimum 4 caractères"
+              className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+            <button
+              onClick={() => setShowProfilePasswordInput((previous) => !previous)}
+              className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+            >
+              {showProfilePasswordInput ? "Masquer" : "Afficher"} le mot de passe saisi
+            </button>
+            <button
+              onClick={async () => {
+                const result = await onSaveProfilePassword(profilePasswordInput);
+                setProfilePasswordFeedback(result.message);
+                if (result.ok) setProfilePasswordInput("");
+              }}
+              className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+            >
+              {profilePasswordConfigured ? "Mettre à jour le mot de passe" : "Définir le mot de passe"}
+            </button>
+            {profilePasswordConfigured && (
+              <button
+                onClick={async () => {
+                  const confirmed = window.confirm("Retirer le mot de passe de ce profil ?");
+                  if (!confirmed) {
+                    return;
+                  }
+                  const result = await onRemoveProfilePassword();
+                  setProfilePasswordFeedback(result.message);
+                  if (result.ok) setProfilePasswordInput("");
+                }}
+                className="mt-2 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
+              >
+                Retirer le mot de passe
+              </button>
+            )}
+            {profilePasswordFeedback && (
+              <p className="mt-2 text-xs font-bold text-muted-foreground">{profilePasswordFeedback}</p>
+            )}
+        </div>
+
+        <div className="bg-card rounded-2xl border border-border p-4">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+              Phrase de récupération du profil
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              {profileRecoveryConfigured
+                ? "Une phrase de récupération est configurée pour ce profil."
+                : "Aucune phrase de récupération configurée pour ce profil."}
+            </p>
+            <input
+              type={showProfileRecoveryInput ? "text" : "password"}
+              value={profileRecoveryInput}
+              onChange={(e) => {
+                setProfileRecoveryInput(e.target.value);
+                if (profileRecoveryFeedback) setProfileRecoveryFeedback(null);
+              }}
+              placeholder="Votre phrase personnelle (min. 5 caractères)"
+              className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+            <button
+              onClick={() => setShowProfileRecoveryInput((previous) => !previous)}
+              className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+            >
+              {showProfileRecoveryInput ? "Masquer" : "Afficher"} la phrase saisie
+            </button>
+            <button
+              onClick={async () => {
+                const result = await onSaveProfileRecoveryPhrase(profileRecoveryInput);
+                setProfileRecoveryFeedback(result.message);
+                if (result.ok) setProfileRecoveryInput("");
+              }}
+              className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+            >
+              {profileRecoveryConfigured ? "Mettre à jour la phrase" : "Définir la phrase"}
+            </button>
+            {profileRecoveryFeedback && (
+              <p className="mt-2 text-xs font-bold text-muted-foreground">{profileRecoveryFeedback}</p>
+            )}
         </div>
 
         {profile.role === "proprietaire" ? (
@@ -2327,6 +2493,35 @@ export default function App() {
       return "";
     }
   });
+  const [profilePasswordHashes, setProfilePasswordHashes] = useState<Record<string, string>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const raw = localStorage.getItem("jp-profile-password-hashes");
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" ? (parsed as Record<string, string>) : {};
+    } catch {
+      return {};
+    }
+  });
+  const [profileRecoveryHashes, setProfileRecoveryHashes] = useState<Record<string, string>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const raw = localStorage.getItem("jp-profile-recovery-hashes");
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" ? (parsed as Record<string, string>) : {};
+    } catch {
+      return {};
+    }
+  });
+  const [passwordPromptProfileId, setPasswordPromptProfileId] = useState<string | null>(null);
+  const [passwordPromptInput, setPasswordPromptInput] = useState("");
+  const [passwordPromptError, setPasswordPromptError] = useState<string | null>(null);
   const [showStartPrompt, setShowStartPrompt] = useState(false);
   const [startCodeInput, setStartCodeInput] = useState("");
   const [startError, setStartError] = useState<string | null>(null);
@@ -2409,6 +2604,19 @@ export default function App() {
         return;
       }
 
+      const rememberedPasswordHash = rememberedProfile.passwordHash?.trim() || "";
+      if (rememberedPasswordHash) {
+        setSelectedLoginProfileId(rememberedProfile.profileId);
+        if (!isProfilePasswordHash(rememberedPasswordHash)) {
+          setAuthError("Authentification impossible. Vérifiez les informations saisies.");
+          setIsAuthBootstrapPending(false);
+          return;
+        }
+
+        setIsAuthBootstrapPending(false);
+        return;
+      }
+
       setProfile((previous) => ({
         ...previous,
         id: rememberedProfile.profileId,
@@ -2486,6 +2694,8 @@ export default function App() {
         localStorage.removeItem("jp-owner-code-hash");
         localStorage.removeItem("jp-owner-code");
         localStorage.removeItem("jp-owner-recovery-hash");
+        localStorage.removeItem("jp-profile-password-hashes");
+        localStorage.removeItem("jp-profile-recovery-hashes");
         localStorage.removeItem("jp-phase");
         localStorage.removeItem("jp-checklist");
         localStorage.removeItem("jp-game-history");
@@ -2499,6 +2709,14 @@ export default function App() {
           localStorage.setItem("jp-owner-code-hash", ownerCodeHash);
           localStorage.setItem("jp-owner-recovery-hash", ownerRecoveryHash);
           localStorage.removeItem("jp-owner-code");
+          localStorage.setItem(
+            "jp-profile-password-hashes",
+            JSON.stringify(profilePasswordHashes)
+          );
+          localStorage.setItem(
+            "jp-profile-recovery-hashes",
+            JSON.stringify(profileRecoveryHashes)
+          );
           localStorage.setItem("jp-phase", phase);
           localStorage.setItem("jp-checklist", JSON.stringify(checked));
           localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
@@ -2523,6 +2741,8 @@ export default function App() {
     familyState,
     ownerCodeHash,
     ownerRecoveryHash,
+    profilePasswordHashes,
+    profileRecoveryHashes,
     phase,
     checked,
     unlockFailedAttempts,
@@ -2558,6 +2778,27 @@ export default function App() {
     if (!cloudProfile) {
       return;
     }
+
+    setProfilePasswordHashes((previous) => {
+      const nextHash = cloudProfile.passwordHash || "";
+      if ((previous[profile.id] || "") === nextHash) {
+        return previous;
+      }
+      return {
+        ...previous,
+        [profile.id]: nextHash,
+      };
+    });
+    setProfileRecoveryHashes((previous) => {
+      const nextHash = cloudProfile.recoveryHash || "";
+      if ((previous[profile.id] || "") === nextHash) {
+        return previous;
+      }
+      return {
+        ...previous,
+        [profile.id]: nextHash,
+      };
+    });
 
     hydratedCloudProfileIdRef.current = profile.id;
 
@@ -2632,6 +2873,8 @@ export default function App() {
 
     const normalized = enforceOwnerUniqueness(familyState);
     const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
+    const profilePasswordHash = profilePasswordHashes[profile.id] || "";
+    const profileRecoveryHash = profileRecoveryHashes[profile.id] || "";
     const payload = JSON.stringify({
       actorUid: cloudActorUid,
       canWriteFamilyState,
@@ -2642,6 +2885,8 @@ export default function App() {
       profileId: profile.id,
       surname: profile.surname,
       role: profile.role,
+      profilePasswordHash,
+      profileRecoveryHash,
       checklist: checked,
       phase,
       gameHistory,
@@ -2661,6 +2906,9 @@ export default function App() {
       profileId: profile.id,
       surname: profile.surname,
       role: profile.role,
+      profilePasswordHash,
+      profileRecoveryHash,
+      profileRecoveryConfiguredAt: profileRecoveryHash ? Date.now() : undefined,
       checklist: checked,
       gameResults: gameHistory,
       phase,
@@ -2677,6 +2925,8 @@ export default function App() {
     isAuthBootstrapPending,
     ownerCodeHash,
     ownerRecoveryHash,
+    profilePasswordHashes,
+    profileRecoveryHashes,
     phase,
     profile.id,
     profile.role,
@@ -3000,6 +3250,9 @@ export default function App() {
     setIsProfileHydrationPending(false);
     setSelectedLoginProfileId(null);
     setCreateProfileSurname("");
+    setPasswordPromptProfileId(null);
+    setPasswordPromptInput("");
+    setPasswordPromptError(null);
     setAuthError(null);
     setProfileError(null);
     setIsAuthBootstrapPending(false);
@@ -3075,9 +3328,13 @@ export default function App() {
           id: item.profileId,
           surname: item.surname,
           role: item.role,
+          passwordHash: item.passwordHash,
         }))
         .sort((left, right) => left.surname.localeCompare(right.surname, "fr"))
     : [];
+
+  const currentProfilePasswordHash = profilePasswordHashes[profile.id] || "";
+  const currentProfileRecoveryHash = profileRecoveryHashes[profile.id] || "";
 
   const visibleQuickActions = QUICK_ACTIONS.filter((item) =>
     canAccessScreen(profile.role, phase, item.id)
@@ -3105,6 +3362,13 @@ export default function App() {
           selectedProfileId={selectedLoginProfileId}
           createSurname={createProfileSurname}
           error={authError}
+          passwordPromptProfileSurname={
+            passwordPromptProfileId
+              ? cloudSnapshot?.profiles[passwordPromptProfileId]?.surname || null
+              : null
+          }
+          passwordPromptValue={passwordPromptInput}
+          passwordPromptError={passwordPromptError}
           onSelectProfile={(profileId) => {
             setSelectedLoginProfileId(profileId);
             if (authError) setAuthError(null);
@@ -3130,6 +3394,20 @@ export default function App() {
               return;
             }
 
+            const selectedPasswordHash = selected.passwordHash?.trim() || "";
+            if (selectedPasswordHash) {
+              if (!isProfilePasswordHash(selectedPasswordHash)) {
+                setAuthError("Authentification impossible. Vérifiez les informations saisies.");
+                return;
+              }
+
+              setPasswordPromptProfileId(selected.profileId);
+              setPasswordPromptInput("");
+              setPasswordPromptError(null);
+              setAuthError(null);
+              return;
+            }
+
             setProfile((previous) => ({
               ...previous,
               id: selected.profileId,
@@ -3139,6 +3417,52 @@ export default function App() {
             setIsProfileHydrationPending(true);
             setAuthError(null);
             setIsAuthenticated(true);
+          }}
+          onPasswordPromptValueChange={(value) => {
+            setPasswordPromptInput(value);
+            if (passwordPromptError) setPasswordPromptError(null);
+          }}
+          onConfirmPasswordPrompt={() => {
+            const targetProfileId = passwordPromptProfileId;
+            if (!cloudSnapshot || !targetProfileId) {
+              setPasswordPromptError("Authentification impossible. Vérifiez les informations saisies.");
+              return;
+            }
+
+            const selected = cloudSnapshot.profiles[targetProfileId];
+            const selectedPasswordHash = selected?.passwordHash?.trim() || "";
+            if (!selected || !selectedPasswordHash || !isProfilePasswordHash(selectedPasswordHash)) {
+              setPasswordPromptError("Authentification impossible. Vérifiez les informations saisies.");
+              return;
+            }
+
+            const confirm = async () => {
+              const ok = await verifyProfilePassword(passwordPromptInput, selectedPasswordHash);
+              if (!ok) {
+                setPasswordPromptError("Authentification impossible. Vérifiez les informations saisies.");
+                return;
+              }
+
+              setProfile((previous) => ({
+                ...previous,
+                id: selected.profileId,
+                surname: selected.surname,
+                role: selected.role,
+              }));
+              setIsProfileHydrationPending(true);
+              setAuthError(null);
+              setPasswordPromptInput("");
+              setPasswordPromptError(null);
+              setPasswordPromptProfileId(null);
+              setIsAuthenticated(true);
+            };
+
+            void confirm();
+          }}
+          onCancelPasswordPrompt={() => {
+            setPasswordPromptInput("");
+            setPasswordPromptError(null);
+            setPasswordPromptProfileId(null);
           }}
           onCreateAndContinue={() => {
             const normalizedSurname = createProfileSurname.trim();
@@ -3250,6 +3574,8 @@ export default function App() {
             profile={profile}
             ownerCodeConfigured={ownerCodeHash.length > 0}
             ownerRecoveryConfigured={ownerRecoveryHash.length > 0}
+            profilePasswordConfigured={currentProfilePasswordHash.length > 0}
+            profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("checklist")}
             onSaveSurname={(surname) => {
@@ -3300,6 +3626,47 @@ export default function App() {
                 const message = e instanceof Error ? e.message : "Erreur lors du hachage de la phrase.";
                 return { ok: false, message };
               }
+            }}
+            onSaveProfilePassword={async (password) => {
+              const normalized = password.trim();
+              if (normalized.length < 4) {
+                return {
+                  ok: false,
+                  message: "Le mot de passe doit contenir au moins 4 caractères.",
+                };
+              }
+              const nextHash = await hashProfilePassword(normalized);
+              setProfilePasswordHashes((previous) => ({
+                ...previous,
+                [profile.id]: nextHash,
+              }));
+              return { ok: true, message: "Mot de passe du profil mis à jour." };
+            }}
+            onRemoveProfilePassword={async () => {
+              setProfilePasswordHashes((previous) => {
+                if (!(profile.id in previous)) {
+                  return previous;
+                }
+
+                const { [profile.id]: _removed, ...next } = previous;
+                return next;
+              });
+              return { ok: true, message: "Mot de passe du profil retiré." };
+            }}
+            onSaveProfileRecoveryPhrase={async (phrase) => {
+              const normalized = phrase.trim();
+              if (normalized.length < 5) {
+                return {
+                  ok: false,
+                  message: "La phrase doit contenir au moins 5 caractères.",
+                };
+              }
+              const nextHash = await hashOwnerRecoveryPhrase(normalized);
+              setProfileRecoveryHashes((previous) => ({
+                ...previous,
+                [profile.id]: nextHash,
+              }));
+              return { ok: true, message: "Phrase de récupération du profil mise à jour." };
             }}
             onSwitchProfile={resetForProfileSwitch}
           />
@@ -3586,6 +3953,8 @@ export default function App() {
             profile={profile}
             ownerCodeConfigured={ownerCodeHash.length > 0}
             ownerRecoveryConfigured={ownerRecoveryHash.length > 0}
+            profilePasswordConfigured={currentProfilePasswordHash.length > 0}
+            profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("dashboard")}
             onSaveSurname={(surname) => {
@@ -3636,6 +4005,47 @@ export default function App() {
                 const message = e instanceof Error ? e.message : "Erreur lors du hachage de la phrase.";
                 return { ok: false, message };
               }
+            }}
+            onSaveProfilePassword={async (password) => {
+              const normalized = password.trim();
+              if (normalized.length < 4) {
+                return {
+                  ok: false,
+                  message: "Le mot de passe doit contenir au moins 4 caractères.",
+                };
+              }
+              const nextHash = await hashProfilePassword(normalized);
+              setProfilePasswordHashes((previous) => ({
+                ...previous,
+                [profile.id]: nextHash,
+              }));
+              return { ok: true, message: "Mot de passe du profil mis à jour." };
+            }}
+            onRemoveProfilePassword={async () => {
+              setProfilePasswordHashes((previous) => {
+                if (!(profile.id in previous)) {
+                  return previous;
+                }
+
+                const { [profile.id]: _removed, ...next } = previous;
+                return next;
+              });
+              return { ok: true, message: "Mot de passe du profil retiré." };
+            }}
+            onSaveProfileRecoveryPhrase={async (phrase) => {
+              const normalized = phrase.trim();
+              if (normalized.length < 5) {
+                return {
+                  ok: false,
+                  message: "La phrase doit contenir au moins 5 caractères.",
+                };
+              }
+              const nextHash = await hashOwnerRecoveryPhrase(normalized);
+              setProfileRecoveryHashes((previous) => ({
+                ...previous,
+                [profile.id]: nextHash,
+              }));
+              return { ok: true, message: "Phrase de récupération du profil mise à jour." };
             }}
             onSwitchProfile={resetForProfileSwitch}
           />

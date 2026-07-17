@@ -21,6 +21,9 @@ export type CloudProfileRecord = {
   role: Role;
   createdAt: number;
   lastSyncAt: number;
+  passwordHash?: string;
+  recoveryHash?: string;
+  recoveryConfiguredAt?: number;
 };
 
 export type CloudProfileState = {
@@ -29,6 +32,9 @@ export type CloudProfileState = {
   role: Role;
   createdAt: number;
   lastSyncAt: number;
+  passwordHash?: string;
+  recoveryHash?: string;
+  recoveryConfiguredAt?: number;
   checklist: ChecklistState;
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;
@@ -54,6 +60,9 @@ export type CloudSyncWritePayload = {
   profileId: string;
   surname: string;
   role: Role;
+  profilePasswordHash?: string;
+  profileRecoveryHash?: string;
+  profileRecoveryConfiguredAt?: number;
   checklist: ChecklistState;
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;

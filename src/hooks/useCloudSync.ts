@@ -35,6 +35,9 @@ type PushSnapshotInput = {
   profileId: string;
   surname: string;
   role: Role;
+  profilePasswordHash?: string;
+  profileRecoveryHash?: string;
+  profileRecoveryConfiguredAt?: number;
   checklist: ChecklistState;
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;
@@ -262,6 +265,9 @@ export function useCloudSync() {
         profileId: snapshot.profileId,
         surname: snapshot.surname,
         role: snapshot.role,
+        profilePasswordHash: snapshot.profilePasswordHash,
+        profileRecoveryHash: snapshot.profileRecoveryHash,
+        profileRecoveryConfiguredAt: snapshot.profileRecoveryConfiguredAt,
         checklist: snapshot.checklist,
         gameResults: snapshot.gameResults,
         phase: snapshot.phase,
