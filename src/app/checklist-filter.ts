@@ -7,7 +7,7 @@ import type {
 } from "../types/cloud";
 
 export type GenderTarget = "all" | "male" | "female";
-export type HouseholdRoleTarget = "all" | "parent" | "teen" | "child";
+export type HouseholdRoleTarget = "all" | "parent" | "child";
 export type Gender = ProfileGender;
 export type HouseholdRole = ProfileHouseholdRole;
 
@@ -101,16 +101,20 @@ export function getVisibleItemIds<
 
 /**
  * Returns human-readable badge labels for a single checklist item.
- * Returns an empty array for items with no targeting restrictions.
+ * By design, unspecified/all targeting displays both badges for that dimension.
  */
 export function getItemBadges(item: ChecklistItemTargeting): string[] {
   const badges: string[] = [];
   if (item.ownerOnly) badges.push("Propriétaire uniquement");
-  if (item.genderTargets === "male") badges.push("Hommes");
-  if (item.genderTargets === "female") badges.push("Femmes");
-  if (item.householdRoleTargets === "parent") badges.push("Parents");
-  if (item.householdRoleTargets === "teen") badges.push("Enfants");
-  if (item.householdRoleTargets === "child") badges.push("Enfants");
+
+  const genderTarget: GenderTarget = item.genderTargets ?? "all";
+  if (genderTarget === "all" || genderTarget === "male") badges.push("Hommes");
+  if (genderTarget === "all" || genderTarget === "female") badges.push("Femmes");
+
+  const householdRoleTarget: HouseholdRoleTarget = item.householdRoleTargets ?? "all";
+  if (householdRoleTarget === "all" || householdRoleTarget === "parent") badges.push("Parents");
+  if (householdRoleTarget === "all" || householdRoleTarget === "child") badges.push("Enfants");
+
   return badges;
 }
 
