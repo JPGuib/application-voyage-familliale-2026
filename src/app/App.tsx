@@ -232,7 +232,7 @@ const CHECKLIST_ITEM_IDS = new Set(
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
 type Screen = "checklist" | "dashboard" | "guide" | "place" | "game" | "results" | "tips" | "settings";
-type QuickScreen = "guide" | "game" | "tips" | "results";
+type QuickScreen = "checklist" | "guide" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
   id: string;
@@ -265,6 +265,14 @@ type ExternalAppLink = {
 };
 
 const QUICK_ACTIONS: QuickAction[] = [
+  {
+    id: "checklist",
+    emoji: "🧳",
+    title: "Checklist",
+    subtitle: "Préparatifs et suivi",
+    colorBg: "bg-[#FFF3E0]",
+    colorText: "text-[#E65100]",
+  },
   {
     id: "guide",
     emoji: "📖",
@@ -2579,6 +2587,9 @@ export default function App() {
     }
   });
 
+  const getPostAuthLandingScreen = (nextPhase: "before" | "during") =>
+    nextPhase === "during" ? "dashboard" : "checklist";
+
   useEffect(() => {
     if (!cloudEnabled) {
       setIsAuthenticated(true);
@@ -2633,6 +2644,9 @@ export default function App() {
         surname: rememberedProfile.surname,
         role: rememberedProfile.role,
       }));
+      const nextPhase = rememberedProfile.phase || cloudSnapshot.phase;
+      setPhase(nextPhase);
+      setScreen(getPostAuthLandingScreen(nextPhase));
       setIsAuthenticated(true);
       setAuthError(null);
     } catch {
@@ -3419,6 +3433,9 @@ export default function App() {
               surname: selected.surname,
               role: selected.role,
             }));
+            const nextPhase = selected.phase || cloudSnapshot.phase;
+            setPhase(nextPhase);
+            setScreen(getPostAuthLandingScreen(nextPhase));
             setIsProfileHydrationPending(true);
             setAuthError(null);
             setIsAuthenticated(true);
@@ -3454,6 +3471,9 @@ export default function App() {
                 surname: selected.surname,
                 role: selected.role,
               }));
+              const nextPhase = selected.phase || cloudSnapshot.phase;
+              setPhase(nextPhase);
+              setScreen(getPostAuthLandingScreen(nextPhase));
               setIsProfileHydrationPending(true);
               setAuthError(null);
               setPasswordPromptInput("");

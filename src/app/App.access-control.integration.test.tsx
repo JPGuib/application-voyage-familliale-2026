@@ -149,12 +149,6 @@ describe("App access-control integration", () => {
     const view = render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
-
-    await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
@@ -187,11 +181,15 @@ describe("App access-control integration", () => {
     render(<App />);
 
     await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Checklist/i }));
+    await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
-
     await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
@@ -264,6 +262,12 @@ describe("App access-control integration", () => {
     }));
 
     render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Checklist/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
