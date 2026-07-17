@@ -4,7 +4,7 @@ baseline_commit: fcddf9881e059581032a1bc4c7faf869ba2e3dc1
 
 # Story 9.2 - Reinitialiser le code via le flow Code oublie
 
-Statut: review
+Statut: done
 Epic: 9 - Recuperation d urgence du code proprietaire
 Backlog source: BACKLOG-004
 Date: 2026-07-10
@@ -63,5 +63,17 @@ So that je retrouve l acces au deblocage du voyage.
 - guidelines/_bmad-output/implementation-artifacts/sprint-status.yaml
 - guidelines/_bmad-output/implementation-artifacts/stories/9-2-reinitialiser-le-code-via-le-flow-code-oublie.md
 
+### Review Findings
+
+- [x] [Review][Patch] No brute-force protection on recovery phrase — Reuse `unlockFailedAttempts`/`unlockLockedUntil` (same lockout as start-code flow) in `confirmRecoveryReset`: increment on wrong phrase, block if locked, show "Trop de tentatives" message. Decision resolved: apply same lockout. [src/app/App.tsx — `confirmRecoveryReset`]
+- [x] [Review][Patch] Both modals simultaneously in DOM — `openForgotCodeFlow` (recovery-hash branch) sets `showRecoveryPrompt = true` without calling `setShowStartPrompt(false)`. Both overlays render at the same time (`z-20` start prompt + `z-30` recovery). No focus trap exists: Tab cycles into the hidden start prompt's inputs and buttons, including "Valider" (`onConfirmStart`). Fix: add `setShowStartPrompt(false)` in the recovery-hash branch of `openForgotCodeFlow`. [src/app/App.tsx — `openForgotCodeFlow`]
+- [x] [Review][Patch] `void onConfirmRecoveryReset()` swallows async exceptions — Any exception thrown by `verifyOwnerRecoveryPhrase` or `hashOwnerCode` after the first `await` is silently discarded; the button does nothing and no error is displayed to the user. Fix: wrap the body of `confirmRecoveryReset` in a try/catch that calls `setRecoveryError(...)` on failure. [src/app/App.tsx — `confirmRecoveryReset` + recovery modal button]
+- [x] [Review][Defer] `recoveryError` cleared by all field change handlers regardless of error context — all three `onRecovery*Change` handlers unconditionally clear `recoveryError`; a "Phrase incorrecte" error disappears when typing in the new-code field. Deferred — cosmetic UX inconsistency, pre-existing pattern. [src/app/App.tsx — recovery change handlers]
+- [x] [Review][Defer] Double-submit race on reset button — no `disabled` prop during async execution; rapid double-clicks can fire two concurrent resets. Deferred — low actual risk in family travel context. [src/app/App.tsx — recovery modal "Réinitialiser le code" button]
+- [x] [Review][Defer] `ChecklistScreen` prop count explosion — 11 new props added solely to host the recovery modal; second call site (travel phase) requires 11 no-op stubs. Deferred — pre-existing architectural pattern, out of scope for this story. [src/app/App.tsx — `ChecklistScreen`]
+- [x] [Review][Defer] Recovery modal inputs have no accessible labels — password inputs use only placeholder attributes; no `<label>` or `aria-label`. Deferred — pre-existing pattern, a11y improvement out of scope. [src/app/App.tsx — recovery modal inputs]
+- [x] [Review][Defer] `openForgotCodeFlow` navigates to settings with no in-flow explanation — when no recovery phrase, modal closes and app navigates away silently. Deferred — settings screen shows "Aucune phrase configurée pour le moment." which explains the situation. [src/app/App.tsx — `openForgotCodeFlow`]
+
 ## Change Log
 - 2026-07-16: Story 9.2 implemented and validated (forgot-code owner reset flow, integration tests, full regression pass).
+- 2026-07-16: Code review findings written (1 decision-needed, 2 patch, 5 deferred, 8 dismissed).
