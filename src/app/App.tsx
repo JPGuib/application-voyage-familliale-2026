@@ -745,6 +745,7 @@ function ChecklistScreen({
   recoveryCodeConfirm,
   recoveryError,
   lockRemainingSec,
+  unlockActionsEnabled,
   onOpenSettings,
   onStart,
   onOpenForgotCode,
@@ -774,6 +775,7 @@ function ChecklistScreen({
   recoveryCodeConfirm: string;
   recoveryError: string | null;
   lockRemainingSec: number;
+  unlockActionsEnabled: boolean;
   onOpenSettings: () => void;
   onStart: () => void;
   onOpenForgotCode: () => void;
@@ -800,7 +802,7 @@ function ChecklistScreen({
         <div className="relative z-10">
           <div className="flex items-center justify-between gap-3 mb-1">
             <p className="text-xs font-extrabold opacity-80 tracking-widest uppercase">
-              ✈️ Avant le départ
+              {unlockActionsEnabled ? "✈️ Avant le départ" : "✅ Voyage débloqué"}
             </p>
             <button
               onClick={onOpenSettings}
@@ -906,16 +908,24 @@ function ChecklistScreen({
 
       {/* CTA */}
       <div className="flex-shrink-0 px-4 pb-8 pt-3 bg-background border-t border-border">
-        <button
-          onClick={onStart}
-          className="w-full bg-primary text-primary-foreground rounded-2xl py-5 text-lg font-black flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-transform"
-        >
-          <Plane size={22} />
-          On est partis ! 🎉
-        </button>
-        <p className="text-center text-xs text-muted-foreground mt-2">
-          Votre aventure vous attend !
-        </p>
+        {unlockActionsEnabled ? (
+          <>
+            <button
+              onClick={onStart}
+              className="w-full bg-primary text-primary-foreground rounded-2xl py-5 text-lg font-black flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-transform"
+            >
+              <Plane size={22} />
+              On est partis ! 🎉
+            </button>
+            <p className="text-center text-xs text-muted-foreground mt-2">
+              Votre aventure vous attend !
+            </p>
+          </>
+        ) : (
+          <p className="text-center text-xs font-bold text-muted-foreground mt-2">
+            Voyage déjà débloqué. Checklist disponible pendant tout le séjour.
+          </p>
+        )}
       </div>
 
       {startPromptOpen && (
@@ -2962,11 +2972,6 @@ export default function App() {
   }, [unlockLockedUntil]);
 
   useEffect(() => {
-    if (phase === "during" && canAccessScreen(profile.role, phase, "dashboard") && screen === "checklist") {
-      setScreen("dashboard");
-      return;
-    }
-
     if (!canAccessScreen(profile.role, phase, screen)) {
       setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, screen));
       const safeScreen = getSafeScreen(profile.role, phase);
@@ -3782,6 +3787,7 @@ export default function App() {
           recoveryCodeConfirm={recoveryCodeConfirmInput}
           recoveryError={recoveryError}
           lockRemainingSec={lockRemainingSec}
+          unlockActionsEnabled
           onOpenSettings={() => goToScreen("settings")}
           onStart={startJourney}
           onOpenForgotCode={openForgotCodeFlow}
@@ -3836,6 +3842,7 @@ export default function App() {
             recoveryCodeConfirm=""
             recoveryError={null}
             lockRemainingSec={0}
+            unlockActionsEnabled={false}
             onOpenSettings={() => goToScreen("settings")}
             onStart={() => {
               // No-op during travel phase: checklist remains consultable but unlock flow is not exposed.
