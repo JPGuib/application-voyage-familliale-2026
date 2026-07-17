@@ -1,5 +1,5 @@
 # generated: 2026-07-05
-# last_updated: 2026-07-16 (patched & merged)
+# last_updated: 2026-07-17
 # project: application de voyage 2026
 # project_key: NOKEY
 # tracking_system: file-system
@@ -94,9 +94,9 @@ development_status:
   10-4-adaptation-checklist-par-profil: done
   10-5-mise-a-jour-contenu-checklist: done
   10-6-recuperation-mot-de-passe-par-question-reponse-par-profil: done
-  10-7-mot-de-passe-oublie-au-changement-profil-via-recovery: backlog
-  10-8-changement-mot-de-passe-en-session-ancien-ou-recovery: backlog
-  10-9-afficher-masquer-les-saisies-sensibles-sans-revelation-stockee: backlog
+  10-7-mot-de-passe-oublie-au-changement-profil-via-recovery: review
+  10-8-changement-mot-de-passe-en-session-ancien-ou-recovery: review
+  10-9-afficher-masquer-les-saisies-sensibles-sans-revelation-stockee: review
   epic-10-retrospective: optional
 
   epic-11: done

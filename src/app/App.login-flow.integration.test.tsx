@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "./App";
+import { hashOwnerRecoveryPhrase } from "./owner-recovery";
 import { hashProfilePassword } from "./profile-password";
 
 const cloudSyncMock = vi.fn();
@@ -378,6 +379,724 @@ describe("App cloud login flow", () => {
     } finally {
       confirmSpy.mockRestore();
     }
+  });
+
+  it("shows forgot-password link when profile recovery is configured", async () => {
+    const protectedHash = await hashProfilePassword("secret-1234");
+    const recoveryHash = await hashOwnerRecoveryPhrase("my first travel");
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: protectedHash,
+          recoveryHash,
+          recoveryQuestion: "Quel est ton premier voyage ?",
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    expect(screen.getByRole("button", { name: "Mot de passe oublié ?" })).toBeInTheDocument();
+  });
+
+  it("hides forgot-password link when no recovery is configured", async () => {
+    const protectedHash = await hashProfilePassword("secret-1234");
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: protectedHash,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    expect(screen.queryByRole("button", { name: "Mot de passe oublié ?" })).not.toBeInTheDocument();
+  });
+
+  it("resets password via recovery answer and authenticates", async () => {
+    const protectedHash = await hashProfilePassword("secret-1234");
+    const recoveryHash = await hashOwnerRecoveryPhrase("my first travel");
+    const expectedNewHash = await hashProfilePassword("new-pass");
+    const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: protectedHash,
+          recoveryHash,
+          recoveryQuestion: "Quel est ton premier voyage ?",
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mot de passe oublié ?" }));
+
+    expect(screen.getByText("Quel est ton premier voyage ?")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText("Réponse"), {
+      target: { value: "my first travel" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Nouveau mot de passe"), {
+      target: { value: "new-pass" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Confirmer le nouveau mot de passe"), {
+      target: { value: "new-pass" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Réinitialiser" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    expect(pushSnapshotMock).toHaveBeenCalled();
+    expect(pushSnapshotMock.mock.calls).toContainEqual([
+      expect.objectContaining({
+        profileId: "p2",
+        profilePasswordHash: expectedNewHash,
+      }),
+    ]);
+  });
+
+  it("rejects incorrect recovery answer with generic error and no auth", async () => {
+    const protectedHash = await hashProfilePassword("secret-1234");
+    const recoveryHash = await hashOwnerRecoveryPhrase("my first travel");
+    const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: protectedHash,
+          recoveryHash,
+          recoveryQuestion: "Quel est ton premier voyage ?",
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mot de passe oublié ?" }));
+
+    fireEvent.change(screen.getByPlaceholderText("Réponse"), {
+      target: { value: "wrong answer" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Nouveau mot de passe"), {
+      target: { value: "new-pass" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Confirmer le nouveau mot de passe"), {
+      target: { value: "new-pass" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Réinitialiser" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Authentification impossible. Vérifiez les informations saisies.")
+      ).toBeInTheDocument();
+    });
+
+    expect(pushSnapshotMock).not.toHaveBeenCalled();
+    expect(screen.queryByRole("heading", { name: "Préparer nos bagages" })).not.toBeInTheDocument();
+  });
+
+  it("returns to password prompt when recovery is canceled", async () => {
+    const protectedHash = await hashProfilePassword("secret-1234");
+    const recoveryHash = await hashOwnerRecoveryPhrase("my first travel");
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: protectedHash,
+          recoveryHash,
+          recoveryQuestion: "Quel est ton premier voyage ?",
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mot de passe oublié ?" }));
+    fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
+
+    expect(screen.getByPlaceholderText("Mot de passe")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Se connecter" })).toBeInTheDocument();
+  });
+
+  it("changes password in session using current password and keeps login flow behavior", async () => {
+    const currentHash = await hashProfilePassword("secret-1234");
+    const expectedNewHash = await hashProfilePassword("new-secret-1234");
+    const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: currentHash,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+      target: { value: "secret-1234" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Changer le mot de passe en session" }));
+
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe actuel"), {
+      target: { value: "secret-1234" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Nouveau mot de passe (min. 4 caractères)"), {
+      target: { value: "new-secret-1234" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Confirmer le nouveau mot de passe"), {
+      target: { value: "new-secret-1234" },
+    });
+    const pushCallsBeforeConfirm = pushSnapshotMock.mock.calls.length;
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer le changement" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Mot de passe du profil mis à jour.")).toBeInTheDocument();
+    });
+
+    expect(pushSnapshotMock).toHaveBeenCalled();
+    expect(pushSnapshotMock.mock.calls).toContainEqual([
+      expect.objectContaining({
+        profileId: "p2",
+        profilePasswordHash: expectedNewHash,
+        surname: "Léo",
+        role: "utilisateur",
+      }),
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Se déconnecter / Changer de profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Oui, se déconnecter" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    expect(screen.getByText("Profil protégé")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+      target: { value: "wrong-password" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+    await waitFor(() => {
+      expect(
+        screen.getByText("Authentification impossible. Vérifiez les informations saisies.")
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+      target: { value: "secret-1234" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+  });
+
+  it("rejects in-session current-password proof with generic error", async () => {
+    const currentHash = await hashProfilePassword("secret-1234");
+    const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: currentHash,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+      target: { value: "secret-1234" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Changer le mot de passe en session" }));
+
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe actuel"), {
+      target: { value: "wrong-password" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Nouveau mot de passe (min. 4 caractères)"), {
+      target: { value: "new-secret-1234" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Confirmer le nouveau mot de passe"), {
+      target: { value: "new-secret-1234" },
+    });
+    const pushCallsBeforeConfirm = pushSnapshotMock.mock.calls.length;
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer le changement" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Authentification impossible. Vérifiez les informations saisies.")
+      ).toBeInTheDocument();
+    });
+
+    expect(pushSnapshotMock.mock.calls.length).toBe(pushCallsBeforeConfirm);
+  });
+
+  it("changes password in session using recovery answer when recovery is configured", async () => {
+    const currentHash = await hashProfilePassword("secret-1234");
+    const recoveryHash = await hashOwnerRecoveryPhrase("my first travel");
+    const expectedNewHash = await hashProfilePassword("new-secret-1234");
+    const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: currentHash,
+          recoveryHash,
+          recoveryQuestion: "Quel est ton premier voyage ?",
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+      target: { value: "secret-1234" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Changer le mot de passe en session" }));
+    fireEvent.click(screen.getByRole("button", { name: "Réponse de récupération" }));
+
+    fireEvent.change(screen.getByPlaceholderText("Réponse de récupération"), {
+      target: { value: "my first travel" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Nouveau mot de passe (min. 4 caractères)"), {
+      target: { value: "new-secret-1234" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Confirmer le nouveau mot de passe"), {
+      target: { value: "new-secret-1234" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer le changement" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Mot de passe du profil mis à jour.")).toBeInTheDocument();
+    });
+
+    expect(pushSnapshotMock).toHaveBeenCalled();
+    expect(pushSnapshotMock.mock.calls).toContainEqual([
+      expect.objectContaining({
+        profileId: "p2",
+        profilePasswordHash: expectedNewHash,
+      }),
+    ]);
+  });
+
+  it("hides recovery proof option in session password change when recovery is not configured", async () => {
+    const currentHash = await hashProfilePassword("secret-1234");
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: currentHash,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+      target: { value: "secret-1234" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Changer le mot de passe en session" }));
+
+    expect(screen.queryByRole("button", { name: "Réponse de récupération" })).not.toBeInTheDocument();
+  });
+
+  it("validates mismatch and minimum length in session password change flow", async () => {
+    const currentHash = await hashProfilePassword("secret-1234");
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: currentHash,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+      target: { value: "secret-1234" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Changer le mot de passe en session" }));
+
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe actuel"), {
+      target: { value: "secret-1234" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Nouveau mot de passe (min. 4 caractères)"), {
+      target: { value: "abc" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Confirmer le nouveau mot de passe"), {
+      target: { value: "abc" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer le changement" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Le nouveau mot de passe doit contenir au moins 4 caractères.")
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("Nouveau mot de passe (min. 4 caractères)"), {
+      target: { value: "new-secret-1234" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Confirmer le nouveau mot de passe"), {
+      target: { value: "different-secret" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer le changement" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("La confirmation du mot de passe ne correspond pas.")).toBeInTheDocument();
+    });
+  });
+
+  // ─── Story 10.9: show/hide visibility toggles ────────────────────────────
+
+  it("defaults password prompt input to masked mode and toggles visibility", async () => {
+    const protectedHash = await hashProfilePassword("secret-1234");
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: protectedHash,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    const passwordInput = screen.getByPlaceholderText("Mot de passe");
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    fireEvent.click(screen.getByRole("button", { name: "Afficher le mot de passe saisi" }));
+    expect(passwordInput).toHaveAttribute("type", "text");
+
+    fireEvent.click(screen.getByRole("button", { name: "Masquer le mot de passe saisi" }));
+    expect(passwordInput).toHaveAttribute("type", "password");
+  });
+
+  it("defaults recovery overlay inputs to masked mode and toggles each independently", async () => {
+    const protectedHash = await hashProfilePassword("secret-1234");
+    const recoveryHash = await hashOwnerRecoveryPhrase("my first travel");
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: protectedHash,
+          recoveryHash,
+          recoveryQuestion: "Quel est ton premier voyage ?",
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mot de passe oublié ?" }));
+
+    const answerInput = screen.getByPlaceholderText("Réponse");
+    const newPasswordInput = screen.getByPlaceholderText("Nouveau mot de passe");
+    const confirmInput = screen.getByPlaceholderText("Confirmer le nouveau mot de passe");
+
+    expect(answerInput).toHaveAttribute("type", "password");
+    expect(newPasswordInput).toHaveAttribute("type", "password");
+    expect(confirmInput).toHaveAttribute("type", "password");
+
+    fireEvent.click(screen.getByRole("button", { name: "Afficher la réponse saisie" }));
+    expect(answerInput).toHaveAttribute("type", "text");
+    expect(newPasswordInput).toHaveAttribute("type", "password");
+    expect(confirmInput).toHaveAttribute("type", "password");
+
+    fireEvent.click(screen.getByRole("button", { name: "Afficher le nouveau mot de passe saisi" }));
+    expect(newPasswordInput).toHaveAttribute("type", "text");
+
+    fireEvent.click(screen.getByRole("button", { name: "Afficher la confirmation saisie" }));
+    expect(confirmInput).toHaveAttribute("type", "text");
+  });
+
+  it("defaults in-session password change inputs to masked mode and toggles visibility", async () => {
+    const protectedHash = await hashProfilePassword("secret-1234");
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: protectedHash,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+      target: { value: "secret-1234" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Changer le mot de passe en session" }));
+
+    const proofInput = screen.getByPlaceholderText("Mot de passe actuel");
+    const newPasswordInput = screen.getByPlaceholderText("Nouveau mot de passe (min. 4 caractères)");
+    const confirmInput = screen.getByPlaceholderText("Confirmer le nouveau mot de passe");
+
+    expect(proofInput).toHaveAttribute("type", "password");
+    expect(newPasswordInput).toHaveAttribute("type", "password");
+    expect(confirmInput).toHaveAttribute("type", "password");
+
+    fireEvent.click(screen.getByRole("button", { name: "Afficher la valeur saisie" }));
+    expect(proofInput).toHaveAttribute("type", "text");
+    expect(newPasswordInput).toHaveAttribute("type", "password");
+
+    fireEvent.click(screen.getByRole("button", { name: "Afficher le nouveau mot de passe saisi" }));
+    expect(newPasswordInput).toHaveAttribute("type", "text");
+
+    fireEvent.click(screen.getByRole("button", { name: "Afficher la confirmation saisie" }));
+    expect(confirmInput).toHaveAttribute("type", "text");
   });
 });
 
