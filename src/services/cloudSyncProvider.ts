@@ -32,6 +32,15 @@ function toTravelPhase(value: unknown): TravelPhase {
   return value === "during" ? "during" : "before";
 }
 
+function toOptionalNonEmptyString(value: unknown): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : undefined;
+}
+
 function parseChecklist(value: unknown): ChecklistState {
   const raw = asRecord(value);
   const next: ChecklistState = {};
@@ -74,11 +83,21 @@ function parseProfileRecord(value: unknown): CloudProfileRecord | null {
   }
 
   const now = Date.now();
+  const passwordHash = toOptionalNonEmptyString(record.passwordHash);
+  const recoveryHash = toOptionalNonEmptyString(record.recoveryHash);
   return {
     surname: typeof record.surname === "string" ? record.surname : "",
     role,
     createdAt: toFiniteNumber(record.createdAt, now),
     lastSyncAt: toFiniteNumber(record.lastSyncAt, now),
+    passwordHash,
+    recoveryHash,
+    recoveryConfiguredAt:
+      recoveryHash &&
+      typeof record.recoveryConfiguredAt === "number" &&
+      Number.isFinite(record.recoveryConfiguredAt)
+        ? record.recoveryConfiguredAt
+        : undefined,
   };
 }
 
@@ -120,6 +139,9 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
       role: record.role,
       createdAt: record.createdAt,
       lastSyncAt: record.lastSyncAt,
+      passwordHash: record.passwordHash,
+      recoveryHash: record.recoveryHash,
+      recoveryConfiguredAt: record.recoveryConfiguredAt,
       checklist: parseChecklist(checklistRecords[profileId]),
       gameResults: parseGameResults(gameResultRecords[profileId]),
       phase: toTravelPhase(phaseRecords[profileId]),
@@ -179,6 +201,23 @@ export async function pushCloudSnapshot(
     [`checklists/${payload.profileId}`]: payload.checklist,
     [`gameResults/${payload.profileId}`]: payload.gameResults,
   };
+
+  if (typeof payload.profilePasswordHash === "string") {
+    const normalizedPasswordHash = payload.profilePasswordHash.trim();
+    updates[`profiles/${payload.profileId}/passwordHash`] =
+      normalizedPasswordHash.length > 0 ? payload.profilePasswordHash : null;
+  }
+  if (typeof payload.profileRecoveryHash === "string") {
+    const normalizedRecoveryHash = payload.profileRecoveryHash.trim();
+    if (normalizedRecoveryHash.length > 0) {
+      updates[`profiles/${payload.profileId}/recoveryHash`] = payload.profileRecoveryHash;
+      updates[`profiles/${payload.profileId}/recoveryConfiguredAt`] =
+        payload.profileRecoveryConfiguredAt ?? timestamp;
+    } else {
+      updates[`profiles/${payload.profileId}/recoveryHash`] = null;
+      updates[`profiles/${payload.profileId}/recoveryConfiguredAt`] = null;
+    }
+  }
 
   if (payload.canWriteFamilyState && isPayloadOwner) {
     updates.ownerProfileId = normalizedFamilyState.ownerProfileId;

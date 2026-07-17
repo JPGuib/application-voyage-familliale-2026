@@ -147,4 +147,44 @@ describe("cloudSyncProvider phase migration", () => {
       "utilisateur"
     );
   });
+
+  it("parses profile-scoped password and recovery hashes when present", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      profiles: {
+        "profile-a": {
+          surname: "A",
+          role: "proprietaire",
+          createdAt: 1,
+          lastSyncAt: 2,
+          passwordHash: "sha256:" + "a".repeat(64),
+          recoveryHash: "sha256:" + "b".repeat(64),
+          recoveryConfiguredAt: 123,
+        },
+      },
+    });
+
+    expect(snapshot.profiles["profile-a"]?.passwordHash).toBe("sha256:" + "a".repeat(64));
+    expect(snapshot.profiles["profile-a"]?.recoveryHash).toBe("sha256:" + "b".repeat(64));
+    expect(snapshot.profiles["profile-a"]?.recoveryConfiguredAt).toBe(123);
+  });
+
+  it("drops recovery metadata when recovery hash is empty", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      profiles: {
+        "profile-a": {
+          surname: "A",
+          role: "proprietaire",
+          createdAt: 1,
+          lastSyncAt: 2,
+          recoveryHash: "",
+          recoveryConfiguredAt: 123,
+        },
+      },
+    });
+
+    expect(snapshot.profiles["profile-a"]?.recoveryHash).toBeUndefined();
+    expect(snapshot.profiles["profile-a"]?.recoveryConfiguredAt).toBeUndefined();
+  });
 });
