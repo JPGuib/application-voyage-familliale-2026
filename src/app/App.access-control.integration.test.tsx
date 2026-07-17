@@ -281,7 +281,7 @@ describe("App access-control integration", () => {
 // ─── Checklist filtering (story 10.4) ────────────────────────────────────────
 
 type ProfileGender = "unspecified" | "male" | "female";
-type ProfileHouseholdRole = "member" | "parent" | "teen" | "child";
+type ProfileHouseholdRole = "member" | "parent" | "child";
 
 function makeSnapshotWithMetadata(
   phase: "before" | "during",

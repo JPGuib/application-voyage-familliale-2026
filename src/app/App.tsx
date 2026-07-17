@@ -507,7 +507,7 @@ function ProfileSetupScreen({
             Rôle familial (optionnel)
           </p>
           <div className="grid grid-cols-2 gap-2">
-            {(["member", "parent", "teen", "child"] as const).map((r) => (
+            {(["member", "parent", "child"] as const).map((r) => (
               <button
                 key={r}
                 type="button"
@@ -518,7 +518,7 @@ function ProfileSetupScreen({
                     : "border-border text-foreground"
                 }`}
               >
-                {r === "member" ? "Non précisé" : r === "parent" ? "Parent" : r === "teen" ? "Ado" : "Enfant"}
+                {r === "member" ? "Non précisé" : r === "parent" ? "Parent" : "Enfant"}
               </button>
             ))}
           </div>
@@ -2238,7 +2238,11 @@ function SettingsScreen({
               <button
                 key={g}
                 type="button"
-                onClick={() => setSelectedGender(g)}
+                onClick={() => {
+                  setSelectedGender(g);
+                  onSaveProfileMetadata(g, selectedHouseholdRole);
+                  setMetadataFeedback("Profil de préparation mis à jour.");
+                }}
                 className={`rounded-xl py-2 text-xs font-black border transition-colors ${
                   selectedGender === g
                     ? "bg-primary text-primary-foreground border-primary"
@@ -2253,30 +2257,25 @@ function SettingsScreen({
             Rôle familial
           </p>
           <div className="grid grid-cols-2 gap-2 mb-4">
-            {(["member", "parent", "teen", "child"] as const).map((r) => (
+            {(["member", "parent", "child"] as const).map((r) => (
               <button
                 key={r}
                 type="button"
-                onClick={() => setSelectedHouseholdRole(r)}
+                onClick={() => {
+                  setSelectedHouseholdRole(r);
+                  onSaveProfileMetadata(selectedGender, r);
+                  setMetadataFeedback("Profil de préparation mis à jour.");
+                }}
                 className={`rounded-xl py-2 text-xs font-black border transition-colors ${
                   selectedHouseholdRole === r
                     ? "bg-primary text-primary-foreground border-primary"
                     : "border-border text-foreground"
                 }`}
               >
-                {r === "member" ? "Non précisé" : r === "parent" ? "Parent" : r === "teen" ? "Ado" : "Enfant"}
+                {r === "member" ? "Non précisé" : r === "parent" ? "Parent" : "Enfant"}
               </button>
             ))}
           </div>
-          <button
-            onClick={() => {
-              onSaveProfileMetadata(selectedGender, selectedHouseholdRole);
-              setMetadataFeedback("Profil de préparation mis à jour.");
-            }}
-            className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
-          >
-            Enregistrer le profil de préparation
-          </button>
           {metadataFeedback && (
             <p className="mt-2 text-xs font-bold text-muted-foreground">{metadataFeedback}</p>
           )}
@@ -2576,8 +2575,10 @@ export default function App() {
           ? parsed.gender
           : "unspecified";
       const householdRole: HouseholdRole =
-        parsed?.householdRole === "parent" || parsed?.householdRole === "teen" || parsed?.householdRole === "child"
+        parsed?.householdRole === "parent" || parsed?.householdRole === "child"
           ? parsed.householdRole
+          : parsed?.householdRole === "teen"
+            ? "child"
           : "member";
       return {
         id: typeof parsed?.id === "string" && parsed.id.trim() ? parsed.id : createProfileId(),

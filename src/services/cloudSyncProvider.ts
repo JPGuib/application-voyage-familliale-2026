@@ -83,7 +83,8 @@ function toProfileGender(value: unknown): ProfileGender {
 }
 
 function toProfileHouseholdRole(value: unknown): ProfileHouseholdRole {
-  if (value === "parent" || value === "teen" || value === "child") return value;
+  if (value === "parent" || value === "child") return value;
+  if (value === "teen") return "child";
   return "member";
 }
 

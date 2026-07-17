@@ -262,7 +262,7 @@ describe("cloudSyncProvider metadata (story 10.4)", () => {
   });
 
   it("parses all householdRole values correctly", () => {
-    for (const role of ["parent", "teen", "child"] as const) {
+    for (const role of ["parent", "child"] as const) {
       const snapshot = parseCloudSnapshot({
         phase: "before",
         profiles: {
@@ -271,5 +271,16 @@ describe("cloudSyncProvider metadata (story 10.4)", () => {
       });
       expect(snapshot.profiles["p"]?.householdRole).toBe(role);
     }
+  });
+
+  it("maps legacy teen householdRole value to child", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      profiles: {
+        p: { surname: "X", role: "utilisateur", createdAt: 1, lastSyncAt: 2, householdRole: "teen" },
+      },
+    });
+
+    expect(snapshot.profiles["p"]?.householdRole).toBe("child");
   });
 });

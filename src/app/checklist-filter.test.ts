@@ -77,7 +77,7 @@ describe("isItemVisibleForProfile - default metadata (AC2)", () => {
   });
 
   it("shows householdRole-targeted item to non-owner with default metadata", () => {
-    const item: ChecklistItemTargeting = { householdRoleTargets: "teen" };
+    const item: ChecklistItemTargeting = { householdRoleTargets: "child" };
     const user: ProfileFilterInput = {
       role: "utilisateur",
       gender: "unspecified",
@@ -144,29 +144,29 @@ describe("isItemVisibleForProfile - gender filtering", () => {
     const user: ProfileFilterInput = {
       role: "utilisateur",
       gender: "unspecified",
-      householdRole: "teen",
+      householdRole: "child",
     };
     expect(isItemVisibleForProfile(item, user)).toBe(true);
   });
 });
 
 describe("isItemVisibleForProfile - householdRole filtering", () => {
-  it("hides parent item from teen user", () => {
+  it("hides parent item from child user", () => {
     const item: ChecklistItemTargeting = { householdRoleTargets: "parent" };
     const user: ProfileFilterInput = {
       role: "utilisateur",
       gender: "unspecified",
-      householdRole: "teen",
+      householdRole: "child",
     };
     expect(isItemVisibleForProfile(item, user)).toBe(false);
   });
 
-  it("shows teen item to teen user", () => {
-    const item: ChecklistItemTargeting = { householdRoleTargets: "teen" };
+  it("shows child item to child user", () => {
+    const item: ChecklistItemTargeting = { householdRoleTargets: "child" };
     const user: ProfileFilterInput = {
       role: "utilisateur",
       gender: "unspecified",
-      householdRole: "teen",
+      householdRole: "child",
     };
     expect(isItemVisibleForProfile(item, user)).toBe(true);
   });
@@ -176,7 +176,7 @@ describe("isItemVisibleForProfile - householdRole filtering", () => {
     const user: ProfileFilterInput = {
       role: "utilisateur",
       gender: "male",
-      householdRole: "teen",
+      householdRole: "child",
     };
     expect(isItemVisibleForProfile(item, user)).toBe(true);
   });
@@ -220,7 +220,7 @@ describe("isItemVisibleForProfile - combined targeting", () => {
     expect(isItemVisibleForProfile(item, user)).toBe(true);
   });
 
-  it("hides female+parent item from female teen", () => {
+  it("hides female+parent item from female child", () => {
     const item: ChecklistItemTargeting = {
       genderTargets: "female",
       householdRoleTargets: "parent",
@@ -228,7 +228,7 @@ describe("isItemVisibleForProfile - combined targeting", () => {
     const user: ProfileFilterInput = {
       role: "utilisateur",
       gender: "female",
-      householdRole: "teen",
+      householdRole: "child",
     };
     expect(isItemVisibleForProfile(item, user)).toBe(false);
   });
@@ -258,10 +258,6 @@ const SAMPLE_CATEGORIES = [
     ],
   },
   {
-    id: "teen-items",
-    items: [{ id: "t1", householdRoleTargets: "teen" as const }],
-  },
-  {
     id: "child-items",
     items: [{ id: "c1", householdRoleTargets: "child" as const }],
   },
@@ -274,19 +270,19 @@ const SAMPLE_CATEGORIES = [
 ];
 
 describe("filterCategoriesForProfile - AC3 owner sees all", () => {
-  it("owner sees all 6 categories including ownerOnly", () => {
+  it("owner sees all 5 categories including ownerOnly", () => {
     const owner: ProfileFilterInput = {
       role: "proprietaire",
       gender: "unspecified",
       householdRole: "member",
     };
     const result = filterCategoriesForProfile(SAMPLE_CATEGORIES, owner);
-    expect(result).toHaveLength(6);
+    expect(result).toHaveLength(5);
   });
 });
 
 describe("filterCategoriesForProfile - AC2 non-owner default metadata", () => {
-  it("default non-owner sees mens, womens, teen, child and family (not ownerOnly)", () => {
+  it("default non-owner sees mens, womens, child and family (not ownerOnly)", () => {
     const user: ProfileFilterInput = {
       role: "utilisateur",
       gender: "unspecified",
@@ -297,7 +293,6 @@ describe("filterCategoriesForProfile - AC2 non-owner default metadata", () => {
     expect(ids).toContain("mens-clothing");
     expect(ids).toContain("womens-clothing");
     expect(ids).toContain("family-items");
-    expect(ids).toContain("teen-items");
     expect(ids).toContain("child-items");
     expect(ids).not.toContain("owner-tools");
   });
@@ -322,12 +317,11 @@ describe("filterCategoriesForProfile - AC8 QA matrix combinations", () => {
   const owner: ProfileFilterInput = { role: "proprietaire", gender: "unspecified", householdRole: "member" };
   const parentMale: ProfileFilterInput = { role: "utilisateur", gender: "male", householdRole: "parent" };
   const parentFemale: ProfileFilterInput = { role: "utilisateur", gender: "female", householdRole: "parent" };
-  const teen: ProfileFilterInput = { role: "utilisateur", gender: "unspecified", householdRole: "teen" };
   const child: ProfileFilterInput = { role: "utilisateur", gender: "unspecified", householdRole: "child" };
 
   it("owner: sees all categories", () => {
     const result = filterCategoriesForProfile(SAMPLE_CATEGORIES, owner);
-    expect(result).toHaveLength(6);
+    expect(result).toHaveLength(5);
   });
 
   it("parent-male: sees mens-clothing and family-items", () => {
@@ -347,20 +341,10 @@ describe("filterCategoriesForProfile - AC8 QA matrix combinations", () => {
     expect(ids).not.toContain("mens-clothing");
   });
 
-  it("teen: sees teen-targeted items and hides child-targeted items", () => {
-    const result = filterCategoriesForProfile(SAMPLE_CATEGORIES, teen);
-    const ids = result.map((c) => c.id);
-    expect(ids).toContain("teen-items");
-    expect(ids).not.toContain("child-items");
-    expect(ids).toContain("family-items");
-    expect(ids).not.toContain("owner-tools");
-  });
-
-  it("child: sees child-targeted items and hides teen-targeted items", () => {
+  it("child: sees child-targeted items", () => {
     const result = filterCategoriesForProfile(SAMPLE_CATEGORIES, child);
     const ids = result.map((c) => c.id);
     expect(ids).toContain("child-items");
-    expect(ids).not.toContain("teen-items");
     expect(ids).toContain("family-items");
     expect(ids).not.toContain("owner-tools");
   });
@@ -381,40 +365,42 @@ describe("getVisibleItemIds", () => {
   it("owner gets all item IDs", () => {
     const owner: ProfileFilterInput = { role: "proprietaire", gender: "unspecified", householdRole: "member" };
     const ids = getVisibleItemIds(SAMPLE_CATEGORIES, owner);
-    // mens m1+m2, womens w1, family f1+f2, teen t1, child c1, owner-tools o1 = 8
-    expect(ids.size).toBe(8);
+    // mens m1+m2, womens w1, family f1+f2, child c1, owner-tools o1 = 7
+    expect(ids.size).toBe(7);
   });
 });
 
 // ─── getItemBadges ────────────────────────────────────────────────────────────
 
 describe("getItemBadges", () => {
-  it("returns empty array for untagged item", () => {
-    expect(getItemBadges({})).toEqual([]);
+  it("returns both gender and household badges for untagged item", () => {
+    expect(getItemBadges({})).toEqual(["Hommes", "Femmes", "Parents", "Enfants"]);
   });
 
-  it("returns ['Hommes'] for male item", () => {
-    expect(getItemBadges({ genderTargets: "male" })).toEqual(["Hommes"]);
+  it("returns male gender badge and both household badges for male item", () => {
+    expect(getItemBadges({ genderTargets: "male" })).toEqual(["Hommes", "Parents", "Enfants"]);
   });
 
-  it("returns ['Femmes'] for female item", () => {
-    expect(getItemBadges({ genderTargets: "female" })).toEqual(["Femmes"]);
+  it("returns female gender badge and both household badges for female item", () => {
+    expect(getItemBadges({ genderTargets: "female" })).toEqual(["Femmes", "Parents", "Enfants"]);
   });
 
-  it("returns ['Propriétaire uniquement'] for ownerOnly item", () => {
-    expect(getItemBadges({ ownerOnly: true })).toEqual(["Propriétaire uniquement"]);
+  it("returns owner badge plus default targeting badges for ownerOnly item", () => {
+    expect(getItemBadges({ ownerOnly: true })).toEqual([
+      "Propriétaire uniquement",
+      "Hommes",
+      "Femmes",
+      "Parents",
+      "Enfants",
+    ]);
   });
 
-  it("returns ['Parents'] for parent item", () => {
-    expect(getItemBadges({ householdRoleTargets: "parent" })).toEqual(["Parents"]);
+  it("returns both gender badges and parent badge for parent item", () => {
+    expect(getItemBadges({ householdRoleTargets: "parent" })).toEqual(["Hommes", "Femmes", "Parents"]);
   });
 
-  it("returns ['Enfants'] for teen item", () => {
-    expect(getItemBadges({ householdRoleTargets: "teen" })).toEqual(["Enfants"]);
-  });
-
-  it("returns ['Enfants'] for child item", () => {
-    expect(getItemBadges({ householdRoleTargets: "child" })).toEqual(["Enfants"]);
+  it("returns both gender badges and child badge for child item", () => {
+    expect(getItemBadges({ householdRoleTargets: "child" })).toEqual(["Hommes", "Femmes", "Enfants"]);
   });
 
   it("returns combined badges for multi-targeted item", () => {
@@ -433,9 +419,9 @@ describe("getItemBadges", () => {
 // ─── getCategoryBadges ────────────────────────────────────────────────────────
 
 describe("getCategoryBadges", () => {
-  it("returns empty array when no items have targeting", () => {
+  it("returns all default badges when no items have targeting", () => {
     const items: ChecklistItemTargeting[] = [{}, {}];
-    expect(getCategoryBadges(items)).toEqual([]);
+    expect(getCategoryBadges(items)).toEqual(["Enfants", "Femmes", "Hommes", "Parents"]);
   });
 
   it("aggregates badges across items", () => {

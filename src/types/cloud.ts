@@ -17,7 +17,7 @@ export type CloudGameHistoryEntry = {
 };
 
 export type ProfileGender = "unspecified" | "male" | "female";
-export type ProfileHouseholdRole = "member" | "parent" | "teen" | "child";
+export type ProfileHouseholdRole = "member" | "parent" | "child";
 
 export type CloudProfileRecord = {
   surname: string;
