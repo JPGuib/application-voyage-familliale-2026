@@ -112,6 +112,47 @@ describe("App cloud login flow", () => {
     expect(screen.getByRole("button", { name: /Maman/i })).toBeInTheDocument();
   });
 
+  it("lands on home screen after login when travel is already unlocked", async () => {
+    const unlockedSnapshot = {
+      ...baseSnapshot,
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: unlockedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("heading", { name: "Préparer nos bagages" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Checklist/i })).toBeInTheDocument();
+  });
+
   it("keeps current session when switch profile confirmation is canceled", async () => {
     render(<App />);
 

@@ -933,6 +933,8 @@ Garantir que la checklist reste visible et modifiable même après déblocage, p
 - [ ] État items persistant
 - [ ] Accès facile depuis tous les écrans
 - [ ] Pas de régression sur déblocage
+- [ ] Écran d'accueil (phase "Pendant") expose une rubrique explicite "Checklist"
+- [ ] Après changement d'utilisateur en phase déjà débloquée, l'atterrissage se fait sur l'écran d'accueil (pas directement sur checklist)
 
 ### Fichiers à modifier
 - `src/app/App.tsx`: garder accès checklist
