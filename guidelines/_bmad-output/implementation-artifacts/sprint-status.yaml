@@ -81,14 +81,14 @@ development_status:
   8-3-couvrir-invariants-owner-unique-en-integration-et-e2e: done
   epic-8-retrospective: optional
 
-  epic-9: in-progress
+  epic-9: done
   9-1-configurer-une-phrase-de-recuperation-proprietaire: done
   9-2-reinitialiser-le-code-via-le-flow-code-oublie: done
   9-3-couvrir-les-gardes-de-recuperation-par-tests: done
   epic-9-retrospective: optional
 
-  epic-10: backlog
-  10-1-regles-visibilite-rubriques-role-deblocage: backlog
+  epic-10: in-progress
+  10-1-regles-visibilite-rubriques-role-deblocage: done
   10-2-authentification-mot-de-passe-par-profil: backlog
   10-3-checklist-persistante-apres-deblocage: backlog
   10-4-adaptation-checklist-par-profil: backlog
