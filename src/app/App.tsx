@@ -75,7 +75,6 @@ import { findDuplicateProfileBySurname } from "./profile-login";
 import { useCloudSync } from "../hooks/useCloudSync";
 import {
   filterCategoriesForProfile,
-  getItemBadges,
   getCategoryBadges,
   getVisibleItemIds,
   type Gender,
@@ -918,23 +917,14 @@ function ChecklistScreen({
                     </p>
                     {catBadges.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-0.5">
-                        {catBadges.map((badge, index) =>
-                          badge === "/" ? (
-                            <span
-                              key={`cat-sep-${index}`}
-                              className="inline-block text-[9px] font-black uppercase tracking-wide text-muted-foreground px-0.5"
-                            >
-                              /
-                            </span>
-                          ) : (
-                            <span
-                              key={`cat-badge-${badge}-${index}`}
-                              className="inline-block text-[9px] font-black uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5"
-                            >
-                              {badge}
-                            </span>
-                          )
-                        )}
+                        {catBadges.map((badge, index) => (
+                          <span
+                            key={`cat-badge-${badge}-${index}`}
+                            className="inline-block text-[9px] font-black uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5"
+                          >
+                            {badge}
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -956,7 +946,6 @@ function ChecklistScreen({
               {isOpen && (
                 <div className="border-t border-border px-4 pb-3 pt-2 space-y-1.5">
                   {cat.items.map((item) => {
-                    const badges = getItemBadges(item);
                     return (
                     <button
                       key={item.id}
@@ -984,27 +973,6 @@ function ChecklistScreen({
                         >
                           {item.label}
                         </span>
-                        {badges.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-0.5">
-                            {badges.map((badge, index) =>
-                              badge === "/" ? (
-                                <span
-                                  key={`item-sep-${item.id}-${index}`}
-                                  className="inline-block text-[9px] font-black uppercase tracking-wide text-muted-foreground px-0.5"
-                                >
-                                  /
-                                </span>
-                              ) : (
-                                <span
-                                  key={`item-badge-${item.id}-${badge}-${index}`}
-                                  className="inline-block text-[9px] font-black uppercase tracking-wide bg-muted text-muted-foreground rounded-full px-2 py-0.5"
-                                >
-                                  {badge}
-                                </span>
-                              )
-                            )}
-                          </div>
-                        )}
                       </div>
                     </button>
                     );

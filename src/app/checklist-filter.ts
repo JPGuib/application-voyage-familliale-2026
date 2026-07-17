@@ -29,7 +29,7 @@ function buildTargetingBadgeParts(
   const left = GENDER_BADGE_ORDER.filter((label) => genderBadges.has(label));
   const right = HOUSEHOLD_BADGE_ORDER.filter((label) => householdBadges.has(label));
   if (left.length === 0 || right.length === 0) return [];
-  return [...left, "/", ...right];
+  return [...left, ...right];
 }
 
 export type ProfileFilterInput = {
