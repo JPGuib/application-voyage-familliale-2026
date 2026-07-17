@@ -22,13 +22,14 @@ const HOUSEHOLD_BADGE_ORDER = ["Parents", "Enfants"] as const;
 type GenderBadgeLabel = (typeof GENDER_BADGE_ORDER)[number];
 type HouseholdBadgeLabel = (typeof HOUSEHOLD_BADGE_ORDER)[number];
 
-function formatTargetingBadge(
+function buildTargetingBadgeParts(
   genderBadges: ReadonlySet<GenderBadgeLabel>,
   householdBadges: ReadonlySet<HouseholdBadgeLabel>
-): string {
-  const left = GENDER_BADGE_ORDER.filter((label) => genderBadges.has(label)).join(" ");
-  const right = HOUSEHOLD_BADGE_ORDER.filter((label) => householdBadges.has(label)).join(" ");
-  return `${left} / ${right}`;
+): string[] {
+  const left = GENDER_BADGE_ORDER.filter((label) => genderBadges.has(label));
+  const right = HOUSEHOLD_BADGE_ORDER.filter((label) => householdBadges.has(label));
+  if (left.length === 0 || right.length === 0) return [];
+  return [...left, "/", ...right];
 }
 
 export type ProfileFilterInput = {
@@ -131,7 +132,7 @@ export function getItemBadges(item: ChecklistItemTargeting): string[] {
   if (householdRoleTarget === "all" || householdRoleTarget === "parent") householdRoleBadges.add("Parents");
   if (householdRoleTarget === "all" || householdRoleTarget === "child") householdRoleBadges.add("Enfants");
 
-  badges.push(formatTargetingBadge(genderBadges, householdRoleBadges));
+  badges.push(...buildTargetingBadgeParts(genderBadges, householdRoleBadges));
 
   return badges;
 }
@@ -160,7 +161,7 @@ export function getCategoryBadges(items: ChecklistItemTargeting[]): string[] {
   const badges: string[] = [];
   if (hasOwnerOnly) badges.push("Propriétaire uniquement");
   if (genderBadges.size > 0 && householdBadges.size > 0) {
-    badges.push(formatTargetingBadge(genderBadges, householdBadges));
+    badges.push(...buildTargetingBadgeParts(genderBadges, householdBadges));
   }
 
   return badges;
