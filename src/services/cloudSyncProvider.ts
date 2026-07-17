@@ -11,6 +11,8 @@ import {
   type Role,
 } from "../app/owner-policy";
 import type {
+  ChecklistCustomItem,
+  ChecklistRemovalState,
   ChecklistState,
   ClaimRoleResult,
   CloudGameHistoryEntry,
@@ -52,6 +54,61 @@ function parseChecklist(value: unknown): ChecklistState {
     }
   }
   return next;
+}
+
+function parseChecklistRemovals(value: unknown): ChecklistRemovalState {
+  const raw = asRecord(value);
+  const next: ChecklistRemovalState = {};
+  for (const [key, candidate] of Object.entries(raw)) {
+    if (typeof candidate === "boolean") {
+      next[key] = candidate;
+    }
+  }
+  return next;
+}
+
+function parseChecklistCustomItems(value: unknown): ChecklistCustomItem[] {
+  const raw = asRecord(value);
+  const items: ChecklistCustomItem[] = [];
+
+  for (const [itemId, candidate] of Object.entries(raw)) {
+    const entry = asRecord(candidate);
+    const id = typeof entry.id === "string" ? entry.id : itemId;
+    if (
+      typeof id !== "string" ||
+      typeof entry.label !== "string" ||
+      typeof entry.categoryId !== "string"
+    ) {
+      continue;
+    }
+
+    const item: ChecklistCustomItem = {
+      id,
+      label: entry.label,
+      categoryId: entry.categoryId,
+    };
+    if (entry.genderTargets === "all" || entry.genderTargets === "male" || entry.genderTargets === "female") {
+      item.genderTargets = entry.genderTargets;
+    }
+    if (
+      entry.householdRoleTargets === "all" ||
+      entry.householdRoleTargets === "parent" ||
+      entry.householdRoleTargets === "child"
+    ) {
+      item.householdRoleTargets = entry.householdRoleTargets;
+    }
+    if (typeof entry.ownerOnly === "boolean") {
+      item.ownerOnly = entry.ownerOnly;
+    }
+    if (typeof entry.visibleToProfileId === "string") {
+      item.visibleToProfileId = entry.visibleToProfileId;
+    }
+
+    items.push(item);
+  }
+
+  items.sort((left, right) => left.id.localeCompare(right.id));
+  return items;
 }
 
 function isCloudGameEntry(value: unknown): value is CloudGameHistoryEntry {
@@ -124,6 +181,8 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const root = asRecord(raw);
   const profileRecords = asRecord(root.profiles);
   const checklistRecords = asRecord(root.checklists);
+  const ownerGlobalAdditionRecords = asRecord(root.checklistCatalogAdditions);
+  const ownerGlobalRemovalRecords = asRecord(root.checklistCatalogRemovals);
   const gameResultRecords = asRecord(root.gameResults);
   const phaseRecords = asRecord(root.phase);
 
@@ -160,6 +219,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
       gender: record.gender,
       householdRole: record.householdRole,
       checklist: parseChecklist(checklistRecords[profileId]),
+      customChecklistItems: parseChecklistCustomItems(asRecord(value).customChecklistItems),
       gameResults: parseGameResults(gameResultRecords[profileId]),
       phase: toTravelPhase(phaseRecords[profileId]),
     };
@@ -176,6 +236,8 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     familyState,
     ownerCodeHash: typeof root.ownerCodeHash === "string" ? root.ownerCodeHash : "",
     phase: sharedPhase,
+    ownerGlobalChecklistAdditions: parseChecklistCustomItems(ownerGlobalAdditionRecords),
+    ownerGlobalChecklistRemovals: parseChecklistRemovals(ownerGlobalRemovalRecords),
     profiles,
     updatedAt: toFiniteNumber(root.updatedAt, 0),
   };
@@ -215,6 +277,10 @@ export async function pushCloudSnapshot(
     [`profiles/${payload.profileId}/surname`]: payload.surname,
     [`profiles/${payload.profileId}/role`]: effectiveRole,
     [`profiles/${payload.profileId}/lastSyncAt`]: timestamp,
+    [`profiles/${payload.profileId}/customChecklistItems`]: payload.profileCustomChecklistItems.reduce<Record<string, ChecklistCustomItem>>((acc, item) => {
+      acc[item.id] = item;
+      return acc;
+    }, {}),
     [`checklists/${payload.profileId}`]: payload.checklist,
     [`gameResults/${payload.profileId}`]: payload.gameResults,
   };
@@ -245,6 +311,11 @@ export async function pushCloudSnapshot(
     updates.ownerUid = payload.actorUid;
     updates.ownerCodeHash = payload.ownerCodeHash;
     updates.phase = payload.phase;
+    updates.checklistCatalogAdditions = payload.ownerGlobalChecklistAdditions.reduce<Record<string, ChecklistCustomItem>>((acc, item) => {
+      acc[item.id] = item;
+      return acc;
+    }, {});
+    updates.checklistCatalogRemovals = payload.ownerGlobalChecklistRemovals;
     updates.updatedAt = timestamp;
 
     for (const profile of normalizedFamilyState.profiles) {

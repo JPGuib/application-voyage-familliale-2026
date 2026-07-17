@@ -15,6 +15,8 @@ import {
   Gamepad2,
   Star,
   Plane,
+  Plus,
+  Trash2,
   Volume2,
 } from "lucide-react";
 import { TRIP } from "../content/trip";
@@ -77,6 +79,7 @@ import {
   filterCategoriesForProfile,
   getCategoryBadges,
   getVisibleItemIds,
+  type ChecklistItemTargeting,
   type Gender,
   type HouseholdRole,
   type ProfileFilterInput,
@@ -84,9 +87,26 @@ import {
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
+type ChecklistItem = ChecklistItemTargeting & {
+  id: string;
+  label: string;
+  isCustom?: boolean;
+};
+
+type ChecklistCategory = {
+  id: string;
+  emoji: string;
+  label: string;
+  items: ChecklistItem[];
+};
+
+type CustomChecklistItem = ChecklistItem & {
+  categoryId: string;
+};
+
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
-export const CHECKLIST_CATEGORIES = [
+export const CHECKLIST_CATEGORIES: ChecklistCategory[] = [
   {
     id: "vetements-hommes",
     emoji: "👔",
@@ -231,11 +251,9 @@ export const CHECKLIST_CATEGORIES = [
   },
 ];
 
-const CHECKLIST_ITEM_IDS = new Set(
-  CHECKLIST_CATEGORIES.flatMap((category) =>
-    category.items.map((item) => item.id)
-  )
-);
+const CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY = "jp-custom-checklist-items-by-profile";
+const OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY = "jp-owner-global-checklist-additions";
+const OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY = "jp-owner-global-checklist-removals";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -390,6 +408,119 @@ function areChecklistStatesEqual(
   }
 
   return true;
+}
+
+function isValidCategoryId(categoryId: string): boolean {
+  return CHECKLIST_CATEGORIES.some((category) => category.id === categoryId);
+}
+
+function parseCustomChecklistItems(raw: unknown): CustomChecklistItem[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+
+  const parsed: CustomChecklistItem[] = [];
+  for (const candidate of raw) {
+    if (!candidate || typeof candidate !== "object") {
+      continue;
+    }
+
+    const item = candidate as Record<string, unknown>;
+    if (
+      typeof item.id !== "string" ||
+      typeof item.label !== "string" ||
+      typeof item.categoryId !== "string" ||
+      !isValidCategoryId(item.categoryId)
+    ) {
+      continue;
+    }
+
+    const normalized: CustomChecklistItem = {
+      id: item.id,
+      label: item.label,
+      categoryId: item.categoryId,
+      isCustom: true,
+    };
+
+    if (
+      item.genderTargets === "all" ||
+      item.genderTargets === "male" ||
+      item.genderTargets === "female"
+    ) {
+      normalized.genderTargets = item.genderTargets;
+    }
+    if (
+      item.householdRoleTargets === "all" ||
+      item.householdRoleTargets === "parent" ||
+      item.householdRoleTargets === "child"
+    ) {
+      normalized.householdRoleTargets = item.householdRoleTargets;
+    }
+    if (typeof item.ownerOnly === "boolean") {
+      normalized.ownerOnly = item.ownerOnly;
+    }
+    if (typeof item.visibleToProfileId === "string") {
+      normalized.visibleToProfileId = item.visibleToProfileId;
+    }
+
+    parsed.push(normalized);
+  }
+
+  return parsed;
+}
+
+function areCustomChecklistItemsEqual(
+  left: CustomChecklistItem[],
+  right: CustomChecklistItem[]
+): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  const serialize = (items: CustomChecklistItem[]) =>
+    [...items]
+      .map((item) => JSON.stringify(item))
+      .sort();
+
+  const leftSerialized = serialize(left);
+  const rightSerialized = serialize(right);
+  return leftSerialized.every((entry, index) => entry === rightSerialized[index]);
+}
+
+function areRemovalMapsEqual(
+  left: Record<string, boolean>,
+  right: Record<string, boolean>
+): boolean {
+  return areChecklistStatesEqual(left, right);
+}
+
+function mergeChecklistCatalog(
+  baseCategories: ChecklistCategory[],
+  ownerGlobalAdditions: CustomChecklistItem[],
+  ownerGlobalRemovals: Record<string, boolean>,
+  profileCustomItems: CustomChecklistItem[]
+): ChecklistCategory[] {
+  const additionsByCategory = new Map<string, ChecklistItem[]>();
+
+  for (const item of [...ownerGlobalAdditions, ...profileCustomItems]) {
+    if (!isValidCategoryId(item.categoryId)) {
+      continue;
+    }
+    const existing = additionsByCategory.get(item.categoryId) ?? [];
+    existing.push(item);
+    additionsByCategory.set(item.categoryId, existing);
+  }
+
+  return baseCategories.map((category) => {
+    const baseItems = category.items.filter((item) => !ownerGlobalRemovals[item.id]);
+    const addedItems = (additionsByCategory.get(category.id) ?? []).filter(
+      (item) => !ownerGlobalRemovals[item.id]
+    );
+    return {
+      ...category,
+      items: [...baseItems, ...addedItems],
+    };
+  });
 }
 
 function areGameHistoriesEqual(
@@ -791,10 +922,16 @@ function BottomNav({
 
 function ChecklistScreen({
   categories,
+  role,
+  currentProfileId,
   checked,
   openCategories,
   toggleItem,
   toggleCategory,
+  newItemDrafts,
+  onChangeNewItemDraft,
+  onAddItem,
+  onDeleteItem,
   pct,
   checkedCount,
   totalItems,
@@ -820,11 +957,17 @@ function ChecklistScreen({
   onCancelStartPrompt,
   onCancelRecoveryPrompt,
 }: {
-  categories: typeof CHECKLIST_CATEGORIES;
+  categories: ChecklistCategory[];
+  role: Role | null;
+  currentProfileId: string;
   checked: Record<string, boolean>;
   openCategories: Set<string>;
   toggleItem: (id: string) => void;
   toggleCategory: (id: string) => void;
+  newItemDrafts: Record<string, string>;
+  onChangeNewItemDraft: (categoryId: string, value: string) => void;
+  onAddItem: (categoryId: string) => void;
+  onDeleteItem: (itemId: string) => void;
   pct: number;
   checkedCount: number;
   totalItems: number;
@@ -945,36 +1088,72 @@ function ChecklistScreen({
               </button>
               {isOpen && (
                 <div className="border-t border-border px-4 pb-3 pt-2 space-y-1.5">
+                  <div className="flex items-center gap-2 pb-2">
+                    <input
+                      value={newItemDrafts[cat.id] ?? ""}
+                      onChange={(e) => onChangeNewItemDraft(cat.id, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          onAddItem(cat.id);
+                        }
+                      }}
+                      placeholder="Ajouter un item dans cette rubrique"
+                      className="flex-1 rounded-xl bg-input-background px-3 py-2 text-xs font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                    />
+                    <button
+                      onClick={() => onAddItem(cat.id)}
+                      className="rounded-xl bg-primary text-primary-foreground px-3 py-2 text-xs font-black uppercase tracking-wide"
+                      aria-label={`Ajouter un item dans ${cat.label}`}
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
                   {cat.items.map((item) => {
                     return (
-                    <button
-                      key={item.id}
-                      onClick={() => toggleItem(item.id)}
-                      className="w-full flex items-center gap-3 py-2 text-left"
-                    >
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                          checked[item.id]
-                            ? "bg-accent border-accent"
-                            : "border-muted-foreground/40"
-                        }`}
+                    <div key={item.id} className="w-full flex items-center gap-2 py-1">
+                      <button
+                        onClick={() => toggleItem(item.id)}
+                        className="flex-1 flex items-center gap-3 py-1 text-left"
                       >
-                        {checked[item.id] && (
-                          <Check size={13} className="text-white" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span
-                          className={`text-sm font-semibold transition-all ${
+                        <div
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
                             checked[item.id]
-                              ? "line-through text-muted-foreground"
-                              : "text-foreground"
+                              ? "bg-accent border-accent"
+                              : "border-muted-foreground/40"
                           }`}
                         >
-                          {item.label}
-                        </span>
-                      </div>
-                    </button>
+                          {checked[item.id] && (
+                            <Check size={13} className="text-white" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span
+                            className={`text-sm font-semibold transition-all ${
+                              checked[item.id]
+                                ? "line-through text-muted-foreground"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {item.label}
+                          </span>
+                          {item.visibleToProfileId === currentProfileId && (
+                            <span className="ml-2 inline-block text-[9px] font-black uppercase tracking-wide bg-secondary/20 text-secondary rounded-full px-2 py-0.5">
+                              Item perso
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                      {role === "proprietaire" && (
+                        <button
+                          onClick={() => onDeleteItem(item.id)}
+                          className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-destructive"
+                          aria-label={`Supprimer ${item.label}`}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                     );
                   })}
                 </div>
@@ -2625,13 +2804,67 @@ export default function App() {
       if (!parsed || typeof parsed !== "object") return {};
       return Object.fromEntries(
         Object.entries(parsed).filter(
-          ([id, value]) => CHECKLIST_ITEM_IDS.has(id) && typeof value === "boolean"
+          ([, value]) => typeof value === "boolean"
         )
       ) as Record<string, boolean>;
     } catch {
       return {};
     }
   });
+  const [customChecklistItemsByProfile, setCustomChecklistItemsByProfile] = useState<Record<string, CustomChecklistItem[]>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const raw = JSON.parse(localStorage.getItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY) || "{}");
+      if (!raw || typeof raw !== "object") {
+        return {};
+      }
+
+      const result: Record<string, CustomChecklistItem[]> = {};
+      for (const [profileId, items] of Object.entries(raw as Record<string, unknown>)) {
+        if (typeof profileId !== "string") {
+          continue;
+        }
+        result[profileId] = parseCustomChecklistItems(items);
+      }
+      return result;
+    } catch {
+      return {};
+    }
+  });
+  const [ownerGlobalChecklistAdditions, setOwnerGlobalChecklistAdditions] = useState<CustomChecklistItem[]>(() => {
+    if (cloudEnabled) {
+      return [];
+    }
+
+    try {
+      return parseCustomChecklistItems(
+        JSON.parse(localStorage.getItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY) || "[]")
+      );
+    } catch {
+      return [];
+    }
+  });
+  const [ownerGlobalChecklistRemovals, setOwnerGlobalChecklistRemovals] = useState<Record<string, boolean>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY) || "{}");
+      if (!parsed || typeof parsed !== "object") {
+        return {};
+      }
+      return Object.fromEntries(
+        Object.entries(parsed).filter(([, value]) => typeof value === "boolean")
+      ) as Record<string, boolean>;
+    } catch {
+      return {};
+    }
+  });
+  const [newItemDrafts, setNewItemDrafts] = useState<Record<string, string>>({});
   const [gameState, setGameState] = useState<GameState>("intro");
   const [ownerCodeHash, setOwnerCodeHash] = useState<string>(() => {
     if (cloudEnabled) {
@@ -2877,6 +3110,9 @@ export default function App() {
         localStorage.removeItem("jp-phase");
         localStorage.removeItem("jp-checklist");
         localStorage.removeItem("jp-game-history");
+        localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
+        localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
+        localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY);
       } else {
         localStorage.setItem("jp-profile", JSON.stringify(profile));
         localStorage.setItem(
@@ -2898,6 +3134,18 @@ export default function App() {
           localStorage.setItem("jp-phase", phase);
           localStorage.setItem("jp-checklist", JSON.stringify(checked));
           localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
+          localStorage.setItem(
+            CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY,
+            JSON.stringify(customChecklistItemsByProfile)
+          );
+          localStorage.setItem(
+            OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY,
+            JSON.stringify(ownerGlobalChecklistAdditions)
+          );
+          localStorage.setItem(
+            OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY,
+            JSON.stringify(ownerGlobalChecklistRemovals)
+          );
         } catch (e) {
           if (IS_DEV) console.warn("localStorage quota exceeded or unavailable:", e);
         }
@@ -2923,6 +3171,9 @@ export default function App() {
     profileRecoveryHashes,
     phase,
     checked,
+    customChecklistItemsByProfile,
+    ownerGlobalChecklistAdditions,
+    ownerGlobalChecklistRemovals,
     unlockFailedAttempts,
     unlockLockedUntil,
     gameHistory,
@@ -3005,6 +3256,27 @@ export default function App() {
     setChecked((previous) =>
       areChecklistStatesEqual(previous, cloudProfile.checklist) ? previous : cloudProfile.checklist
     );
+    setCustomChecklistItemsByProfile((previous) => {
+      const current = previous[profile.id] ?? [];
+      const next = cloudProfile.customChecklistItems ?? [];
+      if (areCustomChecklistItemsEqual(current, next)) {
+        return previous;
+      }
+      return {
+        ...previous,
+        [profile.id]: next,
+      };
+    });
+    setOwnerGlobalChecklistAdditions((previous) =>
+      areCustomChecklistItemsEqual(previous, cloudSnapshot.ownerGlobalChecklistAdditions ?? [])
+        ? previous
+        : cloudSnapshot.ownerGlobalChecklistAdditions ?? []
+    );
+    setOwnerGlobalChecklistRemovals((previous) =>
+      areRemovalMapsEqual(previous, cloudSnapshot.ownerGlobalChecklistRemovals ?? {})
+        ? previous
+        : cloudSnapshot.ownerGlobalChecklistRemovals ?? {}
+    );
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
@@ -3062,6 +3334,7 @@ export default function App() {
     const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
     const profilePasswordHash = profilePasswordHashes[profile.id] || "";
     const profileRecoveryHash = profileRecoveryHashes[profile.id] || "";
+    const profileCustomChecklistItems = customChecklistItemsByProfile[profile.id] ?? [];
     const payload = JSON.stringify({
       actorUid: cloudActorUid,
       canWriteFamilyState,
@@ -3077,6 +3350,9 @@ export default function App() {
       profilePasswordHash,
       profileRecoveryHash,
       checklist: checked,
+      profileCustomChecklistItems,
+      ownerGlobalChecklistAdditions,
+      ownerGlobalChecklistRemovals,
       phase,
       gameHistory,
     });
@@ -3101,6 +3377,9 @@ export default function App() {
       gender: profile.gender,
       householdRole: profile.householdRole,
       checklist: checked,
+      profileCustomChecklistItems,
+      ownerGlobalChecklistAdditions,
+      ownerGlobalChecklistRemovals,
       gameResults: gameHistory,
       phase,
     });
@@ -3118,6 +3397,9 @@ export default function App() {
     ownerRecoveryHash,
     profilePasswordHashes,
     profileRecoveryHashes,
+    customChecklistItemsByProfile,
+    ownerGlobalChecklistAdditions,
+    ownerGlobalChecklistRemovals,
     phase,
     profile.id,
     profile.role,
@@ -3193,8 +3475,95 @@ export default function App() {
 
   const profileReady = profile.surname.trim().length > 0 && profile.role !== null;
 
+  const currentProfileCustomItems = customChecklistItemsByProfile[profile.id] ?? [];
+  const effectiveChecklistCategories = mergeChecklistCatalog(
+    CHECKLIST_CATEGORIES,
+    ownerGlobalChecklistAdditions,
+    ownerGlobalChecklistRemovals,
+    currentProfileCustomItems
+  );
+
   const toggleItem = (id: string) =>
     setChecked((p) => ({ ...p, [id]: !p[id] }));
+
+  const updateNewItemDraft = (categoryId: string, value: string) => {
+    setNewItemDrafts((previous) => ({
+      ...previous,
+      [categoryId]: value,
+    }));
+  };
+
+  const addChecklistItem = (categoryId: string) => {
+    const rawLabel = newItemDrafts[categoryId] ?? "";
+    const label = rawLabel.trim();
+    if (!label) {
+      return;
+    }
+
+    if (!isValidCategoryId(categoryId)) {
+      return;
+    }
+
+    const itemId = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const baseItem: CustomChecklistItem = {
+      id: itemId,
+      label,
+      categoryId,
+      isCustom: true,
+    };
+
+    if (profile.role === "proprietaire") {
+      setOwnerGlobalChecklistAdditions((previous) => [...previous, baseItem]);
+      setOwnerGlobalChecklistRemovals((previous) => {
+        if (!previous[itemId]) {
+          return previous;
+        }
+        const next = { ...previous };
+        delete next[itemId];
+        return next;
+      });
+    } else {
+      const profileScoped: CustomChecklistItem = {
+        ...baseItem,
+        genderTargets: profile.gender === "unspecified" ? undefined : profile.gender,
+        householdRoleTargets: profile.householdRole === "member" ? undefined : profile.householdRole,
+        visibleToProfileId: profile.id,
+      };
+
+      setCustomChecklistItemsByProfile((previous) => {
+        const current = previous[profile.id] ?? [];
+        return {
+          ...previous,
+          [profile.id]: [...current, profileScoped],
+        };
+      });
+    }
+
+    setNewItemDrafts((previous) => ({
+      ...previous,
+      [categoryId]: "",
+    }));
+  };
+
+  const deleteChecklistItem = (itemId: string) => {
+    if (profile.role !== "proprietaire") {
+      return;
+    }
+
+    setOwnerGlobalChecklistAdditions((previous) => previous.filter((item) => item.id !== itemId));
+    setOwnerGlobalChecklistRemovals((previous) => ({
+      ...previous,
+      [itemId]: true,
+    }));
+    setChecked((previous) => {
+      if (!(itemId in previous)) {
+        return previous;
+      }
+      const next = { ...previous };
+      delete next[itemId];
+      return next;
+    });
+  };
 
   const toggleCategory = (id: string) =>
     setOpenCategories((p) => {
@@ -3205,12 +3574,13 @@ export default function App() {
     });
 
   const profileFilterInput: ProfileFilterInput = {
+    profileId: profile.id,
     role: profile.role ?? "utilisateur",
     gender: profile.gender,
     householdRole: profile.householdRole,
   };
-  const visibleCategories = filterCategoriesForProfile(CHECKLIST_CATEGORIES, profileFilterInput);
-  const visibleItemIds = getVisibleItemIds(CHECKLIST_CATEGORIES, profileFilterInput);
+  const visibleCategories = filterCategoriesForProfile(effectiveChecklistCategories, profileFilterInput);
+  const visibleItemIds = getVisibleItemIds(effectiveChecklistCategories, profileFilterInput);
 
   const totalItems = visibleCategories.reduce(
     (s, c) => s + c.items.length,
@@ -3973,10 +4343,16 @@ export default function App() {
       return (
         <ChecklistScreen
           categories={visibleCategories}
+          role={profile.role}
+          currentProfileId={profile.id}
           checked={checked}
           openCategories={openCategories}
           toggleItem={toggleItem}
           toggleCategory={toggleCategory}
+          newItemDrafts={newItemDrafts}
+          onChangeNewItemDraft={updateNewItemDraft}
+          onAddItem={addChecklistItem}
+          onDeleteItem={deleteChecklistItem}
           pct={pct}
           checkedCount={checkedCount}
           totalItems={totalItems}
@@ -4028,10 +4404,16 @@ export default function App() {
         return (
           <ChecklistScreen
             categories={visibleCategories}
+            role={profile.role}
+            currentProfileId={profile.id}
             checked={checked}
             openCategories={openCategories}
             toggleItem={toggleItem}
             toggleCategory={toggleCategory}
+            newItemDrafts={newItemDrafts}
+            onChangeNewItemDraft={updateNewItemDraft}
+            onAddItem={addChecklistItem}
+            onDeleteItem={deleteChecklistItem}
             pct={pct}
             checkedCount={checkedCount}
             totalItems={totalItems}

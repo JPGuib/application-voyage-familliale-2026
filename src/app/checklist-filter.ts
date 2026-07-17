@@ -15,6 +15,7 @@ export type ChecklistItemTargeting = {
   genderTargets?: GenderTarget;
   householdRoleTargets?: HouseholdRoleTarget;
   ownerOnly?: boolean;
+  visibleToProfileId?: string;
 };
 
 const GENDER_BADGE_ORDER = ["Hommes", "Femmes"] as const;
@@ -33,6 +34,7 @@ function buildTargetingBadgeParts(
 }
 
 export type ProfileFilterInput = {
+  profileId?: string;
   role: "proprietaire" | "utilisateur";
   gender: Gender;
   householdRole: HouseholdRole;
@@ -57,6 +59,10 @@ export function isItemVisibleForProfile(
   item: ChecklistItemTargeting,
   profile: ProfileFilterInput
 ): boolean {
+  if (item.visibleToProfileId && item.visibleToProfileId !== profile.profileId) {
+    return false;
+  }
+
   if (profile.role === "proprietaire") return true;
   if (item.ownerOnly) return false;
 
@@ -120,7 +126,6 @@ export function getVisibleItemIds<
  */
 export function getItemBadges(item: ChecklistItemTargeting): string[] {
   const badges: string[] = [];
-  if (item.ownerOnly) badges.push("Propriétaire uniquement");
 
   const genderBadges = new Set<GenderBadgeLabel>();
   const genderTarget: GenderTarget = item.genderTargets ?? "all";
@@ -144,11 +149,8 @@ export function getItemBadges(item: ChecklistItemTargeting): string[] {
 export function getCategoryBadges(items: ChecklistItemTargeting[]): string[] {
   const genderBadges = new Set<GenderBadgeLabel>();
   const householdBadges = new Set<HouseholdBadgeLabel>();
-  let hasOwnerOnly = false;
 
   for (const item of items) {
-    if (item.ownerOnly) hasOwnerOnly = true;
-
     const genderTarget: GenderTarget = item.genderTargets ?? "all";
     if (genderTarget === "all" || genderTarget === "male") genderBadges.add("Hommes");
     if (genderTarget === "all" || genderTarget === "female") genderBadges.add("Femmes");
@@ -159,7 +161,6 @@ export function getCategoryBadges(items: ChecklistItemTargeting[]): string[] {
   }
 
   const badges: string[] = [];
-  if (hasOwnerOnly) badges.push("Propriétaire uniquement");
   if (genderBadges.size > 0 && householdBadges.size > 0) {
     badges.push(...buildTargetingBadgeParts(genderBadges, householdBadges));
   }

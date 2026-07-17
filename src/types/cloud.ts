@@ -4,6 +4,18 @@ export type TravelPhase = "before" | "during";
 
 export type ChecklistState = Record<string, boolean>;
 
+export type ChecklistCustomItem = {
+  id: string;
+  label: string;
+  categoryId: string;
+  genderTargets?: "all" | "male" | "female";
+  householdRoleTargets?: "all" | "parent" | "child";
+  ownerOnly?: boolean;
+  visibleToProfileId?: string;
+};
+
+export type ChecklistRemovalState = Record<string, boolean>;
+
 export type CloudGameHistoryEntry = {
   day: number;
   location: string;
@@ -43,6 +55,7 @@ export type CloudProfileState = {
   gender?: ProfileGender;
   householdRole?: ProfileHouseholdRole;
   checklist: ChecklistState;
+  customChecklistItems: ChecklistCustomItem[];
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;
 };
@@ -53,6 +66,8 @@ export type CloudSyncSnapshot = {
   ownerRecoveryHash?: string;
   ownerRecoveryConfiguredAt?: number;
   phase: TravelPhase;
+  ownerGlobalChecklistAdditions: ChecklistCustomItem[];
+  ownerGlobalChecklistRemovals: ChecklistRemovalState;
   profiles: Record<string, CloudProfileState>;
   updatedAt: number;
 };
@@ -73,6 +88,9 @@ export type CloudSyncWritePayload = {
   gender?: ProfileGender;
   householdRole?: ProfileHouseholdRole;
   checklist: ChecklistState;
+  profileCustomChecklistItems: ChecklistCustomItem[];
+  ownerGlobalChecklistAdditions: ChecklistCustomItem[];
+  ownerGlobalChecklistRemovals: ChecklistRemovalState;
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;
 };
