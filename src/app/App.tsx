@@ -56,6 +56,7 @@ import {
   isOwnerRecoveryHash,
   verifyOwnerRecoveryPhrase,
 } from "./owner-recovery";
+import { evaluateOwnerRecoveryGuards } from "./owner-recovery-guards";
 import {
   shouldHydrateFromCloudSnapshot,
   shouldPushCloudSnapshot,
@@ -724,6 +725,10 @@ function ChecklistScreen({
   onCancelStartPrompt: () => void;
   onCancelRecoveryPrompt: () => void;
 }) {
+  const [showStartCode, setShowStartCode] = useState(false);
+  const [showRecoveryPhrase, setShowRecoveryPhrase] = useState(false);
+  const [showRecoveryNewCode, setShowRecoveryNewCode] = useState(false);
+  const [showRecoveryCodeConfirm, setShowRecoveryCodeConfirm] = useState(false);
   const remainingItems = Math.max(totalItems - checkedCount, 0);
 
   return (
@@ -861,12 +866,18 @@ function ChecklistScreen({
             </p>
 
             <input
-              type="password"
+              type={showStartCode ? "text" : "password"}
               value={startCode}
               onChange={(e) => onStartCodeChange(e.target.value)}
               placeholder="Code propriétaire"
               className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
+            <button
+              onClick={() => setShowStartCode((previous) => !previous)}
+              className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+            >
+              {showStartCode ? "Masquer" : "Afficher"} le code saisi
+            </button>
 
             <button
               onClick={onOpenForgotCode}
@@ -914,26 +925,44 @@ function ChecklistScreen({
             </p>
 
             <input
-              type="password"
+              type={showRecoveryPhrase ? "text" : "password"}
               value={recoveryPhrase}
               onChange={(e) => onRecoveryPhraseChange(e.target.value)}
               placeholder="Phrase de récupération"
               className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
+            <button
+              onClick={() => setShowRecoveryPhrase((previous) => !previous)}
+              className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+            >
+              {showRecoveryPhrase ? "Masquer" : "Afficher"} la phrase saisie
+            </button>
             <input
-              type="password"
+              type={showRecoveryNewCode ? "text" : "password"}
               value={recoveryNewCode}
               onChange={(e) => onRecoveryNewCodeChange(e.target.value)}
               placeholder="Nouveau code propriétaire"
               className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
+            <button
+              onClick={() => setShowRecoveryNewCode((previous) => !previous)}
+              className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+            >
+              {showRecoveryNewCode ? "Masquer" : "Afficher"} le nouveau code
+            </button>
             <input
-              type="password"
+              type={showRecoveryCodeConfirm ? "text" : "password"}
               value={recoveryCodeConfirm}
               onChange={(e) => onRecoveryCodeConfirmChange(e.target.value)}
               placeholder="Confirmer le nouveau code"
               className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
+            <button
+              onClick={() => setShowRecoveryCodeConfirm((previous) => !previous)}
+              className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+            >
+              {showRecoveryCodeConfirm ? "Masquer" : "Afficher"} la confirmation
+            </button>
 
             {recoveryError && (
               <p className="mt-2 text-xs font-bold text-destructive">{recoveryError}</p>
@@ -1955,6 +1984,8 @@ function SettingsScreen({
   const [ownerCodeFeedback, setOwnerCodeFeedback] = useState<string | null>(null);
   const [ownerRecoveryInput, setOwnerRecoveryInput] = useState("");
   const [ownerRecoveryFeedback, setOwnerRecoveryFeedback] = useState<string | null>(null);
+  const [showOwnerCodeInput, setShowOwnerCodeInput] = useState(false);
+  const [showOwnerRecoveryInput, setShowOwnerRecoveryInput] = useState(false);
   const [showSwitchProfilePrompt, setShowSwitchProfilePrompt] = useState(false);
 
   const roleLabel = profile.role === "proprietaire" ? "Propriétaire" : "Utilisateur";
@@ -2028,7 +2059,7 @@ function SettingsScreen({
                 : "Aucun code configuré pour le moment."}
             </p>
             <input
-              type="password"
+              type={showOwnerCodeInput ? "text" : "password"}
               value={ownerCodeInput}
               onChange={(e) => {
                 setOwnerCodeInput(e.target.value);
@@ -2037,6 +2068,12 @@ function SettingsScreen({
               placeholder="Minimum 4 caractères"
               className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
+            <button
+              onClick={() => setShowOwnerCodeInput((previous) => !previous)}
+              className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+            >
+              {showOwnerCodeInput ? "Masquer" : "Afficher"} le code saisi
+            </button>
             <button
               onClick={async () => {
                 const result = await onSaveOwnerCode(ownerCodeInput);
@@ -2073,7 +2110,7 @@ function SettingsScreen({
                 : "Aucune phrase configurée pour le moment."}
             </p>
             <input
-              type="password"
+              type={showOwnerRecoveryInput ? "text" : "password"}
               value={ownerRecoveryInput}
               onChange={(e) => {
                 setOwnerRecoveryInput(e.target.value);
@@ -2082,6 +2119,12 @@ function SettingsScreen({
               placeholder="Votre phrase personnelle (min. 5 caractères)"
               className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
+            <button
+              onClick={() => setShowOwnerRecoveryInput((previous) => !previous)}
+              className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+            >
+              {showOwnerRecoveryInput ? "Masquer" : "Afficher"} la phrase saisie
+            </button>
             <button
               onClick={async () => {
                 const result = await onSaveOwnerRecoveryPhrase(ownerRecoveryInput);
@@ -2758,12 +2801,14 @@ export default function App() {
   };
 
   const openForgotCodeFlow = () => {
-    if (!canUpdateOwnerCode(familyState, profile.id)) {
+    const guards = evaluateOwnerRecoveryGuards(familyState, profile.id, ownerRecoveryHash);
+
+    if (!guards.canOpenFlow) {
       setStartError("Seul le profil propriétaire peut débloquer le voyage.");
       return;
     }
 
-    if (!ownerRecoveryHash) {
+    if (!guards.canResetCode) {
       setShowStartPrompt(false);
       setStartCodeInput("");
       setStartError(null);
@@ -2773,17 +2818,25 @@ export default function App() {
     }
 
     resetRecoveryPromptState();
+    setShowStartPrompt(false);
     setShowRecoveryPrompt(true);
   };
 
   const confirmRecoveryReset = async () => {
-    if (!canUpdateOwnerCode(familyState, profile.id)) {
+    const guards = evaluateOwnerRecoveryGuards(familyState, profile.id, ownerRecoveryHash);
+
+    if (!guards.canOpenFlow) {
       setRecoveryError("Seul le profil propriétaire peut réinitialiser le code.");
       return;
     }
 
-    if (!ownerRecoveryHash) {
+    if (!guards.canResetCode) {
       setRecoveryError("Aucune phrase de récupération configurée.");
+      return;
+    }
+
+    if (lockRemainingMs > 0) {
+      setRecoveryError(`Trop de tentatives. Réessayez dans ${lockRemainingSec}s.`);
       return;
     }
 
@@ -2806,24 +2859,38 @@ export default function App() {
       return;
     }
 
-    const phraseMatches = await verifyOwnerRecoveryPhrase(phrase, ownerRecoveryHash);
-    if (!phraseMatches) {
-      setRecoveryError("Phrase incorrecte. Le code propriétaire n'a pas été modifié.");
-      return;
-    }
+    try {
+      const phraseMatches = await verifyOwnerRecoveryPhrase(phrase, ownerRecoveryHash);
+      if (!phraseMatches) {
+        const nextAttempts = unlockFailedAttempts + 1;
+        if (nextAttempts >= 3) {
+          const nextLock = Date.now() + 30000;
+          setUnlockFailedAttempts(0);
+          setUnlockLockedUntil(nextLock);
+          setNowTs(Date.now());
+          setRecoveryError("Phrase incorrecte. Blocage temporaire de 30 secondes.");
+        } else {
+          setUnlockFailedAttempts(nextAttempts);
+          setRecoveryError("Phrase incorrecte. Le code propriétaire n'a pas été modifié.");
+        }
+        return;
+      }
 
-    const nextHash = await hashOwnerCode(nextCode);
-    setOwnerCodeHash(nextHash);
-    setUnlockFailedAttempts(0);
-    setUnlockLockedUntil(0);
-    setNowTs(Date.now());
-    setShowRecoveryPrompt(false);
-    setShowStartPrompt(false);
-    setStartCodeInput("");
-    setStartError(null);
-    resetRecoveryPromptState();
-    setPhase("during");
-    setScreen("dashboard");
+      const nextHash = await hashOwnerCode(nextCode);
+      setOwnerCodeHash(nextHash);
+      setUnlockFailedAttempts(0);
+      setUnlockLockedUntil(0);
+      setNowTs(Date.now());
+      setShowRecoveryPrompt(false);
+      setShowStartPrompt(false);
+      setStartCodeInput("");
+      setStartError(null);
+      resetRecoveryPromptState();
+      setPhase("during");
+      setScreen("dashboard");
+    } catch {
+      setRecoveryError("Une erreur est survenue. Réessayez.");
+    }
   };
 
   const goToScreen = (s: Screen) => {

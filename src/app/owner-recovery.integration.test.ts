@@ -51,6 +51,42 @@ describe("owner recovery phrase integration", () => {
     localStorage.clear();
   });
 
+  it("blocks non-owner from opening the forgot-code recovery flow", async () => {
+    const ownerCodeHash = await hashOwnerCode("old-1234");
+
+    localStorage.setItem(
+      "jp-profile",
+      JSON.stringify({ id: "user-2", surname: "Cousin", role: "utilisateur" })
+    );
+    localStorage.setItem(
+      "jp-family-state",
+      JSON.stringify({
+        version: 1,
+        ownerProfileId: "owner-1",
+        profiles: [
+          { id: "owner-1", role: "proprietaire" },
+          { id: "user-2", role: "utilisateur" },
+        ],
+      })
+    );
+    localStorage.setItem("jp-phase", "before");
+    localStorage.setItem("jp-owner-code-hash", ownerCodeHash);
+    localStorage.setItem(
+      "jp-owner-recovery-hash",
+      await hashOwnerRecoveryPhrase("my emergency phrase")
+    );
+
+    render(React.createElement(App));
+
+    fireEvent.click(screen.getByRole("button", { name: "On est partis ! 🎉" }));
+    fireEvent.click(screen.getByRole("button", { name: "Code oublié ?" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Seul le profil propriétaire peut débloquer le voyage.")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("Réinitialiser le code propriétaire")).not.toBeInTheDocument();
+  });
+
   it("shows Code oublie CTA and allows reset with correct phrase", async () => {
     const previousHash = await seedOwnerSession();
     render(React.createElement(App));
