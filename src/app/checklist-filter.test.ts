@@ -374,45 +374,41 @@ describe("getVisibleItemIds", () => {
 
 describe("getItemBadges", () => {
   it("returns both gender and household badges for untagged item", () => {
-    expect(getItemBadges({})).toEqual(["Hommes", "Femmes", "Parents", "Enfants"]);
+    expect(getItemBadges({})).toEqual(["Hommes Femmes / Parents Enfants"]);
   });
 
   it("returns male gender badge and both household badges for male item", () => {
-    expect(getItemBadges({ genderTargets: "male" })).toEqual(["Hommes", "Parents", "Enfants"]);
+    expect(getItemBadges({ genderTargets: "male" })).toEqual(["Hommes / Parents Enfants"]);
   });
 
   it("returns female gender badge and both household badges for female item", () => {
-    expect(getItemBadges({ genderTargets: "female" })).toEqual(["Femmes", "Parents", "Enfants"]);
+    expect(getItemBadges({ genderTargets: "female" })).toEqual(["Femmes / Parents Enfants"]);
   });
 
   it("returns owner badge plus default targeting badges for ownerOnly item", () => {
     expect(getItemBadges({ ownerOnly: true })).toEqual([
       "Propriétaire uniquement",
-      "Hommes",
-      "Femmes",
-      "Parents",
-      "Enfants",
+      "Hommes Femmes / Parents Enfants",
     ]);
   });
 
   it("returns both gender badges and parent badge for parent item", () => {
-    expect(getItemBadges({ householdRoleTargets: "parent" })).toEqual(["Hommes", "Femmes", "Parents"]);
+    expect(getItemBadges({ householdRoleTargets: "parent" })).toEqual(["Hommes Femmes / Parents"]);
   });
 
   it("returns both gender badges and child badge for child item", () => {
-    expect(getItemBadges({ householdRoleTargets: "child" })).toEqual(["Hommes", "Femmes", "Enfants"]);
+    expect(getItemBadges({ householdRoleTargets: "child" })).toEqual(["Hommes Femmes / Enfants"]);
   });
 
   it("returns combined badges for multi-targeted item", () => {
     const badges = getItemBadges({ genderTargets: "female", householdRoleTargets: "parent" });
-    expect(badges).toContain("Femmes");
-    expect(badges).toContain("Parents");
+    expect(badges).toContain("Femmes / Parents");
   });
 
   it("ownerOnly keeps other targeting badges", () => {
     const badges = getItemBadges({ ownerOnly: true, genderTargets: "male" });
     expect(badges).toContain("Propriétaire uniquement");
-    expect(badges).toContain("Hommes");
+    expect(badges).toContain("Hommes / Parents Enfants");
   });
 });
 
@@ -421,7 +417,7 @@ describe("getItemBadges", () => {
 describe("getCategoryBadges", () => {
   it("returns all default badges when no items have targeting", () => {
     const items: ChecklistItemTargeting[] = [{}, {}];
-    expect(getCategoryBadges(items)).toEqual(["Enfants", "Femmes", "Hommes", "Parents"]);
+    expect(getCategoryBadges(items)).toEqual(["Hommes Femmes / Parents Enfants"]);
   });
 
   it("aggregates badges across items", () => {
@@ -430,8 +426,7 @@ describe("getCategoryBadges", () => {
       { genderTargets: "female" },
     ];
     const badges = getCategoryBadges(items);
-    expect(badges).toContain("Hommes");
-    expect(badges).toContain("Femmes");
+    expect(badges).toContain("Hommes Femmes / Parents Enfants");
   });
 
   it("deduplicates badges from multiple items with same target", () => {
@@ -440,6 +435,6 @@ describe("getCategoryBadges", () => {
       { genderTargets: "male" },
     ];
     const badges = getCategoryBadges(items);
-    expect(badges.filter((b) => b === "Hommes")).toHaveLength(1);
+    expect(badges).toEqual(["Hommes / Parents Enfants"]);
   });
 });

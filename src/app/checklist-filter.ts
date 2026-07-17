@@ -17,6 +17,20 @@ export type ChecklistItemTargeting = {
   ownerOnly?: boolean;
 };
 
+const GENDER_BADGE_ORDER = ["Hommes", "Femmes"] as const;
+const HOUSEHOLD_BADGE_ORDER = ["Parents", "Enfants"] as const;
+type GenderBadgeLabel = (typeof GENDER_BADGE_ORDER)[number];
+type HouseholdBadgeLabel = (typeof HOUSEHOLD_BADGE_ORDER)[number];
+
+function formatTargetingBadge(
+  genderBadges: ReadonlySet<GenderBadgeLabel>,
+  householdBadges: ReadonlySet<HouseholdBadgeLabel>
+): string {
+  const left = GENDER_BADGE_ORDER.filter((label) => genderBadges.has(label)).join(" ");
+  const right = HOUSEHOLD_BADGE_ORDER.filter((label) => householdBadges.has(label)).join(" ");
+  return `${left} / ${right}`;
+}
+
 export type ProfileFilterInput = {
   role: "proprietaire" | "utilisateur";
   gender: Gender;
@@ -107,13 +121,17 @@ export function getItemBadges(item: ChecklistItemTargeting): string[] {
   const badges: string[] = [];
   if (item.ownerOnly) badges.push("Propriétaire uniquement");
 
+  const genderBadges = new Set<GenderBadgeLabel>();
   const genderTarget: GenderTarget = item.genderTargets ?? "all";
-  if (genderTarget === "all" || genderTarget === "male") badges.push("Hommes");
-  if (genderTarget === "all" || genderTarget === "female") badges.push("Femmes");
+  if (genderTarget === "all" || genderTarget === "male") genderBadges.add("Hommes");
+  if (genderTarget === "all" || genderTarget === "female") genderBadges.add("Femmes");
 
+  const householdRoleBadges = new Set<HouseholdBadgeLabel>();
   const householdRoleTarget: HouseholdRoleTarget = item.householdRoleTargets ?? "all";
-  if (householdRoleTarget === "all" || householdRoleTarget === "parent") badges.push("Parents");
-  if (householdRoleTarget === "all" || householdRoleTarget === "child") badges.push("Enfants");
+  if (householdRoleTarget === "all" || householdRoleTarget === "parent") householdRoleBadges.add("Parents");
+  if (householdRoleTarget === "all" || householdRoleTarget === "child") householdRoleBadges.add("Enfants");
+
+  badges.push(formatTargetingBadge(genderBadges, householdRoleBadges));
 
   return badges;
 }
@@ -123,11 +141,27 @@ export function getItemBadges(item: ChecklistItemTargeting): string[] {
  * Used to display aggregated targeting labels on the category header.
  */
 export function getCategoryBadges(items: ChecklistItemTargeting[]): string[] {
-  const seen = new Set<string>();
+  const genderBadges = new Set<GenderBadgeLabel>();
+  const householdBadges = new Set<HouseholdBadgeLabel>();
+  let hasOwnerOnly = false;
+
   for (const item of items) {
-    for (const badge of getItemBadges(item)) {
-      seen.add(badge);
-    }
+    if (item.ownerOnly) hasOwnerOnly = true;
+
+    const genderTarget: GenderTarget = item.genderTargets ?? "all";
+    if (genderTarget === "all" || genderTarget === "male") genderBadges.add("Hommes");
+    if (genderTarget === "all" || genderTarget === "female") genderBadges.add("Femmes");
+
+    const householdRoleTarget: HouseholdRoleTarget = item.householdRoleTargets ?? "all";
+    if (householdRoleTarget === "all" || householdRoleTarget === "parent") householdBadges.add("Parents");
+    if (householdRoleTarget === "all" || householdRoleTarget === "child") householdBadges.add("Enfants");
   }
-  return Array.from(seen).sort();
+
+  const badges: string[] = [];
+  if (hasOwnerOnly) badges.push("Propriétaire uniquement");
+  if (genderBadges.size > 0 && householdBadges.size > 0) {
+    badges.push(formatTargetingBadge(genderBadges, householdBadges));
+  }
+
+  return badges;
 }
