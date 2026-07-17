@@ -86,7 +86,7 @@ const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
-const CHECKLIST_CATEGORIES = [
+export const CHECKLIST_CATEGORIES = [
   {
     id: "vetements-hommes",
     emoji: "👔",
@@ -166,8 +166,8 @@ const CHECKLIST_CATEGORIES = [
       { id: "toilette-mains", label: "(Optionnel) Crème pour les mains" },
       { id: "toilette-apres-soleil", label: "(Optionnel) Après-soleil" },
       { id: "toilette-ventilateur", label: "(Optionnel mais recommandé) mini ventilateur ou éventail" },
-      { id: "toilette-pharmacie-famille", label: "Pour toute la famille : petite pharmacie de voyage (=> KG s'en occupe)" },
-      { id: "toilette-fer-famille", label: "1 pour toute la famille : mini fer à repasser (=> KG s'en occupe)" },
+      { id: "toilette-pharmacie-famille", label: "Pour toute la famille : petite pharmacie de voyage (=> KG s'en occupe)", householdRoleTargets: "parent" as const, ownerOnly: true },
+      { id: "toilette-fer-famille", label: "1 pour toute la famille : mini fer à repasser (=> KG s'en occupe)", householdRoleTargets: "parent" as const, ownerOnly: true },
     ],
   },
   {
@@ -177,18 +177,18 @@ const CHECKLIST_CATEGORIES = [
     items: [
       { id: "elec-telephone", label: "Téléphone et son chargeur" },
       { id: "elec-attache-cou", label: "Attache-cou pour téléphone" },
-      { id: "elec-perche-selfie", label: "Perche Selfie (1 pour toute la famille => JP s'en charge)" },
+      { id: "elec-perche-selfie", label: "Perche Selfie (1 pour toute la famille => JP s'en charge)", householdRoleTargets: "parent" as const, ownerOnly: true },
       { id: "elec-batterie-externe", label: "Batterie externe et son chargeur" },
       { id: "elec-ecouteurs", label: "Écouteurs et/ou casque" },
       { id: "elec-tablette-ordi", label: "Tablette ou ordinateur rouge pour regarder des films" },
-      { id: "elec-films-series", label: "Films, séries et playlists téléchargés avant le départ (=> donner la liste assez vite à JP)" },
+      { id: "elec-films-series", label: "Films, séries et playlists téléchargés avant le départ (=> donner la liste assez vite à JP)", householdRoleTargets: "parent" as const },
       { id: "elec-multiprise", label: "1 multiprise pour hôtel (chacun en prend 1)" },
-      { id: "elec-montre-connectee", label: "Emma (optionnel) : montre connectée et son chargeur" },
-      { id: "elec-ssd", label: "(Optionnel) SSD externe compact pour sauvegarder les photos et câble associé (=> voir avec JP)" },
-      { id: "elec-cle-usb-c", label: "(Optionnel) Clé USB-C (=> voir avec JP)" },
+      { id: "elec-montre-connectee", label: "Emma (optionnel) : montre connectée et son chargeur", householdRoleTargets: "child" as const, genderTargets: "female" as const },
+      { id: "elec-ssd", label: "(Optionnel) SSD externe compact pour sauvegarder les photos et câble associé (=> voir avec JP)", householdRoleTargets: "parent" as const, ownerOnly: true },
+      { id: "elec-cle-usb-c", label: "(Optionnel) Clé USB-C (=> voir avec JP)", householdRoleTargets: "parent" as const, ownerOnly: true },
       { id: "elec-livre", label: "(Optionnel) Livre (ou livre numérique), magazine, ..." },
-      { id: "elec-thomas-oral", label: "Thomas : fichier d'oral de stage pour révision pendant le trajet retour" },
-      { id: "elec-gopro", label: "Gopro (=> JP)" },
+      { id: "elec-thomas-oral", label: "Thomas : fichier d'oral de stage pour révision pendant le trajet retour", householdRoleTargets: "child" as const },
+      { id: "elec-gopro", label: "Gopro (=> JP)", householdRoleTargets: "parent" as const, ownerOnly: true },
     ],
   },
   {
@@ -196,8 +196,8 @@ const CHECKLIST_CATEGORIES = [
     emoji: "📄",
     label: "Documents",
     items: [
-      { id: "doc-passeport-carte-id", label: "Passeport + carte d'identité" },
-      { id: "doc-carte-bancaire", label: "Carte bancaire" },
+      { id: "doc-passeport-carte-id", label: "Passeport + carte d'identité", householdRoleTargets: "parent" as const },
+      { id: "doc-carte-bancaire", label: "Carte bancaire", householdRoleTargets: "parent" as const },
     ],
   },
   {
@@ -205,11 +205,11 @@ const CHECKLIST_CATEGORIES = [
     emoji: "🚌",
     label: "Confort pendant le transport",
     items: [
-      { id: "transport-masque-sommeil", label: "(Optionnel) Masque de sommeil pour les yeux" },
+      { id: "transport-masque-sommeil", label: "(Optionnel) Masque de sommeil pour les yeux", householdRoleTargets: "child" as const },
       { id: "transport-bouchons-oreilles", label: "Bouchons d'oreilles (=> les récupérer auprès de KG)" },
       { id: "transport-oreiller-cou", label: "Oreiller de cou gonflable (=> le récupérer auprès de KG)" },
-      { id: "transport-couverture", label: "Petite couverture légère" },
-      { id: "transport-gel", label: "Pour toute la famille : 1 gel hydroalcoolique (=> KG s'en charge)" },
+      { id: "transport-couverture", label: "Petite couverture légère", householdRoleTargets: "child" as const },
+      { id: "transport-gel", label: "Pour toute la famille : 1 gel hydroalcoolique (=> KG s'en charge)", householdRoleTargets: "parent" as const, ownerOnly: true },
       { id: "transport-mouchoirs", label: "Mouchoirs" },
       { id: "transport-lingettes", label: "Lingettes rafraîchissantes" },
       { id: "transport-chewing-gum", label: "Optionnel : chewing-gum" },
@@ -221,7 +221,7 @@ const CHECKLIST_CATEGORIES = [
     emoji: "🧳",
     label: "Bagages",
     items: [
-      { id: "bagages-sac-dos", label: "Petit sac à dos pour les excursions (obligatoire)" },
+      { id: "bagages-sac-dos", label: "Petit sac à dos pour les excursions (obligatoire)", householdRoleTargets: "child" as const },
       { id: "bagages-sac-main", label: "(Optionnel pour les femmes) Sac à main pour le soir", genderTargets: "female" as const },
       { id: "bagages-sac-banane", label: "(Optionnel) Sac banane" },
       { id: "bagages-sac-cabine", label: "Pour chacun : petit sac cabine (qui peut être le sac à dos) de dimensions 30x40x15 cm max" },
