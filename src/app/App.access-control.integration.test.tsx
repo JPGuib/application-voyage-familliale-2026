@@ -149,6 +149,12 @@ describe("App access-control integration", () => {
     const view = render(<App />);
 
     await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
+
+    await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
@@ -181,6 +187,12 @@ describe("App access-control integration", () => {
     render(<App />);
 
     await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
+
+    await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
@@ -203,5 +215,61 @@ describe("App access-control integration", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Tableau des scores/i })).toBeInTheDocument();
     });
+  });
+
+  it("keeps checklist accessible when phase switches from before to during", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    let snapshot = makeSnapshot("before");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    const view = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    snapshot = makeSnapshot("during");
+    view.rerender(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText(/Jour\s+1/i)).not.toBeInTheDocument();
+  });
+
+  it("does not expose unlock actions on checklist during travel phase", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    const snapshot = makeSnapshot("during");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("button", { name: /On est partis/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Code oublié/i)).not.toBeInTheDocument();
   });
 });
