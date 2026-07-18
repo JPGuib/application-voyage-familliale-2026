@@ -3336,7 +3336,6 @@ export default function App() {
     if (!cloudEnabled) {
       setIsAuthenticated(true);
       setIsAuthBootstrapPending(false);
-      setIsInitializing(false);
       return;
     }
 
@@ -3347,7 +3346,6 @@ export default function App() {
 
     if (isAuthenticated) {
       setIsAuthBootstrapPending(false);
-      setIsInitializing(false);
       return;
     }
 
@@ -3355,20 +3353,17 @@ export default function App() {
       const rememberedId = localStorage.getItem(ACTIVE_PROFILE_ID_KEY);
       if (!rememberedId) {
         setIsAuthBootstrapPending(false);
-        setIsInitializing(false);
         return;
       }
 
       if (!cloudSnapshot) {
         setIsAuthBootstrapPending(false);
-        setIsInitializing(false);
         return;
       }
 
       const rememberedProfile = cloudSnapshot.profiles[rememberedId];
       if (!rememberedProfile) {
         setIsAuthBootstrapPending(false);
-        setIsInitializing(false);
         return;
       }
 
@@ -3378,12 +3373,10 @@ export default function App() {
         if (!isProfilePasswordHash(rememberedPasswordHash)) {
           setAuthError("Authentification impossible. Vérifiez les informations saisies.");
           setIsAuthBootstrapPending(false);
-          setIsInitializing(false);
           return;
         }
 
         setIsAuthBootstrapPending(false);
-        setIsInitializing(false);
         return;
       }
 
@@ -3404,7 +3397,6 @@ export default function App() {
       // Ignore storage errors and keep manual login flow available.
     } finally {
       setIsAuthBootstrapPending(false);
-      setIsInitializing(false);
     }
   }, [
     ACTIVE_PROFILE_ID_KEY,
@@ -3413,6 +3405,19 @@ export default function App() {
     cloudSnapshot,
     isAuthenticated,
   ]);
+
+  useEffect(() => {
+    if (cloudEnabled && cloudReady && !isAuthBootstrapPending) {
+      setIsInitializing(false);
+    }
+  }, [cloudEnabled, cloudReady, isAuthBootstrapPending]);
+
+  useEffect(() => {
+    if (!cloudEnabled) {
+      setIsInitializing(false);
+      return;
+    }
+  }, [cloudEnabled]);
 
   useEffect(() => {
     if (cloudEnabled) {
