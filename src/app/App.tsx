@@ -3443,7 +3443,12 @@ export default function App() {
       }));
       const nextPhase = rememberedProfile.phase || cloudSnapshot.phase;
       setPhase(nextPhase);
-      setScreen(getPostAuthLandingScreen(nextPhase));
+      
+      // Try to restore the previous screen, fallback to landing screen
+      const savedScreen = localStorage.getItem("jp-screen");
+      const screenToRestore = (savedScreen as Screen) || getPostAuthLandingScreen(nextPhase);
+      setScreen(screenToRestore);
+      
       setIsAuthenticated(true);
       setAuthError(null);
     } catch {
@@ -3532,6 +3537,7 @@ export default function App() {
         localStorage.removeItem("jp-profile-recovery-hashes");
         localStorage.removeItem(PROFILE_RECOVERY_QUESTION_STORAGE_KEY);
         localStorage.removeItem("jp-phase");
+        localStorage.removeItem("jp-screen");
         localStorage.removeItem("jp-checklist");
         localStorage.removeItem("jp-game-history");
         localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
@@ -3560,6 +3566,7 @@ export default function App() {
             JSON.stringify(profileRecoveryQuestions)
           );
           localStorage.setItem("jp-phase", phase);
+          localStorage.setItem("jp-screen", screen);
           localStorage.setItem("jp-checklist", JSON.stringify(checked));
           localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
           localStorage.setItem(
@@ -3599,6 +3606,7 @@ export default function App() {
     profileRecoveryHashes,
     profileRecoveryQuestions,
     phase,
+    screen,
     checked,
     customChecklistItemsByProfile,
     ownerGlobalChecklistAdditions,
