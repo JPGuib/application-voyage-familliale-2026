@@ -3047,6 +3047,51 @@ function SettingsScreen({
 
 export default function App() {
   const ACTIVE_PROFILE_ID_KEY = "jp-active-profile-id";
+  const SESSION_TOKEN_KEY = "jp-session-token";
+  const SESSION_TOKEN_PROFILE_ID_KEY = "jp-session-token-profile-id";
+  const SESSION_TOKEN_TIMESTAMP_KEY = "jp-session-token-timestamp";
+  const SESSION_TOKEN_VALIDITY_DAYS = 7;
+
+  // Generate a simple session token (in production, use cryptographically secure tokens)
+  const generateSessionToken = () => {
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  };
+
+  const isSessionTokenValid = () => {
+    try {
+      const timestamp = localStorage.getItem(SESSION_TOKEN_TIMESTAMP_KEY);
+      if (!timestamp) return false;
+
+      const createdAt = parseInt(timestamp, 10);
+      const nowMs = Date.now();
+      const validityMs = SESSION_TOKEN_VALIDITY_DAYS * 24 * 60 * 60 * 1000;
+
+      return nowMs - createdAt < validityMs;
+    } catch {
+      return false;
+    }
+  };
+
+  const saveSessionToken = (profileId: string) => {
+    try {
+      localStorage.setItem(SESSION_TOKEN_KEY, generateSessionToken());
+      localStorage.setItem(SESSION_TOKEN_PROFILE_ID_KEY, profileId);
+      localStorage.setItem(SESSION_TOKEN_TIMESTAMP_KEY, Date.now().toString());
+    } catch {
+      // Ignore storage errors
+    }
+  };
+
+  const clearSessionToken = () => {
+    try {
+      localStorage.removeItem(SESSION_TOKEN_KEY);
+      localStorage.removeItem(SESSION_TOKEN_PROFILE_ID_KEY);
+      localStorage.removeItem(SESSION_TOKEN_TIMESTAMP_KEY);
+    } catch {
+      // Ignore storage errors
+    }
+  };
+
   const {
     cloudEnabled,
     cloudReady,
@@ -3368,7 +3413,14 @@ export default function App() {
       }
 
       const rememberedPasswordHash = rememberedProfile.passwordHash?.trim() || "";
-      if (rememberedPasswordHash) {
+      
+      // Check if we have a valid session token - if so, skip password verification
+      const hasValidSessionToken =
+        isSessionTokenValid() &&
+        localStorage.getItem(SESSION_TOKEN_PROFILE_ID_KEY) === rememberedId;
+
+      if (rememberedPasswordHash && !hasValidSessionToken) {
+        // Password is set and no valid session token → require password re-entry
         setSelectedLoginProfileId(rememberedProfile.profileId);
         if (!isProfilePasswordHash(rememberedPasswordHash)) {
           setAuthError("Authentification impossible. Vérifiez les informations saisies.");
@@ -3380,6 +3432,7 @@ export default function App() {
         return;
       }
 
+      // Restore session (either no password, or valid session token exists)
       setProfile((previous) => ({
         ...previous,
         id: rememberedProfile.profileId,
@@ -4239,6 +4292,7 @@ export default function App() {
     setAuthError(null);
     setProfileError(null);
     setIsAuthBootstrapPending(false);
+    clearSessionToken();
     setIsAuthenticated(false);
   };
 
@@ -4712,6 +4766,7 @@ export default function App() {
               setPasswordPromptInput("");
               setPasswordPromptError(null);
               setPasswordPromptProfileId(null);
+              saveSessionToken(targetProfileId);
               setIsAuthenticated(true);
             };
 
