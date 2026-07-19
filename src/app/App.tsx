@@ -2435,11 +2435,13 @@ function SettingsScreen({
   profilePasswordConfigured,
   profileRecoveryConfigured,
   profileRecoveryQuestion,
+  relockActionVisible,
   onBack,
   onSaveSurname,
   onSaveProfileMetadata,
   onSaveOwnerCode,
   onSaveOwnerRecoveryPhrase,
+  onConfirmRelock,
   onSaveProfilePassword,
   onChangeProfilePasswordInSession,
   onRemoveProfilePassword,
@@ -2453,11 +2455,13 @@ function SettingsScreen({
   profilePasswordConfigured: boolean;
   profileRecoveryConfigured: boolean;
   profileRecoveryQuestion: string;
+  relockActionVisible: boolean;
   onBack: () => void;
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
   onSaveProfileMetadata: (gender: Gender, householdRole: HouseholdRole) => void;
   onSaveOwnerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
   onSaveOwnerRecoveryPhrase: (phrase: string) => Promise<{ ok: boolean; message: string }>;
+  onConfirmRelock: (code: string) => Promise<{ ok: boolean; message: string }>;
   onSaveProfilePassword: (password: string) => Promise<{ ok: boolean; message: string }>;
   onChangeProfilePasswordInSession: (
     method: InSessionPasswordProofMethod,
@@ -2480,6 +2484,8 @@ function SettingsScreen({
   const [metadataFeedback, setMetadataFeedback] = useState<string | null>(null);
   const [ownerCodeInput, setOwnerCodeInput] = useState("");
   const [ownerCodeFeedback, setOwnerCodeFeedback] = useState<string | null>(null);
+  const [relockCodeInput, setRelockCodeInput] = useState("");
+  const [relockFeedback, setRelockFeedback] = useState<string | null>(null);
   const [ownerRecoveryInput, setOwnerRecoveryInput] = useState("");
   const [ownerRecoveryFeedback, setOwnerRecoveryFeedback] = useState<string | null>(null);
   const [profilePasswordInput, setProfilePasswordInput] = useState("");
@@ -2491,6 +2497,8 @@ function SettingsScreen({
   const [profileRecoveryInput, setProfileRecoveryInput] = useState("");
   const [profileRecoveryFeedback, setProfileRecoveryFeedback] = useState<string | null>(null);
   const [showOwnerCodeInput, setShowOwnerCodeInput] = useState(false);
+  const [showRelockPrompt, setShowRelockPrompt] = useState(false);
+  const [showRelockCodeInput, setShowRelockCodeInput] = useState(false);
   const [showOwnerRecoveryInput, setShowOwnerRecoveryInput] = useState(false);
   const [showProfilePasswordInput, setShowProfilePasswordInput] = useState(false);
   const [showPasswordChangeFlow, setShowPasswordChangeFlow] = useState(false);
@@ -2930,6 +2938,93 @@ function SettingsScreen({
             </button>
             {ownerCodeFeedback && (
               <p className="mt-2 text-xs font-bold text-muted-foreground">{ownerCodeFeedback}</p>
+            )}
+
+            {relockActionVisible && (
+              <>
+                <div className="mt-4 border-t border-border pt-4">
+                  <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+                    Verrouillage
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Re-verrouillez immédiatement l'application pour toute la famille.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setRelockCodeInput("");
+                      setRelockFeedback(null);
+                      setShowRelockCodeInput(false);
+                      setShowRelockPrompt(true);
+                    }}
+                    className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
+                  >
+                    Re-verrouiller l'application
+                  </button>
+                </div>
+
+                {showRelockPrompt && (
+                  <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-20">
+                    <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
+                      <p className="text-sm font-black text-foreground">Validation propriétaire</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Entrez le code propriétaire pour re-verrouiller l'application.
+                      </p>
+
+                      <input
+                        type={showRelockCodeInput ? "text" : "password"}
+                        value={relockCodeInput}
+                        onChange={(e) => {
+                          setRelockCodeInput(e.target.value);
+                          if (relockFeedback) setRelockFeedback(null);
+                        }}
+                        placeholder="Code propriétaire"
+                        className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                      />
+                      <button
+                        onClick={() => setShowRelockCodeInput((previous) => !previous)}
+                        className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+                      >
+                        {showRelockCodeInput ? "Masquer" : "Afficher"} le code saisi
+                      </button>
+
+                      {relockFeedback && (
+                        <p className="mt-2 text-xs font-bold text-destructive">{relockFeedback}</p>
+                      )}
+
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => {
+                            setShowRelockPrompt(false);
+                            setRelockCodeInput("");
+                            setRelockFeedback(null);
+                            setShowRelockCodeInput(false);
+                          }}
+                          className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
+                        >
+                          Annuler
+                        </button>
+                        <button
+                          onClick={async () => {
+                            const result = await onConfirmRelock(relockCodeInput);
+                            if (result.ok) {
+                              setShowRelockPrompt(false);
+                              setRelockCodeInput("");
+                              setRelockFeedback(null);
+                              setShowRelockCodeInput(false);
+                              return;
+                            }
+
+                            setRelockFeedback(result.message);
+                          }}
+                          className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
+                        >
+                          Valider
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ) : (
@@ -3730,6 +3825,7 @@ export default function App() {
   }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id]);
 
   const lastCloudPushRef = useRef<string | null>(null);
+  const pendingCloudPhaseRef = useRef<TravelPhase | null>(null);
   const hydratedCloudProfileIdRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -3739,7 +3835,13 @@ export default function App() {
 
     const hasCloudProfile = Boolean(cloudSnapshot?.profiles[profile.id]);
     const isHydratedProfile = hydratedCloudProfileIdRef.current === profile.id;
-    const isPhaseSynced = cloudSnapshot ? phase === cloudSnapshot.phase : false;
+    if (cloudSnapshot && pendingCloudPhaseRef.current === cloudSnapshot.phase) {
+      pendingCloudPhaseRef.current = null;
+    }
+    const isAwaitingCommittedPhase = pendingCloudPhaseRef.current === phase;
+    const isPhaseSynced = cloudSnapshot
+      ? phase === cloudSnapshot.phase || isAwaitingCommittedPhase
+      : false;
     setIsProfileHydrationPending(hasCloudProfile && (!isHydratedProfile || !isPhaseSynced));
   }, [cloudEnabled, cloudSnapshot, isAuthenticated, phase, profile.id]);
 
@@ -4116,6 +4218,12 @@ export default function App() {
       return;
     }
 
+    const syncResult = await pushPhaseChange("during");
+    if (!syncResult.ok) {
+      setStartError(syncResult.message);
+      return;
+    }
+
     setUnlockFailedAttempts(0);
     setUnlockLockedUntil(0);
     setStartError(null);
@@ -4202,6 +4310,12 @@ export default function App() {
       }
 
       const nextHash = await hashOwnerCode(nextCode);
+      const syncResult = await pushPhaseChange("during");
+      if (!syncResult.ok) {
+        setRecoveryError(syncResult.message);
+        return;
+      }
+
       setOwnerCodeHash(nextHash);
       setUnlockFailedAttempts(0);
       setUnlockLockedUntil(0);
@@ -4302,6 +4416,120 @@ export default function App() {
     setIsAuthBootstrapPending(false);
     clearSessionToken();
     setIsAuthenticated(false);
+  };
+
+  const pushPhaseChange = async (nextPhase: "before" | "during") => {
+    if (!cloudEnabled) {
+      return { ok: true as const, message: null };
+    }
+
+    if (!cloudSnapshot || !cloudActorUid || !profile.role) {
+      return {
+        ok: false as const,
+        message: "Synchronisation cloud indisponible pour le moment.",
+      };
+    }
+
+    const normalizedFamilyState = enforceOwnerUniqueness(familyState);
+    const canWriteFamilyState = canUpdateOwnerCode(normalizedFamilyState, profile.id);
+    if (!canWriteFamilyState) {
+      return {
+        ok: false as const,
+        message: "Seul le profil propriétaire peut re-verrouiller l'application.",
+      };
+    }
+
+    pendingCloudPhaseRef.current = nextPhase;
+
+    await pushSnapshot({
+      actorUid: cloudActorUid,
+      canWriteFamilyState,
+      familyState: normalizedFamilyState,
+      ownerCodeHash,
+      ownerRecoveryHash,
+      ownerRecoveryConfiguredAt: cloudSnapshot.ownerRecoveryConfiguredAt,
+      profileId: profile.id,
+      surname: profile.surname,
+      role: profile.role,
+      profilePasswordHash: profilePasswordHashes[profile.id] || "",
+      profileRecoveryHash: profileRecoveryHashes[profile.id] || "",
+      profileRecoveryQuestion: profileRecoveryQuestions[profile.id] || "",
+      profileRecoveryConfiguredAt: cloudSnapshot.profiles[profile.id]?.recoveryConfiguredAt,
+      gender: profile.gender,
+      householdRole: profile.householdRole,
+      checklist: checked,
+      profileCustomChecklistItems: customChecklistItemsByProfile[profile.id] ?? [],
+      ownerGlobalChecklistAdditions,
+      ownerGlobalChecklistRemovals,
+      gameResults: gameHistory,
+      phase: nextPhase,
+    });
+
+    return { ok: true as const, message: null };
+  };
+
+  const confirmRelockJourney = async (code: string) => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return {
+        ok: false,
+        message: "Seul le profil propriétaire peut re-verrouiller l'application.",
+      };
+    }
+
+    if (!ownerCodeHash) {
+      return {
+        ok: false,
+        message: "Configurez d'abord un code propriétaire dans Paramètres.",
+      };
+    }
+
+    if (lockRemainingMs > 0) {
+      return {
+        ok: false,
+        message: `Trop de tentatives. Réessayez dans ${lockRemainingSec}s.`,
+      };
+    }
+
+    const isCodeValid = await verifyOwnerCode(code, ownerCodeHash);
+    if (!isCodeValid) {
+      const nextAttempts = unlockFailedAttempts + 1;
+      if (nextAttempts >= 3) {
+        const nextLock = Date.now() + 30000;
+        setUnlockFailedAttempts(0);
+        setUnlockLockedUntil(nextLock);
+        setNowTs(Date.now());
+        return {
+          ok: false,
+          message: "Code incorrect. Blocage temporaire de 30 secondes.",
+        };
+      }
+
+      setUnlockFailedAttempts(nextAttempts);
+      return {
+        ok: false,
+        message: "Code incorrect. Réessayez.",
+      };
+    }
+
+    const syncResult = await pushPhaseChange("before");
+    if (!syncResult.ok) {
+      return syncResult;
+    }
+
+    setUnlockFailedAttempts(0);
+    setUnlockLockedUntil(0);
+    setNowTs(Date.now());
+    setAccessDeniedMessage(null);
+    setShowStartPrompt(false);
+    setStartCodeInput("");
+    setStartError(null);
+    setPhase("before");
+    setScreen("checklist");
+
+    return {
+      ok: true,
+      message: "Application re-verrouillée.",
+    };
   };
 
   const answerQ = (idx: number) => {
@@ -4905,6 +5133,7 @@ export default function App() {
             profilePasswordConfigured={currentProfilePasswordHash.length > 0}
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             profileRecoveryQuestion={currentProfileRecoveryQuestion}
+            relockActionVisible={false}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("checklist")}
             onSaveSurname={(surname) => {
@@ -4959,6 +5188,7 @@ export default function App() {
                 return { ok: false, message };
               }
             }}
+            onConfirmRelock={confirmRelockJourney}
             onSaveProfilePassword={async (password) => {
               const normalized = password.trim();
               if (normalized.length < 4) {
@@ -5325,6 +5555,7 @@ export default function App() {
             profilePasswordConfigured={currentProfilePasswordHash.length > 0}
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             profileRecoveryQuestion={currentProfileRecoveryQuestion}
+            relockActionVisible={phase === "during"}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("dashboard")}
             onSaveSurname={(surname) => {
@@ -5379,6 +5610,7 @@ export default function App() {
                 return { ok: false, message };
               }
             }}
+            onConfirmRelock={confirmRelockJourney}
             onSaveProfilePassword={async (password) => {
               const normalized = password.trim();
               if (normalized.length < 4) {

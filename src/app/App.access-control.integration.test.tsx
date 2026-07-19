@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "./App";
+import { hashOwnerCode } from "./owner-code";
 
 const cloudSyncMock = vi.fn();
 
@@ -65,7 +66,7 @@ describe("App access-control integration", () => {
     cloudSyncMock.mockReset();
   });
 
-  it("allows owner to access travel sections before unlock", async () => {
+  it("keeps owner locked to checklist and settings before unlock", async () => {
     localStorage.setItem("jp-active-profile-id", "p1");
 
     let snapshot = makeSnapshot("before");
@@ -86,17 +87,16 @@ describe("App access-control integration", () => {
       expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
+    expect(screen.queryByRole("button", { name: "Accueil" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Guide" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Guide" }));
-
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Guide de Turquie/i })).toBeInTheDocument();
-    });
+    expect(screen.getByText(/Code propriétaire/i)).toBeInTheDocument();
   });
 
   it("keeps user locked to checklist and settings before unlock", async () => {
@@ -212,6 +212,239 @@ describe("App access-control integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Résultats" }));
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Tableau des scores/i })).toBeInTheDocument();
+    });
+  });
+
+  it("allows the owner to re-lock from settings after entering the correct code", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const ownerCodeHash = await hashOwnerCode("1234");
+    const pushSnapshot = vi.fn().mockResolvedValue(undefined);
+    const snapshot = {
+      ...makeSnapshot("during"),
+      ownerCodeHash,
+    };
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot,
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Re-verrouiller l'application/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Entrez le code propriétaire pour re-verrouiller l'application/i)).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText(/Code propriétaire/i), {
+      target: { value: "1234" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Valider" }));
+
+    await waitFor(() => {
+      expect(pushSnapshot).toHaveBeenCalledWith(
+        expect.objectContaining({
+          profileId: "p1",
+          phase: "before",
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+  });
+
+  it("supports a full owner lock-unlock cycle after re-lock", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const ownerCodeHash = await hashOwnerCode("1234");
+    let snapshot = {
+      ...makeSnapshot("during"),
+      ownerCodeHash,
+    };
+    const pushSnapshot = vi.fn().mockImplementation(async (payload: { phase: SnapshotPhase }) => {
+      snapshot = {
+        ...snapshot,
+        phase: payload.phase,
+        profiles: {
+          ...snapshot.profiles,
+          p1: { ...snapshot.profiles.p1, phase: payload.phase },
+          p2: { ...snapshot.profiles.p2, phase: payload.phase },
+        },
+      };
+    });
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot,
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    const view = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Re-verrouiller l'application/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/Entrez le code propriétaire pour re-verrouiller l'application/i)).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText(/Code propriétaire/i), {
+      target: { value: "1234" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Valider" }));
+
+    await waitFor(() => {
+      expect(pushSnapshot).toHaveBeenCalledWith(expect.objectContaining({ phase: "before" }));
+    });
+
+    view.rerender(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /On est partis/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/Entrez le code propriétaire pour débloquer le voyage/i)).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText(/Code propriétaire/i), {
+      target: { value: "1234" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Valider" }));
+
+    await waitFor(() => {
+      expect(pushSnapshot).toHaveBeenCalledWith(expect.objectContaining({ phase: "during" }));
+    });
+
+    view.rerender(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+  });
+
+  it("shows an error and keeps the app unlocked when the re-lock code is wrong", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const ownerCodeHash = await hashOwnerCode("1234");
+    const pushSnapshot = vi.fn().mockResolvedValue(undefined);
+    const snapshot = {
+      ...makeSnapshot("during"),
+      ownerCodeHash,
+    };
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot,
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Re-verrouiller l'application/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/Entrez le code propriétaire pour re-verrouiller l'application/i)).toBeInTheDocument();
+    });
+
+    const callCountBeforeValidation = pushSnapshot.mock.calls.length;
+
+    fireEvent.change(screen.getByPlaceholderText(/Code propriétaire/i), {
+      target: { value: "9999" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Valider" }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Code incorrect\. Réessayez\./i)).toBeInTheDocument();
+    });
+
+    expect(pushSnapshot).toHaveBeenCalledTimes(callCountBeforeValidation);
+    expect(
+      pushSnapshot.mock.calls.some(
+        ([payload]) => payload && typeof payload === "object" && payload.phase === "before"
+      )
+    ).toBe(false);
+    expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+  });
+
+  it("redirects the owner to checklist when a re-lock arrives while viewing guide", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    let snapshot = makeSnapshot("during");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    const view = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Guide" }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Guide de Turquie/i })).toBeInTheDocument();
+    });
+
+    snapshot = makeSnapshot("before");
+    view.rerender(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
     });
   });
 

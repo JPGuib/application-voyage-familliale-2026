@@ -396,4 +396,51 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     expect(updates["profiles/profile-1/recoveryQuestion"]).toBeNull();
     expect(updates["profiles/profile-1/recoveryConfiguredAt"]).toBeNull();
   });
+
+  it("writes the family-wide before phase when the owner triggers a re-lock", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      canWriteFamilyState: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-1",
+        profiles: [{ id: "profile-1", role: "proprietaire" }],
+      },
+      role: "proprietaire",
+      ownerCodeHash: "sha256:" + "c".repeat(64),
+      phase: "before",
+    });
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.phase).toBe("before");
+    expect(updates.ownerProfileId).toBe("profile-1");
+    expect(updates["profiles/profile-1/role"]).toBe("proprietaire");
+  });
+
+  it("does not let a non-owner overwrite the family-wide phase", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      canWriteFamilyState: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-2",
+        profiles: [
+          { id: "profile-1", role: "utilisateur" },
+          { id: "profile-2", role: "proprietaire" },
+        ],
+      },
+      phase: "during",
+    });
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.phase).toBeUndefined();
+    expect(updates.ownerProfileId).toBeUndefined();
+    expect(updates["profiles/profile-1/role"]).toBe("utilisateur");
+  });
 });
