@@ -17,10 +17,15 @@ const ALL_SECTIONS: AccessSection[] = [
 ];
 
 describe("access-control policy", () => {
-  it("grants owner full access before unlock", () => {
+  it("restricts owner before unlock to checklist settings and owner actions", () => {
     const allowed = getAllowedSections("proprietaire", "before");
 
-    expect(allowed).toEqual(ALL_SECTIONS);
+    expect(allowed).toEqual(["checklist", "settings", "owner-code-actions"]);
+    expect(canAccessSection("proprietaire", "before", "dashboard")).toBe(false);
+    expect(canAccessSection("proprietaire", "before", "guide")).toBe(false);
+    expect(canAccessSection("proprietaire", "before", "game")).toBe(false);
+    expect(canAccessSection("proprietaire", "before", "tips")).toBe(false);
+    expect(canAccessSection("proprietaire", "before", "results")).toBe(false);
   });
 
   it("grants owner full access after unlock", () => {
