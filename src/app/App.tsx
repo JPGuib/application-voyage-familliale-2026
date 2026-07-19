@@ -2448,6 +2448,7 @@ function SettingsScreen({
   onSaveProfileRecoveryData,
   onSwitchProfile,
   cloudEnabled,
+  onDeleteOwnProfile,
 }: {
   profile: Profile;
   ownerCodeConfigured: boolean;
@@ -2476,6 +2477,10 @@ function SettingsScreen({
   ) => Promise<{ ok: boolean; message: string }>;
   onSwitchProfile: () => void;
   cloudEnabled: boolean;
+  onDeleteOwnProfile: (
+    proofMethod: "none" | "password" | "recovery",
+    proofInput: string
+  ) => Promise<{ ok: boolean; message: string }>;
 }) {
   const [surnameInput, setSurnameInput] = useState(profile.surname);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -2513,6 +2518,12 @@ function SettingsScreen({
   const [showPasswordChangeInput, setShowPasswordChangeInput] = useState(false);
   const [showPasswordChangeConfirmInput, setShowPasswordChangeConfirmInput] = useState(false);
   const [showSwitchProfilePrompt, setShowSwitchProfilePrompt] = useState(false);
+  const [showDeleteProfilePrompt, setShowDeleteProfilePrompt] = useState(false);
+  const [showDeleteProfileCredentialStep, setShowDeleteProfileCredentialStep] = useState(false);
+  const [deleteProfileProofMethod, setDeleteProfileProofMethod] = useState<"password" | "recovery">("password");
+  const [deleteProfileProofInput, setDeleteProfileProofInput] = useState("");
+  const [showDeleteProfileProofInput, setShowDeleteProfileProofInput] = useState(false);
+  const [deleteProfileConfirmError, setDeleteProfileConfirmError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profileRecoveryConfigured && passwordProofMethod === "recovery") {
@@ -3105,6 +3116,30 @@ function SettingsScreen({
             </button>
           </div>
         )}
+
+        {profile.role === "utilisateur" && (
+          <div className="bg-card rounded-2xl border border-destructive/30 p-4">
+            <p className="text-xs font-extrabold text-destructive uppercase tracking-widest">
+              Zone dangereuse
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Supprimez définitivement votre profil et toutes les données qui lui sont associées.
+            </p>
+            <button
+              onClick={() => {
+                setDeleteProfileConfirmError(null);
+                setDeleteProfileProofInput("");
+                setShowDeleteProfileProofInput(false);
+                setShowDeleteProfileCredentialStep(false);
+                setDeleteProfileProofMethod("password");
+                setShowDeleteProfilePrompt(true);
+              }}
+              className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-destructive text-destructive"
+            >
+              Supprimer mon profil
+            </button>
+          </div>
+        )}
       </div>
 
       {showSwitchProfilePrompt && (
@@ -3131,6 +3166,143 @@ function SettingsScreen({
                 Oui, se déconnecter
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteProfilePrompt && (
+        <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-20">
+          <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
+            <p className="text-sm font-black text-destructive">Supprimer mon profil</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Cette action est irréversible. Les données suivantes seront définitivement supprimées :
+            </p>
+            <ul className="mt-2 text-xs text-muted-foreground list-disc list-inside space-y-1">
+              <li>Votre profil et vos informations personnelles</li>
+              <li>Votre checklist et vos personnalisations</li>
+              <li>Votre historique de jeux et résultats</li>
+              <li>Votre mot de passe et question de récupération</li>
+            </ul>
+            <p className="mt-2 text-xs font-bold text-foreground">
+              Les données partagées de la famille (phase de voyage, catalogue partagé) ne seront pas affectées.
+            </p>
+
+            {!showDeleteProfileCredentialStep && (
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setShowDeleteProfilePrompt(false)}
+                  className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
+                >
+                  Annuler
+                </button>
+                {profilePasswordConfigured ? (
+                  <button
+                    onClick={() => setShowDeleteProfileCredentialStep(true)}
+                    className="rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground"
+                  >
+                    Continuer
+                  </button>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      const result = await onDeleteOwnProfile("none", "");
+                      if (!result.ok) {
+                        setDeleteProfileConfirmError(result.message);
+                        setShowDeleteProfilePrompt(false);
+                      }
+                    }}
+                    className="rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground"
+                  >
+                    Supprimer définitivement
+                  </button>
+                )}
+              </div>
+            )}
+
+            {showDeleteProfileCredentialStep && (
+              <div className="mt-3">
+                <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+                  Confirmez votre identité
+                </p>
+                {profileRecoveryConfigured && (
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDeleteProfileProofMethod("password")}
+                      className={`rounded-xl py-2 text-xs font-black border transition-colors ${
+                        deleteProfileProofMethod === "password"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border text-foreground"
+                      }`}
+                    >
+                      Mot de passe
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteProfileProofMethod("recovery")}
+                      className={`rounded-xl py-2 text-xs font-black border transition-colors ${
+                        deleteProfileProofMethod === "recovery"
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border text-foreground"
+                      }`}
+                    >
+                      Récupération
+                    </button>
+                  </div>
+                )}
+                <input
+                  type={showDeleteProfileProofInput ? "text" : "password"}
+                  value={deleteProfileProofInput}
+                  onChange={(e) => {
+                    setDeleteProfileProofInput(e.target.value);
+                    if (deleteProfileConfirmError) setDeleteProfileConfirmError(null);
+                  }}
+                  placeholder={
+                    deleteProfileProofMethod === "password"
+                      ? "Mot de passe du profil"
+                      : "Réponse de récupération"
+                  }
+                  className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteProfileProofInput((prev) => !prev)}
+                  className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+                >
+                  {showDeleteProfileProofInput ? "Masquer" : "Afficher"} la valeur saisie
+                </button>
+                {deleteProfileConfirmError && (
+                  <p className="mt-2 text-xs font-bold text-destructive">{deleteProfileConfirmError}</p>
+                )}
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      setShowDeleteProfilePrompt(false);
+                      setShowDeleteProfileCredentialStep(false);
+                      setDeleteProfileProofInput("");
+                      setDeleteProfileConfirmError(null);
+                    }}
+                    className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const result = await onDeleteOwnProfile(
+                        deleteProfileProofMethod,
+                        deleteProfileProofInput
+                      );
+                      if (!result.ok) {
+                        setDeleteProfileConfirmError(result.message);
+                      }
+                    }}
+                    className="rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground"
+                  >
+                    Supprimer définitivement
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -3195,6 +3367,7 @@ export default function App() {
     cloudSnapshot,
     pushSnapshot,
     claimRoleForProfile,
+    deleteProfile,
   } = useCloudSync();
   const [isOnline, setIsOnline] = useState(() => {
     if (typeof navigator === "undefined") {
@@ -3737,6 +3910,11 @@ export default function App() {
 
     const cloudProfile = cloudSnapshot.profiles[profile.id];
     if (!cloudProfile) {
+      // Profile no longer exists in cloud (deleted from another device).
+      // If we were previously hydrated with this profile, fail closed to profile selection.
+      if (hydratedCloudProfileIdRef.current === profile.id) {
+        resetForProfileSwitch();
+      }
       return;
     }
 
@@ -4416,6 +4594,91 @@ export default function App() {
     setIsAuthBootstrapPending(false);
     clearSessionToken();
     setIsAuthenticated(false);
+  };
+
+  const deleteOwnProfile = async (
+    proofMethod: "none" | "password" | "recovery",
+    proofInput: string
+  ): Promise<{ ok: boolean; message: string }> => {
+    const genericError = "Authentification impossible. Vérifiez les informations saisies.";
+
+    if (profile.role !== "utilisateur") {
+      return { ok: false, message: "Le profil propriétaire ne peut pas être supprimé." };
+    }
+
+    const currentPasswordHash = profilePasswordHashes[profile.id]?.trim() || "";
+    const currentRecoveryHash = profileRecoveryHashes[profile.id]?.trim() || "";
+
+    if (currentPasswordHash) {
+      if (proofMethod === "password") {
+        if (!isProfilePasswordHash(currentPasswordHash)) {
+          return { ok: false, message: genericError };
+        }
+        const normalizedInput = proofInput.trim();
+        if (!normalizedInput) {
+          return { ok: false, message: genericError };
+        }
+        const verified = await verifyProfilePassword(normalizedInput, currentPasswordHash);
+        if (!verified) {
+          return { ok: false, message: genericError };
+        }
+      } else if (proofMethod === "recovery") {
+        if (!isOwnerRecoveryHash(currentRecoveryHash)) {
+          return { ok: false, message: genericError };
+        }
+        const normalizedInput = proofInput.trim();
+        if (!normalizedInput) {
+          return { ok: false, message: genericError };
+        }
+        const answerHash = await hashOwnerRecoveryPhrase(normalizedInput);
+        if (answerHash !== currentRecoveryHash) {
+          return { ok: false, message: genericError };
+        }
+      } else {
+        return { ok: false, message: genericError };
+      }
+    }
+
+    const deletedProfileId = profile.id;
+
+    if (cloudEnabled) {
+      try {
+        await deleteProfile(deletedProfileId);
+      } catch {
+        return { ok: false, message: "Erreur lors de la suppression. Réessayez." };
+      }
+    }
+
+    setProfilePasswordHashes((prev) => {
+      if (!(deletedProfileId in prev)) return prev;
+      const { [deletedProfileId]: _removed, ...next } = prev;
+      return next;
+    });
+    setProfileRecoveryHashes((prev) => {
+      if (!(deletedProfileId in prev)) return prev;
+      const { [deletedProfileId]: _removed, ...next } = prev;
+      return next;
+    });
+    setProfileRecoveryQuestions((prev) => {
+      if (!(deletedProfileId in prev)) return prev;
+      const { [deletedProfileId]: _removed, ...next } = prev;
+      return next;
+    });
+    setCustomChecklistItemsByProfile((prev) => {
+      if (!(deletedProfileId in prev)) return prev;
+      const { [deletedProfileId]: _removed, ...next } = prev;
+      return next;
+    });
+    setFamilyState((prev) => {
+      const next = {
+        ...prev,
+        profiles: prev.profiles.filter((p) => p.id !== deletedProfileId),
+      };
+      return enforceOwnerUniqueness(next);
+    });
+
+    resetForProfileSwitch();
+    return { ok: true, message: "" };
   };
 
   const pushPhaseChange = async (nextPhase: "before" | "during") => {
@@ -5254,6 +5517,7 @@ export default function App() {
               };
             }}
             onSwitchProfile={resetForProfileSwitch}
+            onDeleteOwnProfile={deleteOwnProfile}
           />
         );
       }
@@ -5676,6 +5940,7 @@ export default function App() {
               };
             }}
             onSwitchProfile={resetForProfileSwitch}
+            onDeleteOwnProfile={deleteOwnProfile}
           />
         );
       default:

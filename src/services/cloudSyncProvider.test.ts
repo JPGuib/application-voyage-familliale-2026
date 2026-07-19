@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { parseCloudSnapshot, pushCloudSnapshot } from "./cloudSyncProvider";
+import { deleteProfileFromCloud, parseCloudSnapshot, pushCloudSnapshot } from "./cloudSyncProvider";
 
 const mockUpdate = vi.fn().mockResolvedValue(undefined);
 const mockRef = vi.fn().mockReturnValue({});
@@ -442,5 +442,56 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     expect(updates.phase).toBeUndefined();
     expect(updates.ownerProfileId).toBeUndefined();
     expect(updates["profiles/profile-1/role"]).toBe("utilisateur");
+  });
+});
+
+describe("deleteProfileFromCloud (story 18.3)", () => {
+  const db = {} as import("firebase/database").Database;
+  const familyId = "famille-test";
+
+  it("writes null for profiles, checklists, and gameResults for the target profile in one atomic update", async () => {
+    mockUpdate.mockClear();
+
+    await deleteProfileFromCloud(db, familyId, "profile-to-delete");
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["profiles/profile-to-delete"]).toBeNull();
+    expect(updates["checklists/profile-to-delete"]).toBeNull();
+    expect(updates["gameResults/profile-to-delete"]).toBeNull();
+  });
+
+  it("includes a numeric updatedAt timestamp in the delete payload", async () => {
+    mockUpdate.mockClear();
+
+    await deleteProfileFromCloud(db, familyId, "profile-x");
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(typeof updates.updatedAt).toBe("number");
+    expect(Number.isFinite(updates.updatedAt as number)).toBe(true);
+  });
+
+  it("does not null any unrelated paths in the delete payload", async () => {
+    mockUpdate.mockClear();
+
+    await deleteProfileFromCloud(db, familyId, "profile-y");
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    const nulledPaths = Object.entries(updates)
+      .filter(([key, val]) => val === null && key !== "profiles/profile-y" && key !== "checklists/profile-y" && key !== "gameResults/profile-y")
+      .map(([key]) => key);
+    expect(nulledPaths).toHaveLength(0);
+  });
+
+  it("uses only the target profile id in the null-delete paths, not other profile ids", async () => {
+    mockUpdate.mockClear();
+
+    await deleteProfileFromCloud(db, familyId, "profile-abc");
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    const nulledKeys = Object.keys(updates).filter((k) => updates[k] === null);
+    for (const key of nulledKeys) {
+      expect(key).toMatch(/profile-abc/);
+    }
   });
 });
