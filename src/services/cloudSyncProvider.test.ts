@@ -456,9 +456,9 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
 
     expect(mockUpdate).toHaveBeenCalledOnce();
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
-    expect(updates["profiles/profile-to-delete"]).toBeNull();
-    expect(updates["checklists/profile-to-delete"]).toBeNull();
-    expect(updates["gameResults/profile-to-delete"]).toBeNull();
+    expect(updates["families/famille-test/profiles/profile-to-delete"]).toBeNull();
+    expect(updates["families/famille-test/checklists/profile-to-delete"]).toBeNull();
+    expect(updates["families/famille-test/gameResults/profile-to-delete"]).toBeNull();
   });
 
   it("includes a numeric updatedAt timestamp in the delete payload", async () => {
@@ -467,8 +467,8 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
     await deleteProfileFromCloud(db, familyId, "profile-x");
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
-    expect(typeof updates.updatedAt).toBe("number");
-    expect(Number.isFinite(updates.updatedAt as number)).toBe(true);
+    expect(typeof updates["families/famille-test/updatedAt"]).toBe("number");
+    expect(Number.isFinite(updates["families/famille-test/updatedAt"] as number)).toBe(true);
   });
 
   it("does not null any unrelated paths in the delete payload", async () => {
@@ -478,7 +478,7 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     const nulledPaths = Object.entries(updates)
-      .filter(([key, val]) => val === null && key !== "profiles/profile-y" && key !== "checklists/profile-y" && key !== "gameResults/profile-y")
+      .filter(([key, val]) => val === null && key !== "families/famille-test/profiles/profile-y" && key !== "families/famille-test/checklists/profile-y" && key !== "families/famille-test/gameResults/profile-y")
       .map(([key]) => key);
     expect(nulledPaths).toHaveLength(0);
   });
@@ -491,7 +491,7 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     const nulledKeys = Object.keys(updates).filter((k) => updates[k] === null);
     for (const key of nulledKeys) {
-      expect(key).toMatch(/profile-abc/);
+      expect(key).toMatch(/famille-test.*profile-abc/);
     }
   });
 });

@@ -396,11 +396,11 @@ export async function deleteProfileFromCloud(
   profileIdToDelete: string
 ): Promise<void> {
   const updates: Record<string, unknown> = {
-    [`profiles/${profileIdToDelete}`]: null,
-    [`checklists/${profileIdToDelete}`]: null,
-    [`gameResults/${profileIdToDelete}`]: null,
-    updatedAt: Date.now(),
+    [`families/${familyId}/profiles/${profileIdToDelete}`]: null,
+    [`families/${familyId}/checklists/${profileIdToDelete}`]: null,
+    [`families/${familyId}/gameResults/${profileIdToDelete}`]: null,
+    [`families/${familyId}/updatedAt`]: Date.now(),
   };
 
-  await update(ref(database, familyPath(familyId)), updates);
+  await update(ref(database), updates);
 }
