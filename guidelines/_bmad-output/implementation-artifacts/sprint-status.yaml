@@ -148,9 +148,9 @@ development_status:
   epic-17-retrospective: optional
 
   epic-18: in-progress
-  18-1-reverrouillage: review
+  18-1-reverrouillage: done
   18-2-acces-proprietaire: backlog
-  18-3-suppression-profil: backlog
+  18-3-suppression-profil: review
   18-4-question-recuperation: backlog
   18-5-question-reponse-recuperation: backlog
   18-6-connexion-recuperation: backlog

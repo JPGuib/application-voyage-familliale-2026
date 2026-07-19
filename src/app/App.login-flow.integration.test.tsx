@@ -6,6 +6,7 @@ import { hashProfilePassword } from "./profile-password";
 
 const cloudSyncMock = vi.fn();
 const claimRoleForProfileMock = vi.fn();
+const deleteProfileMock = vi.fn();
 
 vi.mock("../hooks/useCloudSync", () => ({
   useCloudSync: () => cloudSyncMock(),
@@ -59,7 +60,9 @@ describe("App cloud login flow", () => {
     localStorage.clear();
     cloudSyncMock.mockReset();
     claimRoleForProfileMock.mockReset();
+    deleteProfileMock.mockReset();
     claimRoleForProfileMock.mockResolvedValue(null);
+    deleteProfileMock.mockResolvedValue(undefined);
     cloudSyncMock.mockReturnValue({
       cloudEnabled: true,
       cloudReady: true,
@@ -68,6 +71,7 @@ describe("App cloud login flow", () => {
       cloudSnapshot: baseSnapshot,
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: claimRoleForProfileMock,
+      deleteProfile: deleteProfileMock,
       familyId: "famille-voyage-2026",
     });
   });
@@ -1097,6 +1101,219 @@ describe("App cloud login flow", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Afficher la confirmation saisie" }));
     expect(confirmInput).toHaveAttribute("type", "text");
+  });
+});
+
+describe("App profile deletion (story 18.3)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    cloudSyncMock.mockReset();
+    claimRoleForProfileMock.mockReset();
+    deleteProfileMock.mockReset();
+    claimRoleForProfileMock.mockResolvedValue(null);
+    deleteProfileMock.mockResolvedValue(undefined);
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: baseSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      deleteProfile: deleteProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+  });
+
+  it("non-owner profile sees delete action in settings; owner profile does not", async () => {
+    render(<App />);
+
+    // Login as non-owner (Léo = p2, utilisateur)
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+
+    expect(screen.getByRole("button", { name: "Supprimer mon profil" })).toBeInTheDocument();
+  });
+
+  it("owner profile does not see delete action in settings", async () => {
+    render(<App />);
+
+    // Login as owner (Maman = p1, proprietaire)
+    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+
+    expect(screen.queryByRole("button", { name: "Supprimer mon profil" })).not.toBeInTheDocument();
+  });
+
+  it("no-password flow: warning dialog shows and confirm deletes and redirects to login screen", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer mon profil" }));
+
+    // Warning dialog should be visible — check for unique text
+    expect(screen.getByText(/irréversible/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer définitivement" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
+    });
+
+    expect(deleteProfileMock).toHaveBeenCalledOnce();
+    expect(deleteProfileMock).toHaveBeenCalledWith("p2");
+  });
+
+  it("password-protected flow: wrong credential blocks deletion and keeps data intact", async () => {
+    const protectedHash = await hashProfilePassword("correct-pw");
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: protectedHash,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      deleteProfile: deleteProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+      target: { value: "correct-pw" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer mon profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe du profil"), {
+      target: { value: "wrong-password" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer définitivement" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Authentification impossible. Vérifiez les informations saisies.")).toBeInTheDocument();
+    });
+
+    expect(deleteProfileMock).not.toHaveBeenCalled();
+    // Should still be in settings (not redirected to login)
+    expect(screen.queryByRole("heading", { name: "Se connecter" })).not.toBeInTheDocument();
+  });
+
+  it("password-protected flow: correct credential deletes and redirects to login screen", async () => {
+    const protectedHash = await hashProfilePassword("my-secret");
+    const protectedSnapshot = {
+      ...baseSnapshot,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          passwordHash: protectedHash,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: protectedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      deleteProfile: deleteProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+      target: { value: "my-secret" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer mon profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    fireEvent.change(screen.getByPlaceholderText("Mot de passe du profil"), {
+      target: { value: "my-secret" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer définitivement" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
+    });
+
+    expect(deleteProfileMock).toHaveBeenCalledOnce();
+    expect(deleteProfileMock).toHaveBeenCalledWith("p2");
+  });
+
+  it("deletion does not affect sibling profile: Maman still visible after Léo is deleted", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer mon profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer définitivement" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
+    });
+
+    // Maman (owner) should still appear in the profile selection list
+    expect(screen.getByRole("button", { name: /Maman/i })).toBeInTheDocument();
   });
 });
 

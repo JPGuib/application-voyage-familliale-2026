@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type Role, type SharedFamilyState } from "../app/owner-policy";
 import {
   claimProfileRole,
+  deleteProfileFromCloud,
   observeFamilySnapshot,
   pushCloudSnapshot,
 } from "../services/cloudSyncProvider";
@@ -329,6 +330,16 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  const deleteProfile = useCallback(
+    async (profileIdToDelete: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+      await deleteProfileFromCloud(database, familyId, profileIdToDelete);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
@@ -337,6 +348,7 @@ export function useCloudSync() {
     cloudSnapshot,
     pushSnapshot,
     claimRoleForProfile,
+    deleteProfile,
     familyId,
   };
 }

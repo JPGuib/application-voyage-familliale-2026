@@ -389,3 +389,18 @@ export async function claimProfileRole(
     familyState: parsed.familyState,
   };
 }
+
+export async function deleteProfileFromCloud(
+  database: Database,
+  familyId: string,
+  profileIdToDelete: string
+): Promise<void> {
+  const updates: Record<string, unknown> = {
+    [`profiles/${profileIdToDelete}`]: null,
+    [`checklists/${profileIdToDelete}`]: null,
+    [`gameResults/${profileIdToDelete}`]: null,
+    updatedAt: Date.now(),
+  };
+
+  await update(ref(database, familyPath(familyId)), updates);
+}
