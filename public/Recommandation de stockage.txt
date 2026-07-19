@@ -1,0 +1,20 @@
+public/
+  audio/
+    places/
+      istanbul.mp3
+      cappadoce.mp3
+      pamukkale.mp3
+      ephese.mp3
+      izmir.mp3
+      bursa.mp3
+  images/
+    places/
+      istanbul/
+      cappadoce/
+      pamukkale/
+      ephese/
+      izmir/
+      bursa/
+    guide/
+    tips/
+  icons/

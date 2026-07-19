@@ -1,5 +1,5 @@
 # generated: 2026-07-05
-# last_updated: 2026-07-17
+# last_updated: 2026-07-19
 # project: application de voyage 2026
 # project_key: NOKEY
 # tracking_system: file-system
@@ -24,7 +24,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-07-05
-last_updated: 2026-07-17
+last_updated: 2026-07-19
 project_key: NOKEY
 tracking_system: file-system
 story_location: {project-root}/_bmad-output/implementation-artifacts
@@ -87,16 +87,16 @@ development_status:
   9-3-couvrir-les-gardes-de-recuperation-par-tests: done
   epic-9-retrospective: optional
 
-  epic-10: in-progress
+  epic-10: done
   10-1-regles-visibilite-rubriques-role-deblocage: done
   10-2-authentification-mot-de-passe-par-profil: done
   10-3-checklist-persistante-apres-deblocage: done
   10-4-adaptation-checklist-par-profil: done
   10-5-mise-a-jour-contenu-checklist: done
   10-6-recuperation-mot-de-passe-par-question-reponse-par-profil: done
-  10-7-mot-de-passe-oublie-au-changement-profil-via-recovery: review
-  10-8-changement-mot-de-passe-en-session-ancien-ou-recovery: review
-  10-9-afficher-masquer-les-saisies-sensibles-sans-revelation-stockee: review
+  10-7-mot-de-passe-oublie-au-changement-profil-via-recovery: done
+  10-8-changement-mot-de-passe-en-session-ancien-ou-recovery: done
+  10-9-afficher-masquer-les-saisies-sensibles-sans-revelation-stockee: done
   epic-10-retrospective: optional
 
   epic-11: done
@@ -109,3 +109,60 @@ development_status:
   11-7-finaliser-deprecation-code-owner-legacy-clair: done
   11-8-recette-non-regression-multi-appareils: done
   epic-11-retrospective: optional
+
+  epic-12: backlog
+  12-1-redirection-changement-profil: backlog
+  12-2-isolation-checklist-par-profil-resolue-par-1-4: done
+  12-3-categories-personnalisees: backlog
+  epic-12-retrospective: optional
+
+  epic-13: done
+  13-1-changement-code-avec-confirmation: done
+  13-2-affichage-masque-du-code-a-la-demande: done
+  epic-13-retrospective: optional
+
+  epic-14: backlog
+  14-1-jour-voyage: backlog
+  14-2-table-jour-destination: backlog
+  14-3-navigation-accueil: backlog
+  epic-14-retrospective: optional
+
+  epic-15: in-progress
+  15-1-photos-guide: backlog
+  15-2-photos-lieu-detail-corrige: done
+  15-3-selecteur-guide: backlog
+  15-4-retrait-badges-guide: backlog
+  15-5-guide-de-visite: backlog
+  15-6-audio-lieux: backlog
+  epic-15-retrospective: optional
+
+  epic-16: backlog
+  16-1-wanderlog-polarsteps: backlog
+  16-2-fusionnee-dans-16-1: done
+  16-3-fusionnee-dans-16-1: done
+  epic-16-retrospective: optional
+
+  epic-17: backlog
+  17-1-isolation-reponses-jeu-resolue-par-1-4: done
+  17-2-meteo-geolocalisation: backlog
+  epic-17-retrospective: optional
+
+  epic-18: in-progress
+  18-1-reverrouillage: ready-for-dev
+  18-2-acces-proprietaire: backlog
+  18-3-suppression-profil: backlog
+  18-4-question-recuperation: backlog
+  18-5-question-reponse-recuperation: backlog
+  18-6-connexion-recuperation: backlog
+  18-7-retrait-bouton-mdp: backlog
+  18-8-code-proprietaire-affichage: backlog
+  18-9-mdp-obligatoire-creation: backlog
+  18-10-refresh-ecran-courant: backlog
+  18-11-nom-lieu-tronque: backlog
+  epic-18-retrospective: optional
+
+  epic-19: backlog
+  19-1-verrouillage-defi-jour: backlog
+  19-2-podium-resultats: backlog
+  19-3-score-total-par-jour: backlog
+  epic-19-retrospective: optional
