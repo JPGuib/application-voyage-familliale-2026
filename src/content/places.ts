@@ -27,16 +27,17 @@ export const PLACES = [
   name: "Palais de Topkapi",
   shortDesc: "Le cœur du pouvoir des sultans ottomans pendant près de quatre siècles",
   tag: "Histoire",
-  image:
-    "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800&h=500&fit=crop&auto=format",
+  image: "/images/places/Topkapi/topkapi 2.png",
   photos: [
-    "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800&h=500&fit=crop&auto=format",
-    "https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800&h=500&fit=crop&auto=format",
-    "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&h=500&fit=crop&auto=format",
-  ],
+    "/images/places/Topkapi/topkapi 0.png",
+    "/images/places/Topkapi/topkapi 1.png",
+    "/images/places/Topkapi/topkapi 2.png",
+    "/images/places/Topkapi/topkapi 3.png",
+    "/images/places/Topkapi/topkapi 4.png",
+    ],
   audioTitle: "Découvrez le Palais de Topkapi",
   audioDuration: "4 min 20 sec",
-  audioSrc: "/audio/topkapi.mp3",
+  audioSrc: "/audio/places/Le_palais_de_Topkapi.mp3",
   history:
     "Construit à partir de 1459 sur les ordres du sultan Mehmed II, peu après la conquête de Constantinople, le Palais de Topkapi fut la résidence officielle des sultans ottomans et le centre administratif de l'Empire pendant près de quatre siècles. Véritable ville dans la ville, il abritait les appartements impériaux, le harem, les cuisines, le trésor et les salles où étaient prises les décisions qui influençaient une grande partie du monde méditerranéen et du Moyen-Orient.",
   anecdotes: [
