@@ -18,6 +18,7 @@ import {
   Plus,
   Trash2,
   Volume2,
+  VolumeX,
 } from "lucide-react";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
@@ -1690,10 +1691,12 @@ function PlaceScreen({
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   const canPlayAudio = Boolean(place.audioSrc);
 
   useEffect(() => {
     const audio = new Audio(place.audioSrc ?? "");
+    audio.muted = isMuted;
     audioRef.current = audio;
     setIsPlaying(false);
     setProgress(0);
@@ -1748,6 +1751,16 @@ function PlaceScreen({
       setIsPlaying(false);
       setAudioError("Lecture impossible pour le moment.");
     }
+  };
+
+  const handleToggleMute = () => {
+    setIsMuted((prev) => {
+      const next = !prev;
+      if (audioRef.current) {
+        audioRef.current.muted = next;
+      }
+      return next;
+    });
   };
 
   return (
@@ -1807,7 +1820,14 @@ function PlaceScreen({
               <p className="text-xs text-destructive mt-2">{audioError}</p>
             )}
           </div>
-          <Volume2 size={18} className="text-primary" />
+          <button
+            onClick={handleToggleMute}
+            disabled={!canPlayAudio}
+            aria-label={isMuted ? "Réactiver le son" : "Couper le son"}
+            className="flex-shrink-0 text-primary active:scale-95 transition-transform disabled:opacity-40"
+          >
+            {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
         </div>
 
         {/* Gallery */}
