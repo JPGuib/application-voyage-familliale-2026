@@ -8,7 +8,7 @@ export const PLACES = [
       photos: [
       "/images/guide/Istanbul photo 1.png",
       "/images/places/Mosquée bleue.png",
-      "/images/place/Sainte Sophie.png",
+      "/images/places/Sainte Sophie.png",
       ],
     audioTitle: "Istanbul, entre deux mondes",
     audioDuration: "3 min 40 sec",
