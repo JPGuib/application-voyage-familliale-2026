@@ -4,9 +4,8 @@ export const PLACES = [
     name: "Istanbul",
     shortDesc: "La ville-pont entre l'Europe et l'Asie",
     tag: "Ville",
-    image:
-      "C:/Users/jpgui/OneDrive/Documents/Projets_Python/Application de voyage familiale/public/images/guide/Istanbul photo 1.png",
-    photos: [
+    image: "/images/guide/Istanbul photo 1.png",
+      photos: [
       "https://images.unsplash.com/photo-1541432901042-2f31912d3f5a?w=800&h=500&fit=crop&auto=format",
       "https://images.unsplash.com/photo-1562813733-b31f71025d54?w=800&h=500&fit=crop&auto=format",
       "https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=800&h=500&fit=crop&auto=format",
