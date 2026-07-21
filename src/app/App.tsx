@@ -1692,6 +1692,7 @@ function PlaceScreen({
   const [progress, setProgress] = useState(0);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [realDuration, setRealDuration] = useState<string | null>(null);
   const canPlayAudio = Boolean(place.audioSrc);
 
   useEffect(() => {
@@ -1701,6 +1702,16 @@ function PlaceScreen({
     setIsPlaying(false);
     setProgress(0);
     setAudioError(null);
+    setRealDuration(null);
+
+    const handleLoadedMetadata = () => {
+      const seconds = Math.round(audio.duration || 0);
+      if (Number.isFinite(seconds) && seconds > 0) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = String(seconds % 60).padStart(2, "0");
+        setRealDuration(`${minutes} min ${remainingSeconds} sec`);
+      }
+    };
 
     const handleTimeUpdate = () => {
       const duration = audio.duration || 0;
@@ -1718,12 +1729,14 @@ function PlaceScreen({
       setAudioError("Audio indisponible pour le moment.");
     };
 
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("error", handleError);
 
     return () => {
       audio.pause();
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("error", handleError);
@@ -1803,7 +1816,7 @@ function PlaceScreen({
               {place.audioTitle ?? "Narration audio"}
             </p>
             <p className="text-xs text-muted-foreground">
-              Durée : {place.audioDuration ?? "3 min 24 sec"}
+              Durée : {realDuration ?? place.audioDuration ?? "3 min 24 sec"}
             </p>
             <div className="mt-2 bg-border rounded-full h-1.5">
               <div
