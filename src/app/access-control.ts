@@ -6,6 +6,7 @@ export type AccessSection =
   | "checklist"
   | "dashboard"
   | "guide"
+  | "histoire"
   | "game"
   | "tips"
   | "results"
@@ -17,6 +18,8 @@ export type AppScreen =
   | "dashboard"
   | "guide"
   | "place"
+  | "histoire"
+  | "histoire-topic"
   | "game"
   | "results"
   | "tips"
@@ -32,6 +35,7 @@ const OWNER_DURING_ALLOWED: ReadonlyArray<AccessSection> = [
   "checklist",
   "dashboard",
   "guide",
+  "histoire",
   "game",
   "tips",
   "results",
@@ -45,6 +49,7 @@ const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
   "checklist",
   "dashboard",
   "guide",
+  "histoire",
   "game",
   "tips",
   "results",
@@ -54,6 +59,10 @@ const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
 function screenToSection(screen: AppScreen): AccessSection {
   if (screen === "place") {
     return "guide";
+  }
+
+  if (screen === "histoire-topic") {
+    return "histoire";
   }
 
   return screen;

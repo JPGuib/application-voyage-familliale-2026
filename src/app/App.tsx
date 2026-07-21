@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
+import { HISTOIRE_TOPICS } from "../content/histoire";
 import {
   CHALLENGE_POINTS,
   DAILY_CHALLENGE,
@@ -259,8 +260,8 @@ const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "place" | "game" | "results" | "tips" | "settings";
-type QuickScreen = "checklist" | "guide" | "game" | "tips" | "results";
+type Screen = "checklist" | "dashboard" | "guide" | "place" | "histoire" | "histoire-topic" | "game" | "results" | "tips" | "settings";
+type QuickScreen = "checklist" | "guide" | "histoire" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
   id: string;
@@ -312,6 +313,14 @@ const QUICK_ACTIONS: QuickAction[] = [
     subtitle: "Découvrir les lieux",
     colorBg: "bg-[#E8F5E9]",
     colorText: "text-[#2E7D32]",
+  },
+  {
+    id: "histoire",
+    emoji: "🏛️",
+    title: "Histoire",
+    subtitle: "Rubriques à explorer",
+    colorBg: "bg-[#FDE7E9]",
+    colorText: "text-[#AD1457]",
   },
   {
     id: "game",
@@ -1083,7 +1092,8 @@ function BottomNav({
   items: Array<{ id: Screen; icon: LucideIcon; label: string }>;
   onNavigate: (s: Screen) => void;
 }) {
-  const activeId = current === "place" ? "guide" : current;
+  const activeId =
+    current === "place" ? "guide" : current === "histoire-topic" ? "histoire" : current;
   return (
     <nav className="flex-shrink-0 bg-card border-t border-border flex items-center justify-around px-2 py-2">
       {items.map((item) => {
@@ -1646,16 +1656,40 @@ function DashboardScreen({
   );
 }
 
-// ─── GUIDE SCREEN ────────────────────────────────────────────────────────────
+// ─── SHARED TYPES ────────────────────────────────────────────────────────────
 
-function GuideScreen({
+type ContentTopic = {
+  id: string;
+  name: string;
+  shortDesc: string;
+  tag: string;
+  image: string;
+  photos?: string[];
+  audioTitle?: string;
+  audioDuration?: string;
+  audioSrc?: string;
+  history: string;
+  anecdotes: string[];
+};
+
+// ─── CONTENT LIST SCREEN (used by Guide and Histoire) ──────────────────────
+
+function ContentListScreen({
+  items,
+  headerEmoji,
+  headerTitle,
+  headerSubtitle,
   onBack,
-  onPlaceSelect,
+  onItemSelect,
 }: {
+  items: ContentTopic[];
+  headerEmoji: string;
+  headerTitle: string;
+  headerSubtitle: string;
   onBack: () => void;
-  onPlaceSelect: (id: string) => void;
+  onItemSelect: (id: string) => void;
 }) {
-  const realDurations = useAudioDurations(PLACES);
+  const realDurations = useAudioDurations(items);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -1668,24 +1702,24 @@ function GuideScreen({
           <ChevronLeft size={18} /> Accueil
         </button>
         <h1 className="relative z-10 text-2xl font-black">
-          Guide de Turquie 📖
+          {headerTitle} {headerEmoji}
         </h1>
         <p className="relative z-10 text-sm opacity-90 mt-1">
-          Jour {TRIP.currentDay} — {PLACES.length} lieux à découvrir
+          {headerSubtitle}
         </p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {PLACES.map((place) => (
+        {items.map((item) => (
           <button
-            key={place.id}
-            onClick={() => onPlaceSelect(place.id)}
+            key={item.id}
+            onClick={() => onItemSelect(item.id)}
             className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
           >
             <div className="h-40 bg-muted overflow-hidden">
               <img
-                src={place.image}
-                alt={place.name}
+                src={item.image}
+                alt={item.name}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -1693,20 +1727,20 @@ function GuideScreen({
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <span className="text-xs font-extrabold text-accent uppercase tracking-widest">
-                    {place.tag}
+                    {item.tag}
                   </span>
                   <h3 className="font-black text-foreground mt-0.5">
-                    {place.name}
+                    {item.name}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {place.shortDesc}
+                    {item.shortDesc}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
                     <span className="rounded-full bg-muted px-2.5 py-1">
-                      {place.photos?.length ?? 1} photos
+                      {item.photos?.length ?? 1} photos
                     </span>
                     <span className="rounded-full bg-muted px-2.5 py-1">
-                      {realDurations[place.id] ?? place.audioDuration ?? "Audio à venir"}
+                      {realDurations[item.id] ?? item.audioDuration ?? "Audio à venir"}
                     </span>
                   </div>
                 </div>
@@ -1724,27 +1758,69 @@ function GuideScreen({
   );
 }
 
-// ─── PLACE DETAIL SCREEN ─────────────────────────────────────────────────────
+// ─── GUIDE SCREEN ────────────────────────────────────────────────────────────
 
-function PlaceScreen({
-  place,
+function GuideScreen({
+  onBack,
+  onPlaceSelect,
+}: {
+  onBack: () => void;
+  onPlaceSelect: (id: string) => void;
+}) {
+  return (
+    <ContentListScreen
+      items={PLACES}
+      headerEmoji="📖"
+      headerTitle="Guide de Turquie"
+      headerSubtitle={`Jour ${TRIP.currentDay} — ${PLACES.length} lieux à découvrir`}
+      onBack={onBack}
+      onItemSelect={onPlaceSelect}
+    />
+  );
+}
+
+// ─── HISTOIRE SCREEN ─────────────────────────────────────────────────────────
+
+function HistoireScreen({
+  onBack,
+  onTopicSelect,
+}: {
+  onBack: () => void;
+  onTopicSelect: (id: string) => void;
+}) {
+  return (
+    <ContentListScreen
+      items={HISTOIRE_TOPICS}
+      headerEmoji="🏛️"
+      headerTitle="Histoire de Turquie"
+      headerSubtitle={`${HISTOIRE_TOPICS.length} rubriques à explorer`}
+      onBack={onBack}
+      onItemSelect={onTopicSelect}
+    />
+  );
+}
+
+// ─── CONTENT DETAIL SCREEN (used by Place and Histoire topic) ──────────────
+
+function ContentDetailScreen({
+  item,
   onBack,
 }: {
-  place: (typeof PLACES)[0];
+  item: ContentTopic;
   onBack: () => void;
 }) {
-  const photos = place.photos?.length ? place.photos : [place.image];
-  const heroPhoto = photos[0] ?? place.image;
+  const photos = item.photos?.length ? item.photos : [item.image];
+  const heroPhoto = photos[0] ?? item.image;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [realDuration, setRealDuration] = useState<string | null>(null);
-  const canPlayAudio = Boolean(place.audioSrc);
+  const canPlayAudio = Boolean(item.audioSrc);
 
   useEffect(() => {
-    const audio = new Audio(place.audioSrc ?? "");
+    const audio = new Audio(item.audioSrc ?? "");
     audio.muted = isMuted;
     audioRef.current = audio;
     setIsPlaying(false);
@@ -1788,11 +1864,11 @@ function PlaceScreen({
       audio.removeEventListener("error", handleError);
       audioRef.current = null;
     };
-  }, [place.audioSrc, place.id]);
+  }, [item.audioSrc, item.id]);
 
   const handleTogglePlay = async () => {
     if (!canPlayAudio || !audioRef.current) {
-      setAudioError("Audio à ajouter pour ce lieu.");
+      setAudioError("Audio à ajouter pour ce contenu.");
       return;
     }
 
@@ -1827,7 +1903,7 @@ function PlaceScreen({
       <div className="relative h-64 bg-muted flex-shrink-0">
         <img
           src={heroPhoto}
-          alt={place.name}
+          alt={item.name}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
@@ -1839,10 +1915,10 @@ function PlaceScreen({
         </button>
         <div className="absolute bottom-4 left-4 right-4">
           <span className="text-xs font-extrabold text-secondary uppercase tracking-widest">
-            {place.tag}
+            {item.tag}
           </span>
           <h1 className="text-xl font-black text-white mt-1 leading-tight">
-            {place.name}
+            {item.name}
           </h1>
         </div>
       </div>
@@ -1859,10 +1935,10 @@ function PlaceScreen({
           </button>
           <div className="flex-1">
             <p className="text-sm font-black text-foreground">
-              {place.audioTitle ?? "Narration audio"}
+              {item.audioTitle ?? "Narration audio"}
             </p>
             <p className="text-xs text-muted-foreground">
-              Durée : {realDuration ?? place.audioDuration ?? "3 min 24 sec"}
+              Durée : {realDuration ?? item.audioDuration ?? "3 min 24 sec"}
             </p>
             <div className="mt-2 bg-border rounded-full h-1.5">
               <div
@@ -1872,7 +1948,7 @@ function PlaceScreen({
             </div>
             {!canPlayAudio && (
               <p className="text-xs text-muted-foreground mt-2">
-                Aucun fichier audio lié à ce lieu pour le moment.
+                Aucun fichier audio lié à ce contenu pour le moment.
               </p>
             )}
             {audioError && (
@@ -1896,8 +1972,8 @@ function PlaceScreen({
           </h2>
           <div className="grid grid-cols-3 gap-2">
             {photos.map((photo, index) => (
-              <div key={`${place.id}-photo-${index}`} className="aspect-square rounded-2xl overflow-hidden bg-muted">
-                <img src={photo} alt={`${place.name} photo ${index + 1}`} className="w-full h-full object-cover" />
+              <div key={`${item.id}-photo-${index}`} className="aspect-square rounded-2xl overflow-hidden bg-muted">
+                <img src={photo} alt={`${item.name} photo ${index + 1}`} className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
@@ -1909,7 +1985,7 @@ function PlaceScreen({
             📜 Histoire
           </h2>
           <p className="text-sm text-foreground/80 leading-relaxed">
-            {place.history}
+            {item.history}
           </p>
         </div>
 
@@ -1919,7 +1995,7 @@ function PlaceScreen({
             ✨ Le savais-tu ?
           </h2>
           <div className="space-y-3">
-            {place.anecdotes.map((anecdote, i) => (
+            {item.anecdotes.map((anecdote, i) => (
               <div
                 key={i}
                 className="flex gap-3 bg-[#FFF3E0] rounded-2xl p-3.5"
@@ -1935,6 +2011,30 @@ function PlaceScreen({
       </div>
     </div>
   );
+}
+
+// ─── PLACE DETAIL SCREEN ─────────────────────────────────────────────────────
+
+function PlaceScreen({
+  place,
+  onBack,
+}: {
+  place: (typeof PLACES)[0];
+  onBack: () => void;
+}) {
+  return <ContentDetailScreen item={place} onBack={onBack} />;
+}
+
+// ─── HISTOIRE TOPIC DETAIL SCREEN ────────────────────────────────────────────
+
+function HistoireTopicScreen({
+  topic,
+  onBack,
+}: {
+  topic: (typeof HISTOIRE_TOPICS)[0];
+  onBack: () => void;
+}) {
+  return <ContentDetailScreen item={topic} onBack={onBack} />;
 }
 
 // ─── GAME SCREEN ─────────────────────────────────────────────────────────────
@@ -3555,6 +3655,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("checklist");
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Set<string>>(
     new Set([CHECKLIST_CATEGORIES[0]?.id ?? "vetements-hommes"])
   );
@@ -4660,6 +4761,20 @@ export default function App() {
 
   const place = PLACES.find((p) => p.id === selectedPlaceId);
 
+  const openHistoireTopic = (id: string) => {
+    if (!canAccessScreen(profile.role, phase, "histoire-topic")) {
+      setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, "histoire-topic"));
+      setScreen(getSafeScreen(profile.role, phase));
+      return;
+    }
+
+    setAccessDeniedMessage(null);
+    setSelectedTopicId(id);
+    setScreen("histoire-topic");
+  };
+
+  const histoireTopic = HISTOIRE_TOPICS.find((t) => t.id === selectedTopicId);
+
   const resetForProfileSwitch = () => {
     try {
       localStorage.removeItem(ACTIVE_PROFILE_ID_KEY);
@@ -5656,6 +5771,24 @@ export default function App() {
         ) : null;
       }
 
+      if (effectiveScreen === "histoire") {
+        return (
+          <HistoireScreen
+            onBack={() => goToScreen("dashboard")}
+            onTopicSelect={openHistoireTopic}
+          />
+        );
+      }
+
+      if (effectiveScreen === "histoire-topic") {
+        return histoireTopic ? (
+          <HistoireTopicScreen
+            topic={histoireTopic}
+            onBack={() => goToScreen("histoire")}
+          />
+        ) : null;
+      }
+
       if (effectiveScreen === "game") {
         return (
           <GameScreen
@@ -5858,6 +5991,20 @@ export default function App() {
           <PlaceScreen
             place={place}
             onBack={() => goToScreen("guide")}
+          />
+        ) : null;
+      case "histoire":
+        return (
+          <HistoireScreen
+            onBack={() => goToScreen("dashboard")}
+            onTopicSelect={openHistoireTopic}
+          />
+        );
+      case "histoire-topic":
+        return histoireTopic ? (
+          <HistoireTopicScreen
+            topic={histoireTopic}
+            onBack={() => goToScreen("histoire")}
           />
         ) : null;
       case "game":
