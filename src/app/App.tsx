@@ -2349,7 +2349,7 @@ function TipsScreen({ onBack }: { onBack: () => void }) {
     { id: "dictionary" as const, label: "🗣️ Dico" },
     { id: "payment" as const, label: "💳 Paiement" },
     { id: "emergency" as const, label: "🚨 Urgences" },
-    { id: "food" as const, label: "🍽️ Gastronomie" },
+    { id: "food" as const, label: "🍽️ Cuisine" },
   ];
   const content = {
     transport: TIPS.transport,
@@ -2400,12 +2400,12 @@ function TipsScreen({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Tabs */}
-      <div className="px-4 mt-4 flex gap-2 flex-shrink-0 overflow-x-auto pb-1 no-scrollbar">
+      <div className="px-4 mt-4 grid grid-cols-3 gap-2 flex-shrink-0">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-3 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all flex-shrink-0 ${
+            className={`px-2 py-2 rounded-xl text-[11px] font-extrabold text-center leading-tight transition-all ${
               tab === t.id
                 ? "bg-[#1565C0] text-white"
                 : "bg-muted text-muted-foreground"
