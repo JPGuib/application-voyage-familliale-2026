@@ -2340,15 +2340,25 @@ function ResultsScreen({
 // ─── TIPS SCREEN ─────────────────────────────────────────────────────────────
 
 function TipsScreen({ onBack }: { onBack: () => void }) {
-  const [tab, setTab] = useState<"transport" | "customs" | "practical">(
-    "transport"
-  );
+  const [tab, setTab] = useState<
+    "transport" | "customs" | "dictionary" | "payment" | "emergency" | "food"
+  >("transport");
   const tabs = [
     { id: "transport" as const, label: "🚆 Transport" },
     { id: "customs" as const, label: "🙏 Coutumes" },
-    { id: "practical" as const, label: "💡 Pratique" },
+    { id: "dictionary" as const, label: "🗣️ Dico" },
+    { id: "payment" as const, label: "💳 Paiement" },
+    { id: "emergency" as const, label: "🚨 Urgences" },
+    { id: "food" as const, label: "🍽️ Gastronomie" },
   ];
-  const content = { transport: TIPS.transport, customs: TIPS.customs, practical: TIPS.practical };
+  const content = {
+    transport: TIPS.transport,
+    customs: TIPS.customs,
+    dictionary: TIPS.dictionary,
+    payment: TIPS.payment,
+    emergency: TIPS.emergency,
+    food: TIPS.food,
+  };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -2390,12 +2400,12 @@ function TipsScreen({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Tabs */}
-      <div className="px-4 mt-4 flex gap-2 flex-shrink-0">
+      <div className="px-4 mt-4 flex gap-2 flex-shrink-0 overflow-x-auto pb-1 no-scrollbar">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-3 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all ${
+            className={`px-3 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all flex-shrink-0 ${
               tab === t.id
                 ? "bg-[#1565C0] text-white"
                 : "bg-muted text-muted-foreground"
@@ -2408,6 +2418,24 @@ function TipsScreen({ onBack }: { onBack: () => void }) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {tab === "payment" && (
+          <div className="bg-[#E3F2FD] rounded-2xl p-4 mb-1">
+            <p className="text-xs font-black text-[#1565C0] uppercase tracking-wide mb-2">
+              💱 Taux de change du jour ({TIPS.exchangeRate.date})
+            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold text-foreground">
+                {TIPS.exchangeRate.tryToEur}
+              </p>
+              <p className="text-sm font-bold text-foreground">
+                {TIPS.exchangeRate.eurToTry}
+              </p>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+              {TIPS.exchangeRate.note}
+            </p>
+          </div>
+        )}
         {content[tab].map((item, i) => (
           <div
             key={i}
@@ -2416,6 +2444,11 @@ function TipsScreen({ onBack }: { onBack: () => void }) {
             <span className="text-3xl flex-shrink-0">{item.icon}</span>
             <div>
               <p className="font-black text-sm text-foreground">{item.title}</p>
+              {"phonetic" in item && item.phonetic && (
+                <p className="text-xs text-[#1565C0] font-bold italic mt-0.5">
+                  {item.phonetic}
+                </p>
+              )}
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                 {item.desc}
               </p>

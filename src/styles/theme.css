@@ -180,3 +180,12 @@
     line-height: 1.5;
   }
 }
+
+/* Masque la barre de défilement horizontale (ex: onglets Conseils de voyage) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
