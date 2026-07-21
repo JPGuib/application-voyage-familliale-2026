@@ -128,12 +128,12 @@ development_status:
   epic-14-retrospective: optional
 
   epic-15: in-progress
-  15-1-photos-guide: backlog
+  15-1-photos-guide: done
   15-2-photos-lieu-detail-corrige: done
   15-3-selecteur-guide: backlog
-  15-4-retrait-badges-guide: backlog
+  15-4-retrait-badges-guide: done
   15-5-guide-de-visite: backlog
-  15-6-audio-lieux: backlog
+  15-6-audio-lieux: done
   epic-15-retrospective: optional
 
   epic-16: backlog
@@ -158,7 +158,7 @@ development_status:
   18-8-code-proprietaire-affichage: backlog
   18-9-mdp-obligatoire-creation: backlog
   18-10-refresh-ecran-courant: backlog
-  18-11-nom-lieu-tronque: backlog
+  18-11-nom-lieu-tronque: done
   epic-18-retrospective: optional
 
   epic-19: backlog
