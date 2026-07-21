@@ -26,7 +26,7 @@ export const PLACES = [
   id: "topkapi",
   name: "Palais de Topkapi",
   shortDesc: "Le cœur du pouvoir des sultans ottomans pendant près de quatre siècles",
-  tag: "Histoire",
+  tag: "Monument",
   image: "/images/places/Topkapi/Topkapi 2.png",
   photos: [
     "/images/places/Topkapi/Topkapi 0.png",
