@@ -23,6 +23,31 @@ export const PLACES = [
     ],
   },
   {
+  id: "topkapi",
+  name: "Palais de Topkapi",
+  shortDesc: "Le cœur du pouvoir des sultans ottomans pendant près de quatre siècles",
+  tag: "Histoire",
+  image:
+    "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800&h=500&fit=crop&auto=format",
+  photos: [
+    "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800&h=500&fit=crop&auto=format",
+    "https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800&h=500&fit=crop&auto=format",
+    "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&h=500&fit=crop&auto=format",
+  ],
+  audioTitle: "Découvrez le Palais de Topkapi",
+  audioDuration: "4 min 20 sec",
+  audioSrc: "/audio/topkapi.mp3",
+  history:
+    "Construit à partir de 1459 sur les ordres du sultan Mehmed II, peu après la conquête de Constantinople, le Palais de Topkapi fut la résidence officielle des sultans ottomans et le centre administratif de l'Empire pendant près de quatre siècles. Véritable ville dans la ville, il abritait les appartements impériaux, le harem, les cuisines, le trésor et les salles où étaient prises les décisions qui influençaient une grande partie du monde méditerranéen et du Moyen-Orient.",
+  anecdotes: [
+    "Le palais compte quatre grandes cours successives, chacune plus privée que la précédente.",
+    "Le Harem impérial pouvait accueillir plusieurs centaines de personnes, dont la famille du sultan et ses serviteurs.",
+    "Le Trésor de Topkapi expose le célèbre poignard de Topkapi ainsi que le diamant du fabricant de cuillères, l'un des plus grands diamants exposés au monde.",
+    "Depuis les terrasses du palais, la vue sur le Bosphore, la Corne d'Or et la mer de Marmara est spectaculaire.",
+    "Le palais conserve plusieurs reliques sacrées de l'islam, notamment des objets traditionnellement attribués au prophète Mahomet."
+  ],
+},
+{
     id: "cappadoce",
     name: "Cappadoce",
     shortDesc: "Des vallées sculptées et des montgolfières au lever du soleil",
