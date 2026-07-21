@@ -319,7 +319,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     id: "histoire",
     emoji: "🏛️",
     title: "Histoire",
-    subtitle: "Rubriques à explorer",
+    subtitle: "Découvrir la Turquie",
     colorBg: "bg-[#FDE7E9]",
     colorText: "text-[#AD1457]",
   },
