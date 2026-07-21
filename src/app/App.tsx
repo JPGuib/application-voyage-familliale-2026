@@ -77,6 +77,7 @@ import {
   getSafeScreen,
 } from "./access-control";
 import { findDuplicateProfileBySurname } from "./profile-login";
+import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
 import { useCloudSync } from "../hooks/useCloudSync";
 import {
   filterCategoriesForProfile,
@@ -261,7 +262,7 @@ const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "place" | "histoire" | "histoire-topic" | "game" | "results" | "tips" | "settings";
+type Screen = "checklist" | "dashboard" | "guide" | "place" | "histoire" | "histoire-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
 type QuickScreen = "checklist" | "guide" | "histoire" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
@@ -1095,7 +1096,11 @@ function BottomNav({
   onNavigate: (s: Screen) => void;
 }) {
   const activeId =
-    current === "place" ? "guide" : current === "histoire-topic" ? "histoire" : current;
+    current === "place" || current === "visite-guidee"
+      ? "guide"
+      : current === "histoire-topic"
+      ? "histoire"
+      : current;
   return (
     <nav className="flex-shrink-0 bg-card border-t border-border flex items-center justify-around px-2 py-2">
       {items.map((item) => {
@@ -1810,10 +1815,13 @@ function HistoireScreen({
 function ContentDetailScreen({
   item,
   onBack,
+  onOpenVisiteGuidee,
 }: {
   item: ContentTopic;
   onBack: () => void;
+  onOpenVisiteGuidee?: (id: string) => void;
 }) {
+  const visiteGuidee = VISITES_GUIDEES[item.id];
   const photos = item.photos?.length ? item.photos : [item.image];
   const heroPhoto = photos[0] ?? item.image;
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -2013,6 +2021,27 @@ function ContentDetailScreen({
             ))}
           </div>
         </div>
+
+        {/* Guide de visite complet (uniquement si un contenu a été fourni) */}
+        {onOpenVisiteGuidee && visiteGuidee && (
+          <div className="px-4 mb-6">
+            <button
+              onClick={() => onOpenVisiteGuidee(item.id)}
+              className="w-full flex items-center gap-3 bg-[#EFEBFF] rounded-2xl p-4 text-left active:scale-95 transition-transform"
+            >
+              <span className="text-2xl flex-shrink-0">📖</span>
+              <div className="flex-1">
+                <p className="text-sm font-black text-foreground">
+                  Voir le guide de visite complet
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Histoire détaillée, salle par salle
+                </p>
+              </div>
+              <ChevronRight size={20} className="text-muted-foreground flex-shrink-0" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2023,11 +2052,13 @@ function ContentDetailScreen({
 function PlaceScreen({
   place,
   onBack,
+  onOpenVisiteGuidee,
 }: {
   place: (typeof PLACES)[0];
   onBack: () => void;
+  onOpenVisiteGuidee: (id: string) => void;
 }) {
-  return <ContentDetailScreen item={place} onBack={onBack} />;
+  return <ContentDetailScreen item={place} onBack={onBack} onOpenVisiteGuidee={onOpenVisiteGuidee} />;
 }
 
 // ─── HISTOIRE TOPIC DETAIL SCREEN ────────────────────────────────────────────
@@ -2040,6 +2071,76 @@ function HistoireTopicScreen({
   onBack: () => void;
 }) {
   return <ContentDetailScreen item={topic} onBack={onBack} />;
+}
+
+// ─── GUIDE DE VISITE SCREEN (contenu Word converti, sections + sommaire) ────
+
+function VisiteGuideeScreen({
+  place,
+  onBack,
+}: {
+  place: (typeof PLACES)[0];
+  onBack: () => void;
+}) {
+  const content = VISITES_GUIDEES[place.id];
+
+  const handleTocClick = (sectionId: string) => {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-background">
+      <div className="sticky top-0 z-10 bg-card border-b border-border px-4 py-3 flex items-center gap-3">
+        <button
+          onClick={onBack}
+          className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0"
+          aria-label="Retour"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <div className="min-w-0">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+            Guide de visite
+          </p>
+          <p className="text-base font-black text-foreground truncate">{place.name}</p>
+        </div>
+      </div>
+
+      {!content ? (
+        <div className="px-4 py-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            Le guide de visite détaillé de ce lieu n'est pas encore disponible.
+          </p>
+        </div>
+      ) : (
+        <div className="px-4 py-5">
+          {content.toc.length > 0 && (
+            <div className="bg-muted rounded-2xl p-4 mb-6">
+              <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-2">
+                Sommaire
+              </p>
+              <div className="flex flex-col gap-1">
+                {content.toc.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => handleTocClick(section.id)}
+                    className="text-left text-sm text-primary py-1 active:opacity-60"
+                  >
+                    {section.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div
+            className="visite-guidee-content text-sm text-foreground/80 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: content.html }}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ─── GAME SCREEN ─────────────────────────────────────────────────────────────
@@ -4766,6 +4867,18 @@ export default function App() {
 
   const place = PLACES.find((p) => p.id === selectedPlaceId);
 
+  const openVisiteGuidee = (id: string) => {
+    if (!canAccessScreen(profile.role, phase, "visite-guidee")) {
+      setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, "visite-guidee"));
+      setScreen(getSafeScreen(profile.role, phase));
+      return;
+    }
+
+    setAccessDeniedMessage(null);
+    setSelectedPlaceId(id);
+    setScreen("visite-guidee");
+  };
+
   const openHistoireTopic = (id: string) => {
     if (!canAccessScreen(profile.role, phase, "histoire-topic")) {
       setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, "histoire-topic"));
@@ -5772,6 +5885,16 @@ export default function App() {
           <PlaceScreen
             place={place}
             onBack={() => goToScreen("guide")}
+            onOpenVisiteGuidee={openVisiteGuidee}
+          />
+        ) : null;
+      }
+
+      if (effectiveScreen === "visite-guidee") {
+        return place ? (
+          <VisiteGuideeScreen
+            place={place}
+            onBack={() => goToScreen("place")}
           />
         ) : null;
       }
@@ -5996,6 +6119,14 @@ export default function App() {
           <PlaceScreen
             place={place}
             onBack={() => goToScreen("guide")}
+            onOpenVisiteGuidee={openVisiteGuidee}
+          />
+        ) : null;
+      case "visite-guidee":
+        return place ? (
+          <VisiteGuideeScreen
+            place={place}
+            onBack={() => goToScreen("place")}
           />
         ) : null;
       case "histoire":
