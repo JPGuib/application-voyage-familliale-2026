@@ -1564,7 +1564,10 @@ function DashboardScreen({
 
       {/* Today card */}
       <div className="px-4 -mt-4 relative z-10">
-        <div className="bg-card rounded-2xl shadow-md p-4 border border-border">
+        <button
+          onClick={() => onNavigate("guide")}
+          className="w-full text-left bg-card rounded-2xl shadow-md p-4 border border-border active:scale-95 transition-transform"
+        >
           <div className="flex items-start gap-3">
             <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
               <MapPin size={20} className="text-primary" />
@@ -1581,7 +1584,7 @@ function DashboardScreen({
               </p>
             </div>
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Quick actions */}
