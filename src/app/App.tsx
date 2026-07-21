@@ -366,6 +366,52 @@ const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> =
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
+function formatDuration(seconds: number): string | null {
+  const rounded = Math.round(seconds);
+  if (!Number.isFinite(rounded) || rounded <= 0) return null;
+  const minutes = Math.floor(rounded / 60);
+  const remainingSeconds = String(rounded % 60).padStart(2, "0");
+  return `${minutes} min ${remainingSeconds} sec`;
+}
+
+// Précharge uniquement les métadonnées (pas le fichier entier) de chaque
+// audio pour connaître leur vraie durée, sans télécharger tout le MP3.
+function useAudioDurations(places: { id: string; audioSrc?: string }[]) {
+  const [durations, setDurations] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const audios: HTMLAudioElement[] = [];
+
+    places.forEach((place) => {
+      if (!place.audioSrc) return;
+      const audio = new Audio();
+      audio.preload = "metadata";
+      audio.src = place.audioSrc;
+
+      const handleLoadedMetadata = () => {
+        const formatted = formatDuration(audio.duration);
+        if (formatted) {
+          setDurations((prev) => ({ ...prev, [place.id]: formatted }));
+        }
+      };
+
+      audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+      audios.push(audio);
+    });
+
+    return () => {
+      audios.forEach((audio) => {
+        audio.removeAttribute("src");
+        audio.load();
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [places.map((p) => p.id).join(",")]);
+
+  return durations;
+}
+
+
 function MemphisDecor() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden>
@@ -1609,6 +1655,8 @@ function GuideScreen({
   onBack: () => void;
   onPlaceSelect: (id: string) => void;
 }) {
+  const realDurations = useAudioDurations(PLACES);
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="relative bg-accent text-accent-foreground px-6 pt-12 pb-6 flex-shrink-0">
@@ -1658,7 +1706,7 @@ function GuideScreen({
                       {place.photos?.length ?? 1} photos
                     </span>
                     <span className="rounded-full bg-muted px-2.5 py-1">
-                      {place.audioDuration ?? "Audio à venir"}
+                      {realDurations[place.id] ?? place.audioDuration ?? "Audio à venir"}
                     </span>
                   </div>
                 </div>
@@ -1705,11 +1753,9 @@ function PlaceScreen({
     setRealDuration(null);
 
     const handleLoadedMetadata = () => {
-      const seconds = Math.round(audio.duration || 0);
-      if (Number.isFinite(seconds) && seconds > 0) {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = String(seconds % 60).padStart(2, "0");
-        setRealDuration(`${minutes} min ${remainingSeconds} sec`);
+      const formatted = formatDuration(audio.duration);
+      if (formatted) {
+        setRealDuration(formatted);
       }
     };
 
