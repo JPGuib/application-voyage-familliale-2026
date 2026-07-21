@@ -19,6 +19,7 @@ import {
   Trash2,
   Volume2,
   VolumeX,
+  Landmark,
 } from "lucide-react";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
@@ -368,6 +369,7 @@ const EXTERNAL_APP_LINKS: ExternalAppLink[] = [
 const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> = [
   { id: "dashboard", icon: Home, label: "Accueil" },
   { id: "guide", icon: BookOpen, label: "Guide" },
+  { id: "histoire", icon: Landmark, label: "Histoire" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
   { id: "tips", icon: Lightbulb, label: "Conseils" },
   { id: "results", icon: Trophy, label: "Résultats" },
