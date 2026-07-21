@@ -4,6 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "prebuild": "npm run convert:visites",
+    "convert:visites": "node scripts/convert-visites-guidees.mjs",
     "build": "vite build",
     "dev": "vite",
     "test": "vitest run",
