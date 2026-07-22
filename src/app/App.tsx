@@ -1644,22 +1644,17 @@ function DashboardScreen({
         </div>
       </div>
 
-      {/* Photo du jour */}
+      {/* Circuit du séjour */}
       <div className="px-4 mt-5 mb-6">
         <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
-          Photo du jour
+          Circuit du séjour
         </p>
-        <div className="rounded-2xl overflow-hidden h-44 bg-muted relative">
+        <div className="rounded-2xl overflow-hidden bg-muted relative">
           <img
-            src="https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=800&h=400&fit=crop&auto=format"
-            alt="Sainte-Sophie, Istanbul"
-            className="w-full h-full object-cover"
+            src="/images/Carte du voyage.png"
+            alt="Carte du circuit du séjour en Turquie"
+            className="w-full h-auto object-contain"
           />
-          <div className="absolute bottom-3 left-3">
-            <span className="bg-black/50 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
-              📍 Sainte-Sophie, Istanbul
-            </span>
-          </div>
         </div>
       </div>
     </div>
