@@ -301,6 +301,22 @@ type ExternalAppLink = {
 
 const QUICK_ACTIONS: QuickAction[] = [
   {
+    id: "guide",
+    emoji: "📖",
+    title: "Guide de voyage",
+    subtitle: "Découvrir les lieux",
+    colorBg: "bg-[#E8F5E9]",
+    colorText: "text-[#2E7D32]",
+  },
+  {
+    id: "histoire",
+    emoji: "🏛️",
+    title: "Histoire",
+    subtitle: "Découvrir la Turquie",
+    colorBg: "bg-[#FDE7E9]",
+    colorText: "text-[#AD1457]",
+  },
+  {
     id: "checklist",
     emoji: "🧳",
     title: "Checklist",
@@ -315,22 +331,6 @@ const QUICK_ACTIONS: QuickAction[] = [
     subtitle: "Tips & infos pratiques",
     colorBg: "bg-[#E3F2FD]",
     colorText: "text-[#1565C0]",
-  },
-  {
-    id: "histoire",
-    emoji: "🏛️",
-    title: "Histoire",
-    subtitle: "Découvrir la Turquie",
-    colorBg: "bg-[#FDE7E9]",
-    colorText: "text-[#AD1457]",
-  },
-  {
-    id: "guide",
-    emoji: "📖",
-    title: "Guide de voyage",
-    subtitle: "Découvrir les lieux",
-    colorBg: "bg-[#E8F5E9]",
-    colorText: "text-[#2E7D32]",
   },
   {
     id: "game",
