@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Application de voyage familiale">
+  <rect width="512" height="512" rx="108" fill="#B8A898" />
+  <circle cx="256" cy="256" r="154" fill="#FFF8F1" />
+  <path d="M171 301c49-66 123-108 171-120-13 37-21 93-13 155-52-6-108-18-158-35Z" fill="#E67E22" />
+  <path d="M208 159h96l37 55-85 39-85-39 37-55Z" fill="#1F4B99" />
+  <circle cx="256" cy="239" r="26" fill="#FFF8F1" />
+</svg>
