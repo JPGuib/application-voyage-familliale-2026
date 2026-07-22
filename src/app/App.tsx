@@ -309,12 +309,12 @@ const QUICK_ACTIONS: QuickAction[] = [
     colorText: "text-[#E65100]",
   },
   {
-    id: "guide",
-    emoji: "📖",
-    title: "Guide de voyage",
-    subtitle: "Découvrir les lieux",
-    colorBg: "bg-[#E8F5E9]",
-    colorText: "text-[#2E7D32]",
+    id: "tips",
+    emoji: "💡",
+    title: "Conseils",
+    subtitle: "Tips & infos pratiques",
+    colorBg: "bg-[#E3F2FD]",
+    colorText: "text-[#1565C0]",
   },
   {
     id: "histoire",
@@ -325,20 +325,20 @@ const QUICK_ACTIONS: QuickAction[] = [
     colorText: "text-[#AD1457]",
   },
   {
+    id: "guide",
+    emoji: "📖",
+    title: "Guide de voyage",
+    subtitle: "Découvrir les lieux",
+    colorBg: "bg-[#E8F5E9]",
+    colorText: "text-[#2E7D32]",
+  },
+  {
     id: "game",
     emoji: "🎮",
     title: "Jeu du jour",
     subtitle: "Quiz Turquie",
     colorBg: "bg-[#FFF3E0]",
     colorText: "text-[#E65100]",
-  },
-  {
-    id: "tips",
-    emoji: "💡",
-    title: "Conseils",
-    subtitle: "Tips & infos pratiques",
-    colorBg: "bg-[#E3F2FD]",
-    colorText: "text-[#1565C0]",
   },
   {
     id: "results",
@@ -363,9 +363,9 @@ const EXTERNAL_APP_LINKS: ExternalAppLink[] = [
 const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> = [
   { id: "dashboard", icon: Home, label: "Accueil" },
   { id: "guide", icon: BookOpen, label: "Guide" },
+  { id: "tips", icon: Lightbulb, label: "Conseils" },
   { id: "histoire", icon: Landmark, label: "Histoire" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
-  { id: "tips", icon: Lightbulb, label: "Conseils" },
   { id: "results", icon: Trophy, label: "Résultats" },
 ];
 
