@@ -2115,18 +2115,30 @@ function VisiteGuideeScreen({
       ) : (
         <div className="px-4 py-5">
           {content.toc.length > 0 && (
-            <div className="bg-muted rounded-2xl p-4 mb-6">
-              <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-2">
-                Sommaire
-              </p>
-              <div className="flex flex-col gap-1">
-                {content.toc.map((section) => (
+            <div className="mb-6">
+              <div className="flex items-baseline justify-between mb-3">
+                <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+                  Sommaire
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {content.toc.length} étapes
+                </p>
+              </div>
+              <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                {content.toc.map((section, i) => (
                   <button
                     key={section.id}
                     onClick={() => handleTocClick(section.id)}
-                    className="text-left text-sm text-primary py-1 active:opacity-60"
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left active:bg-muted transition-colors ${
+                      i !== content.toc.length - 1 ? "border-b border-border/60" : ""
+                    }`}
                   >
-                    {section.title}
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-black flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    <span className="text-sm text-foreground font-medium leading-snug">
+                      {section.title}
+                    </span>
                   </button>
                 ))}
               </div>
