@@ -352,13 +352,6 @@ const QUICK_ACTIONS: QuickAction[] = [
 
 const EXTERNAL_APP_LINKS: ExternalAppLink[] = [
   {
-    href: "https://wanderlog.com",
-    emoji: "🗺️",
-    title: "Wanderlog",
-    subtitle: "Planification du voyage",
-    colorBg: "bg-[#E8F5E9]",
-  },
-  {
     href: "https://polarsteps.com",
     emoji: "📸",
     title: "Polarsteps",
@@ -1612,10 +1605,24 @@ function DashboardScreen({
         </div>
       </div>
 
-      {/* External apps */}
+      {/* Circuit du séjour */}
       <div className="px-4 mt-5">
         <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
-          Applications externes
+          Circuit du séjour
+        </p>
+        <div className="rounded-2xl overflow-hidden bg-muted relative">
+          <img
+            src="/images/Carte du voyage.png"
+            alt="Carte du circuit du séjour en Turquie"
+            className="w-full h-auto object-contain"
+          />
+        </div>
+      </div>
+
+      {/* Photos du séjour */}
+      <div className="px-4 mt-5 mb-6">
+        <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+          Photos du séjour
         </p>
         <div className="space-y-2">
           {EXTERNAL_APP_LINKS.map((item) => (
@@ -1641,20 +1648,6 @@ function DashboardScreen({
               <ExternalLink size={16} className="text-muted-foreground" />
             </a>
           ))}
-        </div>
-      </div>
-
-      {/* Circuit du séjour */}
-      <div className="px-4 mt-5 mb-6">
-        <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
-          Circuit du séjour
-        </p>
-        <div className="rounded-2xl overflow-hidden bg-muted relative">
-          <img
-            src="/images/Carte du voyage.png"
-            alt="Carte du circuit du séjour en Turquie"
-            className="w-full h-auto object-contain"
-          />
         </div>
       </div>
     </div>
