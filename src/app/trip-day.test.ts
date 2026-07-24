@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   clampToLastDefinedDay,
   computeCurrentDay,
+  computeDaysUntilStart,
   isTripFinished,
   isValidTripStartDate,
 } from "./trip-day";
@@ -60,5 +61,22 @@ describe("isTripFinished / clampToLastDefinedDay", () => {
     expect(clampToLastDefinedDay(9, 6)).toBe(6);
     expect(clampToLastDefinedDay(3, 6)).toBe(3);
     expect(clampToLastDefinedDay(9, null)).toBe(9);
+  });
+});
+
+describe("computeDaysUntilStart", () => {
+  it("retourne le nombre de jours restants avant le départ", () => {
+    expect(computeDaysUntilStart("2026-08-16", new Date(2026, 7, 10))).toBe(6);
+    expect(computeDaysUntilStart("2026-08-16", new Date(2026, 7, 15))).toBe(1);
+  });
+
+  it("retourne null le jour du départ ou après", () => {
+    expect(computeDaysUntilStart("2026-08-16", new Date(2026, 7, 16))).toBe(null);
+    expect(computeDaysUntilStart("2026-08-16", new Date(2026, 7, 20))).toBe(null);
+  });
+
+  it("retourne null si la date de début est absente ou invalide", () => {
+    expect(computeDaysUntilStart(null, new Date(2026, 7, 10))).toBe(null);
+    expect(computeDaysUntilStart("pas une date", new Date(2026, 7, 10))).toBe(null);
   });
 });
