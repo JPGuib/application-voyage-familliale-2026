@@ -75,6 +75,30 @@ suite("firebase rtdb rules owner phase guard", () => {
     await assertFails(nonOwnerDb.ref(`families/${FAMILY_ID}/phase`).set("during"));
   });
 
+  it("allows owner to write family-wide tripStartDate", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb.ref(`families/${FAMILY_ID}/tripStartDate`).set("2026-08-16")
+    );
+  });
+
+  it("denies non-owner from writing family-wide tripStartDate", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/tripStartDate`).set("2026-08-16")
+    );
+  });
+
+  it("denies a malformed tripStartDate value", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb.ref(`families/${FAMILY_ID}/tripStartDate`).set("16/08/2026")
+    );
+  });
+
   it("allows non-owner to write profile-scoped checklist", async () => {
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
 

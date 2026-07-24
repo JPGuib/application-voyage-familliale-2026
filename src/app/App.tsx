@@ -4,6 +4,7 @@ import {
   Check,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   MapPin,
   Lightbulb,
   ExternalLink,
@@ -78,6 +79,13 @@ import {
 } from "./access-control";
 import { findDuplicateProfileBySurname } from "./profile-login";
 import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
+import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
+import {
+  clampToLastDefinedDay,
+  computeCurrentDay,
+  isTripFinished,
+  isValidTripStartDate,
+} from "./trip-day";
 import { useCloudSync } from "../hooks/useCloudSync";
 import {
   filterCategoriesForProfile,
@@ -1522,9 +1530,19 @@ function ChecklistScreen({
 function DashboardScreen({
   quickActions,
   onNavigate,
+  currentDay,
+  totalDays,
+  todayDestination,
+  todaySubtitle,
+  tripFinished,
 }: {
   quickActions: QuickAction[];
   onNavigate: (s: Screen) => void;
+  currentDay: number;
+  totalDays: number;
+  todayDestination: string;
+  todaySubtitle: string;
+  tripFinished: boolean;
 }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -1543,16 +1561,18 @@ function DashboardScreen({
               Paramètres
             </button>
           </div>
-          <h1 className="text-4xl font-black mt-1">Jour {TRIP.currentDay}</h1>
+          <h1 className="text-4xl font-black mt-1">
+            {tripFinished ? "Voyage terminé" : `Jour ${currentDay}`}
+          </h1>
           <p className="text-sm opacity-80 font-bold">
-            sur {TRIP.totalDays} jours
+            sur {totalDays} jours
           </p>
           <div className="flex gap-1 mt-3 flex-wrap">
-            {Array.from({ length: TRIP.totalDays }).map((_, i) => (
+            {Array.from({ length: totalDays }).map((_, i) => (
               <div
                 key={i}
                 className={`h-2 w-2 rounded-full transition-all ${
-                  i < TRIP.currentDay ? "bg-secondary" : "bg-white/25"
+                  i < currentDay ? "bg-secondary" : "bg-white/25"
                 }`}
               />
             ))}
@@ -1572,13 +1592,13 @@ function DashboardScreen({
             </div>
             <div>
               <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
-                Destination du jour
+                {tripFinished ? "Dernière destination" : "Destination du jour"}
               </p>
               <p className="text-xl font-black text-foreground leading-tight">
-                {TRIP.todayDestination}
+                {todayDestination}
               </p>
               <p className="text-sm text-muted-foreground">
-                {TRIP.todaySubtitle}
+                {todaySubtitle}
               </p>
             </div>
           </div>
@@ -1761,19 +1781,153 @@ function ContentListScreen({
 function GuideScreen({
   onBack,
   onPlaceSelect,
+  currentDay,
 }: {
   onBack: () => void;
   onPlaceSelect: (id: string) => void;
+  currentDay: number;
 }) {
+  const [selectedDay, setSelectedDay] = useState(currentDay);
+  const [selectorOpen, setSelectorOpen] = useState(false);
+
+  const dayPlaces = PLACES.filter((place) =>
+    (place as { jour?: number[] }).jour?.includes(selectedDay)
+  );
+  const realDurations = useAudioDurations(dayPlaces);
+  const selectedEntry = JOURS_DESTINATIONS.find((d) => d.jour === selectedDay) ?? null;
+
   return (
-    <ContentListScreen
-      items={PLACES}
-      headerEmoji="📖"
-      headerTitle="Guide de Turquie"
-      headerSubtitle={`Jour ${TRIP.currentDay} — ${PLACES.length} lieux à découvrir`}
-      onBack={onBack}
-      onItemSelect={onPlaceSelect}
-    />
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="relative bg-accent text-accent-foreground px-6 pt-12 pb-6 flex-shrink-0">
+        <MemphisDecor />
+        <button
+          onClick={onBack}
+          className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
+        >
+          <ChevronLeft size={18} /> Accueil
+        </button>
+        <h1 className="relative z-10 text-2xl font-black">Guide de Turquie 📖</h1>
+
+        <div className="relative z-20 mt-3">
+          <button
+            onClick={() => setSelectorOpen((prev) => !prev)}
+            className="w-full flex items-center justify-between bg-white/15 rounded-2xl px-4 py-3 backdrop-blur-sm"
+          >
+            <span className="text-left">
+              <span className="block text-sm font-black">
+                Jour {selectedDay}
+                {selectedDay === currentDay && (
+                  <span className="ml-2 text-[10px] font-black uppercase tracking-widest bg-white/25 rounded-full px-2 py-0.5 align-middle">
+                    aujourd'hui
+                  </span>
+                )}
+              </span>
+              {selectedEntry && (
+                <span className="block text-xs opacity-80 mt-0.5">
+                  {selectedEntry.destination}
+                </span>
+              )}
+            </span>
+            <ChevronDown
+              size={18}
+              className={`transition-transform flex-shrink-0 ${selectorOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {selectorOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setSelectorOpen(false)}
+              />
+              <div className="absolute left-0 right-0 mt-2 z-20 bg-card text-foreground rounded-2xl border border-border shadow-lg overflow-hidden max-h-72 overflow-y-auto">
+                {JOURS_DESTINATIONS.map((entry) => (
+                  <button
+                    key={entry.jour}
+                    onClick={() => {
+                      setSelectedDay(entry.jour);
+                      setSelectorOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted transition-colors border-b border-border/60 last:border-b-0 ${
+                      entry.jour === selectedDay ? "bg-muted" : ""
+                    }`}
+                  >
+                    <span>
+                      <span className="block text-sm font-bold text-foreground">
+                        Jour {entry.jour} — {entry.destination}
+                      </span>
+                    </span>
+                    {entry.jour === currentDay && (
+                      <span className="text-[10px] font-black uppercase tracking-widest text-primary flex-shrink-0 ml-2">
+                        aujourd'hui
+                      </span>
+                    )}
+                  </button>
+                ))}
+                {JOURS_DESTINATIONS.length === 0 && (
+                  <p className="px-4 py-3 text-sm text-muted-foreground">
+                    Aucun jour défini pour le moment.
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {dayPlaces.length === 0 && (
+          <div className="px-2 py-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              Pas de visite prévue ce jour.
+            </p>
+          </div>
+        )}
+        {dayPlaces.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => onPlaceSelect(item.id)}
+            className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
+          >
+            <div className="h-40 bg-muted overflow-hidden">
+              <img
+                src={item.image}
+                alt={item.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <span className="text-xs font-extrabold text-accent uppercase tracking-widest">
+                    {item.tag}
+                  </span>
+                  <h3 className="font-black text-foreground mt-0.5">
+                    {item.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {item.shortDesc}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
+                    <span className="rounded-full bg-muted px-2.5 py-1">
+                      {item.photos?.length ?? 1} photos
+                    </span>
+                    <span className="rounded-full bg-muted px-2.5 py-1">
+                      {realDurations[item.id] ?? item.audioDuration ?? "Audio à venir"}
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight
+                  size={20}
+                  className="text-muted-foreground mt-1 flex-shrink-0"
+                />
+              </div>
+            </div>
+          </button>
+        ))}
+        <div className="h-2" />
+      </div>
+    </div>
   );
 }
 
@@ -2167,6 +2321,7 @@ function GameScreen({
   onContinueToChallenge,
   onCompleteChallenge,
   onFinishSession,
+  currentDay,
 }: {
   gameState: GameState;
   currentQ: number;
@@ -2189,6 +2344,7 @@ function GameScreen({
   onContinueToChallenge: () => void;
   onCompleteChallenge: () => void;
   onFinishSession: () => void;
+  currentDay: number;
 }) {
   const q = QUESTIONS[currentQ];
 
@@ -2207,7 +2363,7 @@ function GameScreen({
             Jeu du jour 🎮
           </h1>
           <p className="relative z-10 text-sm opacity-90 mt-1">
-            Quiz Turquie — Jour {TRIP.currentDay}
+            Quiz Turquie — Jour {currentDay}
           </p>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
@@ -2767,6 +2923,8 @@ function SettingsScreen({
   onSwitchProfile,
   cloudEnabled,
   onDeleteOwnProfile,
+  tripStartDate,
+  onSaveTripStartDate,
 }: {
   profile: Profile;
   ownerCodeConfigured: boolean;
@@ -2799,9 +2957,13 @@ function SettingsScreen({
     proofMethod: "none" | "password" | "recovery",
     proofInput: string
   ) => Promise<{ ok: boolean; message: string }>;
+  tripStartDate: string | null;
+  onSaveTripStartDate: (date: string) => { ok: boolean; message: string };
 }) {
   const [surnameInput, setSurnameInput] = useState(profile.surname);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [tripStartDateInput, setTripStartDateInput] = useState(tripStartDate ?? "");
+  const [tripStartDateFeedback, setTripStartDateFeedback] = useState<string | null>(null);
   const [selectedGender, setSelectedGender] = useState<Gender>(profile.gender);
   const [selectedHouseholdRole, setSelectedHouseholdRole] = useState<HouseholdRole>(profile.householdRole);
   const [metadataFeedback, setMetadataFeedback] = useState<string | null>(null);
@@ -3228,6 +3390,39 @@ function SettingsScreen({
               <p className="mt-2 text-xs font-bold text-muted-foreground">{profileRecoveryFeedback}</p>
             )}
         </div>
+
+        {profile.role === "proprietaire" ? (
+          <div className="bg-card rounded-2xl border border-border p-4 mb-3">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+              Date de début du voyage
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Détermine le "Jour 1" affiché à toute la famille. Tant que la date
+              du jour ne dépasse pas cette date, l'application affiche Jour 1.
+            </p>
+            <input
+              type="date"
+              value={tripStartDateInput}
+              onChange={(e) => {
+                setTripStartDateInput(e.target.value);
+                if (tripStartDateFeedback) setTripStartDateFeedback(null);
+              }}
+              className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+            <button
+              onClick={() => {
+                const result = onSaveTripStartDate(tripStartDateInput);
+                setTripStartDateFeedback(result.message);
+              }}
+              className="mt-2 w-full rounded-xl bg-primary text-primary-foreground font-black text-sm py-2.5 active:scale-95 transition-transform"
+            >
+              Enregistrer la date de début
+            </button>
+            {tripStartDateFeedback && (
+              <p className="text-xs text-muted-foreground mt-2">{tripStartDateFeedback}</p>
+            )}
+          </div>
+        ) : null}
 
         {profile.role === "proprietaire" ? (
           <div className="bg-card rounded-2xl border border-border p-4">
@@ -3758,6 +3953,17 @@ export default function App() {
       return "before";
     }
   });
+  const [tripStartDate, setTripStartDate] = useState<string | null>(() => {
+    if (cloudEnabled) {
+      return null;
+    }
+
+    try {
+      return localStorage.getItem("jp-trip-start-date") || null;
+    } catch {
+      return null;
+    }
+  });
   const [screen, setScreen] = useState<Screen>("checklist");
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
@@ -4124,6 +4330,7 @@ export default function App() {
         localStorage.removeItem("jp-profile-recovery-hashes");
         localStorage.removeItem(PROFILE_RECOVERY_QUESTION_STORAGE_KEY);
         localStorage.removeItem("jp-phase");
+        localStorage.removeItem("jp-trip-start-date");
         localStorage.removeItem("jp-screen");
         localStorage.removeItem("jp-checklist");
         localStorage.removeItem("jp-game-history");
@@ -4153,6 +4360,11 @@ export default function App() {
             JSON.stringify(profileRecoveryQuestions)
           );
           localStorage.setItem("jp-phase", phase);
+          if (tripStartDate) {
+            localStorage.setItem("jp-trip-start-date", tripStartDate);
+          } else {
+            localStorage.removeItem("jp-trip-start-date");
+          }
           localStorage.setItem("jp-screen", screen);
           localStorage.setItem("jp-checklist", JSON.stringify(checked));
           localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
@@ -4193,6 +4405,7 @@ export default function App() {
     profileRecoveryHashes,
     profileRecoveryQuestions,
     phase,
+    tripStartDate,
     screen,
     checked,
     customChecklistItemsByProfile,
@@ -4217,6 +4430,9 @@ export default function App() {
 
     const normalized = enforceOwnerUniqueness(cloudSnapshot.familyState);
     setPhase((previous) => (previous === cloudSnapshot.phase ? previous : cloudSnapshot.phase));
+    setTripStartDate((previous) =>
+      previous === cloudSnapshot.tripStartDate ? previous : cloudSnapshot.tripStartDate
+    );
     setFamilyState((previous) =>
       areSharedFamilyStatesEqual(previous, normalized) ? previous : normalized
     );
@@ -4402,6 +4618,7 @@ export default function App() {
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
       phase,
+      tripStartDate,
       gameHistory,
     });
     if (lastCloudPushRef.current === payload) {
@@ -4431,6 +4648,7 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       gameResults: gameHistory,
       phase,
+      tripStartDate,
     });
   }, [
     checked,
@@ -4451,6 +4669,7 @@ export default function App() {
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
     phase,
+    tripStartDate,
     profile.id,
     profile.role,
     profile.surname,
@@ -5071,6 +5290,7 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       gameResults: gameHistory,
       phase: nextPhase,
+      tripStartDate,
     });
 
     return { ok: true as const, message: null };
@@ -5186,8 +5406,8 @@ export default function App() {
 
   const finishGameSession = () => {
     const entry: GameHistoryEntry = {
-      day: TRIP.currentDay,
-      location: TRIP.todayDestination,
+      day: currentDay,
+      location: todayDestination,
       quizScore: gameScore,
       correctCount,
       riddleSolved,
@@ -5320,6 +5540,7 @@ export default function App() {
           ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
           gameResults: selected.gameResults,
           phase: selected.phase || cloudSnapshot.phase,
+          tripStartDate: cloudSnapshot.tripStartDate,
         });
       } catch {
         setProfilePasswordHashes((previous) => ({
@@ -5339,6 +5560,17 @@ export default function App() {
   const visibleBottomNavItems = BOTTOM_NAV_ITEMS.filter((item) =>
     canAccessScreen(profile.role, phase, item.id)
   );
+  const lastDefinedDay =
+    JOURS_DESTINATIONS.length > 0
+      ? JOURS_DESTINATIONS[JOURS_DESTINATIONS.length - 1].jour
+      : null;
+  const rawCurrentDay = computeCurrentDay(tripStartDate);
+  const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
+  const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
+  const todayEntry = JOURS_DESTINATIONS.find((d) => d.jour === currentDay) ?? null;
+  const todayDestination = todayEntry?.destination ?? TRIP.todayDestination;
+  const todaySubtitle = todayEntry?.visites_prevues ?? TRIP.todaySubtitle;
+  const totalDays = lastDefinedDay ?? TRIP.totalDays;
   const effectiveScreen = canAccessScreen(profile.role, phase, screen)
     ? screen
     : getSafeScreen(profile.role, phase);
@@ -5532,6 +5764,7 @@ export default function App() {
                   ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
                   gameResults: selected.gameResults,
                   phase: selected.phase || cloudSnapshot.phase,
+                  tripStartDate: cloudSnapshot.tripStartDate,
                 });
               } catch {
                 setProfilePasswordHashes((previous) => ({
@@ -5863,12 +6096,34 @@ export default function App() {
             }}
             onSwitchProfile={resetForProfileSwitch}
             onDeleteOwnProfile={deleteOwnProfile}
+            tripStartDate={tripStartDate}
+            onSaveTripStartDate={(date) => {
+              if (!canUpdateOwnerCode(familyState, profile.id)) {
+                return {
+                  ok: false,
+                  message: "Seul le profil propriétaire peut configurer la date de début.",
+                };
+              }
+              if (!isValidTripStartDate(date)) {
+                return { ok: false, message: "Merci de choisir une date valide." };
+              }
+              setTripStartDate(date);
+              return { ok: true, message: "Date de début du voyage mise à jour." };
+            }}
           />
         );
       }
 
       if (effectiveScreen === "dashboard") {
-        return <DashboardScreen quickActions={visibleQuickActions} onNavigate={goToScreen} />;
+        return <DashboardScreen
+            quickActions={visibleQuickActions}
+            onNavigate={goToScreen}
+            currentDay={currentDay}
+            totalDays={totalDays}
+            todayDestination={todayDestination}
+            todaySubtitle={todaySubtitle}
+            tripFinished={tripFinished}
+          />;
       }
 
       if (effectiveScreen === "guide") {
@@ -5876,6 +6131,7 @@ export default function App() {
           <GuideScreen
             onBack={() => goToScreen("dashboard")}
             onPlaceSelect={openPlace}
+            currentDay={currentDay}
           />
         );
       }
@@ -5931,6 +6187,7 @@ export default function App() {
             riddleValidated={riddleValidated}
             riddleSolved={riddleSolved}
             challengeDone={challengeDone}
+            currentDay={currentDay}
             onStart={() => {
               setGameState("playing");
               setCurrentQ(0);
@@ -6106,12 +6363,21 @@ export default function App() {
           />
         );
       case "dashboard":
-        return <DashboardScreen quickActions={visibleQuickActions} onNavigate={goToScreen} />;
+        return <DashboardScreen
+            quickActions={visibleQuickActions}
+            onNavigate={goToScreen}
+            currentDay={currentDay}
+            totalDays={totalDays}
+            todayDestination={todayDestination}
+            todaySubtitle={todaySubtitle}
+            tripFinished={tripFinished}
+          />;
       case "guide":
         return (
           <GuideScreen
             onBack={() => goToScreen("dashboard")}
             onPlaceSelect={openPlace}
+            currentDay={currentDay}
           />
         );
       case "place":
@@ -6157,6 +6423,7 @@ export default function App() {
             riddleValidated={riddleValidated}
             riddleSolved={riddleSolved}
             challengeDone={challengeDone}
+            currentDay={currentDay}
             onStart={() => {
               setGameState("playing");
               setCurrentQ(0);
@@ -6336,13 +6603,35 @@ export default function App() {
             }}
             onSwitchProfile={resetForProfileSwitch}
             onDeleteOwnProfile={deleteOwnProfile}
+            tripStartDate={tripStartDate}
+            onSaveTripStartDate={(date) => {
+              if (!canUpdateOwnerCode(familyState, profile.id)) {
+                return {
+                  ok: false,
+                  message: "Seul le profil propriétaire peut configurer la date de début.",
+                };
+              }
+              if (!isValidTripStartDate(date)) {
+                return { ok: false, message: "Merci de choisir une date valide." };
+              }
+              setTripStartDate(date);
+              return { ok: true, message: "Date de début du voyage mise à jour." };
+            }}
           />
         );
       default:
         if (IS_DEV) {
           console.info(`[navigation] Unknown screen "${screen}" in phase "${phase}". Falling back to dashboard.`);
         }
-        return <DashboardScreen quickActions={visibleQuickActions} onNavigate={goToScreen} />;
+        return <DashboardScreen
+            quickActions={visibleQuickActions}
+            onNavigate={goToScreen}
+            currentDay={currentDay}
+            totalDays={totalDays}
+            todayDestination={todayDestination}
+            todaySubtitle={todaySubtitle}
+            tripFinished={tripFinished}
+          />;
     }
   };
 

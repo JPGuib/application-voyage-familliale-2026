@@ -4,8 +4,9 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "prebuild": "npm run convert:visites",
+    "prebuild": "npm run convert:visites && npm run convert:jours",
     "convert:visites": "node scripts/convert-visites-guidees.mjs",
+    "convert:jours": "node scripts/convert-jours-destinations.mjs",
     "build": "vite build",
     "dev": "vite",
     "test": "vitest run",

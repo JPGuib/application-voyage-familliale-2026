@@ -124,7 +124,7 @@ development_status:
   epic-14: backlog
   14-1-jour-voyage: backlog
   14-2-table-jour-destination: backlog
-  14-3-navigation-accueil: backlog
+  14-3-navigation-accueil: done
   epic-14-retrospective: optional
 
   epic-15: in-progress
