@@ -2,6 +2,7 @@ import {
   onValue,
   ref,
   runTransaction,
+  set,
   update,
   type Database,
 } from "firebase/database";
@@ -245,6 +246,24 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     profiles,
     updatedAt: toFiniteNumber(root.updatedAt, 0),
   };
+}
+
+/**
+ * Déclare l'utilisateur courant comme membre de la famille dans
+ * familyMembers/{familyId}/{uid} = true. Requis par les règles de sécurité
+ * (families/{familyId} n'est lisible/inscriptible que pour les uid présents
+ * ici) — sans cet appel, tout accès à families/{familyId} est refusé
+ * ("permission-denied"), y compris pour le tout premier appareil de la famille.
+ * L'écriture est autorisée par les règles pour n'importe quel utilisateur
+ * authentifié écrivant sa propre entrée (auth.uid === $uid), donc cet appel
+ * est sûr à effectuer dès qu'une session anonyme est établie.
+ */
+export async function ensureFamilyMembership(
+  database: Database,
+  familyId: string,
+  uid: string
+): Promise<void> {
+  await set(ref(database, `familyMembers/${familyId}/${uid}`), true);
 }
 
 export function observeFamilySnapshot(
