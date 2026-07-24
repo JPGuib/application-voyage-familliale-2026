@@ -11,31 +11,41 @@ export type JourDestination = {
 export const JOURS_DESTINATIONS: JourDestination[] = [
   {
     "jour": 1,
-    "destination": "Istanbul",
-    "visites_prevues": "Istanbul, Palais de Topkapi"
+    "destination": "Turquie",
+    "visites_prevues": ""
   },
   {
     "jour": 2,
+    "destination": "Istanbul",
+    "visites_prevues": "Sainte-Sophie, Citerne Basilique, Kadiko�, Le Bosphore"
+  },
+  {
+    "jour": 3,
+    "destination": "Istanbul",
+    "visites_prevues": "Mosqu�e Bleue, Place Taksim, Quartier de P�ra"
+  },
+  {
+    "jour": 4,
     "destination": "Cappadoce",
     "visites_prevues": "Cappadoce"
   },
   {
-    "jour": 3,
+    "jour": 5,
     "destination": "Pamukkale",
     "visites_prevues": "Pamukkale"
   },
   {
-    "jour": 4,
-    "destination": "Site d'Éphèse",
-    "visites_prevues": "Site d'Éphèse"
+    "jour": 6,
+    "destination": "Site d'Ephèse",
+    "visites_prevues": "Site d'Ephèse"
   },
   {
-    "jour": 5,
+    "jour": 7,
     "destination": "Izmir",
     "visites_prevues": "Izmir"
   },
   {
-    "jour": 6,
+    "jour": 8,
     "destination": "Bursa",
     "visites_prevues": "Bursa"
   }

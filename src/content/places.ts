@@ -35,7 +35,7 @@ export const PLACES = [
     ],
     audioTitle: "Sainte-Sophie, symbole d'Istanbul",
     audioDuration: "3 min 20 sec",
-    audioSrc: "/audio/ places/Sainte_Sophie.mp3",
+    audioSrc: "/audio/places/Sainte-Sophie.mp3",
     history:
       "Ancienne basilique byzantine devenue mosquée, puis musée, puis mosquée à nouveau, Sainte-Sophie est l'un des monuments les plus emblématiques d'Istanbul. Construite au VIe siècle sous Justinien, sa gigantesque coupole a fasciné pendant des siècles.",
     anecdotes: [
