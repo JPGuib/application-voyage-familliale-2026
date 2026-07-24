@@ -4626,6 +4626,14 @@ export default function App() {
 
     const normalized = enforceOwnerUniqueness(familyState);
     const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
+    if (IS_DEV) {
+      console.info("[cloud-sync] Push envisagé", {
+        canWriteFamilyState,
+        "normalized.ownerProfileId": normalized.ownerProfileId,
+        "profile.id": profile.id,
+        tripStartDate,
+      });
+    }
     const profilePasswordHash = profilePasswordHashes[profile.id] || "";
     const profileRecoveryHash = profileRecoveryHashes[profile.id] || "";
     const profileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";
