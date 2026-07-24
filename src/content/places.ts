@@ -404,14 +404,15 @@ export const PLACES = [
   name: "Grand Bazar",
   shortDesc: "Le plus célèbre marché couvert d'Istanbul",
   tag: "Marché",
-  image: "/images/Jour 3/Grand_bazar 1.webp",
+  image: "/images/Jour 4/Grand_bazar 1.webp",
   photos: [
-    "/images/Jour 3/Grand_bazar 1.webp",
-    "/images/Jour 3/Grand_bazar 2.webp",
+    "/images/Jour 4/Grand_bazar 1.webp",
+    "/images/Jour 4/Grand_bazar 2.webp",
+    "/images/Jour 4/Grand_bazar 3.webp",
   ],
   audioTitle: "Le Grand Bazar, un labyrinthe de trésors",
   audioDuration: "3 min 45 sec",
-  audioSrc: "/audio/Grand_Bazar.mp3",
+  audioSrc: "/audio/places/Grand_Bazar.mp3",
   history:
     "Fondé peu après la conquête de Constantinople par le sultan Mehmed II en 1455, le Grand Bazar est l'un des plus anciens et des plus vastes marchés couverts du monde. Au fil des siècles, il est devenu un véritable centre du commerce reliant l'Europe et l'Asie. Aujourd'hui, ses 61 rues couvertes abritent plus de 4 000 boutiques proposant tapis, bijoux, céramiques, épices, cuir, lampes, textiles et souvenirs. Malgré les incendies et les séismes qu'il a traversés au cours de son histoire, le Grand Bazar a conservé son atmosphère unique, où se mêlent patrimoine, artisanat et animation permanente.",
   anecdotes: [
@@ -428,14 +429,14 @@ export const PLACES = [
   tag: "Ville",
   image: "/images/Jour 4/Ankara 1.webp",
   photos: [
+    "/images/Jour 4/Ankara 1.webp",
     "/images/Jour 4/Ankara 2.webp",
     "/images/Jour 4/Ankara 3.webp",
     "/images/Jour 4/Ankara 4.webp",
-    ""
   ],
   audioTitle: "Ankara, le cœur politique de la Turquie",
   audioDuration: "3 min 40 sec",
-  audioSrc: "/audio/Ankara.mp3",
+  audioSrc: "/audio/places/Ankara.mp3",
   history:
     "Située au cœur du plateau anatolien, Ankara est la capitale de la République de Turquie depuis 1923. Si son histoire remonte à l'Antiquité, avec les Hittites, les Phrygiens, les Romains et les Byzantins, c'est sous l'impulsion de Mustafa Kemal Atatürk qu'elle prend une dimension nationale. Choisie pour sa position centrale et stratégique, Ankara remplace Istanbul comme capitale afin de symboliser la naissance d'une Turquie moderne, tournée vers l'avenir. Aujourd'hui, elle est le centre politique et administratif du pays, abritant le Parlement, les ministères, les ambassades et le mausolée d'Atatürk, tout en conservant un riche patrimoine historique dominé par sa citadelle et les vestiges des civilisations qui s'y sont succédé.",
   anecdotes: [
