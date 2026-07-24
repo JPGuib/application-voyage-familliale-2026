@@ -3,6 +3,7 @@ import { type Role, type SharedFamilyState } from "../app/owner-policy";
 import {
   claimProfileRole,
   deleteProfileFromCloud,
+  ensureFamilyMembership,
   observeFamilySnapshot,
   pushCloudSnapshot,
 } from "../services/cloudSyncProvider";
@@ -122,6 +123,12 @@ export function useCloudSync() {
         setCloudUserUid(user?.uid ?? null);
         if (user) {
           setCloudAuthError(null);
+          if (database) {
+            void ensureFamilyMembership(database, familyId, user.uid).catch(() => {
+              // Écriture non bloquante : si elle échoue, la lecture de
+              // observeFamilySnapshot remontera déjà "permission-denied".
+            });
+          }
         }
       },
       () => {
