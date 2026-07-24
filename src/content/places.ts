@@ -57,7 +57,7 @@ export const PLACES = [
     ],
     audioTitle: "Les secrets de la Citerne Basilique",
     audioDuration: "2 min 50 sec",
-    audioSrc: "/audio/places/Citerne_Basilique.mp3",
+    audioSrc: "/audio/places/Citerne_basilique.mp3",
     history:
       "Construite au VIe siècle sous l'empereur Justinien, la Citerne Basilique est un immense réservoir souterrain qui servait à stocker l'eau de la ville. Ses 336 colonnes et son atmosphère feutrée en font un lieu unique.",
     anecdotes: [
@@ -72,7 +72,7 @@ export const PLACES = [
     name: "Kadıköy (Kadıköy Çarşısı)",
     shortDesc: "Le cœur branché de la rive asiatique",
     tag: "Quartier",
-    image: "/images/Jour 2/Kadikoy 1.webp",
+    image: "/images/Jour 2/kadikoy 1.webp",
     photos: [
       "/images/Jour 2/Kadikoy 1.webp",
       "/images/Jour 2/Kadikoy 2.webp",
@@ -167,7 +167,7 @@ export const PLACES = [
     ],
     audioTitle: "Chora, la beauté cachée",
     audioDuration: "3 min 00 sec",
-    audioSrc: "/audio/places/Saint_Sauveur_Chora.mp3",
+    audioSrc: "/audio/places/Sainte_Sauveur_Chora.mp3",
     history:
       "L'église Saint-Sauveur in Chora, aujourd'hui musée (Kariye), est célèbre pour ses mosaïques et fresques byzantines parmi les plus belles qui subsistent. Datant du XIVe siècle, ces œuvres illustrent des scènes de la vie du Christ et de la Vierge avec une finesse exceptionnelle.",
     anecdotes: [
@@ -232,7 +232,7 @@ export const PLACES = [
     ],
     audioTitle: "Gastronomie à Sultanahmet",
     audioDuration: "2 min 00 sec",
-    audioSrc: "/audio/places/Restaurant_Vina_Garden.mp3",
+    audioSrc: "/audio/places/Vina_Garden.mp3",
     history:
       "Situé dans le quartier historique de Sultanahmet, La Vina Garden 1864 propose une cuisine raffinée dans un cadre élégant. C'est une adresse à réserver pour profiter d'un dîner de qualité au cœur de la vieille ville.",
     anecdotes: [
@@ -389,7 +389,7 @@ export const PLACES = [
     ],
     audioTitle: "Dîner panoramique à Istanbul",
     audioDuration: "2 min 00 sec",
-    audioSrc: "/audio/places/Restaurant_Jour3.mp3",
+    audioSrc: "/audio/places/Restaurant_Taksim.mp3",
     history:
       "Pour clore cette journée de découverte, une table à réserver soit dans le quartier animé de Taksim, soit en rooftop de l'hôtel pour profiter d'une vue imprenable sur Istanbul illuminée.",
     anecdotes: [
