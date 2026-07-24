@@ -121,16 +121,16 @@ development_status:
   13-2-affichage-masque-du-code-a-la-demande: done
   epic-13-retrospective: optional
 
-  epic-14: backlog
-  14-1-jour-voyage: backlog
-  14-2-table-jour-destination: backlog
+  epic-14: done
+  14-1-jour-voyage: done
+  14-2-table-jour-destination: done
   14-3-navigation-accueil: done
   epic-14-retrospective: optional
 
-  epic-15: in-progress
+  epic-15: done
   15-1-photos-guide: done
   15-2-photos-lieu-detail-corrige: done
-  15-3-selecteur-guide: backlog
+  15-3-selecteur-guide: done
   15-4-retrait-badges-guide: done
   15-5-guide-de-visite: done
   15-6-audio-lieux: done

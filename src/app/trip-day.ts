@@ -53,3 +53,25 @@ export function clampToLastDefinedDay(currentDay: number, lastDefinedDay: number
   if (lastDefinedDay === null) return currentDay;
   return Math.min(currentDay, lastDefinedDay);
 }
+
+/**
+ * Nombre de jours restants avant le départ (compte à rebours "J-x").
+ * Retourne null si la date de début est invalide/absente, ou si la date
+ * courante a atteint/dépassé la date de début (le voyage a commencé,
+ * plus de compte à rebours à afficher).
+ */
+export function computeDaysUntilStart(
+  tripStartDate: string | null | undefined,
+  now: Date = new Date()
+): number | null {
+  if (!isValidTripStartDate(tripStartDate)) return null;
+
+  const start = parseLocalDate(tripStartDate);
+  if (!start) return null;
+
+  const today = startOfLocalDay(now);
+  const startDay = startOfLocalDay(start);
+  const diffDays = Math.round((startDay.getTime() - today.getTime()) / 86_400_000);
+
+  return diffDays > 0 ? diffDays : null;
+}

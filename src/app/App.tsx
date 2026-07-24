@@ -83,6 +83,7 @@ import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
 import {
   clampToLastDefinedDay,
   computeCurrentDay,
+  computeDaysUntilStart,
   isTripFinished,
   isValidTripStartDate,
 } from "./trip-day";
@@ -1535,6 +1536,8 @@ function DashboardScreen({
   todayDestination,
   todaySubtitle,
   tripFinished,
+  daysUntilStart,
+  todayFormatted,
 }: {
   quickActions: QuickAction[];
   onNavigate: (s: Screen) => void;
@@ -1543,6 +1546,8 @@ function DashboardScreen({
   todayDestination: string;
   todaySubtitle: string;
   tripFinished: boolean;
+  daysUntilStart: number | null;
+  todayFormatted: string;
 }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -1561,22 +1566,35 @@ function DashboardScreen({
               Paramètres
             </button>
           </div>
-          <h1 className="text-4xl font-black mt-1">
-            {tripFinished ? "Voyage terminé" : `Jour ${currentDay}`}
-          </h1>
-          <p className="text-sm opacity-80 font-bold">
-            sur {totalDays} jours
-          </p>
-          <div className="flex gap-1 mt-3 flex-wrap">
-            {Array.from({ length: totalDays }).map((_, i) => (
-              <div
-                key={i}
-                className={`h-2 w-2 rounded-full transition-all ${
-                  i < currentDay ? "bg-secondary" : "bg-white/25"
-                }`}
-              />
-            ))}
+          <div className="flex items-start justify-between gap-3 mt-1">
+            <div>
+              <h1 className="text-4xl font-black">
+                {daysUntilStart !== null
+                  ? `J-${daysUntilStart}`
+                  : tripFinished
+                  ? "Voyage terminé"
+                  : `Jour ${currentDay}`}
+              </h1>
+              <p className="text-sm opacity-80 font-bold">
+                {daysUntilStart !== null ? "avant le départ" : `sur ${totalDays} jours`}
+              </p>
+            </div>
+            <p className="text-sm font-bold opacity-80 text-right pt-1 capitalize">
+              {todayFormatted}
+            </p>
           </div>
+          {daysUntilStart === null && (
+            <div className="flex gap-1 mt-3 flex-wrap">
+              {Array.from({ length: totalDays }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-2 w-2 rounded-full transition-all ${
+                    i < currentDay ? "bg-secondary" : "bg-white/25"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -5567,6 +5585,12 @@ export default function App() {
   const rawCurrentDay = computeCurrentDay(tripStartDate);
   const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
   const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
+  const daysUntilStart = computeDaysUntilStart(tripStartDate);
+  const todayFormatted = new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date());
   const todayEntry = JOURS_DESTINATIONS.find((d) => d.jour === currentDay) ?? null;
   const todayDestination = todayEntry?.destination ?? TRIP.todayDestination;
   const todaySubtitle = todayEntry?.visites_prevues ?? TRIP.todaySubtitle;
@@ -6123,6 +6147,8 @@ export default function App() {
             todayDestination={todayDestination}
             todaySubtitle={todaySubtitle}
             tripFinished={tripFinished}
+            daysUntilStart={daysUntilStart}
+            todayFormatted={todayFormatted}
           />;
       }
 
@@ -6371,6 +6397,8 @@ export default function App() {
             todayDestination={todayDestination}
             todaySubtitle={todaySubtitle}
             tripFinished={tripFinished}
+            daysUntilStart={daysUntilStart}
+            todayFormatted={todayFormatted}
           />;
       case "guide":
         return (
@@ -6631,6 +6659,8 @@ export default function App() {
             todayDestination={todayDestination}
             todaySubtitle={todaySubtitle}
             tripFinished={tripFinished}
+            daysUntilStart={daysUntilStart}
+            todayFormatted={todayFormatted}
           />;
     }
   };
