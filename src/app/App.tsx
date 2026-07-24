@@ -1579,7 +1579,7 @@ function DashboardScreen({
                 {daysUntilStart !== null ? "avant le départ" : `sur ${totalDays} jours`}
               </p>
             </div>
-            <p className="text-sm font-bold opacity-80 text-right pt-1 capitalize">
+            <p className="text-sm font-bold opacity-80 text-right pt-1">
               {todayFormatted}
             </p>
           </div>
@@ -2982,6 +2982,9 @@ function SettingsScreen({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [tripStartDateInput, setTripStartDateInput] = useState(tripStartDate ?? "");
   const [tripStartDateFeedback, setTripStartDateFeedback] = useState<string | null>(null);
+  useEffect(() => {
+    setTripStartDateInput(tripStartDate ?? "");
+  }, [tripStartDate]);
   const [selectedGender, setSelectedGender] = useState<Gender>(profile.gender);
   const [selectedHouseholdRole, setSelectedHouseholdRole] = useState<HouseholdRole>(profile.householdRole);
   const [metadataFeedback, setMetadataFeedback] = useState<string | null>(null);
@@ -3417,6 +3420,17 @@ function SettingsScreen({
             <p className="text-xs text-muted-foreground mt-2">
               Détermine le "Jour 1" affiché à toute la famille. Tant que la date
               du jour ne dépasse pas cette date, l'application affiche Jour 1.
+            </p>
+            <p className="text-sm font-bold text-foreground mt-3">
+              Date actuellement enregistrée :{" "}
+              {tripStartDate
+                ? new Intl.DateTimeFormat("fr-FR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  }).format(new Date(tripStartDate + "T00:00:00"))
+                : "aucune date définie"}
             </p>
             <input
               type="date"
