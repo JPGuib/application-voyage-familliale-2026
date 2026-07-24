@@ -35,7 +35,7 @@ export const PLACES = [
     ],
     audioTitle: "Sainte-Sophie, symbole d'Istanbul",
     audioDuration: "3 min 20 sec",
-    audioSrc: "/audio/Sainte_Sophie.mp3",
+    audioSrc: "/audio/ places/Sainte_Sophie.mp3",
     history:
       "Ancienne basilique byzantine devenue mosquée, puis musée, puis mosquée à nouveau, Sainte-Sophie est l'un des monuments les plus emblématiques d'Istanbul. Construite au VIe siècle sous Justinien, sa gigantesque coupole a fasciné pendant des siècles.",
     anecdotes: [
@@ -57,7 +57,7 @@ export const PLACES = [
     ],
     audioTitle: "Les secrets de la Citerne Basilique",
     audioDuration: "2 min 50 sec",
-    audioSrc: "/audio/Citerne_Basilique.mp3",
+    audioSrc: "/audio/places/Citerne_Basilique.mp3",
     history:
       "Construite au VIe siècle sous l'empereur Justinien, la Citerne Basilique est un immense réservoir souterrain qui servait à stocker l'eau de la ville. Ses 336 colonnes et son atmosphère feutrée en font un lieu unique.",
     anecdotes: [
@@ -79,7 +79,7 @@ export const PLACES = [
     ],
     audioTitle: "Kadıköy, l'âme asiatique d'Istanbul",
     audioDuration: "3 min 10 sec",
-    audioSrc: "/audio/Kadikoy.mp3",
+    audioSrc: "/audio/places/Kadikoy.mp3",
     history:
       "Kadıköy est l'un des quartiers les plus vivants de la rive asiatique d'Istanbul. Son marché (çarşı) regorge de produits frais, d'épices, de poissons et de boutiques locales. C'est un lieu de rencontre authentique, loin du tourisme de masse.",
     anecdotes: [
@@ -101,7 +101,7 @@ export const PLACES = [
     ],
     audioTitle: "La Süleymaniye, chef-d'œuvre de Sinan",
     audioDuration: "3 min 30 sec",
-    audioSrc: "/audio/Suleymaniye.mp3",
+    audioSrc: "/audio/places/Suleymaniye.mp3",
     history:
       "Construite entre 1550 et 1557 par l'architecte impérial Sinan pour le sultan Soliman le Magnifique, la Süleymaniye est la plus grande mosquée d'Istanbul. Elle domine la ville du haut de sa colline et offre une vue panoramique exceptionnelle.",
     anecdotes: [
@@ -123,7 +123,7 @@ export const PLACES = [
     ],
     audioTitle: "Le Bosphore, frontière liquide",
     audioDuration: "3 min 00 sec",
-    audioSrc: "/audio/Croisiere_Bosphore.mp3",
+    audioSrc: "/audio/places/Croisiere_Bosphore.mp3",
     history:
       "La croisière sur le Bosphore est l'une des expériences incontournables d'Istanbul. Ce détroit reliant la mer Noire à la mer de Marmara sépare l'Europe de l'Asie et offre des vues spectaculaires sur les palais, les mosquées et les villas ottomanes qui bordent ses rives.",
     anecdotes: [
@@ -144,7 +144,7 @@ export const PLACES = [
     ],
     audioTitle: "Dolmabahçe, fastes du XIXe siècle",
     audioDuration: "3 min 15 sec",
-    audioSrc: "/audio/Dolmabahce.mp3",
+    audioSrc: "/audio/places/Dolmabahce.mp3",
     history:
       "Construit au milieu du XIXe siècle, le palais de Dolmabahçe fut la résidence principale des sultans ottomans jusqu'à la chute de l'Empire. Mêlant styles baroque, rococo et néoclassique, il impressionne par son luxe et sa monumentalité. On passe devant le stade de football à proximité.",
     anecdotes: [
@@ -167,7 +167,7 @@ export const PLACES = [
     ],
     audioTitle: "Chora, la beauté cachée",
     audioDuration: "3 min 00 sec",
-    audioSrc: "/audio/Saint_Sauveur_Chora.mp3",
+    audioSrc: "/audio/places/Saint_Sauveur_Chora.mp3",
     history:
       "L'église Saint-Sauveur in Chora, aujourd'hui musée (Kariye), est célèbre pour ses mosaïques et fresques byzantines parmi les plus belles qui subsistent. Datant du XIVe siècle, ces œuvres illustrent des scènes de la vie du Christ et de la Vierge avec une finesse exceptionnelle.",
     anecdotes: [
@@ -189,7 +189,7 @@ export const PLACES = [
     ],
     audioTitle: "Ortaköy, la mosquée du Bosphore",
     audioDuration: "2 min 40 sec",
-    audioSrc: "/audio/Mosquee_Ortakoy.mp3",
+    audioSrc: "/audio/places/Mosquee_Ortakoy.mp3",
     history:
       "Située au bord du Bosphore, juste sous le pont suspendu, la Mosquée Büyük Mecidiye d'Ortaköy est l'un des symboles les plus photographiés d'Istanbul. Construite au XIXe siècle dans un style néo-baroque, elle offre un contraste saisissant avec le pont moderne qui la surplombe.",
     anecdotes: [
@@ -210,7 +210,7 @@ export const PLACES = [
     ],
     audioTitle: "Istanbul la nuit, du Bosphore",
     audioDuration: "2 min 30 sec",
-    audioSrc: "/audio/Croisiere_Nocturne.mp3",
+    audioSrc: "/audio/places/Croisiere_Nocturne.mp3",
     history:
       "La croisière nocturne sur le Bosphore offre une perspective magique sur Istanbul. Les palais, les mosquées et les ponts illuminés se reflètent dans l'eau, créant une atmosphère féerique et romantique.",
     anecdotes: [
@@ -232,7 +232,7 @@ export const PLACES = [
     ],
     audioTitle: "Gastronomie à Sultanahmet",
     audioDuration: "2 min 00 sec",
-    audioSrc: "/audio/Restaurant_Vina_Garden.mp3",
+    audioSrc: "/audio/places/Restaurant_Vina_Garden.mp3",
     history:
       "Situé dans le quartier historique de Sultanahmet, La Vina Garden 1864 propose une cuisine raffinée dans un cadre élégant. C'est une adresse à réserver pour profiter d'un dîner de qualité au cœur de la vieille ville.",
     anecdotes: [
@@ -282,7 +282,7 @@ export const PLACES = [
     ],
     audioTitle: "La Mosquée Bleue, merveille ottomane",
     audioDuration: "3 min 30 sec",
-    audioSrc: "/audio/Mosquee_Bleue.mp3",
+    audioSrc: "/audio/places/Mosquee_Bleue.mp3",
     history:
       "Construite au XVIIe siècle sous le sultan Ahmet Ier, la Mosquée Bleue (Sultanahmet Camii) est l'un des monuments les plus célèbres d'Istanbul. Elle doit son surnom aux 21 403 faïences bleues d'Iznik qui ornent son intérieur. Ses six minarets en font une mosquée unique à l'époque de sa construction.",
     anecdotes: [
@@ -303,7 +303,7 @@ export const PLACES = [
     ],
     audioTitle: "L'Hippodrome, théâtre de l'Empire",
     audioDuration: "3 min 00 sec",
-    audioSrc: "/audio/Hippodrome_Byzantin.mp3",
+    audioSrc: "/audio/places/Hippodrome_Byzantin.mp3",
     history:
       "L'Hippodrome de Constantinople était le centre de la vie publique de la ville byzantine. C'est ici que se déroulaient les courses de chars et les cérémonies impériales. Aujourd'hui, la place conserve trois obélisques antiques qui témoignent de son prestigieux passé.",
     anecdotes: [
@@ -325,10 +325,10 @@ export const PLACES = [
     ],
     audioTitle: "Taksim, carrefour de la vie stambouliote",
     audioDuration: "2 min 50 sec",
-    audioSrc: "/audio/Place_Taksim.mp3",
-    history:
+    audioSrc: "/audio/places/Place_Taksim.mp3",
+    history:    
       "La place de Taksim est le centre névralgique de l'Istanbul moderne. Entourée de commerces, d'hôtels et de restaurants, elle est le point de départ de l'avenue Istiklal et un lieu de rassemblement pour les Stambouliotes.",
-    anecdotes: [
+    anecdotes: [  
       "Le Monument de la République au centre de la place date de 1928.",
       "Taksim signifie 'distribution' en turc, car c'est ici que l'eau était distribuée à la ville.",
       "C'est le point de départ de l'avenue Istiklal, artère commerçante de 1,4 km.",
@@ -347,7 +347,7 @@ export const PLACES = [
     ],
     audioTitle: "Péra, l'âme cosmopolite d'Istanbul",
     audioDuration: "3 min 40 sec",
-    audioSrc: "/audio/Quartier_de_Pera.mp3",
+    audioSrc: "/audio/places/Quartier_de_Pera.mp3",
     history:
       "Au début du XXe siècle, le quartier de Péra (aujourd'hui Beyoğlu) était la fierté de la ville. Ambassades, prestigieuses écoles, immeubles bourgeois, théâtres, cinémas, restaurants et tavernes s'y côtoiaient. C'est ici que la société élite stambouliote fréquentait. La Tour Galata, vestige médiéval, domine le quartier de ses 67 mètres.",
     anecdotes: [
@@ -368,7 +368,7 @@ export const PLACES = [
   ],
   audioTitle: "La Tour de Galata, sentinelle d'Istanbul",
   audioDuration: "3 min 30 sec",
-  audioSrc: "/audio/Tour_Galata.mp3",
+  audioSrc: "/audio/places/Tour_Galata.mp3",
   history:
     "Construite en 1348 par les Génois installés dans le quartier de Galata, la Tour de Galata est l'un des monuments les plus emblématiques d'Istanbul. Haute de près de 67 mètres, elle servait autrefois de tour de défense et de surveillance sur les remparts de la colonie génoise. Transformée au fil des siècles en prison, observatoire puis point de départ des premières expériences aériennes d'Hezarfen Ahmed Çelebi, elle offre aujourd'hui l'un des plus beaux panoramas sur le Bosphore, la Corne d'Or, la vieille ville et les collines d'Istanbul.",
   anecdotes: [
@@ -389,7 +389,7 @@ export const PLACES = [
     ],
     audioTitle: "Dîner panoramique à Istanbul",
     audioDuration: "2 min 00 sec",
-    audioSrc: "/audio/Restaurant_Jour3.mp3",
+    audioSrc: "/audio/places/Restaurant_Jour3.mp3",
     history:
       "Pour clore cette journée de découverte, une table à réserver soit dans le quartier animé de Taksim, soit en rooftop de l'hôtel pour profiter d'une vue imprenable sur Istanbul illuminée.",
     anecdotes: [
@@ -413,7 +413,7 @@ export const PLACES = [
     ],
     audioTitle: "Cappadoce au lever du soleil",
     audioDuration: "2 min 55 sec",
-    audioSrc: "/audio/cappadoce.mp3",
+    audioSrc: "/audio/places/cappadoce.mp3",
     history:
       "La Cappadoce est célèbre pour ses paysages de roche volcanique, ses vallées et ses habitations creusées dans la pierre. La région a longtemps servi de refuge et de lieu de passage pour différentes civilisations.",
     anecdotes: [
