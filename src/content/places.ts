@@ -383,9 +383,9 @@ export const PLACES = [
     name: "Restaurant à réserver (Taksim ou rooftop hôtel)",
     shortDesc: "Dîner avec vue sur la ville",
     tag: "Restaurant",
-    image: "/images/Jour 3/Restau jour 3.webp",
+    image: "/images/Jour 3/Restau Jour 3.webp",
     photos: [
-      "/images/Jour 3/Restau jour 3.webp",
+      "/images/Jour 3/Restau Jour 3.webp",
     ],
     audioTitle: "Dîner panoramique à Istanbul",
     audioDuration: "2 min 00 sec",
