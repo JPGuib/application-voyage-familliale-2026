@@ -26,27 +26,37 @@ export const JOURS_DESTINATIONS: JourDestination[] = [
   },
   {
     "jour": 4,
+    "destination": "Ankara",
+    "visites_prevues": "Instabul Grand Bazar, Ankara"
+  },
+  {
+    "jour": 5,
     "destination": "Cappadoce",
     "visites_prevues": "Cappadoce"
   },
   {
-    "jour": 5,
+    "jour": 6,
     "destination": "Pamukkale",
     "visites_prevues": "Pamukkale"
   },
   {
-    "jour": 6,
+    "jour": 7,
     "destination": "Site d'Ephèse",
     "visites_prevues": "Site d'Ephèse"
   },
   {
-    "jour": 7,
+    "jour": 8,
     "destination": "Izmir",
     "visites_prevues": "Izmir"
   },
   {
-    "jour": 8,
+    "jour": 9,
     "destination": "Bursa",
     "visites_prevues": "Bursa"
+  },
+  {
+    "jour": 10,
+    "destination": "France",
+    "visites_prevues": "Instabul, Paris, Nantes"
   }
 ];

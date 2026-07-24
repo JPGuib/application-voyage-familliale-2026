@@ -399,8 +399,54 @@ export const PLACES = [
     ],
   },
 {
-    id: "cappadoce",
+  id: "grand-bazar",
   jour: [4],
+  name: "Grand Bazar",
+  shortDesc: "Le plus célèbre marché couvert d'Istanbul",
+  tag: "Marché",
+  image: "/images/Jour 3/Grand_bazar 1.webp",
+  photos: [
+    "/images/Jour 3/Grand_bazar 1.webp",
+    "/images/Jour 3/Grand_bazar 2.webp",
+  ],
+  audioTitle: "Le Grand Bazar, un labyrinthe de trésors",
+  audioDuration: "3 min 45 sec",
+  audioSrc: "/audio/Grand_Bazar.mp3",
+  history:
+    "Fondé peu après la conquête de Constantinople par le sultan Mehmed II en 1455, le Grand Bazar est l'un des plus anciens et des plus vastes marchés couverts du monde. Au fil des siècles, il est devenu un véritable centre du commerce reliant l'Europe et l'Asie. Aujourd'hui, ses 61 rues couvertes abritent plus de 4 000 boutiques proposant tapis, bijoux, céramiques, épices, cuir, lampes, textiles et souvenirs. Malgré les incendies et les séismes qu'il a traversés au cours de son histoire, le Grand Bazar a conservé son atmosphère unique, où se mêlent patrimoine, artisanat et animation permanente.",
+  anecdotes: [
+    "Le Grand Bazar accueille entre 250 000 et 400 000 visiteurs chaque jour, ce qui en fait l'un des marchés les plus fréquentés au monde.",
+    "Avec plus de 4 000 boutiques réparties sur 61 rues couvertes, il ressemble à une véritable ville dans la ville.",
+    "La tradition de la négociation est toujours bien vivante : marchander fait partie intégrante de l'expérience d'achat.",
+  ],
+},
+{
+  id: "ankara",
+  jour: [4],
+  name: "Ankara",
+  shortDesc: "La capitale moderne au cœur de la Turquie",
+  tag: "Ville",
+  image: "/images/Jour 4/Ankara 1.webp",
+  photos: [
+    "/images/Jour 4/Ankara 2.webp",
+    "/images/Jour 4/Ankara 3.webp",
+    "/images/Jour 4/Ankara 4.webp",
+    ""
+  ],
+  audioTitle: "Ankara, le cœur politique de la Turquie",
+  audioDuration: "3 min 40 sec",
+  audioSrc: "/audio/Ankara.mp3",
+  history:
+    "Située au cœur du plateau anatolien, Ankara est la capitale de la République de Turquie depuis 1923. Si son histoire remonte à l'Antiquité, avec les Hittites, les Phrygiens, les Romains et les Byzantins, c'est sous l'impulsion de Mustafa Kemal Atatürk qu'elle prend une dimension nationale. Choisie pour sa position centrale et stratégique, Ankara remplace Istanbul comme capitale afin de symboliser la naissance d'une Turquie moderne, tournée vers l'avenir. Aujourd'hui, elle est le centre politique et administratif du pays, abritant le Parlement, les ministères, les ambassades et le mausolée d'Atatürk, tout en conservant un riche patrimoine historique dominé par sa citadelle et les vestiges des civilisations qui s'y sont succédé.",
+  anecdotes: [
+    "Ankara est devenue la capitale de la Turquie le 13 octobre 1923, quelques semaines avant la proclamation officielle de la République.",
+    "Le mausolée d'Atatürk, Anıtkabir, est l'un des monuments les plus visités du pays et accueille plusieurs millions de visiteurs chaque année.",
+    "Bien qu'Istanbul soit la plus grande ville de Turquie, Ankara concentre les principales institutions politiques et diplomatiques du pays.",
+  ],
+},
+{
+    id: "cappadoce",
+  jour: [5],
     name: "Cappadoce",
     shortDesc: "Des vallées sculptées et des montgolfières au lever du soleil",
     tag: "Nature",
@@ -424,7 +470,7 @@ export const PLACES = [
   },
   {
     id: "pamukkale",
-  jour: [5],
+  jour: [6],
     name: "Pamukkale",
     shortDesc: "Des terrasses blanches comme du coton et des sources chaudes",
     tag: "Nature",
@@ -448,7 +494,7 @@ export const PLACES = [
   },
   {
     id: "ephese",
-  jour: [6],
+  jour: [7],
     name: "Site d'Éphèse",
     shortDesc: "Des ruines antiques parmi les plus impressionnantes du pays",
     tag: "Histoire",
@@ -472,7 +518,7 @@ export const PLACES = [
   },
   {
     id: "izmir",
-  jour: [7],
+  jour: [8],
     name: "Izmir",
     shortDesc: "Une grande ville côtière vivante et ouverte sur la mer Égée",
     tag: "Ville",
@@ -496,7 +542,7 @@ export const PLACES = [
   },
   {
     id: "bursa",
-  jour: [8],
+  jour: [9],
     name: "Bursa",
     shortDesc: "Une ancienne capitale ottomane entre patrimoine et montagne",
     tag: "Patrimoine",
