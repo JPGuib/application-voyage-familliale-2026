@@ -103,6 +103,10 @@
           ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && newData.parent().child('ownerUid').val() === auth.uid",
           ".validate": "newData.val() === 'before' || newData.val() === 'during'"
         },
+        "tripStartDate": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && newData.parent().child('ownerUid').val() === auth.uid",
+          ".validate": "newData.val() === null || (newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/))"
+        },
         "$other": {
           ".validate": false
         }

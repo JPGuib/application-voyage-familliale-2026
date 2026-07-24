@@ -68,6 +68,7 @@ export type CloudSyncSnapshot = {
   ownerRecoveryHash?: string;
   ownerRecoveryConfiguredAt?: number;
   phase: TravelPhase;
+  tripStartDate: string | null;
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   profiles: Record<string, CloudProfileState>;
@@ -96,6 +97,7 @@ export type CloudSyncWritePayload = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;
+  tripStartDate?: string | null;
 };
 
 export type ClaimRoleResult = {

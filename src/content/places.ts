@@ -1,6 +1,7 @@
 export const PLACES = [
   {
     id: "istanbul",
+  jour: [1],
     name: "Istanbul",
     shortDesc: "La ville-pont entre l'Europe et l'Asie",
     tag: "Ville",
@@ -24,6 +25,7 @@ export const PLACES = [
   },
   {
   id: "topkapi",
+  jour: [1],
   name: "Palais de Topkapi",
   shortDesc: "Le cœur du pouvoir des sultans ottomans pendant près de quatre siècles",
   tag: "Monument",
@@ -50,6 +52,7 @@ export const PLACES = [
 },
 {
     id: "cappadoce",
+  jour: [2],
     name: "Cappadoce",
     shortDesc: "Des vallées sculptées et des montgolfières au lever du soleil",
     tag: "Nature",
@@ -73,6 +76,7 @@ export const PLACES = [
   },
   {
     id: "pamukkale",
+  jour: [3],
     name: "Pamukkale",
     shortDesc: "Des terrasses blanches comme du coton et des sources chaudes",
     tag: "Nature",
@@ -96,6 +100,7 @@ export const PLACES = [
   },
   {
     id: "ephese",
+  jour: [4],
     name: "Site d'Éphèse",
     shortDesc: "Des ruines antiques parmi les plus impressionnantes du pays",
     tag: "Histoire",
@@ -119,6 +124,7 @@ export const PLACES = [
   },
   {
     id: "izmir",
+  jour: [5],
     name: "Izmir",
     shortDesc: "Une grande ville côtière vivante et ouverte sur la mer Égée",
     tag: "Ville",
@@ -142,6 +148,7 @@ export const PLACES = [
   },
   {
     id: "bursa",
+  jour: [6],
     name: "Bursa",
     shortDesc: "Une ancienne capitale ottomane entre patrimoine et montagne",
     tag: "Patrimoine",

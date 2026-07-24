@@ -239,6 +239,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     familyState,
     ownerCodeHash: typeof root.ownerCodeHash === "string" ? root.ownerCodeHash : "",
     phase: sharedPhase,
+    tripStartDate: typeof root.tripStartDate === "string" ? root.tripStartDate : null,
     ownerGlobalChecklistAdditions: parseChecklistCustomItems(ownerGlobalAdditionRecords),
     ownerGlobalChecklistRemovals: parseChecklistRemovals(ownerGlobalRemovalRecords),
     profiles,
@@ -317,6 +318,7 @@ export async function pushCloudSnapshot(
     updates.ownerUid = payload.actorUid;
     updates.ownerCodeHash = payload.ownerCodeHash;
     updates.phase = payload.phase;
+    updates.tripStartDate = payload.tripStartDate ?? null;
     updates.checklistCatalogAdditions = payload.ownerGlobalChecklistAdditions.reduce<Record<string, ChecklistCustomItem>>((acc, item) => {
       acc[item.id] = item;
       return acc;
