@@ -1,7 +1,37 @@
 ﻿export const PLACES = [
+{
+    id: "Nante-Paris",
+    jour: [1],
+    name: "Nantes - Paris",
+    shortDesc: "Voir Air France Nantes ",
+    tag: "Vol",
+    image: "/images/guide/photo.png",
+    photos: [
+    ],
+    history:
+      "texte à faire",
+    anecdotes: [
+      "A compléter",
+    ],
+  },
+  {
+    id: "Paris-istanbul",
+    jour: [1],
+    name: "Paris - Istanbul",
+    shortDesc: "Voir Air France Istanbul",
+    tag: "Vol",
+    image: "/images/guide/photo.png",
+    photos: [
+    ],
+    history:
+      "texte à faire",
+    anecdotes: [
+      "A compléter",
+    ],
+  },
   {
     id: "istanbul",
-    jour: [1],
+    jour: [2],
     name: "Istanbul",
     shortDesc: "La ville-pont entre l'Europe et l'Asie",
     tag: "Ville",

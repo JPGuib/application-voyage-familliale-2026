@@ -4654,7 +4654,11 @@ export default function App() {
 
     const normalized = enforceOwnerUniqueness(familyState);
     const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
-    if (canWriteFamilyState && !ownerDeviceRegisteredRef.current) {
+    if (
+      canWriteFamilyState &&
+      !ownerDeviceRegisteredRef.current &&
+      typeof registerAsOwnerDevice === "function"
+    ) {
       ownerDeviceRegisteredRef.current = true;
       void registerAsOwnerDevice();
     }
