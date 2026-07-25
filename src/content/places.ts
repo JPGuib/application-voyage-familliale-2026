@@ -525,6 +525,28 @@
       "Les puits de ventilation étaient si bien conçus qu'ils empêchaient l'ennemi de détecter la présence des habitants.",
     ],
   },
+    {
+    "id": "anitkabir",
+    "jour": [5],
+    "name": "Mausolée d'Atatürk",
+    "shortDesc": "Le monument national de la République turque",
+    "tag": "Monument",
+    "image": "/images/Jour 5/Anitkabir_1.webp",
+    "photos": [
+	"/images/Jour 5/Anitkabir_1.webp",
+	"/images/Jour 5/Anitkabir_2.webp",
+	"/images/Jour 5/Anitkabir_3.webp"
+    ],
+    "audioTitle": "Anitkabir, la mémoire d'une nation",
+    "audioDuration": "3 min 50 sec",
+    "audioSrc": "/audio/places/Histoire_Anitkabir.mp3",
+    "history": "Anıtkabir est le mausolée de Mustafa Kemal Atatürk, fondateur et premier président de la République de Turquie. Situé à Ankara sur la colline d'Anıttepe, ce monument monumental fut construit entre 1944 et 1953. Le complexe de 750 000 m² comprend le mausolée, le Parc de la Paix, l'allée des Lions et plusieurs tours symboliques. Les pierres et marbres proviennent de toutes les régions de Turquie, symbolisant l'unité nationale. C'est un lieu de pèlerinage où des millions de visiteurs viennent chaque année rendre hommage au Père de la Nation.",
+    "anecdotes": [
+      "Le drapeau turque flotte sur un mât de 33,53 m, le plus haut mât d'un seul tenant d'Europe.",
+      "Les soldats de la garde d'honneur sont sélectionnés pour leur taille (minimum 1m80) et leur allure impeccable.",
+      "Le sarcophage d'Atatürk pèse 40 tonnes et est fait d'un seul bloc de pierre."
+    ]
+  },
   {
     id: "cappadoce",
     jour: [6],
@@ -697,6 +719,29 @@
     ]
   },
   {
+    "id": "izmir-kusadasi",
+    "jour": [7],
+    "name": "Route vers Izmir ou Kusadasi",
+    "shortDesc": "La perle de la côte égéenne",
+    "tag": "Ville / Bord de mer",
+    "image": "/images/Jour 7/Izmir_1.webp",
+    "photos": [
+      "/images/Jour 7/Izmir_1.webp",
+      "/images/Jour 7/Izmir_2.webp",
+      "/images/Jour 7/Izmir_3.webp",
+      "/images/Jour 7/Izmir_4.webp"
+    ],
+    "audioTitle": "Izmir et Kusadasi, trésors de la côte égéenne",
+    "audioDuration": "4 min 15 sec",
+    "audioSrc": "/audio/places/Histoire_Izmir_Kusadasi.mp3",
+    "history": "Izmir est la troisième plus grande ville de Turquie et l'un des ports les plus anciens de la Méditerranée. Située sur la côte égéenne, elle mêle héritage gréco-romain, architecture ottomane et modernité. Kusadasi, à quelques kilomètres, est une station balnéaire réputée pour son port de croisières et sa proximité avec les ruines d'Éphèse. La route entre ces deux villes offre des panoramas spectaculaires sur la mer Égée.",
+    "anecdotes": [
+      "Izmir fut connue sous le nom de Smyrne dans l'Antiquité, l'une des plus grandes cités de l'Empire romain.",
+      "Kusadasi signifie 'l'île aux oiseaux' en turc, en référence à l'îlot qui domine son port.",
+      "La promenade du Kordon à Izmir est l'un des lieux de rendez-vous préférés des habitants pour admirer le coucher de soleil."
+    ]
+  },
+  {
     id: "ephese",
     jour: [8],
     name: "Ephèse",
@@ -740,6 +785,28 @@
       "La Mosquée Verte (Yeşil Camii) doit son nom aux carreaux de faïence vert émeraude qui la décorent.",
       "Les tombeaux des premiers sultans ottomans se trouvent dans le Mausolée Vert.",
       "Le Mont Uludağ est aujourd'hui une importante station de ski."
+    ]
+  }
+  {
+    "id": "osmangazi",
+    "jour": [9],
+    "name": "Pont d'Osmangazi",
+    "shortDesc": "Le géant des eaux turques",
+    "tag": "Monument / Infrastructures",
+    "image": "/images/Jour 9/Osmangazi_1.webp",
+    "photos": [
+	"/images/Jour 9/Osmangazi_1.webp",
+	"/images/Jour 9/Osmangazi_2.webp",
+	"/images/Jour 9/Osmangazi_3.webp"
+    ],
+    "audioTitle": "Osmangazi, un pont entre deux rives",
+    "audioDuration": "3 min 30 sec",
+    "audioSrc": "/audio/places/Histoire_Osmangazi.mp3",
+    "history": "Le pont d'Osmangazi (Osman Gazi Köprüsü) est un pont suspendu spectaculaire qui enjambe le golfe d'Izmit, à environ 50 km au sud d'Istanbul. Inauguré le 1er juillet 2016, il porte le nom d'Osman Gazi, fondateur de l'Empire ottoman. Avec une travée centrale de 1 550 mètres et une longueur totale de 2 682 mètres, il était à son inauguration le quatrième plus long pont suspendu au monde. Les pylônes culminent à 252 mètres de hauteur et le tablier est suspendu à 64 mètres au-dessus de la mer. Il fait partie de l'autoroute Gebze-Orhangazi-Izmir (O-5) et a réduit le trajet Istanbul-Izmir de 10 heures à seulement 3h30, transformant radicalement les échanges entre la mer de Marmara et la côte égéenne.",
+    "anecdotes": [
+      "Le temps de traversée du golfe d'Izmit est passé de 2 heures (en ferry) à seulement 6 minutes.",
+      "34 000 tonnes d'acier, provenant de Roumanie, ont été utilisées pour sa construction.",
+      "Le pont a été construit dans l'une des zones les plus sismiques du monde ; les pylônes reposent sur une base de gravier permettant un glissement en cas de séisme."
     ]
   }
 ];
