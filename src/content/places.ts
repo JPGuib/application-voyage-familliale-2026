@@ -1,17 +1,17 @@
-export const PLACES = [
+﻿export const PLACES = [
   {
     id: "istanbul",
-  jour: [1],
+    jour: [1],
     name: "Istanbul",
     shortDesc: "La ville-pont entre l'Europe et l'Asie",
     tag: "Ville",
     image: "/images/guide/Istanbul photo 1.png",
-      photos: [
+    photos: [
       "/images/guide/Istanbul photo 1.png",
       "/images/places/Mosquée bleue.png",
       "/images/places/Sainte Sophie.png",
       "/images/places/Bosphore.png",
-      ],
+    ],
     audioTitle: "Istanbul, entre deux mondes",
     audioDuration: "3 min 40 sec",
     audioSrc: "/audio/Histoire_de_la_Turquie.mp3",
@@ -160,7 +160,7 @@ export const PLACES = [
     shortDesc: "Un trésor de mosaïques byzantines",
     tag: "Monument",
     image: "/images/Jour 2/Sainte-sauveur in chora 1.webp",
-    photos: [ 
+    photos: [
       "/images/Jour 2/Sainte-sauveur in chora 1.webp",
       "/images/Jour 2/Sainte-sauveur in chora 2.webp",
       "/images/Jour 2/Sainte-sauveur in chora 3.webp",
@@ -242,32 +242,32 @@ export const PLACES = [
     ],
   },
   {
-  id: "topkapi",
-  jour: [3],
-  name: "Palais de Topkapi",
-  shortDesc: "Le cœur du pouvoir des sultans ottomans pendant près de quatre siècles",
-  tag: "Monument",
-  image: "/images/Jour 3/Topkapi/Topkapi 2.png",
-  photos: [
-    "/images/Jour 3/Topkapi/Topkapi 0.png",
-    "/images/Jour 3/Topkapi/Topkapi 1.png",
-    "/images/Jour 3/Topkapi/Topkapi 2.png",
-    "/images/Jour 3/Topkapi/Topkapi 3.png",
-    "/images/Jour 3/Topkapi/Topkapi 4.png",
+    id: "topkapi",
+    jour: [3],
+    name: "Palais de Topkapi",
+    shortDesc: "Le cœur du pouvoir des sultans ottomans pendant près de quatre siècles",
+    tag: "Monument",
+    image: "/images/Jour 3/Topkapi/Topkapi 2.png",
+    photos: [
+      "/images/Jour 3/Topkapi/Topkapi 0.png",
+      "/images/Jour 3/Topkapi/Topkapi 1.png",
+      "/images/Jour 3/Topkapi/Topkapi 2.png",
+      "/images/Jour 3/Topkapi/Topkapi 3.png",
+      "/images/Jour 3/Topkapi/Topkapi 4.png",
     ],
-  audioTitle: "Découvrez le Palais de Topkapi",
-  audioDuration: "4 min 20 sec",
-  audioSrc: "/audio/places/Le_palais_de_Topkapi.mp3",
-  history:
-    "Construit à partir de 1459 sur les ordres du sultan Mehmed II, peu après la conquête de Constantinople, le Palais de Topkapi fut la résidence officielle des sultans ottomans et le centre administratif de l'Empire pendant près de quatre siècles. Véritable ville dans la ville, il abritait les appartements impériaux, le harem, les cuisines, le trésor et les salles où étaient prises les décisions qui influençaient une grande partie du monde méditerranéen et du Moyen-Orient.",
-  anecdotes: [
-    "Le palais compte quatre grandes cours successives, chacune plus privée que la précédente.",
-    "Le Harem impérial pouvait accueillir plusieurs centaines de personnes, dont la famille du sultan et ses serviteurs.",
-    "Le Trésor de Topkapi expose le célèbre poignard de Topkapi ainsi que le diamant du fabricant de cuillères, l'un des plus grands diamants exposés au monde.",
-    "Depuis les terrasses du palais, la vue sur le Bosphore, la Corne d'Or et la mer de Marmara est spectaculaire.",
-    "Le palais conserve plusieurs reliques sacrées de l'islam, notamment des objets traditionnellement attribués au prophète Mahomet."
-  ],
-},
+    audioTitle: "Découvrez le Palais de Topkapi",
+    audioDuration: "4 min 20 sec",
+    audioSrc: "/audio/places/Le_palais_de_Topkapi.mp3",
+    history:
+      "Construit à partir de 1459 sur les ordres du sultan Mehmed II, peu après la conquête de Constantinople, le Palais de Topkapi fut la résidence officielle des sultans ottomans et le centre administratif de l'Empire pendant près de quatre siècles. Véritable ville dans la ville, il abritait les appartements impériaux, le harem, les cuisines, le trésor et les salles où étaient prises les décisions qui influençaient une grande partie du monde méditerranéen et du Moyen-Orient.",
+    anecdotes: [
+      "Le palais compte quatre grandes cours successives, chacune plus privée que la précédente.",
+      "Le Harem impérial pouvait accueillir plusieurs centaines de personnes, dont la famille du sultan et ses serviteurs.",
+      "Le Trésor de Topkapi expose le célèbre poignard de Topkapi ainsi que le diamant du fabricant de cuillères, l'un des plus grands diamants exposés au monde.",
+      "Depuis les terrasses du palais, la vue sur le Bosphore, la Corne d'Or et la mer de Marmara est spectaculaire.",
+      "Le palais conserve plusieurs reliques sacrées de l'islam, notamment des objets traditionnellement attribués au prophète Mahomet.",
+    ],
+  },
   {
     id: "mosquee-bleue",
     jour: [3],
@@ -326,9 +326,9 @@ export const PLACES = [
     audioTitle: "Taksim, carrefour de la vie stambouliote",
     audioDuration: "2 min 50 sec",
     audioSrc: "/audio/places/Place_Taksim.mp3",
-    history:    
+    history:
       "La place de Taksim est le centre névralgique de l'Istanbul moderne. Entourée de commerces, d'hôtels et de restaurants, elle est le point de départ de l'avenue Istiklal et un lieu de rassemblement pour les Stambouliotes.",
-    anecdotes: [  
+    anecdotes: [
       "Le Monument de la République au centre de la place date de 1928.",
       "Taksim signifie 'distribution' en turc, car c'est ici que l'eau était distribuée à la ville.",
       "C'est le point de départ de l'avenue Istiklal, artère commerçante de 1,4 km.",
@@ -356,27 +356,27 @@ export const PLACES = [
     ],
   },
   {
-  id: "tour-galata",
-  jour: [3],
-  name: "Tour de Galata",
-  shortDesc: "Un emblème médiéval dominant Istanbul depuis près de 700 ans",
-  tag: "Monument",
-  image: "/images/Jour 3/Tour Galata 1.webp",
-  photos: [
-    "/images/Jour 3/Tour Galata 1.webp",
-    "/images/Jour 3/Tour Galata 2.webp",
-  ],
-  audioTitle: "La Tour de Galata, sentinelle d'Istanbul",
-  audioDuration: "3 min 30 sec",
-  audioSrc: "/audio/places/Tour_Galata.mp3",
-  history:
-    "Construite en 1348 par les Génois installés dans le quartier de Galata, la Tour de Galata est l'un des monuments les plus emblématiques d'Istanbul. Haute de près de 67 mètres, elle servait autrefois de tour de défense et de surveillance sur les remparts de la colonie génoise. Transformée au fil des siècles en prison, observatoire puis point de départ des premières expériences aériennes d'Hezarfen Ahmed Çelebi, elle offre aujourd'hui l'un des plus beaux panoramas sur le Bosphore, la Corne d'Or, la vieille ville et les collines d'Istanbul.",
-  anecdotes: [
-    "Construite en 1348 par les Génois, la Tour de Galata est l'un des plus anciens monuments médiévaux encore visibles à Istanbul.",
-    "Selon la légende, au XVIIe siècle, Hezarfen Ahmed Çelebi se serait élancé depuis la tour avec des ailes artificielles pour traverser le Bosphore en volant.",
-    "Son sommet offre une vue spectaculaire à 360 degrés sur Sainte-Sophie, la Mosquée Bleue, le Palais de Topkapi et le détroit du Bosphore.",
-  ],
-},
+    id: "tour-galata",
+    jour: [3],
+    name: "Tour de Galata",
+    shortDesc: "Un emblème médiéval dominant Istanbul depuis près de 700 ans",
+    tag: "Monument",
+    image: "/images/Jour 3/Tour Galata 1.webp",
+    photos: [
+      "/images/Jour 3/Tour Galata 1.webp",
+      "/images/Jour 3/Tour Galata 2.webp",
+    ],
+    audioTitle: "La Tour de Galata, sentinelle d'Istanbul",
+    audioDuration: "3 min 30 sec",
+    audioSrc: "/audio/places/Tour_Galata.mp3",
+    history:
+      "Construite en 1348 par les Génois installés dans le quartier de Galata, la Tour de Galata est l'un des monuments les plus emblématiques d'Istanbul. Haute de près de 67 mètres, elle servait autrefois de tour de défense et de surveillance sur les remparts de la colonie génoise. Transformée au fil des siècles en prison, observatoire puis point de départ des premières expériences aériennes d'Hezarfen Ahmed Çelebi, elle offre aujourd'hui l'un des plus beaux panoramas sur le Bosphore, la Corne d'Or, la vieille ville et les collines d'Istanbul.",
+    anecdotes: [
+      "Construite en 1348 par les Génois, la Tour de Galata est l'un des plus anciens monuments médiévaux encore visibles à Istanbul.",
+      "Selon la légende, au XVIIe siècle, Hezarfen Ahmed Çelebi se serait élancé depuis la tour avec des ailes artificielles pour traverser le Bosphore en volant.",
+      "Son sommet offre une vue spectaculaire à 360 degrés sur Sainte-Sophie, la Mosquée Bleue, le Palais de Topkapi et le détroit du Bosphore.",
+    ],
+  },
   {
     id: "restaurant-jour3",
     jour: [3],
@@ -398,315 +398,315 @@ export const PLACES = [
       "Option rooftop hôtel : vue panoramique sur la ville et la Corne d'Or.",
     ],
   },
-{
-  id: "grand-bazar",
-  jour: [4],
-  name: "Grand Bazar",
-  shortDesc: "Le plus célèbre marché couvert d'Istanbul",
-  tag: "Marché",
-  image: "/images/Jour 4/Grand_bazar 1.webp",
-  photos: [
-    "/images/Jour 4/Grand_bazar 1.webp",
-    "/images/Jour 4/Grand_bazar 2.webp",
-    "/images/Jour 4/Grand_bazar 3.webp",
-  ],
-  audioTitle: "Le Grand Bazar, un labyrinthe de trésors",
-  audioDuration: "3 min 45 sec",
-  audioSrc: "/audio/places/Grand_Bazar.mp3",
-  history:
-    "Fondé peu après la conquête de Constantinople par le sultan Mehmed II en 1455, le Grand Bazar est l'un des plus anciens et des plus vastes marchés couverts du monde. Au fil des siècles, il est devenu un véritable centre du commerce reliant l'Europe et l'Asie. Aujourd'hui, ses 61 rues couvertes abritent plus de 4 000 boutiques proposant tapis, bijoux, céramiques, épices, cuir, lampes, textiles et souvenirs. Malgré les incendies et les séismes qu'il a traversés au cours de son histoire, le Grand Bazar a conservé son atmosphère unique, où se mêlent patrimoine, artisanat et animation permanente.",
-  anecdotes: [
-    "Le Grand Bazar accueille entre 250 000 et 400 000 visiteurs chaque jour, ce qui en fait l'un des marchés les plus fréquentés au monde.",
-    "Avec plus de 4 000 boutiques réparties sur 61 rues couvertes, il ressemble à une véritable ville dans la ville.",
-    "La tradition de la négociation est toujours bien vivante : marchander fait partie intégrante de l'expérience d'achat.",
-  ],
-},
-{
-  id: "ankara",
-  jour: [4],
-  name: "Ankara",
-  shortDesc: "La capitale moderne au cœur de la Turquie",
-  tag: "Ville",
-  image: "/images/Jour 4/Ankara 1.webp",
-  photos: [
-    "/images/Jour 4/Ankara 1.webp",
-    "/images/Jour 4/Ankara 2.webp",
-    "/images/Jour 4/Ankara 3.webp",
-    "/images/Jour 4/Ankara 4.webp",
-  ],
-  audioTitle: "Ankara, le cœur politique de la Turquie",
-  audioDuration: "3 min 40 sec",
-  audioSrc: "/audio/places/Ankara.mp3",
-  history:
-    "Située au cœur du plateau anatolien, Ankara est la capitale de la République de Turquie depuis 1923. Si son histoire remonte à l'Antiquité, avec les Hittites, les Phrygiens, les Romains et les Byzantins, c'est sous l'impulsion de Mustafa Kemal Atatürk qu'elle prend une dimension nationale. Choisie pour sa position centrale et stratégique, Ankara remplace Istanbul comme capitale afin de symboliser la naissance d'une Turquie moderne, tournée vers l'avenir. Aujourd'hui, elle est le centre politique et administratif du pays, abritant le Parlement, les ministères, les ambassades et le mausolée d'Atatürk, tout en conservant un riche patrimoine historique dominé par sa citadelle et les vestiges des civilisations qui s'y sont succédé.",
-  anecdotes: [
-    "Ankara est devenue la capitale de la Turquie le 13 octobre 1923, quelques semaines avant la proclamation officielle de la République.",
-    "Le mausolée d'Atatürk, Anıtkabir, est l'un des monuments les plus visités du pays et accueille plusieurs millions de visiteurs chaque année.",
-    "Bien qu'Istanbul soit la plus grande ville de Turquie, Ankara concentre les principales institutions politiques et diplomatiques du pays.",
-  ],
-},
-{
-    "id": "lac-sale",
-    "jour": [5],
-    "name": "Lac salé (Tuz Gölü)",
-    "shortDesc": "Une étendue salée scintillante au cœur de l'Anatolie",
-    "tag": "Nature",
-    "image": "/images/Jour 5/Lac_sale_1.webp",
-    "photos": [
-	"/images/Jour 5/Lac_sale_1.webp",
-	"/images/Jour 5/Lac_sale_2.webp",
-	"/images/Jour 5/Lac_sale_3.webp",
-	"/images/Jour 5/Lac_sale_4.webp",
-	"/images/Jour 5/Lac_sale_5.webp",
-	"/images/Jour 5/Lac_sale_6.webp"
+  {
+    id: "grand-bazar",
+    jour: [4],
+    name: "Grand Bazar",
+    shortDesc: "Le plus célèbre marché couvert d'Istanbul",
+    tag: "Marché",
+    image: "/images/Jour 4/Grand_bazar 1.webp",
+    photos: [
+      "/images/Jour 4/Grand_bazar 1.webp",
+      "/images/Jour 4/Grand_bazar 2.webp",
+      "/images/Jour 4/Grand_bazar 3.webp",
     ],
-    "audioTitle": "Le lac salé de Turquie",
-    "audioDuration": "2 min 30 sec",
-    "audioSrc": "/audio/places/lac_sale.mp3",
-    "history": "Le lac Tuz est l'un des plus grands lacs salés de Turquie. Situé au cœur de l'Anatolie centrale, il s'étend sur plus de 1 600 km². Ses eaux peu profondes reflètent le ciel comme un miroir, créant un paysage surréaliste particulièrement spectaculaire en saison sèche lorsque le sel cristallise à la surface.",
-    "anecdotes": [
+    audioTitle: "Le Grand Bazar, un labyrinthe de trésors",
+    audioDuration: "3 min 45 sec",
+    audioSrc: "/audio/places/Grand_Bazar.mp3",
+    history:
+      "Fondé peu après la conquête de Constantinople par le sultan Mehmed II en 1455, le Grand Bazar est l'un des plus anciens et des plus vastes marchés couverts du monde. Au fil des siècles, il est devenu un véritable centre du commerce reliant l'Europe et l'Asie. Aujourd'hui, ses 61 rues couvertes abritent plus de 4 000 boutiques proposant tapis, bijoux, céramiques, épices, cuir, lampes, textiles et souvenirs. Malgré les incendies et les séismes qu'il a traversés au cours de son histoire, le Grand Bazar a conservé son atmosphère unique, où se mêlent patrimoine, artisanat et animation permanente.",
+    anecdotes: [
+      "Le Grand Bazar accueille entre 250 000 et 400 000 visiteurs chaque jour, ce qui en fait l'un des marchés les plus fréquentés au monde.",
+      "Avec plus de 4 000 boutiques réparties sur 61 rues couvertes, il ressemble à une véritable ville dans la ville.",
+      "La tradition de la négociation est toujours bien vivante : marchander fait partie intégrante de l'expérience d'achat.",
+    ],
+  },
+  {
+    id: "ankara",
+    jour: [4],
+    name: "Ankara",
+    shortDesc: "La capitale moderne au cœur de la Turquie",
+    tag: "Ville",
+    image: "/images/Jour 4/Ankara 1.webp",
+    photos: [
+      "/images/Jour 4/Ankara 1.webp",
+      "/images/Jour 4/Ankara 2.webp",
+      "/images/Jour 4/Ankara 3.webp",
+      "/images/Jour 4/Ankara 4.webp",
+    ],
+    audioTitle: "Ankara, le cœur politique de la Turquie",
+    audioDuration: "3 min 40 sec",
+    audioSrc: "/audio/places/Ankara.mp3",
+    history:
+      "Située au cœur du plateau anatolien, Ankara est la capitale de la République de Turquie depuis 1923. Si son histoire remonte à l'Antiquité, avec les Hittites, les Phrygiens, les Romains et les Byzantins, c'est sous l'impulsion de Mustafa Kemal Atatürk qu'elle prend une dimension nationale. Choisie pour sa position centrale et stratégique, Ankara remplace Istanbul comme capitale afin de symboliser la naissance d'une Turquie moderne, tournée vers l'avenir. Aujourd'hui, elle est le centre politique et administratif du pays, abritant le Parlement, les ministères, les ambassades et le mausolée d'Atatürk, tout en conservant un riche patrimoine historique dominé par sa citadelle et les vestiges des civilisations qui s'y sont succédé.",
+    anecdotes: [
+      "Ankara est devenue la capitale de la Turquie le 13 octobre 1923, quelques semaines avant la proclamation officielle de la République.",
+      "Le mausolée d'Atatürk, Anıtkabir, est l'un des monuments les plus visités du pays et accueille plusieurs millions de visiteurs chaque année.",
+      "Bien qu'Istanbul soit la plus grande ville de Turquie, Ankara concentre les principales institutions politiques et diplomatiques du pays.",
+    ],
+  },
+  {
+    id: "lac-sale",
+    jour: [5],
+    name: "Lac salé (Tuz Gölü)",
+    shortDesc: "Une étendue salée scintillante au cœur de l'Anatolie",
+    tag: "Nature",
+    image: "/images/Jour 5/Lac_sale_1.webp",
+    photos: [
+      "/images/Jour 5/Lac_sale_1.webp",
+      "/images/Jour 5/Lac_sale_2.webp",
+      "/images/Jour 5/Lac_sale_3.webp",
+      "/images/Jour 5/Lac_sale_4.webp",
+      "/images/Jour 5/Lac_sale_5.webp",
+      "/images/Jour 5/Lac_sale_6.webp",
+    ],
+    audioTitle: "Le lac salé de Turquie",
+    audioDuration: "2 min 30 sec",
+    audioSrc: "/audio/places/lac_sale.mp3",
+    history: "Le lac Tuz est l'un des plus grands lacs salés de Turquie. Situé au cœur de l'Anatolie centrale, il s'étend sur plus de 1 600 km². Ses eaux peu profondes reflètent le ciel comme un miroir, créant un paysage surréaliste particulièrement spectaculaire en saison sèche lorsque le sel cristallise à la surface.",
+    anecdotes: [
       "Le lac Tuz fournit près de 70 % du sel consommé en Turquie.",
       "En été, l'évaporation intense crée une croûte de sel blanche d'une épaisseur impressionnante.",
-      "Certaines zones du lac deviennent rose en raison d'algues halophiles qui prospèrent dans l'eau salée."
-    ]
+      "Certaines zones du lac deviennent rose en raison d'algues halophiles qui prospèrent dans l'eau salée.",
+    ],
   },
   {
-    "id": "ville-souterraine",
-    "jour": [5],
-    "name": "Ville souterraine byzantine",
-    "shortDesc": "Refuge souterrain creusé dans la roche volcanique",
-    "tag": "Histoire",
-    "image": "/images/Jour 5/Ville_souterraine_1.webp",
-    "photos": [
-	"/images/Jour 5/Ville_souterraine_1.webp",
-	"/images/Jour 5/Ville_souterraine_2.webp",
-	"/images/Jour 5/Ville_souterraine_3.webp",
-	"/images/Jour 5/Ville_souterraine_4.webp",
-	"/images/Jour 5/Ville_souterraine_5.webp",
-	"/images/Jour 5/Ville_souterraine_6.webp"
+    id: "ville-souterraine",
+    jour: [5],
+    name: "Ville souterraine byzantine",
+    shortDesc: "Refuge souterrain creusé dans la roche volcanique",
+    tag: "Histoire",
+    image: "/images/Jour 5/Ville_souterraine_1.webp",
+    photos: [
+      "/images/Jour 5/Ville_souterraine_1.webp",
+      "/images/Jour 5/Ville_souterraine_2.webp",
+      "/images/Jour 5/Ville_souterraine_3.webp",
+      "/images/Jour 5/Ville_souterraine_4.webp",
+      "/images/Jour 5/Ville_souterraine_5.webp",
+      "/images/Jour 5/Ville_souterraine_6.webp",
     ],
-    "audioTitle": "Les cités cachées de Cappadoce",
-    "audioDuration": "3 min 15 sec",
-    "audioSrc": "/audio/places/ville_souteraine_bizantine.mp3",
-    "history": "Creusées dans le tuf volcanique tendre de Cappadoce, ces villes souterraines servirent de refuge aux populations chrétiennes entre le VIIème et le Xème siècle. Derinkuyu et Kaymaklı sont les plus célèbres, pouvant abriter jusqu'à 20 000 personnes sur plusieurs niveaux avec leurs cuisines, églises, étables et systèmes de ventilation sophistiqués.",
-    "anecdotes": [
+    audioTitle: "Les cités cachées de Cappadoce",
+    audioDuration: "3 min 15 sec",
+    audioSrc: "/audio/places/ville_souteraine_bizantine.mp3",
+    history: "Creusées dans le tuf volcanique tendre de Cappadoce, ces villes souterraines servirent de refuge aux populations chrétiennes entre le VIIème et le Xème siècle. Derinkuyu et Kaymaklı sont les plus célèbres, pouvant abriter jusqu'à 20 000 personnes sur plusieurs niveaux avec leurs cuisines, églises, étables et systèmes de ventilation sophistiqués.",
+    anecdotes: [
       "Certaines villes souterraines communiquent entre elles par des tunnels s'étendant sur plusieurs kilomètres.",
       "Les pierres roulantes massives servaient à bloquer les entrées en cas d'invasion.",
-      "Les puits de ventilation étaient si bien conçus qu'ils empêchaient l'ennemi de détecter la présence des habitants."
-    ]
+      "Les puits de ventilation étaient si bien conçus qu'ils empêchaient l'ennemi de détecter la présence des habitants.",
+    ],
   },
   {
-    "id": "cappadoce",
-    "jour": [6],
-    "name": "Cappadoce",
-    "shortDesc": "Un paysage lunaire aux cheminées de fées",
-    "tag": "Nature",
-    "image": "/images/Jour 6/Cappadoce_1.webp",
-    "photos": [
-	"/images/Jour 6/Cappadoce_1.webp",
-	"/images/Jour 6/Cappadoce_2.webp",
-	"/images/Jour 6/Cappadoce_3.webp",
-	"/images/Jour 6/Cappadoce_4.webp",
-	"/images/Jour 6/Cappadoce_5.webp",
-	"/images/Jour 6/Cappadoce_6.webp",
-	"/images/Jour 6/Cappadoce_7.webp"
-    ],	
-    "audioTitle": "Cappadoce, terre des fées",
-    "audioDuration": "4 min 10 sec",
-    "audioSrc": "/audio/places/Cappadoce.mp3",
-    "history": "Cappadoce est une région unique au monde, façonnée par des millions d'années d'érosion volcanique. Berceau de la chrétienté primitive, elle abrita les premières communautés chrétiennes qui creusèrent églises et monastères dans la roche. Son paysage lunaire, parsemé de cheminées de fées coiffées de basalte, en fait l'un des sites naturels les plus spectaculaires de la planète.",
-    "anecdotes": [
+    id: "cappadoce",
+    jour: [6],
+    name: "Cappadoce",
+    shortDesc: "Un paysage lunaire aux cheminées de fées",
+    tag: "Nature",
+    image: "/images/Jour 6/Cappadoce_1.webp",
+    photos: [
+      "/images/Jour 6/Cappadoce_1.webp",
+      "/images/Jour 6/Cappadoce_2.webp",
+      "/images/Jour 6/Cappadoce_3.webp",
+      "/images/Jour 6/Cappadoce_4.webp",
+      "/images/Jour 6/Cappadoce_5.webp",
+      "/images/Jour 6/Cappadoce_6.webp",
+      "/images/Jour 6/Cappadoce_7.webp"
+    ],
+    audioTitle: "Cappadoce, terre des fées",
+    audioDuration: "4 min 10 sec",
+    audioSrc: "/audio/places/Cappadoce.mp3",
+    history: "Cappadoce est une région unique au monde, façonnée par des millions d'années d'érosion volcanique. Berceau de la chrétienté primitive, elle abrita les premières communautés chrétiennes qui creusèrent églises et monastères dans la roche. Son paysage lunaire, parsemé de cheminées de fées coiffées de basalte, en fait l'un des sites naturels les plus spectaculaires de la planète.",
+    anecdotes: [
       "Le mot 'Cappadoce' viendrait du vieux perse et signifierait 'le pays des beaux chevaux'.",
       "Les cheminées de fées sont formées lorsque le basalte dur protège le tuf tendre situé en dessous de l'érosion.",
       "Plus de 3 000 églises rupestres ont été recensées dans la région."
     ]
   },
   {
-    "id": "montgolfiere-cappadoce",
-    "jour": [6],
-    "name": "Vol en montgolfière",
-    "shortDesc": "Survoler les cheminées de fées au lever du jour",
-    "tag": "Activité",
-    "image": "/images/Jour 6/Montgolfiere_1.webp",
-    "photos": [
-	"/images/Jour 6/Montgolfiere_1.webp",
-	"/images/Jour 6/Montgolfiere_2.webp",
-	"/images/Jour 6/Montgolfiere_3.webp",
-	"/images/Jour 6/Montgolfiere_4.webp"
+    id: "montgolfiere-cappadoce",
+    jour: [6],
+    name: "Vol en montgolfière",
+    shortDesc: "Survoler les cheminées de fées au lever du jour",
+    tag: "Activité",
+    image: "/images/Jour 6/Montgolfiere_1.webp",
+    photos: [
+      "/images/Jour 6/Montgolfiere_1.webp",
+      "/images/Jour 6/Montgolfiere_2.webp",
+      "/images/Jour 6/Montgolfiere_3.webp",
+      "/images/Jour 6/Montgolfiere_4.webp"
     ],
-    "audioTitle": "Cappadoce vue du ciel",
-    "audioDuration": "2 min 50 sec",
-    "audioSrc": "/audio/places/vol_en_montgolfiere.mp3",
-    "history": "Le vol en montgolfière au-dessus de Cappadoce est considéré comme l'une des plus belles expériences aériennes au monde. Chaque année, des centaines de ballons s'élèvent à l'aube pour offrir une vue panoramique sur les vallées, vignobles et cheminées de fées. Cette tradition a commencé dans les années 1990 et attire désormais des visiteurs du monde entier.",
-    "anecdotes": [
+    audioTitle: "Cappadoce vue du ciel",
+    audioDuration: "2 min 50 sec",
+    audioSrc: "/audio/places/vol_en_montgolfiere.mp3",
+    history: "Le vol en montgolfière au-dessus de Cappadoce est considéré comme l'une des plus belles expériences aériennes au monde. Chaque année, des centaines de ballons s'élèvent à l'aube pour offrir une vue panoramique sur les vallées, vignobles et cheminées de fées. Cette tradition a commencé dans les années 1990 et attire désormais des visiteurs du monde entier.",
+    anecdotes: [
       "Les vols ont lieu très tôt le matin pour profiter des vents les plus calmes.",
       "On peut parfois apercevoir des renards et des lièvres depuis le ciel.",
       "La Cappadoce est l'un des sites de montgolfière les plus fréquentés au monde, aux côtés de Bagan et du Serengeti."
     ]
   },
   {
-    "id": "goreme",
-    "jour": [6],
-    "name": "Musée en plein air de Göreme",
-    "shortDesc": "Églises rupestres et fresques byzantines — UNESCO",
-    "tag": "Patrimoine",
-    "image": "/images/Jour 6/Goreme_1.webp",
-    "photos": [
-	    "/images/Jour 6/Goreme_1.webp",
-	    "/images/Jour 6/Goreme_2.webp",
-	    "/images/Jour 6/Goreme_3.webp",
-	    "/images/Jour 6/Goreme_4.webp",
-	    "/images/Jour 6/Goreme_5.webp",
-	    "/images/Jour 6/Goreme_6.webp",
-	    "/images/Jour 6/Goreme_7.webp"
+    id: "goreme",
+    jour: [6],
+    name: "Musée en plein air de Göreme",
+    shortDesc: "Églises rupestres et fresques byzantines — UNESCO",
+    tag: "Patrimoine",
+    image: "/images/Jour 6/Goreme_1.webp",
+    photos: [
+      "/images/Jour 6/Goreme_1.webp",
+      "/images/Jour 6/Goreme_2.webp",
+      "/images/Jour 6/Goreme_3.webp",
+      "/images/Jour 6/Goreme_4.webp",
+      "/images/Jour 6/Goreme_5.webp",
+      "/images/Jour 6/Goreme_6.webp",
+      "/images/Jour 6/Goreme_7.webp"
     ],
-    "audioTitle": "Göreme, trésor de l'UNESCO",
-    "audioDuration": "3 min 45 sec",
-    "audioSrc": "/audio/places/Musee_en_pleine_air_de_Goreme.mp3",
-    "history": "Le musée en plein air de Göreme est un site classé au patrimoine mondial de l'UNESCO depuis 1985. Il regroupe plusieurs églises rupestres datant des IXème au XIème siècles, ornées de fresques byzantines remarquablement conservées. Ces sanctuaires taillés dans la roche témoignent de la richesse spirituelle et artistique des premières communautés chrétiennes d'Anatolie.",
-    "anecdotes": [
+    audioTitle: "Göreme, trésor de l'UNESCO",
+    audioDuration: "3 min 45 sec",
+    audioSrc: "/audio/places/Musee_en_pleine_air_de_Goreme.mp3",
+    history: "Le musée en plein air de Göreme est un site classé au patrimoine mondial de l'UNESCO depuis 1985. Il regroupe plusieurs églises rupestres datant des IXème au XIème siècles, ornées de fresques byzantines remarquablement conservées. Ces sanctuaires taillés dans la roche témoignent de la richesse spirituelle et artistique des premières communautés chrétiennes d'Anatolie.",
+    anecdotes: [
       "L'église de la Pomme (Elmali Kilise) doit son nom à une pomme peinte près de l'autel.",
       "Les fresques de l'église Sainte-Barbara sont parmi les plus anciennes du site.",
       "Le site servit de refuge aux moines byzantins qui y vécurent en ermitages."
     ]
   },
   {
-    "id": "vallees-cappadoce",
-    "jour": [6],
-    "name": "Vallées d'Avcilar et Güvercinlik",
-    "shortDesc": "Cheminées de fées aux formes étonnantes",
-    "tag": "Nature",
-    "image": "/images/Jour 6/Vallee_1.webp",
-    "photos": [
-	    "/images/Jour 6/Vallee_1.webp",
-	    "/images/Jour 6/Vallee_2.webp",
-	    "/images/Jour 6/Vallee_3.webp",
-	    "/images/Jour 6/Vallee_4.webp"
+    id: "vallees-cappadoce",
+    jour: [6],
+    name: "Vallées d'Avcilar et Güvercinlik",
+    shortDesc: "Cheminées de fées aux formes étonnantes",
+    tag: "Nature",
+    image: "/images/Jour 6/Vallee_1.webp",
+    photos: [
+      "/images/Jour 6/Vallee_1.webp",
+      "/images/Jour 6/Vallee_2.webp",
+      "/images/Jour 6/Vallee_3.webp",
+      "/images/Jour 6/Vallee_4.webp"
     ],
-    "audioTitle": "Les vallées merveilleuses",
-    "audioDuration": "2 min 20 sec",
-    "audioSrc": "/audio/places/Valles_avcilar_vercinlik.mp3",
-    "history": "Les vallées d'Avcilar (Vallée des Croyants) et de Güvercinlik (Vallée des Pigeons) offrent les panoramas les plus emblématiques de Cappadoce. Avcilar est célèbre pour ses formations rocheuses aux formes anthropomorphes, tandis que Güvercinlik doit son nom aux nombreux pigeons qui y nichent dans des pigeonniers creusés dans la falaise.",
-    "anecdotes": [
+    audioTitle: "Les vallées merveilleuses",
+    audioDuration: "2 min 20 sec",
+    audioSrc: "/audio/places/Valles_avcilar_vercinlik.mp3",
+    history: "Les vallées d'Avcilar (Vallée des Croyants) et de Güvercinlik (Vallée des Pigeons) offrent les panoramas les plus emblématiques de Cappadoce. Avcilar est célèbre pour ses formations rocheuses aux formes anthropomorphes, tandis que Güvercinlik doit son nom aux nombreux pigeons qui y nichent dans des pigeonniers creusés dans la falaise.",
+    anecdotes: [
       "Les habitants collectaient la fiente de pigeon comme engrais naturel pour leurs vignes.",
       "Certaines cheminées de fées ressemblent étrangement à des silhouettes humaines ou animales.",
       "Les pigeonniers étaient peints de couleurs vives pour attirer les oiseaux."
     ]
   },
   {
-    "id": "konya-route-soie",
-    "jour": [7],
-    "name": "Konya et la Route de la Soie",
-    "shortDesc": "Sur les traces des caravanes de la Route de la Soie",
-    "tag": "Histoire",
-    "image": "/images/Jour 7/Konya_1.png",
-    "photos": [
-	"/images/Jour 7/Konya_1.png",
-	"/images/Jour 7/Konya_2.png",
-	"/images/Jour 7/Konya_3.png",
-	"/images/Jour 7/Konya_4.png",
-	"/images/Jour 7/Konya_5.png",
-	"/images/Jour 7/Konya_6.png"
+    id: "konya-route-soie",
+    jour: [7],
+    name: "Konya et la Route de la Soie",
+    shortDesc: "Sur les traces des caravanes de la Route de la Soie",
+    tag: "Histoire",
+    image: "/images/Jour 7/Konya_1.png",
+    photos: [
+      "/images/Jour 7/Konya_1.png",
+      "/images/Jour 7/Konya_2.png",
+      "/images/Jour 7/Konya_3.png",
+      "/images/Jour 7/Konya_4.png",
+      "/images/Jour 7/Konya_5.png",
+      "/images/Jour 7/Konya_6.png"
     ],
-    "audioTitle": "Konya, carrefour des civilisations",
-    "audioDuration": "3 min 30 sec",
-    "audioSrc": "/audio/places/Konya_route_soie.mp3",
-    "history": "Konya est l'une des plus anciennes villes d'Anatolie et une étape majeure de la Route de la Soie. Fief des Seldjoukides puis centre spirituel des derviches tourneurs, elle fut un carrefour commercial et culturel où les caravanes venaient échanger soie, épices et marchandises précieuses entre l'Orient et l'Occident.",
-    "anecdotes": [
+    audioTitle: "Konya, carrefour des civilisations",
+    audioDuration: "3 min 30 sec",
+    audioSrc: "/audio/places/Konya_route_soie.mp3",
+    history: "Konya est l'une des plus anciennes villes d'Anatolie et une étape majeure de la Route de la Soie. Fief des Seldjoukides puis centre spirituel des derviches tourneurs, elle fut un carrefour commercial et culturel où les caravanes venaient échanger soie, épices et marchandises précieuses entre l'Orient et l'Occident.",
+    anecdotes: [
       "Konya abrite le mausolée de Rûmi, fondateur de l'ordre des derviches tourneurs.",
       "La ville fut appelée 'Iconium' à l'époque romaine.",
       "Le haut plateau anatolien offre des paysages de steppe à perte de vue."
     ]
   },
   {
-    "id": "caravanserail",
-    "jour": [7],
-    "name": "Caravansérail Seldjoukide",
-    "shortDesc": "Ancien relais de caravanes sur la Route de la Soie",
-    "tag": "Histoire",
-    "image": "/images/Jour 7/Caravanserai_1.webp",
-    "photos": [
-	"/images/Jour 7/Caravanserai_1.webp",
-	"/images/Jour 7/Caravanserai_2.webp",
-	"/images/Jour 7/Caravanserai_3.webp",
-	"/images/Jour 7/Caravanserai_4.webp",
-	"/images/Jour 7/Caravanserai_5.webp",
-	"/images/Jour 7/Caravanserai_6.webp"
+    id: "caravanserail",
+    jour: [7],
+    name: "Caravansérail Seldjoukide",
+    shortDesc: "Ancien relais de caravanes sur la Route de la Soie",
+    tag: "Histoire",
+    image: "/images/Jour 7/Caravanserai_1.webp",
+    photos: [
+      "/images/Jour 7/Caravanserai_1.webp",
+      "/images/Jour 7/Caravanserai_2.webp",
+      "/images/Jour 7/Caravanserai_3.webp",
+      "/images/Jour 7/Caravanserai_4.webp",
+      "/images/Jour 7/Caravanserai_5.webp",
+      "/images/Jour 7/Caravanserai_6.webp"
     ],
-    "audioTitle": "Les caravansérails, auberges du désert",
-    "audioDuration": "2 min 45 sec",
-    "audioSrc": "/audio/places/Caravanserail.mp3",
-    "history": "Les caravansérails seldjoukides étaient des relais fortifiés construits le long de la Route de la Soie pour abriter les caravanes, leurs chameaux et leurs marchandises. Ces impressionnantes structures en pierre offraient refuge, nourriture et sécurité aux voyageurs. Le Sultanhan près de Konya est l'un des plus beaux exemples conservés en Turquie.",
-    "anecdotes": [
+    audioTitle: "Les caravansérails, auberges du désert",
+    audioDuration: "2 min 45 sec",
+    audioSrc: "/audio/places/Caravanserail.mp3",
+    history: "Les caravansérails seldjoukides étaient des relais fortifiés construits le long de la Route de la Soie pour abriter les caravanes, leurs chameaux et leurs marchandises. Ces impressionnantes structures en pierre offraient refuge, nourriture et sécurité aux voyageurs. Le Sultanhan près de Konya est l'un des plus beaux exemples conservés en Turquie.",
+    anecdotes: [
       "Le Sultanhan pouvait accueillir jusqu'à 400 chameaux dans ses écuries.",
       "Les portes monumentales étaient richement sculptées de motifs géométriques et floraux.",
       "Les caravansérails étaient espacés d'une journée de marche, soit environ 30 km."
     ]
   },
   {
-    "id": "pamukkale",
-    "jour": [7],
-    "name": "Pamukkale",
-    "shortDesc": "Les Châteaux de Coton, merveille naturelle — UNESCO",
-    "tag": "Nature",
-    "image": "/images/Jour 7/Pamukkale_1.webp",
-    "photos": [
-	"/images/Jour 7/Pamukkale_1.webp",
-	"/images/Jour 7/Pamukkale_2.webp",
-	"/images/Jour 7/Pamukkale_3.webp",
-	"/images/Jour 7/Pamukkale_4.webp"
+    id: "pamukkale",
+    jour: [7],
+    name: "Pamukkale",
+    shortDesc: "Les Châteaux de Coton, merveille naturelle — UNESCO",
+    tag: "Nature",
+    image: "/images/Jour 7/Pamukkale_1.webp",
+    photos: [
+      "/images/Jour 7/Pamukkale_1.webp",
+      "/images/Jour 7/Pamukkale_2.webp",
+      "/images/Jour 7/Pamukkale_3.webp",
+      "/images/Jour 7/Pamukkale_4.webp"
     ],
-    "audioTitle": "Pamukkale, la forteresse de coton",
-    "audioDuration": "3 min 20 sec",
-    "audioSrc": "/audio/places/Pamukkale.mp3",
-    "history": "Pamukkale, 'Château de Coton' en turc, est un site naturel unique formé par le dépôt de carbonate de calcium provenant de sources thermales sur une falaise de 200 mètres. Inscrit au patrimoine mondial de l'UNESCO avec les ruines d'Hierapolis, ce paysage blanc éblouissant attire des visiteurs depuis l'Antiquité, y compris Cléopâtre qui y aurait pris ses bains.",
-    "anecdotes": [
+    audioTitle: "Pamukkale, la forteresse de coton",
+    audioDuration: "3 min 20 sec",
+    audioSrc: "/audio/places/Pamukkale.mp3",
+    history: "Pamukkale, 'Château de Coton' en turc, est un site naturel unique formé par le dépôt de carbonate de calcium provenant de sources thermales sur une falaise de 200 mètres. Inscrit au patrimoine mondial de l'UNESCO avec les ruines d'Hierapolis, ce paysage blanc éblouissant attire des visiteurs depuis l'Antiquité, y compris Cléopâtre qui y aurait pris ses bains.",
+    anecdotes: [
       "L'eau des sources thermales se maintient à environ 36 degrés Celsius toute l'année.",
       "Les terrasses naturelles ressemblent à des piscines enneigées en plein été.",
       "La ville antique d'Hierapolis fut construite au sommet de Pamukkale par les Romains."
     ]
   },
   {
-    "id": "ephese",
-    "jour": [8],
-    "name": "Ephèse",
-    "shortDesc": "La cité d'Artémis, joyau antique de Turquie",
-    "tag": "Patrimoine",
-    "image": "/images/Jour 8/Ephese_1.webp",
-    "photos": [
-	"/images/Jour 8/Ephese_1.webp",
-	"/images/Jour 8/Ephese_2.webp",
-	"/images/Jour 8/Ephese_3.webp",
-	"/images/Jour 8/Ephese_4.webp"
+    id: "ephese",
+    jour: [8],
+    name: "Ephèse",
+    shortDesc: "La cité d'Artémis, joyau antique de Turquie",
+    tag: "Patrimoine",
+    image: "/images/Jour 8/Ephese_1.webp",
+    photos: [
+      "/images/Jour 8/Ephese_1.webp",
+      "/images/Jour 8/Ephese_2.webp",
+      "/images/Jour 8/Ephese_3.webp",
+      "/images/Jour 8/Ephese_4.webp"
     ],
-    "audioTitle": "Ephèse, cité de la déesse Artémis",
-    "audioDuration": "4 min 15 sec",
-    "audioSrc": "/audio/places/Ephese.mp3",
-    "history": "Ephèse est le site archéologique le plus célèbre de Turquie. Fondée par les Grecs puis prospérant sous l'Empire romain, elle abritait le temple d'Artémis, l'une des Sept Merveilles du monde antique. La bibliothèque de Celsius, le grand théâtre et la rue des Courètes témoignent encore aujourd'hui de la splendeur de cette cité qui comptait jusqu'à 250 000 habitants.",
-    "anecdotes": [
+    audioTitle: "Ephèse, cité de la déesse Artémis",
+    audioDuration: "4 min 15 sec",
+    audioSrc: "/audio/places/Ephese.mp3",
+    history: "Ephèse est le site archéologique le plus célèbre de Turquie. Fondée par les Grecs puis prospérant sous l'Empire romain, elle abritait le temple d'Artémis, l'une des Sept Merveilles du monde antique. La bibliothèque de Celsius, le grand théâtre et la rue des Courètes témoignent encore aujourd'hui de la splendeur de cette cité qui comptait jusqu'à 250 000 habitants.",
+    anecdotes: [
       "La bibliothèque de Celsius abritait jusqu'à 12 000 rouleaux de parchemin.",
       "Le théâtre d'Ephèse pouvait accueillir 24 000 spectateurs, plus que beaucoup d'arènes modernes.",
       "La rue des Courètes était pavée de marbre et éclairée la nuit par des lampes à huile."
     ]
   },
   {
-    "id": "bursa",
-    "jour": [9],
-    "name": "Bursa",
-    "shortDesc": "Première capitale de l'Empire ottoman",
-    "tag": "Patrimoine",
-    "image": "/images/Jour 9/Bursa_1.webp",
-    "photos": [
-	"/images/Jour 9/Bursa_1.webp",
-	"/images/Jour 9/Bursa_2.webp",
-	"/images/Jour 9/Bursa_3.webp",
-	"/images/Jour 9/Bursa_4.webp"
+    id: "bursa",
+    jour: [9],
+    name: "Bursa",
+    shortDesc: "Première capitale de l'Empire ottoman",
+    tag: "Patrimoine",
+    image: "/images/Jour 9/Bursa_1.webp",
+    photos: [
+      "/images/Jour 9/Bursa_1.webp",
+      "/images/Jour 9/Bursa_2.webp",
+      "/images/Jour 9/Bursa_3.webp",
+      "/images/Jour 9/Bursa_4.webp"
     ],
-    "audioTitle": "Bursa, berceau de l'Empire ottoman",
-    "audioDuration": "3 min 50 sec",
-    "audioSrc": "/audio/places/Bursa.mp3",
-    "history": "Bursa fut la prmière capitale de l'Empire ottoman, conquise par Orhan Gazi en 1326. Nichée au pied du Mont Uludağ (l'antique Olympe de Mysie), elle conserve un riche patrimoine ottoman avec ses mosquées, ses mausolées et ses bains traditionnels. La ville est également réputée pour ses soies, ses kebabs et ses fruits confits.",
-    "anecdotes": [
+    audioTitle: "Bursa, berceau de l'Empire ottoman",
+    audioDuration: "3 min 50 sec",
+    audioSrc: "/audio/places/Bursa.mp3",
+    history: "Bursa fut la prmière capitale de l'Empire ottoman, conquise par Orhan Gazi en 1326. Nichée au pied du Mont Uludağ (l'antique Olympe de Mysie), elle conserve un riche patrimoine ottoman avec ses mosquées, ses mausolées et ses bains traditionnels. La ville est également réputée pour ses soies, ses kebabs et ses fruits confits.",
+    anecdotes: [
       "La Mosquée Verte (Yeşil Camii) doit son nom aux carreaux de faïence vert émeraude qui la décorent.",
       "Les tombeaux des premiers sultans ottomans se trouvent dans le Mausolée Vert.",
       "Le Mont Uludağ est aujourd'hui une importante station de ski."
