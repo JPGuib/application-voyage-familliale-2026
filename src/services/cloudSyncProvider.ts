@@ -354,13 +354,12 @@ export async function pushCloudSnapshot(
     updates.ownerProfileId = normalizedFamilyState.ownerProfileId;
     // On n'écrase plus jamais ownerUid ici : il est fixé une seule fois par
     // claimProfileRole (premier appareil à revendiquer le rôle) et les règles
-    // de sécurité interdisent de toute façon de le changer ensuite. Le
-    // réécrire systématiquement avec l'uid de CET appareil faisait échouer
-    // tout l'envoi groupé dès qu'un autre appareil que le tout premier
-    // essayait d'écrire quoi que ce soit côté propriétaire (voir bug identifié).
-    // On enregistre à la place cet appareil comme identité propriétaire
-    // reconnue, pour permettre la gestion multi-appareils.
-    updates[`ownerUids/${payload.actorUid}`] = true;
+    // de sécurité interdisent de toute façon de le changer ensuite.
+    // L'enregistrement de cet appareil comme identité propriétaire reconnue
+    // (pour le multi-appareils) se fait séparément via ensureOwnerMembership
+    // / registerAsOwnerDevice — ne pas dupliquer ici, et surtout pas sur un
+    // chemin différent (ownerUids) qui n'a pas de règle Firebase définie et
+    // ferait échouer tout l'envoi groupé.
     updates.ownerCodeHash = payload.ownerCodeHash;
     updates.phase = payload.phase;
     // On n'écrit jamais explicitement null ici : tant qu'aucune fonctionnalité
