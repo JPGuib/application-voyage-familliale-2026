@@ -4462,9 +4462,20 @@ export default function App() {
 
     const normalized = enforceOwnerUniqueness(cloudSnapshot.familyState);
     setPhase((previous) => (previous === cloudSnapshot.phase ? previous : cloudSnapshot.phase));
-    setTripStartDate((previous) =>
-      previous === cloudSnapshot.tripStartDate ? previous : cloudSnapshot.tripStartDate
-    );
+    setTripStartDate((previous) => {
+      const pending = pendingTripStartDateRef.current;
+      if (pending !== "none") {
+        if (cloudSnapshot.tripStartDate !== pending) {
+          // Une écriture est en cours de propagation : cet instantané est
+          // probablement périmé (antérieur à notre propre écriture). On
+          // l'ignore pour ne pas écraser l'édition locale non confirmée.
+          return previous;
+        }
+        // Le cloud confirme bien notre écriture : plus rien en attente.
+        pendingTripStartDateRef.current = "none";
+      }
+      return previous === cloudSnapshot.tripStartDate ? previous : cloudSnapshot.tripStartDate;
+    });
     setFamilyState((previous) =>
       areSharedFamilyStatesEqual(previous, normalized) ? previous : normalized
     );
@@ -4572,6 +4583,11 @@ export default function App() {
   const lastCloudPushRef = useRef<string | null>(null);
   const pendingCloudPhaseRef = useRef<TravelPhase | null>(null);
   const hydratedCloudProfileIdRef = useRef<string | null>(null);
+  // "none" = pas d'écriture en attente. Sinon, contient la valeur qu'on vient
+  // d'envoyer et qu'on attend de voir confirmée par un instantané cloud, pour
+  // éviter qu'un instantané cloud périmé (déjà en vol) n'écrase l'édition
+  // locale avant que la confirmation du push n'arrive.
+  const pendingTripStartDateRef = useRef<string | null | "none">("none");
 
   useEffect(() => {
     if (!cloudEnabled || !isAuthenticated) {
@@ -6154,6 +6170,7 @@ export default function App() {
               if (!isValidTripStartDate(date)) {
                 return { ok: false, message: "Merci de choisir une date valide." };
               }
+              pendingTripStartDateRef.current = date;
               setTripStartDate(date);
               return { ok: true, message: "Date de début du voyage mise à jour." };
             }}
@@ -6665,6 +6682,7 @@ export default function App() {
               if (!isValidTripStartDate(date)) {
                 return { ok: false, message: "Merci de choisir une date valide." };
               }
+              pendingTripStartDateRef.current = date;
               setTripStartDate(date);
               return { ok: true, message: "Date de début du voyage mise à jour." };
             }}
