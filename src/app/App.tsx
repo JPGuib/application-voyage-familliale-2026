@@ -1162,6 +1162,8 @@ function ChecklistScreen({
   onConfirmRecoveryReset,
   onCancelStartPrompt,
   onCancelRecoveryPrompt,
+  daysUntilStart,
+  todayFormatted,
 }: {
   categories: ChecklistCategory[];
   role: Role | null;
@@ -1198,6 +1200,8 @@ function ChecklistScreen({
   onConfirmRecoveryReset: () => void | Promise<void>;
   onCancelStartPrompt: () => void;
   onCancelRecoveryPrompt: () => void;
+  daysUntilStart: number | null;
+  todayFormatted: string;
 }) {
   const [showStartCode, setShowStartCode] = useState(false);
   const [showRecoveryPhrase, setShowRecoveryPhrase] = useState(false);
@@ -1222,6 +1226,9 @@ function ChecklistScreen({
               Paramètres
             </button>
           </div>
+          <p className="text-xs font-bold opacity-80 mb-3">
+            {daysUntilStart !== null ? `J-${daysUntilStart} jours` : todayFormatted}
+          </p>
           <h1 className="text-2xl font-black leading-tight mb-4">
             Préparer nos bagages
           </h1>
@@ -6364,6 +6371,8 @@ export default function App() {
             setShowRecoveryPrompt(false);
             resetRecoveryPromptState();
           }}
+          daysUntilStart={daysUntilStart}
+          todayFormatted={todayFormatted}
         />
       );
     }
@@ -6426,6 +6435,8 @@ export default function App() {
             onCancelRecoveryPrompt={() => {
               // No-op during travel phase.
             }}
+            daysUntilStart={daysUntilStart}
+            todayFormatted={todayFormatted}
           />
         );
       case "dashboard":
