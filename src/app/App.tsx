@@ -3922,6 +3922,7 @@ export default function App() {
     pushSnapshot,
     claimRoleForProfile,
     deleteProfile,
+    registerAsOwnerDevice,
   } = useCloudSync();
   const [isOnline, setIsOnline] = useState(() => {
     if (typeof navigator === "undefined") {
@@ -4597,6 +4598,7 @@ export default function App() {
   // éviter qu'un instantané cloud périmé (déjà en vol) n'écrase l'édition
   // locale avant que la confirmation du push n'arrive.
   const pendingTripStartDateRef = useRef<string | null | "none">("none");
+  const ownerDeviceRegisteredRef = useRef(false);
 
   useEffect(() => {
     if (!cloudEnabled || !isAuthenticated) {
@@ -4652,6 +4654,10 @@ export default function App() {
 
     const normalized = enforceOwnerUniqueness(familyState);
     const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
+    if (canWriteFamilyState && !ownerDeviceRegisteredRef.current) {
+      ownerDeviceRegisteredRef.current = true;
+      void registerAsOwnerDevice();
+    }
     // eslint-disable-next-line no-console -- diagnostic temporaire, à retirer une fois le bug résolu
     console.info("[cloud-sync] Push envisagé", {
       canWriteFamilyState,

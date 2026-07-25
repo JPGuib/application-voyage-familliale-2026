@@ -266,6 +266,24 @@ export async function ensureFamilyMembership(
   await set(ref(database, `familyMembers/${familyId}/${uid}`), true);
 }
 
+/**
+ * Déclare l'utilisateur courant comme un appareil propriétaire reconnu, dans
+ * ownerMembers/{familyId}/{uid} = true. Permet à plusieurs appareils/navigateurs
+ * (chacun ayant sa propre identité anonyme Firebase) d'agir comme propriétaire,
+ * plutôt que de dépendre d'un unique ownerUid figé sur le tout premier appareil.
+ * À appeler uniquement lorsque l'app a déjà déterminé, côté client, que ce
+ * profil est bien le propriétaire (ownerProfileId === profile.id) — l'écriture
+ * elle-même n'est autorisée par les règles que pour sa propre entrée
+ * (auth.uid === $uid), au même niveau de confiance que familyMembers.
+ */
+export async function ensureOwnerMembership(
+  database: Database,
+  familyId: string,
+  uid: string
+): Promise<void> {
+  await set(ref(database, `ownerMembers/${familyId}/${uid}`), true);
+}
+
 export function observeFamilySnapshot(
   database: Database,
   familyId: string,
@@ -334,10 +352,25 @@ export async function pushCloudSnapshot(
 
   if (payload.canWriteFamilyState && isPayloadOwner) {
     updates.ownerProfileId = normalizedFamilyState.ownerProfileId;
-    updates.ownerUid = payload.actorUid;
+    // On n'écrase plus jamais ownerUid ici : il est fixé une seule fois par
+    // claimProfileRole (premier appareil à revendiquer le rôle) et les règles
+    // de sécurité interdisent de toute façon de le changer ensuite. Le
+    // réécrire systématiquement avec l'uid de CET appareil faisait échouer
+    // tout l'envoi groupé dès qu'un autre appareil que le tout premier
+    // essayait d'écrire quoi que ce soit côté propriétaire (voir bug identifié).
+    // On enregistre à la place cet appareil comme identité propriétaire
+    // reconnue, pour permettre la gestion multi-appareils.
+    updates[`ownerUids/${payload.actorUid}`] = true;
     updates.ownerCodeHash = payload.ownerCodeHash;
     updates.phase = payload.phase;
-    updates.tripStartDate = payload.tripStartDate ?? null;
+    // On n'écrit jamais explicitement null ici : tant qu'aucune fonctionnalité
+    // "effacer la date" n'existe, une valeur locale vide/nulle ne doit jamais
+    // écraser une date déjà enregistrée dans Firebase (voir bug corrigé :
+    // une race condition côté client pouvait remettre l'état local à null,
+    // et cette ligne l'aurait alors silencieusement propagé au serveur).
+    if (payload.tripStartDate) {
+      updates.tripStartDate = payload.tripStartDate;
+    }
     updates.checklistCatalogAdditions = payload.ownerGlobalChecklistAdditions.reduce<Record<string, ChecklistCustomItem>>((acc, item) => {
       acc[item.id] = item;
       return acc;

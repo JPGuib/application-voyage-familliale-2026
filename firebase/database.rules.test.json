@@ -11,16 +11,25 @@
         }
       }
     },
+    "ownerMembers": {
+      "$familyId": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
     "families": {
       "$familyId": {
         ".read": "auth != null",
         ".write": false,
         "ownerUid": {
-          ".write": "auth != null && (!data.exists() || data.val() === auth.uid)",
-          ".validate": "newData.val() === null || (newData.isString() && newData.val() === auth.uid)"
+          ".write": "auth != null && (!data.exists() || data.val() === auth.uid || root.child('ownerMembers').child($familyId).child(auth.uid).val() === true)",
+          ".validate": "newData.val() === null || (newData.isString() && (newData.val() === auth.uid || root.child('ownerMembers').child($familyId).child(auth.uid).val() === true))"
         },
         "ownerCodeHash": {
-          ".write": "auth != null && newData.parent().child('ownerUid').val() === auth.uid",
+          ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           ".validate": "newData.isString() && newData.val().matches(/^sha256:[0-9a-f]{64}$/)"
         },
         "ownerProfileId": {
@@ -72,13 +81,13 @@
           }
         },
         "checklistCatalogAdditions": {
-          ".write": "auth != null && newData.parent().child('ownerUid').val() === auth.uid",
+          ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           "$itemId": {
             ".validate": "newData.hasChildren(['id','label','categoryId']) && newData.child('id').isString() && newData.child('label').isString() && newData.child('categoryId').isString() && (!newData.child('genderTargets').exists() || newData.child('genderTargets').val() === 'all' || newData.child('genderTargets').val() === 'male' || newData.child('genderTargets').val() === 'female') && (!newData.child('householdRoleTargets').exists() || newData.child('householdRoleTargets').val() === 'all' || newData.child('householdRoleTargets').val() === 'parent' || newData.child('householdRoleTargets').val() === 'child') && (!newData.child('ownerOnly').exists() || newData.child('ownerOnly').isBoolean()) && (!newData.child('visibleToProfileId').exists() || newData.child('visibleToProfileId').isString())"
           }
         },
         "checklistCatalogRemovals": {
-          ".write": "auth != null && newData.parent().child('ownerUid').val() === auth.uid",
+          ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           "$itemId": {
             ".validate": "newData.isBoolean()"
           }
@@ -100,12 +109,12 @@
           }
         },
         "phase": {
-          ".write": "auth != null && newData.parent().child('ownerUid').val() === auth.uid",
+          ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           ".validate": "newData.val() === 'before' || newData.val() === 'during'"
         },
         "tripStartDate": {
-          ".write": "auth != null && newData.parent().child('ownerUid').val() === auth.uid",
-          ".validate": "newData.val() === null || (newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/))"
+          ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
         },
         "$other": {
           ".validate": false

@@ -4,6 +4,7 @@ import {
   claimProfileRole,
   deleteProfileFromCloud,
   ensureFamilyMembership,
+  ensureOwnerMembership,
   observeFamilySnapshot,
   pushCloudSnapshot,
 } from "../services/cloudSyncProvider";
@@ -372,6 +373,23 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  // À appeler dès que l'app détermine, côté client, que le profil courant est
+  // bien le propriétaire (ownerProfileId === profile.id). Enregistre cet
+  // appareil/navigateur comme un "ownerMember" reconnu par les règles Firebase,
+  // ce qui permet à plusieurs appareils d'agir comme propriétaire (chacun ayant
+  // sa propre identité anonyme Firebase, distincte d'un appareil à l'autre).
+  const registerAsOwnerDevice = useCallback(async (): Promise<void> => {
+    if (!isEnabled || !database || !cloudUserUid) {
+      return;
+    }
+    try {
+      await ensureOwnerMembership(database, familyId, cloudUserUid);
+    } catch {
+      // Non bloquant : les écritures réservées au propriétaire échoueront
+      // simplement si cet enregistrement n'a pas abouti.
+    }
+  }, [cloudUserUid, database, familyId, isEnabled]);
+
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
@@ -381,6 +399,7 @@ export function useCloudSync() {
     pushSnapshot,
     claimRoleForProfile,
     deleteProfile,
+    registerAsOwnerDevice,
     familyId,
   };
 }
