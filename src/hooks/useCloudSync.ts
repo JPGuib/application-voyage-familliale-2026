@@ -100,6 +100,9 @@ export function useCloudSync() {
   );
   const [cloudAuthError, setCloudAuthError] = useState<string | null>(null);
   const [cloudUserUid, setCloudUserUid] = useState<string | null>(null);
+  const [isMembershipReady, setIsMembershipReady] = useState<boolean>(
+    () => !cloudRuntimeAvailable
+  );
   const [cloudSnapshot, setCloudSnapshot] = useState<CloudSyncSnapshot | null>(null);
   const isFlushingQueueRef = useRef(false);
 
@@ -113,6 +116,7 @@ export function useCloudSync() {
     setIsAuthReady(false);
     setIsAuthBootstrapping(true);
     setCloudUserUid(null);
+    setIsMembershipReady(false);
 
     const unsubscribe = observeFirebaseUser(
       (user) => {
@@ -124,10 +128,23 @@ export function useCloudSync() {
         if (user) {
           setCloudAuthError(null);
           if (database) {
-            void ensureFamilyMembership(database, familyId, user.uid).catch(() => {
-              // Écriture non bloquante : si elle échoue, la lecture de
-              // observeFamilySnapshot remontera déjà "permission-denied".
-            });
+            // On attend la confirmation (succès OU échec) de l'inscription
+            // dans familyMembers avant d'autoriser la lecture de la famille :
+            // sans cette attente, la lecture pouvait démarrer juste avant que
+            // l'appartenance soit enregistrée et échouer ("permission-denied"),
+            // notamment sur un rechargement complet de la page.
+            void ensureFamilyMembership(database, familyId, user.uid)
+              .catch(() => {
+                // Non bloquant : si l'écriture échoue, la lecture de
+                // observeFamilySnapshot remontera de toute façon "permission-denied".
+              })
+              .finally(() => {
+                if (!cancelled) {
+                  setIsMembershipReady(true);
+                }
+              });
+          } else {
+            setIsMembershipReady(true);
           }
         }
       },
@@ -215,6 +232,11 @@ export function useCloudSync() {
       return;
     }
 
+    if (!isMembershipReady) {
+      setIsReady(false);
+      return;
+    }
+
     const unsubscribe = observeFamilySnapshot(
       database,
       familyId,
@@ -237,6 +259,7 @@ export function useCloudSync() {
     familyId,
     isAuthBootstrapping,
     isAuthReady,
+    isMembershipReady,
   ]);
 
   useEffect(() => {

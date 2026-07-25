@@ -1226,9 +1226,6 @@ function ChecklistScreen({
               Paramètres
             </button>
           </div>
-          <p className="text-xs font-bold opacity-80 mb-3">
-            {daysUntilStart !== null ? `J-${daysUntilStart} jours` : todayFormatted}
-          </p>
           <h1 className="text-2xl font-black leading-tight mb-4">
             Préparer nos bagages
           </h1>
@@ -1241,10 +1238,15 @@ function ChecklistScreen({
           <p className="text-sm font-bold opacity-90">
             {checkedCount} / {totalItems} articles cochés ({pct}%)
           </p>
-          <p className="text-xs opacity-80 mt-1">
-            {remainingItems} article{remainingItems > 1 ? "s" : ""} restant
-            {remainingItems > 1 ? "s" : ""}
-          </p>
+          <div className="flex items-end justify-between gap-3 mt-1">
+            <p className="text-xs opacity-80">
+              {remainingItems} article{remainingItems > 1 ? "s" : ""} restant
+              {remainingItems > 1 ? "s" : ""}
+            </p>
+            <p className="text-xs font-bold opacity-80 text-right">
+              {daysUntilStart !== null ? `J-${daysUntilStart} jours` : todayFormatted}
+            </p>
+          </div>
         </div>
       </div>
 
