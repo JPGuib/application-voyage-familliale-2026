@@ -303,7 +303,9 @@ export function useCloudSync() {
       try {
         await pushCloudSnapshot(database, familyId, mutation);
         setCloudAuthError(null);
-      } catch {
+      } catch (err) {
+        // eslint-disable-next-line no-console -- diagnostic temporaire
+        console.error("[cloud-sync] pushCloudSnapshot a échoué :", err, mutation);
         // Keep the app usable on transient write failures; read-subscription errors
         // still control the blocking cloud access state.
         enqueuePendingMutation(mutation);

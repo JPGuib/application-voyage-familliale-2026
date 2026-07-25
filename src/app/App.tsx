@@ -4607,33 +4607,34 @@ export default function App() {
       hydratedProfileId: hydratedCloudProfileIdRef.current,
     });
     if (!canPush) {
-      if (IS_DEV) {
-        console.info(
-          "[cloud-sync] Push skipped: profile not ready or awaiting cloud hydration after switch."
-        );
-      }
+      // eslint-disable-next-line no-console -- diagnostic temporaire
+      console.info(
+        "[cloud-sync] Push skipped: profile not ready or awaiting cloud hydration after switch."
+      );
       return;
     }
 
     if (!profile.role || !cloudActorUid) return;
 
     if (hasCloudProfile && cloudSnapshot && phase !== cloudSnapshot.phase) {
-      if (IS_DEV) {
-        console.info("[cloud-sync] Push skipped: awaiting phase synchronization with cloud snapshot.");
-      }
+      // eslint-disable-next-line no-console -- diagnostic temporaire
+      console.info("[cloud-sync] Push skipped: awaiting phase synchronization with cloud snapshot.", {
+        phase,
+        "cloudSnapshot.phase": cloudSnapshot.phase,
+      });
       return;
     }
 
     const normalized = enforceOwnerUniqueness(familyState);
     const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
-    if (IS_DEV) {
-      console.info("[cloud-sync] Push envisagé", {
-        canWriteFamilyState,
-        "normalized.ownerProfileId": normalized.ownerProfileId,
-        "profile.id": profile.id,
-        tripStartDate,
-      });
-    }
+    // eslint-disable-next-line no-console -- diagnostic temporaire, à retirer une fois le bug résolu
+    console.info("[cloud-sync] Push envisagé", {
+      canWriteFamilyState,
+      "normalized.ownerProfileId": normalized.ownerProfileId,
+      "profile.id": profile.id,
+      "profile.role": profile.role,
+      tripStartDate,
+    });
     const profilePasswordHash = profilePasswordHashes[profile.id] || "";
     const profileRecoveryHash = profileRecoveryHashes[profile.id] || "";
     const profileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";

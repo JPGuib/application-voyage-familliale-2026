@@ -79,7 +79,7 @@ export const PLACES = [
     ],
     audioTitle: "Kadıköy, l'âme asiatique d'Istanbul",
     audioDuration: "3 min 10 sec",
-    audioSrc: "/audio/places/Kadikoy.mp3",
+    audioSrc: "/audio/places/kadikoy.mp3",
     history:
       "Kadıköy est l'un des quartiers les plus vivants de la rive asiatique d'Istanbul. Son marché (çarşı) regorge de produits frais, d'épices, de poissons et de boutiques locales. C'est un lieu de rencontre authentique, loin du tourisme de masse.",
     anecdotes: [
