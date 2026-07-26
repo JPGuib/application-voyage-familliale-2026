@@ -7,6 +7,7 @@
     tag: "Vol",
     image: "/images/Vol/Nantes Paris.webp",
     photos: [
+      "/images/Vol/Nantes Paris.webp",
       "/images/Vol/Avion aller JPG.webp",
       "/images/Vol/Avion aller KG.webp",
       "/images/Vol/Avion aller Emma.webp",
@@ -14,7 +15,7 @@
       "/images/Vol/Avion aller Julie.webp",
     ],
     history:
-      "Vol AF7507 de Nantes (NTE) à Paris Charles de Gaulle (CDG). Dépat à 19h45 pour une arrivée à 20h55",
+      "Vol AF7507 de Nantes (NTE) à Paris Charles de Gaulle (CDG). Départ à 19h45 pour une arrivée à 20h55",
     anecdotes: [
       "Réservation ZT59SQ",
       "L'arrivée à Charles de Gaulle se fait à l'aéroport 2F",
@@ -32,7 +33,8 @@
     tag: "Vol",
     image: "/images/Vol/Paris Instanbul.webp",
     photos: [
-     "/images/Vol/Avion aller JPG.webp",
+      "/images/Vol/Paris Instanbul.webp",
+      "/images/Vol/Avion aller JPG.webp",
       "/images/Vol/Avion aller KG.webp",
       "/images/Vol/Avion aller Emma.webp",
       "/images/Vol/Avion aller Thomas.webp",
