@@ -3,7 +3,7 @@
     id: "Nante-Paris",
     jour: [1],
     name: "Nantes - Paris",
-    shortDesc: "Vol AF7507 - Nantes -> Paris",
+    shortDesc: "Vol AF7507 - 19h45 -> 20h55",
     tag: "Vol",
     image: "/images/Vol/Nantes Paris.webp",
     photos: [
@@ -29,7 +29,7 @@
     id: "Paris-istanbul",
     jour: [1],
     name: "Paris - Istanbul",
-    shortDesc: "Vol AF1390 - Paris -> Istanbul",
+    shortDesc: "Vol AF1390 - 22h55 -> 03h30",
     tag: "Vol",
     image: "/images/Vol/Paris Istanbul.webp",
     photos: [
