@@ -8,18 +8,21 @@
 export const HISTOIRE_TOPICS = [
   {
     id: "histoire-generale",
-    name: "Histoire générale de la Turquie",
+    name: "De l'Anatolie à la Turquie moderne",
     shortDesc: "Des Hittites à la République, un voyage à travers 10 000 ans",
     tag: "Histoire",
-    image: "/images/places/histoire-generale.png",
+    image: "/images/Histoire/Anatolie-empire_romain-map.webp",
     photos: [
-      "/images/places/histoire-generale.png",
-      "/images/places/ephesus-ruines.png",
-      "/images/places/cappadocie-ballons.png"
+      "/images/Histoire/Anatolie-empire_romain-map.webp",
+      "/images/Histoire/Entrée Saint Sophie Suluman.webp",
+      "/images/Histoire/Histoire de la Turquie.webp",
+      "/images/Histoire/Ottoman-14-17map.webp",
+      "/images/Histoire/Ottoman-Abdulhamid-2.webp",
+      "/images/Histoire/ottoman-soliman.webp",
     ],
     audioTitle: "La Turquie, mémoire des civilisations",
     audioDuration: "4 min 15 sec",
-    audioSrc: "/audio/Histoire_generale_Turquie.mp3",
+    audioSrc: "/audio/Histoire/Anatolie.mp3",
     history: "Le territoire de la Turquie actuelle a été le théâtre de l'émergence et de la chute de nombreuses civilisations : Hittites, Grecs, Romains, Byzantins, Seldjoukides et Ottomans. Chaque ère a laissé une empreinte indélébile sur le paysage, la culture et l'identité turque. De Göbekli Tepe, le plus ancien temple connu, aux murailles de Constantinople, l'histoire turque est un palimpseste où s'entremêlent mythologies, conquêtes et renaissances.",
     anecdotes: [
       "La ville de Troie, célèbre pour la guerre éponyme, se trouve en Turquie.",
