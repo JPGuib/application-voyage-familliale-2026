@@ -45,7 +45,7 @@ export const HISTOIRE_TOPICS = [
   },
   {
     id: "periode-antique",
-    name: "L'Antiquité : Hittites, Grecs et Romains. De 1600 av. J.-C. à 395 apr. J.-C.",
+    name: "L'Antiquité : Hittites, Grecs et Romains (de 1600 av. J.-C. à 395 apr. J.-C.)",
     shortDesc: "Les racines profondes de l'Anatolie",
     tag: "Histoire",
     image: "/images/Histoire/Ephese.webp",
@@ -70,7 +70,7 @@ export const HISTOIRE_TOPICS = [
   },
   {
     id: "periode-byzantine",
-    name: "L'ère byzantine : Constantinople, capitale du monde. De 330 à 1453",
+    name: "L'ère byzantine : Constantinople, capitale du monde (de 330 à 1453)",
     shortDesc: "Mille ans d'empire chrétien oriental",
     tag: "Histoire",
     image: "/images/Histoire/anatolie-byzance-lng.webp",
@@ -80,7 +80,7 @@ export const HISTOIRE_TOPICS = [
       "/images/Histoire/anatolie-islam632-750.webp",
       "/images/Histoire/anatolie-byzantine-870.webp",
       "/images/Histoire/schisme-occident-1054.webp",
-      "/images/Histoire/anatolie-byzance-1265.webp",
+      "/images/Histoire/anatolie-byzantine-1265.webp",
       "/images/Histoire/Sainte Sophie.webp",
       "/images/Histoire/Citerne Basilique.webp",
       "/images/Histoire/Murs de Théose.webp",
@@ -98,14 +98,21 @@ export const HISTOIRE_TOPICS = [
   },
   {
     id: "periode-ottomane",
-    name: "L'Empire ottoman : six siècles de grandeur. De 1299 à 1923",
+    name: "L'Empire ottoman : six siècles de grandeur (de 1299 à 1923)",
     shortDesc: "D'Anatolie aux portes de Vienne",
     tag: "Histoire",
-    image: "/images/places/topkapi.png",
+    image: "/images/Histoire/Ottoman-1900-map.webp",
     photos: [
-      "/images/places/topkapi.png",
-      "/images/places/mosquee-suleymaniye.png",
-      "/images/places/palais-dolmabahce.png"
+      "/images/Histoire/Ottoman-14-17map.webp",
+      "/images/Histoire/Ottomans-Perse-16.webp",
+      "/images/Histoire/Ottoman-1900-map.webp",
+      "/images/Histoire/anatolie-ottomane-1450.webp",
+      "/images/Histoire/Cérémonie Cours.webp",
+      "/images/Histoire/constantinople-1453.webp",
+      "/images/Histoire/ottoman-soliman.webp",
+      "/images/Histoire/Mosquée Suleymaniye.webp",
+      "/images/Histoire/Mosquée Sultanahmet.webp",
+      "/images/Histoire/Palais Dolmabance.webp"
     ],
     audioTitle: "L'Empire ottoman, de l'Anatolie au monde",
     audioDuration: "4 min 05 sec",
@@ -119,7 +126,7 @@ export const HISTOIRE_TOPICS = [
   },
   {
     id: "periode-republique",
-    name: "La République turque : naissance d'une nation moderne. De 1923 à nos jours",
+    name: "La République turque : naissance d'une nation moderne (de 1923 à nos jours)",
     shortDesc: "Mustafa Kemal Atatürk et la transformation de la Turquie",
     tag: "Histoire",
     image: "/images/Histoire/anitkabir.png",
