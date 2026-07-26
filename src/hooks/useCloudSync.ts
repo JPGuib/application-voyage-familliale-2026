@@ -53,6 +53,7 @@ type PushSnapshotInput = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   gameResults: CloudGameHistoryEntry[];
   phase: TravelPhase;
+  tripStartDate?: string | null;
 };
 
 const PENDING_QUEUE_KEY_PREFIX = "jp-cloud-pending";
@@ -317,6 +318,7 @@ export function useCloudSync() {
         ownerGlobalChecklistRemovals: snapshot.ownerGlobalChecklistRemovals,
         gameResults: snapshot.gameResults,
         phase: snapshot.phase,
+        tripStartDate: snapshot.tripStartDate,
       };
 
       if (typeof navigator !== "undefined" && !navigator.onLine) {

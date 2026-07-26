@@ -733,7 +733,7 @@
     ],
     audioTitle: "Izmir et Kusadasi, trésors de la côte égéenne",
     audioDuration: "4 min 15 sec",
-    audioSrc: "/audio/places/Histoire_Izmir_Kusadasi.mp3",
+    audioSrc: "/audio/places/Izmir_ou_Kusadasi.mp3",
     history: "Izmir est la troisième plus grande ville de Turquie et l'un des ports les plus anciens de la Méditerranée. Située sur la côte égéenne, elle mêle héritage gréco-romain, architecture ottomane et modernité. Kusadasi, à quelques kilomètres, est une station balnéaire réputée pour son port de croisières et sa proximité avec les ruines d'Éphèse. La route entre ces deux villes offre des panoramas spectaculaires sur la mer Égée.",
     anecdotes: [
       "Izmir fut connue sous le nom de Smyrne dans l'Antiquité, l'une des plus grandes cités de l'Empire romain.",
