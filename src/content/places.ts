@@ -539,7 +539,7 @@
     ],
     "audioTitle": "Anitkabir, la mémoire d'une nation",
     "audioDuration": "3 min 50 sec",
-    "audioSrc": "/audio/places/Histoire_Anitkabir.mp3",
+    "audioSrc": "/audio/places/Mausolee_d_Ataturk.mp3",
     "history": "Anıtkabir est le mausolée de Mustafa Kemal Atatürk, fondateur et premier président de la République de Turquie. Situé à Ankara sur la colline d'Anıttepe, ce monument monumental fut construit entre 1944 et 1953. Le complexe de 750 000 m² comprend le mausolée, le Parc de la Paix, l'allée des Lions et plusieurs tours symboliques. Les pierres et marbres proviennent de toutes les régions de Turquie, symbolisant l'unité nationale. C'est un lieu de pèlerinage où des millions de visiteurs viennent chaque année rendre hommage au Père de la Nation.",
     "anecdotes": [
       "Le drapeau turque flotte sur un mât de 33,53 m, le plus haut mât d'un seul tenant d'Europe.",
@@ -801,7 +801,7 @@
     ],
     audioTitle: "Osmangazi, un pont entre deux rives",
     audioDuration: "3 min 30 sec",
-    audioSrc: "/audio/places/Histoire_Osmangazi.mp3",
+    audioSrc: "/audio/places/Le_pont_d_Osmangazi.mp3",
     history: "Le pont d'Osmangazi (Osman Gazi Köprüsü) est un pont suspendu spectaculaire qui enjambe le golfe d'Izmit, à environ 50 km au sud d'Istanbul. Inauguré le 1er juillet 2016, il porte le nom d'Osman Gazi, fondateur de l'Empire ottoman. Avec une travée centrale de 1 550 mètres et une longueur totale de 2 682 mètres, il était à son inauguration le quatrième plus long pont suspendu au monde. Les pylônes culminent à 252 mètres de hauteur et le tablier est suspendu à 64 mètres au-dessus de la mer. Il fait partie de l'autoroute Gebze-Orhangazi-Izmir (O-5) et a réduit le trajet Istanbul-Izmir de 10 heures à seulement 3h30, transformant radicalement les échanges entre la mer de Marmara et la côte égéenne.",
     anecdotes: [
       "Le temps de traversée du golfe d'Izmit est passé de 2 heures (en ferry) à seulement 6 minutes.",

@@ -4006,7 +4006,13 @@ export default function App() {
       return null;
     }
   });
-  const [screen, setScreen] = useState<Screen>("checklist");
+  const [screen, setScreen] = useState<Screen>(() => {
+    try {
+      return (localStorage.getItem("jp-screen") as Screen) || "checklist";
+    } catch {
+      return "checklist";
+    }
+  });
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
@@ -4212,6 +4218,18 @@ export default function App() {
   const getPostAuthLandingScreen = (nextPhase: "before" | "during") =>
     nextPhase === "during" ? "dashboard" : "checklist";
 
+  // Persistance de l'écran affiché (préférence locale à cet appareil, pas une
+  // donnée familiale) — volontairement indépendante du mode cloud/local, pour
+  // qu'un simple rechargement (F5) revienne sur le même écran plutôt que sur
+  // l'écran d'atterrissage par défaut.
+  useEffect(() => {
+    try {
+      localStorage.setItem("jp-screen", screen);
+    } catch {
+      // Ignore storage errors; the screen will just reset to its default on reload.
+    }
+  }, [screen]);
+
   useEffect(() => {
     if (!cloudEnabled) {
       setIsAuthenticated(true);
@@ -4373,7 +4391,6 @@ export default function App() {
         localStorage.removeItem(PROFILE_RECOVERY_QUESTION_STORAGE_KEY);
         localStorage.removeItem("jp-phase");
         localStorage.removeItem("jp-trip-start-date");
-        localStorage.removeItem("jp-screen");
         localStorage.removeItem("jp-checklist");
         localStorage.removeItem("jp-game-history");
         localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
@@ -4407,7 +4424,6 @@ export default function App() {
           } else {
             localStorage.removeItem("jp-trip-start-date");
           }
-          localStorage.setItem("jp-screen", screen);
           localStorage.setItem("jp-checklist", JSON.stringify(checked));
           localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
           localStorage.setItem(
@@ -4634,21 +4650,20 @@ export default function App() {
       hydratedProfileId: hydratedCloudProfileIdRef.current,
     });
     if (!canPush) {
-      // eslint-disable-next-line no-console -- diagnostic temporaire
-      console.info(
-        "[cloud-sync] Push skipped: profile not ready or awaiting cloud hydration after switch."
-      );
+      if (IS_DEV) {
+        console.info(
+          "[cloud-sync] Push skipped: profile not ready or awaiting cloud hydration after switch."
+        );
+      }
       return;
     }
 
     if (!profile.role || !cloudActorUid) return;
 
     if (hasCloudProfile && cloudSnapshot && phase !== cloudSnapshot.phase) {
-      // eslint-disable-next-line no-console -- diagnostic temporaire
-      console.info("[cloud-sync] Push skipped: awaiting phase synchronization with cloud snapshot.", {
-        phase,
-        "cloudSnapshot.phase": cloudSnapshot.phase,
-      });
+      if (IS_DEV) {
+        console.info("[cloud-sync] Push skipped: awaiting phase synchronization with cloud snapshot.");
+      }
       return;
     }
 
@@ -4662,14 +4677,6 @@ export default function App() {
       ownerDeviceRegisteredRef.current = true;
       void registerAsOwnerDevice();
     }
-    // eslint-disable-next-line no-console -- diagnostic temporaire, à retirer une fois le bug résolu
-    console.info("[cloud-sync] Push envisagé", {
-      canWriteFamilyState,
-      "normalized.ownerProfileId": normalized.ownerProfileId,
-      "profile.id": profile.id,
-      "profile.role": profile.role,
-      tripStartDate,
-    });
     const profilePasswordHash = profilePasswordHashes[profile.id] || "";
     const profileRecoveryHash = profileRecoveryHashes[profile.id] || "";
     const profileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";
