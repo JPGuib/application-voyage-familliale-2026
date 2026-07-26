@@ -23,7 +23,8 @@ export const HISTOIRE_TOPICS = [
     audioTitle: "La Turquie, mémoire des civilisations",
     audioDuration: "4 min 15 sec",
     audioSrc: "/audio/Histoire/Anatolie.mp3",
-    history: "Le territoire de la Turquie actuelle a été le théâtre de l'émergence et de la chute de nombreuses civilisations : Hittites, Grecs, Romains, Byzantins, Seldjoukides et Ottomans. Chaque ère a laissé une empreinte indélébile sur le paysage, la culture et l'identité turque. De Göbekli Tepe, le plus ancien temple connu, aux murailles de Constantinople, l'histoire turque est un palimpseste où s'entremêlent mythologies, conquêtes et renaissances.",
+    history: ["Le territoire de la Turquie actuelle a été le théâtre de l'émergence et de la chute de nombreuses civilisations : Hittites, Grecs, Romains, Byzantins, Seldjoukides et Ottomans. Chaque ère a laissé une empreinte indélébile sur le paysage, la culture et l'identité turque. De Göbekli Tepe, le plus ancien temple connu, aux murailles de Constantinople, l'histoire turque est un palimpseste où s'entremêlent mythologies, conquêtes et renaissances.",
+      "vers 1650 - 1180 AV JC - Les Hittites : premier grand peuple d'Anatolie, rival de L'Egypte antique. Ils maîtrisent le travail du fer et bâtissent leur capitale, Hattousa."],
     anecdotes: [
       "La ville de Troie, célèbre pour la guerre éponyme, se trouve en Turquie.",
       "Le premier traité de paix écrit de l'histoire est le traité hittite-égyptien de Kadesh (1258 av. J.-C.).",
