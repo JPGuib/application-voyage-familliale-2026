@@ -32,7 +32,7 @@ export const HISTOIRE_TOPICS = [
       "Rome intègre l'Anatolie dans son empire, elle y fonde Bizance, l'actuelle Istanbul",
       "395 - 1453 apr. JC. - La période byzantine",
       "L'Empire byzantin se divise, et avec lui le monde chrétien. Bizance, rebaptisée Constantinople, devient la capitale des chrétiens d'Orient pendant plus de milles ans.",
-      "1299 - 1923 apr. JC. - L"empire ottoman",
+      "1299 - 1923 apr. JC. - L'empire ottoman",
       "Les turcs seldjoukides apportent l'islam. En 1453, Mehmed II prend Constantinople, qui devient Istanbul. L'empire s'étend sur trois continents, notamment sous Soliman le Magnifique",
       "1923 à nos jours - La République moderne",
       "Mustafa Kemal Atatürk fonde la République turque et la modernise. Le pays est aujourd'hui dirigé par Recep Tayyip Ergogan",   
