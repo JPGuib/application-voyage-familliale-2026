@@ -45,7 +45,7 @@ export const HISTOIRE_TOPICS = [
   },
   {
     id: "periode-antique",
-    name: "L'Antiquité : Hittites, Grecs et Romains",
+    name: "L'Antiquité : Hittites, Grecs et Romains. De 1600 av. J.-C. à 395 apr. J.-C.",
     shortDesc: "Les racines profondes de l'Anatolie",
     tag: "Histoire",
     image: "/images/Histoire/Ephese.webp",
@@ -70,14 +70,21 @@ export const HISTOIRE_TOPICS = [
   },
   {
     id: "periode-byzantine",
-    name: "L'ère byzantine : Constantinople, capitale du monde",
+    name: "L'ère byzantine : Constantinople, capitale du monde. De 330 à 1453",
     shortDesc: "Mille ans d'empire chrétien oriental",
     tag: "Histoire",
-    image: "/images/places/sainte-sophie.png",
+    image: "/images/Histoire/anatolie-byzance-lng.webp",
     photos: [
-      "/images/places/sainte-sophie.png",
-      "/images/places/mosquee-bleue.png",
-      "/images/places/murailles-constantinople.png"
+      "/images/Histoire/anatolie-byzance-lng.webp",
+      "/images/Histoire/anatolie-byzance-600.webp",
+      "/images/Histoire/anatolie-islam632-750.webp",
+      "/images/Histoire/anatolie-byzantine-870.webp",
+      "/images/Histoire/schisme-occident-1054.webp",
+      "/images/Histoire/anatolie-byzance-1265.webp",
+      "/images/Histoire/Sainte Sophie.webp",
+      "/images/Histoire/Citerne Basilique.webp",
+      "/images/Histoire/Murs de Théose.webp",
+      "/images/Histoire/Saint Sauveur in chora.webp"
     ],
     audioTitle: "Byzance, l'empire aux mille églises",
     audioDuration: "3 min 30 sec",
@@ -87,11 +94,11 @@ export const HISTOIRE_TOPICS = [
       "Les Byzantins ont inventé le feu grégeois, une arme incendiaire redoutée.",
       "Constantinople était la plus grande ville d'Europe pendant des siècles.",
       "Les mosaïques de Sainte-Sophie furent recouvertes de plâtre à la conquête ottomane."
-    ]
+    ] 
   },
   {
     id: "periode-ottomane",
-    name: "L'Empire ottoman : six siècles de grandeur",
+    name: "L'Empire ottoman : six siècles de grandeur. De 1299 à 1923",
     shortDesc: "D'Anatolie aux portes de Vienne",
     tag: "Histoire",
     image: "/images/places/topkapi.png",
@@ -112,7 +119,7 @@ export const HISTOIRE_TOPICS = [
   },
   {
     id: "periode-republique",
-    name: "La République turque : naissance d'une nation moderne",
+    name: "La République turque : naissance d'une nation moderne. De 1923 à nos jours",
     shortDesc: "Mustafa Kemal Atatürk et la transformation de la Turquie",
     tag: "Histoire",
     image: "/images/Histoire/anitkabir.png",
