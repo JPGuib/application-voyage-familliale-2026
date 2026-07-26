@@ -1,0 +1,147 @@
+  {
+    id: "geographie",
+    name: "Géographie de la Turquie",
+    shortDesc: "Entre montagnes, mers et plateaux",
+    tag: "Géographie",
+    image: "/images/places/cappadocie-ballons.png",
+    photos: [
+      "/images/places/cappadocie-ballons.png",
+      "/images/places/pamukkale.png",
+      "/images/places/mont-ararat.png"
+    ],
+    audioTitle: "La Turquie, un pays aux mille paysages",
+    audioDuration: "3 min 20 sec",
+    audioSrc: "/audio/Geographie_Turquie.mp3",
+    history: "La Turquie s'étend sur 783 562 km² à cheval entre l'Europe et l'Asie. Le Bosphore et les Dardanelles séparent les deux continents. Le pays est entouré par quatre mers : la mer Noire au nord, la mer de Marmara à l'ouest, la mer Égée au sud-ouest et la Méditerranée au sud. Son relief est dominé par le plateau anatolien, encadré par les chaînes du Pontique au nord et du Taurus au sud. Le mont Ararat, à 5 137 m, est le point culminant.",
+    anecdotes: [
+      "La Cappadoce abrite des cheminées de fée formées par l'érosion volcanique.",
+      "Pamukkale est une terrasse naturelle de travertin blanc alimentée par des sources chaudes.",
+      "Le lac de Van est le plus grand lac salé du pays, sans émissaire."
+    ]
+  },
+  {
+    id: "demographie",
+    name: "Démographie de la Turquie",
+    shortDesc: "85 millions d'habitants, une population jeune et dynamique",
+    tag: "Société",
+    image: "/images/places/istanbul-foule.png",
+    photos: [
+      "/images/places/istanbul-foule.png",
+      "/images/places/bazar-epices.png",
+      "/images/places/quartier-residentiel.png"
+    ],
+    audioTitle: "Les Turcs, un peuple aux mille visages",
+    audioDuration: "3 min 10 sec",
+    audioSrc: "/audio/Demographie_Turquie.mp3",
+    history: "Avec environ 85 millions d'habitants, la Turquie est le deuxième pays le plus peuplé du Moyen-Orient. Sa population est très jeune, avec une médiane d'âge d'environ 33 ans. Istanbul concentre à elle seule plus de 15 millions d'habitants. Outre les Turcs, le pays compte des communautés kurdes, arabes, arméniennes, grecques et juives. L'urbanisation est rapide, avec plus de 75 % de la population vivant en ville.",
+    anecdotes: [
+      "Istanbul est la plus grande ville d'Europe par sa population.",
+      "La diaspora turque en Europe compte plus de 5 millions de personnes.",
+      "Le taux d'alphabétisation dépasse les 95 %, un héritage des réformes d'Atatürk."
+    ]
+  },
+  {
+    id: "economie",
+    name: "Économie de la Turquie",
+    shortDesc: "Une puissance émergente entre tradition et modernité",
+    tag: "Économie",
+    image: "/images/places/istanbul-financier.png",
+    photos: [
+      "/images/places/istanbul-financier.png",
+      "/images/places/port-izmir.png",
+      "/images/places/usine-turque.png"
+    ],
+    audioTitle: "L'économie turque, entre croissance et défis",
+    audioDuration: "3 min 40 sec",
+    audioSrc: "/audio/Economie_Turquie.mp3",
+    history: "La Turquie possède une économie diversifiée, classée parmi les plus grandes puissances émergentes. Les secteurs clés incluent l'automobile, le textile, le tourisme, l'agriculture et la construction. Istanbul est le principal pôle financier. Le pays souffre cependant d'une inflation chronique et d'une volatilité de la livre turque. Le tourisme représente une source de devises essentielle, avec plus de 50 millions de visiteurs par an avant la pandémie.",
+    anecdotes: [
+      "La Turquie est le 5e plus grand producteur mondial de ciment.",
+      "Le secteur textile emploie plus d'un million de personnes.",
+      "Le pont du Bosphore a été financé par des emprunts internationaux dans les années 1970."
+    ]
+  },
+  {
+    id: "droits-homme",
+    name: "Droits de l'homme en Turquie",
+    shortDesc: "Entre avancées et défis contemporains",
+    tag: "Société",
+    image: "/images/places/manifestation-istanbul.png",
+    photos: [
+      "/images/places/manifestation-istanbul.png",
+      "/images/places/place-taksim.png",
+      "/images/places/journalistes-turcs.png"
+    ],
+    audioTitle: "Les droits de l'homme, un débat vivant",
+    audioDuration: "3 min 55 sec",
+    audioSrc: "/audio/Droits_Homme_Turquie.mp3",
+    history: "La Turquie est membre du Conseil de l'Europe et signataire de la Convention européenne des droits de l'homme. Le pays a connu des avancées significatives dans les années 2000, notamment en matière de réduction de la peine de mort et d'harmonisation législative avec l'Union européenne. Cependant, la situation des libertés fondamentales, de la liberté de la presse et des droits des minorités reste un sujet de préoccupation pour les organisations internationales.",
+    anecdotes: [
+      "La Turquie a aboli la peine de mort en 2004 dans le cadre de son processus d'adhésion à l'UE.",
+      "Le parc Gezi en 2013 a été le théâtre des plus grandes manifestations depuis des décennies.",
+      "La Convention d'Istanbul sur les violences faites aux femmes a été signée en 2011."
+    ]
+  },
+  {
+    id: "religions",
+    name: "Religions en Turquie",
+    shortDesc: "Islam, christianisme et judaïsme : une terre de coexistence",
+    tag: "Culture",
+    image: "/images/places/mosquee-bleue.png",
+    photos: [
+      "/images/places/mosquee-bleue.png",
+      "/images/places/eglise-saint-georges.png",
+      "/images/places/synagogue-istanbul.png"
+    ],
+    audioTitle: "La Turquie, carrefour des croyances",
+    audioDuration: "3 min 25 sec",
+    audioSrc: "/audio/Religions_Turquie.mp3",
+    history: "L'islam sunnite est la religion majoritaire, pratiquée par environ 99 % de la population. La Constitution turque garantit la liberté de culte et la laïcité de l'État. La Turquie abrite pourtant des communautés chrétiennes historiques (orthodoxes grecs, arméniens, catholiques) et une petite communauté juive sépharade à Istanbul. Les Alevis, une branche chiite de l'islam, représentent 15 à 25 % de la population musulmane.",
+    anecdotes: [
+      "Sainte-Sophie a été église, mosquée, musée, puis de nouveau mosquée.",
+      "La maison de la Vierge Marie, près d'Éphèse, est un lieu de pèlerinage chrétien.",
+      "Les derviches tourneurs sont des soufis de l'ordre mevlevi fondé par Rumi."
+    ]
+  },
+  {
+    id: "coutumes-traditions",
+    name: "Coutumes et traditions turques",
+    shortDesc: "Hospitalité, thé et cérémonies ancestrales",
+    tag: "Culture",
+    image: "/images/places/the-turc.png",
+    photos: [
+      "/images/places/the-turc.png",
+      "/images/places/mariage-turc.png",
+      "/images/places/narguilé-istanbul.png"
+    ],
+    audioTitle: "Les traditions turques, cœur de l'hospitalité",
+    audioDuration: "3 min 15 sec",
+    audioSrc: "/audio/Coutumes_Turquie.mp3",
+    history: "L'hospitalité turque (misafirperverlik) est un pilier de la société : offrir du thé à un visiteur est un rituel sacré. Le café turc, inscrit au patrimoine immatériel de l'UNESCO, se boit dans de petites tasses avec sa lie. Les mariages traditionnels durent plusieurs jours, avec des rituels comme le henné (kına gecesi). Le narguilé (nargile) reste une activité sociale populaire dans les cafés d'Istanbul.",
+    anecdotes: [
+      "Les Turcs sont les plus grands consommateurs de thé au monde, avec 3,5 kg par personne et par an.",
+      "On lit l'avenir dans le marc de café turc, une tradition appelée fal.",
+      "Le hammam était autrefois un lieu de rencontre social, surtout pour les femmes."
+    ]
+  },
+  {
+    id: "culture-derviche-hammam",
+    name: "Culture : Derviches tourneurs et Hammam",
+    shortDesc: "Deux expressions spirituelles et corporelles de l'âme turque",
+    tag: "Culture",
+    image: "/images/places/derviche-tourneur.png",
+    photos: [
+      "/images/places/derviche-tourneur.png",
+      "/images/places/hammam-interieur.png",
+      "/images/places/dergah-konya.png"
+    ],
+    audioTitle: "Derviches et hammam, corps et âme",
+    audioDuration: "4 min 00 sec",
+    audioSrc: "/audio/Derviche_Hammam.mp3",
+    history: "Le sema des derviches tourneurs est une cérémonie soufie où les participants tournent en transe pour atteindre l'extase spirituelle. Fondée par le poète Rumi au XIIIe siècle à Konya, cette pratique est inscrite au patrimoine immatériel de l'UNESCO. Le hammam, hérité des thermes romains et perfectionné par les Ottomans, est bien plus qu'un bain : c'est un rituel de purification, de détente et de socialisation, structuré autour du göbektaşı (pierre du nombril) central.",
+    anecdotes: [
+      "Les derviches tournent dans le sens des aiguilles d'une montre, bras droit vers le ciel, gauche vers la terre.",
+      "Un hammam traditionnel comporte trois salles de température croissante.",
+      "Le tellak (masseur) utilise un gant de crêpe (kese) pour exfolier la peau."
+    ]
+  }
