@@ -129,11 +129,13 @@ export const HISTOIRE_TOPICS = [
     name: "La République turque : naissance d'une nation moderne (de 1923 à nos jours)",
     shortDesc: "Mustafa Kemal Atatürk et la transformation de la Turquie",
     tag: "Histoire",
-    image: "/images/Histoire/anitkabir.png",
+    image: "/images/Histoire/Ottoman_Empire-drap.webp",
     photos: [
-      "/images/places/anitkabir.png",
-      "/images/places/place-taksim.png",
-      "/images/places/ankara-mausolee.png"
+      "/images/Histoire/turquie-1923-Lausanne_map.webp",
+      "/images/Histoire/ataturk.webp",
+      "/images/Histoire/Attaturk.webp",
+      "/images/Histoire/turquie-ataturk-drap.webp",
+      "/images/Histoire/turquie-erdogan.webp"
     ],
     audioTitle: "Atatürk, père de la Turquie moderne",
     audioDuration: "3 min 45 sec",
