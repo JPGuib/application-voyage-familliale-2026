@@ -24,10 +24,9 @@ export const HISTOIRE_TOPICS = [
     audioDuration: "4 min 15 sec",
     audioSrc: "/audio/Histoire/Anatolie.mp3",
     history: ["Le territoire de la Turquie actuelle a été le théâtre de l'émergence et de la chute de nombreuses civilisations : Hittites, Grecs, Romains, Byzantins, Seldjoukides et Ottomans. Chaque ère a laissé une empreinte indélébile sur le paysage, la culture et l'identité turque. De Göbekli Tepe, le plus ancien temple connu, aux murailles de Constantinople, l'histoire turque est un palimpseste où s'entremêlent mythologies, conquêtes et renaissances.",
-      "",
-      "Vers 1650 - 1180 AV JC - Les Hittites", 
+      "\n Vers 1650 - 1180 AV JC - Les Hittites", 
       "Premier grand peuple d'Anatolie, rival de L'Egypte antique. Ils maîtrisent le travail du fer et bâtissent leur capitale, Hattousa.",
-      "",
+      "\n",
       "à compléter"],
       anecdotes: [
       "La ville de Troie, célèbre pour la guerre éponyme, se trouve en Turquie.",
