@@ -31,9 +31,9 @@
     name: "Paris - Istanbul",
     shortDesc: "Vol AF1390 - Paris -> Istanbul",
     tag: "Vol",
-    image: "/images/Vol/Paris Instanbul.webp",
+    image: "/images/Vol/Paris Istanbul.webp",
     photos: [
-      "/images/Vol/Paris Instanbul.webp",
+      "/images/Vol/Paris Istanbul.webp",
       "/images/Vol/Avion aller JPG.webp",
       "/images/Vol/Avion aller KG.webp",
       "/images/Vol/Avion aller Emma.webp",
