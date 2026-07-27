@@ -2045,6 +2045,30 @@ function CultureScreen({
 
 // ─── CONTENT DETAIL SCREEN (used by Place and Histoire topic) ──────────────
 
+// Formatage léger pour les textes "history" (places.ts, histoire.ts,
+// culture-tradition.ts, geographie-economie.ts) : "\n" dans le texte source
+// crée un retour à la ligne, "**mot**" met "mot" en gras. Volontairement
+// minimal (pas de vraie syntaxe Markdown complète) pour rester simple à
+// écrire directement dans les fichiers de contenu.
+function renderFormattedText(text: string) {
+  return text
+    .split("\n")
+    .filter((paragraph) => paragraph.trim().length > 0)
+    .map((paragraph, pIndex) => (
+      <p key={pIndex} className={pIndex > 0 ? "mt-3" : undefined}>
+        {paragraph.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+          part.startsWith("**") && part.endsWith("**") ? (
+            <strong key={i} className="font-black text-foreground">
+              {part.slice(2, -2)}
+            </strong>
+          ) : (
+            <span key={i}>{part}</span>
+          )
+        )}
+      </p>
+    ));
+}
+
 function ContentDetailScreen({
   item,
   onBack,
@@ -2232,9 +2256,9 @@ function ContentDetailScreen({
           <h2 className="text-base font-black text-foreground mb-2">
             📜 Histoire
           </h2>
-          <p className="text-sm text-foreground/80 leading-relaxed">
-            {item.history}
-          </p>
+          <div className="text-sm text-foreground/80 leading-relaxed">
+            {renderFormattedText(item.history)}
+          </div>
         </div>
 
         {/* Anecdotes */}
