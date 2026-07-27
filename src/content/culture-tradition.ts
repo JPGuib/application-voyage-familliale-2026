@@ -81,8 +81,8 @@ export const CULTURE_TRADITION_TOPICS = [
       "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&h=500&fit=crop&auto=format",
       "https://images.unsplash.com/photo-1600335895229-6e75511892c8?w=800&h=500&fit=crop&auto=format",
       "/images/Culture/Culinaire 1.webp",
-      "/images/Culture/Culinaire 2.webp"
-      "/images/Culture/Culinaire 3.webp"
+      "/images/Culture/Culinaire 2.webp",
+      "/images/Culture/Culinaire 3.webp",
     ],
     audioTitle: "Un festin de saveurs",
     audioDuration: "3 min 20 sec",
