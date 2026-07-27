@@ -12,10 +12,11 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "Splendeurs architecturales et lieux de recueillement",
     tag: "Architecture",
     image:
-      "https://images.unsplash.com/photo-1542317370-c155fa5cf19a?w=800&h=500&fit=crop&auto=format",
-    photos: [
-      "https://images.unsplash.com/photo-1542317370-c155fa5cf19a?w=800&h=500&fit=crop&auto=format",
       "https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800&h=500&fit=crop&auto=format",
+    photos: [
+      "https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/Mosquee 1.webp",
+      "/images/Culture/Mosquee 2.webp",
     ],
     audioTitle: "Coupole et minaret",
     audioDuration: "3 min 10 sec",
@@ -33,9 +34,10 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "Comment s'habiller pour visiter un lieu de culte",
     tag: "Pratique",
     image:
-      "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/Vestimentaire 1.webp",
     photos: [
-      "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/Vestimentaire 1.webp",
+      "/images/Culture/Vestimentaire 2.webp",
     ],
     audioTitle: "Respect et modestie",
     audioDuration: "2 min 05 sec",
@@ -53,9 +55,9 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "Les véritables maîtres de la ville",
     tag: "Vie locale",
     image:
-      "https://images.unsplash.com/photo-1513245543132-31f507417b26?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/Chat.webp",
     photos: [
-      "https://images.unsplash.com/photo-1513245543132-31f507417b26?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/Chat.webp",
       "https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=800&h=500&fit=crop&auto=format",
     ],
     audioTitle: "Miaulements sur le Bosphore",
@@ -78,6 +80,9 @@ export const CULTURE_TRADITION_TOPICS = [
     photos: [
       "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&h=500&fit=crop&auto=format",
       "https://images.unsplash.com/photo-1600335895229-6e75511892c8?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/Culinaire 1.webp",
+      "/images/Culture/Culinaire 2.webp"
+      "/images/Culture/Culinaire 3.webp"
     ],
     audioTitle: "Un festin de saveurs",
     audioDuration: "3 min 20 sec",
