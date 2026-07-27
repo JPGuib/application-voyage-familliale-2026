@@ -348,7 +348,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     id: "culture",
     emoji: "🎭",
     title: "Culture et Tradition",
-    subtitle: "Gastronomie, arts et coutumes",
+    subtitle: "Gastronomie, sport, arts et coutumes",
     colorBg: "bg-[#FFF8E1]",
     colorText: "text-[#F57F17]",
   },
