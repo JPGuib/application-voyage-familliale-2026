@@ -831,7 +831,7 @@
       "Le pont a été construit dans l'une des zones les plus sismiques du monde ; les pylônes reposent sur une base de gravier permettant un glissement en cas de séisme."
     ]
   }
-{
+  {
     id: "Istanbul-Nantes",
     jour: [10],
     name: "Istanbul - Nantes",
