@@ -2170,46 +2170,48 @@ function ContentDetailScreen({
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {/* Audio player */}
-        <div className="mx-4 mt-4 bg-primary/10 rounded-2xl p-4 flex items-center gap-4">
-          <button
-            onClick={handleTogglePlay}
-            disabled={!canPlayAudio}
-            className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-md active:scale-95 transition-transform"
-          >
-            {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-          </button>
-          <div className="flex-1">
-            <p className="text-sm font-black text-foreground">
-              {item.audioTitle ?? "Narration audio"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Durée : {realDuration ?? item.audioDuration ?? "3 min 24 sec"}
-            </p>
-            <div className="mt-2 bg-border rounded-full h-1.5">
-              <div
-                className="bg-primary h-1.5 rounded-full transition-all duration-1000"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            {!canPlayAudio && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Aucun fichier audio lié à ce contenu pour le moment.
+        {/* Audio player — n'apparaît que si audioTitle ET audioDuration sont renseignés */}
+        {item.audioTitle && item.audioDuration && (
+          <div className="mx-4 mt-4 bg-primary/10 rounded-2xl p-4 flex items-center gap-4">
+            <button
+              onClick={handleTogglePlay}
+              disabled={!canPlayAudio}
+              className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-md active:scale-95 transition-transform"
+            >
+              {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+            </button>
+            <div className="flex-1">
+              <p className="text-sm font-black text-foreground">
+                {item.audioTitle}
               </p>
-            )}
-            {audioError && (
-              <p className="text-xs text-destructive mt-2">{audioError}</p>
-            )}
+              <p className="text-xs text-muted-foreground">
+                Durée : {realDuration ?? item.audioDuration}
+              </p>
+              <div className="mt-2 bg-border rounded-full h-1.5">
+                <div
+                  className="bg-primary h-1.5 rounded-full transition-all duration-1000"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              {!canPlayAudio && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Aucun fichier audio lié à ce contenu pour le moment.
+                </p>
+              )}
+              {audioError && (
+                <p className="text-xs text-destructive mt-2">{audioError}</p>
+              )}
+            </div>
+            <button
+              onClick={handleToggleMute}
+              disabled={!canPlayAudio}
+              aria-label={isMuted ? "Réactiver le son" : "Couper le son"}
+              className="flex-shrink-0 text-primary active:scale-95 transition-transform disabled:opacity-40"
+            >
+              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
           </div>
-          <button
-            onClick={handleToggleMute}
-            disabled={!canPlayAudio}
-            aria-label={isMuted ? "Réactiver le son" : "Couper le son"}
-            className="flex-shrink-0 text-primary active:scale-95 transition-transform disabled:opacity-40"
-          >
-            {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-          </button>
-        </div>
+        )}
 
         {/* Gallery */}
         <div className="px-4 mt-5">
