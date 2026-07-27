@@ -830,7 +830,7 @@
       "34 000 tonnes d'acier, provenant de Roumanie, ont été utilisées pour sa construction.",
       "Le pont a été construit dans l'une des zones les plus sismiques du monde ; les pylônes reposent sur une base de gravier permettant un glissement en cas de séisme."
     ]
-  }
+  },
   {
     id: "Istanbul-Nantes",
     jour: [10],
