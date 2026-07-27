@@ -35,8 +35,8 @@ export const HISTOIRE_TOPICS = [
       "**1299 - 1923 apr. JC. - L'empire ottoman**\n"+
       "Les turcs seldjoukides apportent l'islam. En 1453, Mehmed II prend Constantinople, qui devient Istanbul. L'empire s'étend sur trois continents, notamment sous Soliman le Magnifique\n"+
       "**1923 à nos jours - La République moderne**\n"+
-      "Mustafa Kemal Atatürk fonde la République turque et la modernise. Le pays est aujourd'hui dirigé par Recep Tayyip Erdoğan\n"+
-    ],
+      "Mustafa Kemal Atatürk fonde la République turque et la modernise. Le pays est aujourd'hui dirigé par Recep Tayyip Erdoğan\n"
+    ,
       anecdotes: [
       "La ville de Troie, célèbre pour la guerre éponyme, se trouve en Turquie.",
       "Le premier traité de paix écrit de l'histoire est le traité hittite-égyptien de Kadesh (1258 av. J.-C.).",
