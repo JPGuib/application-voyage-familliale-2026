@@ -20,7 +20,7 @@ import {
   Trash2,
   Volume2,
   VolumeX,
-  Palette,
+  Theater,
   X,
 } from "lucide-react";
 import { TRIP } from "../content/trip";
@@ -315,7 +315,7 @@ const QUICK_ACTIONS: QuickAction[] = [
   {
     id: "guide",
     emoji: "📖",
-    title: "Guide de voyage",
+    title: "Guide du séjour",
     subtitle: "Découvrir les lieux",
     colorBg: "bg-[#E8F5E9]",
     colorText: "text-[#2E7D32]",
@@ -390,8 +390,8 @@ const EXTERNAL_APP_LINKS: ExternalAppLink[] = [
 
 const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> = [
   { id: "dashboard", icon: Home, label: "Accueil" },
-  { id: "guide", icon: BookOpen, label: "Guide" },
-  { id: "culture", icon: Palette, label: "Traditions" },
+  { id: "guide", icon: BookOpen, label: "Séjour" },
+  { id: "culture", icon: Theater, label: "Traditions" },
   { id: "tips", icon: Lightbulb, label: "Conseils" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
   { id: "results", icon: Trophy, label: "Résultats" },
@@ -1858,7 +1858,7 @@ function GuideScreen({
         >
           <ChevronLeft size={18} /> Accueil
         </button>
-        <h1 className="relative z-10 text-2xl font-black">Guide de Turquie 📖</h1>
+        <h1 className="relative z-10 text-2xl font-black">Guide du séjour 📖</h1>
 
         <div className="relative z-20 mt-3">
           <button
