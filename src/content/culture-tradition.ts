@@ -142,10 +142,8 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "La danse mystique soufie, poésie en mouvement vers l'infini",
     tag: "Spiritualité",
     image:
-      "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/derviche_tourneur.webp",
     photos: [
-      "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&h=500&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1542317370-c155fa5cf19a?w=800&h=500&fit=crop&auto=format",
       "/images/Culture/derviche_tourneur.webp",
     ],
     audioTitle: "La roue vers l'Absolu",
