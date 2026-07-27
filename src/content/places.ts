@@ -831,4 +831,25 @@
       "Le pont a été construit dans l'une des zones les plus sismiques du monde ; les pylônes reposent sur une base de gravier permettant un glissement en cas de séisme."
     ]
   }
+{
+    id: "Istanbul-Nantes",
+    jour: [10],
+    name: "Istanbul - Nantes",
+    shortDesc: "Vol TO3421 - 14h00 -> 17h10",
+    tag: "Vol",
+    image: "/images/Vol/Istanbul Nantes.webp",
+    photos: [
+    ],
+    history:
+      "Vol Transavia TO3421 de Istanbul (IST) à Nantes (NTE). Départ à 14h00 pour une arrivée à 17h10\n"+
+      "**Sièges** : 15D, 15E, 15F, 16F, 16F\"+
+      "Priority boarding",
+    anecdotes: [
+      "Réservation XBGN4C",
+      "Petit sac à ranger devant soi : 40 x 30 x 20 cm",
+      "Valise cabine à ranger dans le compartiment supérieur : 55 x 25 x 40 cm",
+      "Le poids total des bagages à main ne doit pas dépasser 12 kg",
+      "Bagages en soute de 30 kg maximum",
+    ],
+  },
 ];
