@@ -2050,8 +2050,14 @@ function CultureScreen({
 // crée un retour à la ligne, "**mot**" met "mot" en gras. Volontairement
 // minimal (pas de vraie syntaxe Markdown complète) pour rester simple à
 // écrire directement dans les fichiers de contenu.
-function renderFormattedText(text: string) {
-  return text
+function renderFormattedText(text: string | string[] | null | undefined) {
+  // Tolérance : si le contenu a été écrit par erreur comme un tableau de
+  // chaînes (ex: history: ["...", "**Titre**", "..."]), on le rejoint en une
+  // seule chaîne plutôt que de planter — l'écran de détail ne doit jamais
+  // afficher une page blanche à cause d'une erreur de syntaxe dans le contenu.
+  const normalized = Array.isArray(text) ? text.join("\n") : text ?? "";
+
+  return normalized
     .split("\n")
     .filter((paragraph) => paragraph.trim().length > 0)
     .map((paragraph, pIndex) => (
