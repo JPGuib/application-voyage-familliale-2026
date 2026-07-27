@@ -156,4 +156,90 @@ export const CULTURE_TRADITION_TOPICS = [
       "Avant chaque cérémonie, les derviches retirent leurs manteaux noirs symbolisant le tombeau terrestre pour révéler leurs robes blanches — un passage de la mort à la résurrection spirituelle qui dure exactement le temps d'un soupir collectif dans la salle.",
     ],
   },
+  {
+    id: "sport-panorama",
+    name: "Le sport en Turquie",
+    shortDesc: "Du football enflammé aux traditions nomades, une nation en mouvement",
+    tag: "Sport",
+    image:
+      "https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&h=500&fit=crop&auto=format",
+    photos: [
+      "https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&h=500&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=800&h=500&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=800&h=500&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=800&h=500&fit=crop&auto=format",
+    ],
+    audioTitle: "Une nation en mouvement",
+    audioDuration: "4 min 20 sec",
+    audioSrc: "/audio/Culture/Le_sport_en_Turquie.mp3",
+    history:
+      "Le sport en Turquie est bien plus qu'une simple activité de loisir : c'est un vecteur d'identité nationale, de fierté collective et de cohésion sociale. Le football domine largement le paysage sportif, avec trois clubs historiques à Istanbul — Galatasaray, Fenerbahçe et Beşiktaş — dont les derbies sont parmi les plus intenses au monde. Galatasaray reste le seul club turc à avoir soulevé une Coupe d'Europe, en 2000. À côté du football, le volley-ball connaît un essor spectaculaire, particulièrement chez les femmes : la ligue turque (Sultanlar Ligi) attire les meilleures joueuses mondiales et le VakıfBank Istanbul domine la scène européenne. L'équitation perpétue des traditions millénaires, du cirit nomade inscrit à l'UNESCO aux randonnées en Cappadoce. Le tennis, longtemps en retrait, a pris son envol grâce à des tournois ATP et WTA de renom à Istanbul et Antalya. Au-delà de ces disciplines, la lutte à l'huile (yağlı güreş) de Kırkpınar, les sports nautiques sur les côtes égéenne et méditerranéenne, le basket-ball et le handball complètent un écosystème riche et diversifié, porté par une fédération turque qui investit massivement dans les infrastructures et les centres de formation.",
+    anecdotes: [
+      "Le stade Türk Telekom Arena de Galatasaray détient le record du monde de bruit dans une enceinte sportive : 131,76 décibels en 2011, soit l'équivalent sonore d'un décollage d'avion à quelques mètres.",
+      "Lors du festival de lutte à l'huile de Kırkpınar, qui se tient depuis 1361 près d'Edirne, les lutteurs s'enduisent d'huile d'olive de la tête aux pieds et s'affrontent sur l'herbe pendant des heures, dans une tradition si ancienne qu'elle a survécu à l'Empire ottoman, à la République et à l'ère numérique.",
+    ],
+  },
+  {
+    id: "football-turquie",
+    name: "Le football",
+    shortDesc: "Ferveur populaire, derby légendaires et stades mythiques",
+    tag: "Sport",
+    image:
+      "https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&h=500&fit=crop&auto=format",
+    photos: [
+      "https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&h=500&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1522778119026-d647f0565c6a?w=800&h=500&fit=crop&auto=format",
+    ],
+    audioTitle: "Cendres et flammes",
+    audioDuration: "3 min 30 sec",
+    audioSrc: "/audio/Culture/football_turc.mp3",
+    history:
+      "Le football est le sport roi en Turquie, véritable religion laïque qui mobilise des millions de passionnés chaque week-end. Le pays compte trois géants historiques basés à Istanbul : Galatasaray (fondé en 1905), Fenerbahçe (1907) et Beşiktaş (1903), dont les confrontations, notamment le derby de l'intercontinental entre Galatasaray et Fenerbahçe, sont parmi les plus intenses au monde. Galatasaray est le seul club turc à avoir remporté une Coupe d'Europe, en 2000, en soulevant la Coupe UEFA face à Arsenal. Le stade Türk Telekom Arena de Galatasaray est célèbre pour son record du monde de décibels en 2011 (131,76 dB), tandis que le Vodafone Park de Beşiktaş, niché au bord du Bosphore, offre l'un des panoramas les plus spectaculaires du football mondial. La Süper Lig turque attire chaque année des stars internationales, de Didier Drogba à Wesley Sneijder, et les tribunes turques restent célèbres pour leurs tifos monumentaux et leurs chants ininterrompus pendant 90 minutes.",
+    anecdotes: [
+      "En 1996, lors du célèbre 'match des cendres' entre Galatasaray et Leeds United, les supporters de Galatasaray ont accueilli les Anglais avec des cercueils et des croix sur les tribunes, créant une ambiance si hostile que les joueurs de Leeds ont dû être escortés par l'armée turque jusqu'à leur hôtel.",
+      "Le stade de Beşiktaş est le seul au monde où les supporters peuvent voir un but d'un côté et, en levant les yeux, apercevoir un bateau cargo traversant le détroit du Bosphore de l'autre.",
+    ],
+  },
+  {
+    id: "equitation-turquie",
+    name: "L'équitation",
+    shortDesc: "Du cheval nomade aux traditions équestres ottomanes",
+    tag: "Sport",
+    image:
+      "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=800&h=500&fit=crop&auto=format",
+    photos: [
+      "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=800&h=500&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1508217126498-e0e23c0e80ce?w=800&h=500&fit=crop&auto=format",
+    ],
+    audioTitle: "Au galop des steppes",
+    audioDuration: "2 min 40 sec",
+    audioSrc: "/audio/Culture/Equitation_en_turquie.mp3",
+    history:
+      "Le cheval est au cœur de l'identité turque depuis les origines nomades des peuples turcs des steppes d'Asie centrale. Les Ottomans ont perfectionné l'art équestre, transformant le cheval en symbole de prestige militaire et culturel. Aujourd'hui, la Turquie perpétue cette tradition à travers le cirit, un jeu équestre ancestral où des cavaliers à cheval lancent des javelots en bois, inscrit au patrimoine culturel immatériel de l'UNESCO. Le sport hippique reste également populaire, avec des courses à Istanbul, Izmir et Ankara. Les centres équestres de Cappadoce offrent des randonnées à cheval parmi les cheminées de fées, tandis que les écoles d'équitation traditionnelles enseignent encore les figures ottomanes de dressage. Le cheval turc, et particulièrement le pur-sang arabe élevé en Anatolie, est réputé pour son endurance et son élégance.",
+    anecdotes: [
+      "Lors des compétitions de cirit en Anatolie de l'Est, il arrive que des cavaliers lancent leur javelot avec une telle précision qu'ils parviennent à décrocher un foulard accroché à un poteau à pleine galop, sous les acclamations d'une foule qui n'a pas bougé de son siège depuis l'aube.",
+      "Le sultan Mehmed II, conquérant de Constantinople, possédait plus de 10 000 chevaux dans ses écuries impériales, et ses palefreniers disaient qu'il reconnaissait chacun d'eux au galop, dans le noir, rien qu'à l'oreille.",
+    ],
+  },
+  {
+    id: "volley-ball-turquie",
+    name: "Le volley-ball",
+    shortDesc: "Des tribunes en feu et un niveau européen de premier plan",
+    tag: "Sport",
+    image:
+      "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=800&h=500&fit=crop&auto=format",
+    photos: [
+      "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=800&h=500&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1592656094267-764a4518f80b?w=800&h=500&fit=crop&auto=format",
+    ],
+    audioTitle: "Smash sur le Bosphore",
+    audioDuration: "2 min 55 sec",
+    audioSrc: "/audio/Culture/volley-ball_turc.mp3",
+    history:
+      "Le volley-ball est le deuxième sport le plus populaire en Turquie, et le pays compte aujourd'hui parmi les grandes nations mondiales de la discipline, particulièrement chez les femmes. La ligue turque (Vestel Venus Sultanlar Ligi) est considérée comme l'une des meilleures au monde, attirant chaque saison les plus grandes stars internationales. Le club de VakıfBank Istanbul a remporté la Ligue des champions de la CEV à plusieurs reprises et domine le volleyball européen depuis plus d'une décennie. Les tribunes turques de volley-ball sont légendaires pour leur ambiance : les supporters chantent sans interruption, les salles sont pleines à craquer, et les matchs opposant VakıfBank à Eczacıbaşı ou Fenerbahçe attirent des foules comparables à celles des derbies de football. La fédération turque a massivement investi dans les infrastructures et les centres de formation, produisant une génération de joueuses turques de classe mondiale comme Eda Erdem, capitaine emblématique de l'équipe nationale.",
+    anecdotes: [
+      "Lors de la finale de la Ligue des champions 2018 à Bucarest, les supporters de VakıfBank ont fait le déplacement en charter depuis Istanbul avec leurs propres batteries de percussions, transformant la salle roumaine en un stade du Bosphore à 800 kilomètres de chez eux.",
+      "La légende veut que lors du premier match de volley-ball disputé en Turquie, en 1919 à Istanbul, les joueurs utilisaient un filet de pêche emprunté aux marins du Bosphore et une balle cousue main par les sœurs d'un des participants.",
+    ],
+  },
 ];
