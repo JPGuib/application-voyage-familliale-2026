@@ -7,6 +7,8 @@ export type AccessSection =
   | "dashboard"
   | "guide"
   | "histoire"
+  | "geographie"
+  | "culture"
   | "game"
   | "tips"
   | "results"
@@ -20,6 +22,10 @@ export type AppScreen =
   | "place"
   | "histoire"
   | "histoire-topic"
+  | "geographie"
+  | "geographie-topic"
+  | "culture"
+  | "culture-topic"
   | "visite-guidee"
   | "game"
   | "results"
@@ -37,6 +43,8 @@ const OWNER_DURING_ALLOWED: ReadonlyArray<AccessSection> = [
   "dashboard",
   "guide",
   "histoire",
+  "geographie",
+  "culture",
   "game",
   "tips",
   "results",
@@ -51,6 +59,8 @@ const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
   "dashboard",
   "guide",
   "histoire",
+  "geographie",
+  "culture",
   "game",
   "tips",
   "results",
@@ -64,6 +74,14 @@ function screenToSection(screen: AppScreen): AccessSection {
 
   if (screen === "histoire-topic") {
     return "histoire";
+  }
+
+  if (screen === "geographie-topic") {
+    return "geographie";
+  }
+
+  if (screen === "culture-topic") {
+    return "culture";
   }
 
   return screen;

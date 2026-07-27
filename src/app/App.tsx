@@ -20,11 +20,13 @@ import {
   Trash2,
   Volume2,
   VolumeX,
-  Landmark,
+  Palette,
 } from "lucide-react";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
 import { HISTOIRE_TOPICS } from "../content/histoire";
+import { GEOGRAPHIE_ECONOMIE_TOPICS } from "../content/geographie-economie";
+import { CULTURE_TRADITION_TOPICS } from "../content/culture-tradition";
 import {
   CHALLENGE_POINTS,
   DAILY_CHALLENGE,
@@ -271,8 +273,8 @@ const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "place" | "histoire" | "histoire-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
-type QuickScreen = "checklist" | "guide" | "histoire" | "game" | "tips" | "results";
+type Screen = "checklist" | "dashboard" | "guide" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
+type QuickScreen = "checklist" | "guide" | "histoire" | "geographie" | "culture" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
   id: string;
@@ -318,6 +320,14 @@ const QUICK_ACTIONS: QuickAction[] = [
     colorText: "text-[#2E7D32]",
   },
   {
+    id: "checklist",
+    emoji: "🧳",
+    title: "Checklist",
+    subtitle: "Préparatifs et suivi",
+    colorBg: "bg-[#FFF3E0]",
+    colorText: "text-[#E65100]",
+  },
+  {
     id: "histoire",
     emoji: "🏛️",
     title: "Histoire",
@@ -326,12 +336,20 @@ const QUICK_ACTIONS: QuickAction[] = [
     colorText: "text-[#AD1457]",
   },
   {
-    id: "checklist",
-    emoji: "🧳",
-    title: "Checklist",
-    subtitle: "Préparatifs et suivi",
-    colorBg: "bg-[#FFF3E0]",
-    colorText: "text-[#E65100]",
+    id: "geographie",
+    emoji: "🗺️",
+    title: "Géographie et Économie",
+    subtitle: "Relief, climat et économie",
+    colorBg: "bg-[#E0F2F1]",
+    colorText: "text-[#00695C]",
+  },
+  {
+    id: "culture",
+    emoji: "🎭",
+    title: "Culture et Tradition",
+    subtitle: "Gastronomie, arts et coutumes",
+    colorBg: "bg-[#FFF8E1]",
+    colorText: "text-[#F57F17]",
   },
   {
     id: "tips",
@@ -372,8 +390,8 @@ const EXTERNAL_APP_LINKS: ExternalAppLink[] = [
 const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> = [
   { id: "dashboard", icon: Home, label: "Accueil" },
   { id: "guide", icon: BookOpen, label: "Guide" },
+  { id: "culture", icon: Palette, label: "Traditions" },
   { id: "tips", icon: Lightbulb, label: "Conseils" },
-  { id: "histoire", icon: Landmark, label: "Histoire" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
   { id: "results", icon: Trophy, label: "Résultats" },
 ];
@@ -1102,6 +1120,10 @@ function BottomNav({
       ? "guide"
       : current === "histoire-topic"
       ? "histoire"
+      : current === "geographie-topic"
+      ? "geographie"
+      : current === "culture-topic"
+      ? "culture"
       : current;
   return (
     <nav className="flex-shrink-0 bg-card border-t border-border flex items-center justify-around px-2 py-2">
@@ -1979,6 +2001,48 @@ function HistoireScreen({
   );
 }
 
+// ─── GÉOGRAPHIE ET ÉCONOMIE SCREEN ──────────────────────────────────────────
+
+function GeographieScreen({
+  onBack,
+  onTopicSelect,
+}: {
+  onBack: () => void;
+  onTopicSelect: (id: string) => void;
+}) {
+  return (
+    <ContentListScreen
+      items={GEOGRAPHIE_ECONOMIE_TOPICS}
+      headerEmoji="🗺️"
+      headerTitle="Géographie et Économie"
+      headerSubtitle={`${GEOGRAPHIE_ECONOMIE_TOPICS.length} rubriques à explorer`}
+      onBack={onBack}
+      onItemSelect={onTopicSelect}
+    />
+  );
+}
+
+// ─── CULTURE ET TRADITION SCREEN ────────────────────────────────────────────
+
+function CultureScreen({
+  onBack,
+  onTopicSelect,
+}: {
+  onBack: () => void;
+  onTopicSelect: (id: string) => void;
+}) {
+  return (
+    <ContentListScreen
+      items={CULTURE_TRADITION_TOPICS}
+      headerEmoji="🎭"
+      headerTitle="Culture et Tradition"
+      headerSubtitle={`${CULTURE_TRADITION_TOPICS.length} rubriques à explorer`}
+      onBack={onBack}
+      onItemSelect={onTopicSelect}
+    />
+  );
+}
+
 // ─── CONTENT DETAIL SCREEN (used by Place and Histoire topic) ──────────────
 
 function ContentDetailScreen({
@@ -2237,6 +2301,26 @@ function HistoireTopicScreen({
   onBack,
 }: {
   topic: (typeof HISTOIRE_TOPICS)[0];
+  onBack: () => void;
+}) {
+  return <ContentDetailScreen item={topic} onBack={onBack} />;
+}
+
+function GeographieTopicScreen({
+  topic,
+  onBack,
+}: {
+  topic: (typeof GEOGRAPHIE_ECONOMIE_TOPICS)[0];
+  onBack: () => void;
+}) {
+  return <ContentDetailScreen item={topic} onBack={onBack} />;
+}
+
+function CultureTopicScreen({
+  topic,
+  onBack,
+}: {
+  topic: (typeof CULTURE_TRADITION_TOPICS)[0];
   onBack: () => void;
 }) {
   return <ContentDetailScreen item={topic} onBack={onBack} />;
@@ -4006,16 +4090,12 @@ export default function App() {
       return null;
     }
   });
-  const [screen, setScreen] = useState<Screen>(() => {
-    try {
-      return (localStorage.getItem("jp-screen") as Screen) || "checklist";
-    } catch {
-      return "checklist";
-    }
-  });
+  const [screen, setScreen] = useState<Screen>("checklist");
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+  const [selectedGeographieTopicId, setSelectedGeographieTopicId] = useState<string | null>(null);
+  const [selectedCultureTopicId, setSelectedCultureTopicId] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Set<string>>(
     new Set([CHECKLIST_CATEGORIES[0]?.id ?? "vetements-hommes"])
   );
@@ -4223,12 +4303,13 @@ export default function App() {
   // qu'un simple rechargement (F5) revienne sur le même écran plutôt que sur
   // l'écran d'atterrissage par défaut.
   useEffect(() => {
+    if (!isAuthenticated) return;
     try {
       localStorage.setItem("jp-screen", screen);
     } catch {
       // Ignore storage errors; the screen will just reset to its default on reload.
     }
-  }, [screen]);
+  }, [screen, isAuthenticated]);
 
   useEffect(() => {
     if (!cloudEnabled) {
@@ -5194,6 +5275,34 @@ export default function App() {
   };
 
   const histoireTopic = HISTOIRE_TOPICS.find((t) => t.id === selectedTopicId);
+
+  const openGeographieTopic = (id: string) => {
+    if (!canAccessScreen(profile.role, phase, "geographie-topic")) {
+      setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, "geographie-topic"));
+      setScreen(getSafeScreen(profile.role, phase));
+      return;
+    }
+
+    setAccessDeniedMessage(null);
+    setSelectedGeographieTopicId(id);
+    setScreen("geographie-topic");
+  };
+
+  const geographieTopic = GEOGRAPHIE_ECONOMIE_TOPICS.find((t) => t.id === selectedGeographieTopicId);
+
+  const openCultureTopic = (id: string) => {
+    if (!canAccessScreen(profile.role, phase, "culture-topic")) {
+      setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, "culture-topic"));
+      setScreen(getSafeScreen(profile.role, phase));
+      return;
+    }
+
+    setAccessDeniedMessage(null);
+    setSelectedCultureTopicId(id);
+    setScreen("culture-topic");
+  };
+
+  const cultureTopic = CULTURE_TRADITION_TOPICS.find((t) => t.id === selectedCultureTopicId);
 
   const resetForProfileSwitch = () => {
     try {
@@ -6265,6 +6374,42 @@ export default function App() {
         ) : null;
       }
 
+      if (effectiveScreen === "geographie") {
+        return (
+          <GeographieScreen
+            onBack={() => goToScreen("dashboard")}
+            onTopicSelect={openGeographieTopic}
+          />
+        );
+      }
+
+      if (effectiveScreen === "geographie-topic") {
+        return geographieTopic ? (
+          <GeographieTopicScreen
+            topic={geographieTopic}
+            onBack={() => goToScreen("geographie")}
+          />
+        ) : null;
+      }
+
+      if (effectiveScreen === "culture") {
+        return (
+          <CultureScreen
+            onBack={() => goToScreen("dashboard")}
+            onTopicSelect={openCultureTopic}
+          />
+        );
+      }
+
+      if (effectiveScreen === "culture-topic") {
+        return cultureTopic ? (
+          <CultureTopicScreen
+            topic={cultureTopic}
+            onBack={() => goToScreen("culture")}
+          />
+        ) : null;
+      }
+
       if (effectiveScreen === "game") {
         return (
           <GameScreen
@@ -6505,6 +6650,34 @@ export default function App() {
           <HistoireTopicScreen
             topic={histoireTopic}
             onBack={() => goToScreen("histoire")}
+          />
+        ) : null;
+      case "geographie":
+        return (
+          <GeographieScreen
+            onBack={() => goToScreen("dashboard")}
+            onTopicSelect={openGeographieTopic}
+          />
+        );
+      case "geographie-topic":
+        return geographieTopic ? (
+          <GeographieTopicScreen
+            topic={geographieTopic}
+            onBack={() => goToScreen("geographie")}
+          />
+        ) : null;
+      case "culture":
+        return (
+          <CultureScreen
+            onBack={() => goToScreen("dashboard")}
+            onTopicSelect={openCultureTopic}
+          />
+        );
+      case "culture-topic":
+        return cultureTopic ? (
+          <CultureTopicScreen
+            topic={cultureTopic}
+            onBack={() => goToScreen("culture")}
           />
         ) : null;
       case "game":
