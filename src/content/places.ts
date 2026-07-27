@@ -15,10 +15,10 @@
       "/images/Vol/Avion aller Julie.webp",
     ],
     history:
-      "Vol AF7507 de Nantes (NTE) à Paris Charles de Gaulle (CDG). Départ à 19h45 pour une arrivée à 20h55",
+      "Vol **AF7507** de Nantes (NTE) à Paris Charles de Gaulle (CDG). Départ à **19h45** pour une arrivée à 20h55\n"+
+      "L'arrivée à Charles de Gaulle se fait à l'aéroport 2F",
     anecdotes: [
       "Réservation ZT59SQ",
-      "L'arrivée à Charles de Gaulle se fait à l'aéroport 2F",
       "Petit sac à ranger devant soi : 40 x 30 x 15 cm",
       "Valise cabine à ranger dans le compartiment supérieur : 55 x 25 x 35 cm",
       "Le poids total des bagages à main ne doit pas dépasser 12 kg",
@@ -41,10 +41,10 @@
       "/images/Vol/Avion aller Julie.webp",
     ],
     history:
-      "Vol AF1390 de Paris Charles de Gaulle (CDG) à Istanbul (IST). Départ à 22h55 pour une arrivée à 03h30",
+      "Vol **AF1390** de Paris Charles de Gaulle (CDG) à Istanbul (IST). Départ à **22h55** pour une arrivée à **03h30**\n"+
+      "Le départ se fait de l'aéroport Charles de Gaulle 2E",
     anecdotes: [
       "Réservation ZT59SQ",
-      "Le départ se fait de l'aéroport Charles de Gaulle 2E",
       "Petit sac à ranger devant soi : 40 x 30 x 15 cm",
       "Valise cabine à ranger dans le compartiment supérieur : 55 x 25 x 35 cm",
       "Le poids total des bagages à main ne doit pas dépasser 12 kg",
