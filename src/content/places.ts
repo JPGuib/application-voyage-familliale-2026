@@ -840,11 +840,11 @@
     image: "/images/Vol/Istanbul Nantes.webp",
     photos: [
     ],
-    history: "Vol Transavia TO3421 de Istanbul (IST) à Nantes (NTE). Départ à 14h00 pour une arrivée à 17h10\n"+
+    history: "Vol Transavia **TO3421** de Istanbul (IST) à Nantes (NTE). Départ à **14h00** pour une arrivée à 17h10\n"+
     "**Sièges** : 15D, 15E, 15F, 16F, 16F\n"+
     "Priority boarding",
     anecdotes: [
-      "Réservation XBGN4C",
+      "Réservation **XBGN4C**",
       "Petit sac à ranger devant soi : 40 x 30 x 20 cm",
       "Valise cabine à ranger dans le compartiment supérieur : 55 x 25 x 40 cm",
       "Le poids total des bagages à main ne doit pas dépasser 12 kg",
