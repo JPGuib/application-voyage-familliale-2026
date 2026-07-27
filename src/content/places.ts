@@ -70,7 +70,7 @@
     ],
     audioTitle: "Istanbul, entre deux mondes",
     audioDuration: "3 min 40 sec",
-    audioSrc: "/audio/Histoire_de_la_Turquie.mp3",
+    audioSrc: "/audio/places/Istanbul.mp3",
     history:
       "Istanbul est la plus grande ville de Turquie et un point de rencontre entre deux continents. Son histoire s'étend sur des siècles, entre héritage byzantin, ottoman et vie urbaine contemporaine. C'est le meilleur point de départ pour comprendre le voyage en Turquie.",
     anecdotes: [
