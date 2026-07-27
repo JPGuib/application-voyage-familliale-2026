@@ -21,6 +21,7 @@ import {
   Volume2,
   VolumeX,
   Palette,
+  X,
 } from "lucide-react";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
@@ -2095,6 +2096,7 @@ function ContentDetailScreen({
   const [audioError, setAudioError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [realDuration, setRealDuration] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const canPlayAudio = Boolean(item.audioSrc);
 
   useEffect(() => {
@@ -2252,12 +2254,75 @@ function ContentDetailScreen({
           </h2>
           <div className="grid grid-cols-3 gap-2">
             {photos.map((photo, index) => (
-              <div key={`${item.id}-photo-${index}`} className="aspect-square rounded-2xl overflow-hidden bg-muted">
+              <button
+                key={`${item.id}-photo-${index}`}
+                onClick={() => setLightboxIndex(index)}
+                className="aspect-square rounded-2xl overflow-hidden bg-muted active:scale-95 transition-transform"
+              >
                 <img src={photo} alt={`${item.name} photo ${index + 1}`} className="w-full h-full object-cover" />
-              </div>
+              </button>
             ))}
           </div>
         </div>
+
+        {lightboxIndex !== null && (
+          <div
+            className="fixed inset-0 z-50 bg-black/90 flex flex-col"
+            onClick={() => setLightboxIndex(null)}
+          >
+            <div className="flex items-center justify-between px-4 pt-12 pb-3 flex-shrink-0">
+              <span className="text-white/70 text-sm font-bold">
+                {lightboxIndex + 1} / {photos.length}
+              </span>
+              <button
+                onClick={() => setLightboxIndex(null)}
+                aria-label="Fermer"
+                className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-white"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div
+              className="flex-1 flex items-center justify-center px-2 min-h-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={photos[lightboxIndex]}
+                alt={`${item.name} photo ${lightboxIndex + 1}`}
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            </div>
+
+            {photos.length > 1 && (
+              <div
+                className="flex items-center justify-between px-4 pb-10 pt-3 flex-shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() =>
+                    setLightboxIndex((prev) =>
+                      prev === null ? null : (prev - 1 + photos.length) % photos.length
+                    )
+                  }
+                  aria-label="Photo précédente"
+                  className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-white active:scale-95 transition-transform"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={() =>
+                    setLightboxIndex((prev) => (prev === null ? null : (prev + 1) % photos.length))
+                  }
+                  aria-label="Photo suivante"
+                  className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-white active:scale-95 transition-transform"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* History */}
         <div className="px-4 mt-5">
