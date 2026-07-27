@@ -1736,7 +1736,9 @@ type ContentTopic = {
   audioDuration?: string;
   audioSrc?: string;
   history: string;
+  historyLabel?: string;
   anecdotes: string[];
+  anecdotesLabel?: string;
 };
 
 // ─── CONTENT LIST SCREEN (used by Guide and Histoire) ──────────────────────
@@ -2260,7 +2262,7 @@ function ContentDetailScreen({
         {/* History */}
         <div className="px-4 mt-5">
           <h2 className="text-base font-black text-foreground mb-2">
-            📜 Histoire
+            📜 {item.historyLabel ?? "Histoire"}
           </h2>
           <div className="text-sm text-foreground/80 leading-relaxed">
             {renderFormattedText(item.history)}
@@ -2270,7 +2272,7 @@ function ContentDetailScreen({
         {/* Anecdotes */}
         <div className="px-4 mt-5 mb-6">
           <h2 className="text-base font-black text-foreground mb-3">
-            ✨ Le savais-tu ?
+            ✨ {item.anecdotesLabel ?? "Le savais-tu ?"}
           </h2>
           <div className="space-y-3">
             {item.anecdotes.map((anecdote, i) => (

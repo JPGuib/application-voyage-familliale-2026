@@ -14,11 +14,13 @@
       "/images/Vol/Avion aller Thomas.webp",
       "/images/Vol/Avion aller Julie.webp",
     ],
+    historyLabel:"Détails du vol", 
     history:
       "Vol **AF7507** de Nantes (NTE) à Paris Charles de Gaulle (CDG). Départ à **19h45** pour une arrivée à 20h55\n"+
-      "L'arrivée à Charles de Gaulle se fait à l'aéroport 2F",
+      "L'arrivée à Charles de Gaulle se fait à l'aéroport 2F\n"+
+      "**Réservation** : ZT59SQ",
+    anecdotesLabel: "Informations bagages",
     anecdotes: [
-      "Réservation ZT59SQ",
       "Petit sac à ranger devant soi : 40 x 30 x 15 cm",
       "Valise cabine à ranger dans le compartiment supérieur : 55 x 25 x 35 cm",
       "Le poids total des bagages à main ne doit pas dépasser 12 kg",
@@ -40,12 +42,14 @@
       "/images/Vol/Avion aller Thomas.webp",
       "/images/Vol/Avion aller Julie.webp",
     ],
+    historyLabel:"Détails du vol", 
     history:
       "Vol **AF1390** de Paris Charles de Gaulle (CDG) à Istanbul (IST). Départ à **22h55** pour une arrivée à **03h30**\n"+
-      "Le départ se fait de l'aéroport Charles de Gaulle 2E",
+      "Le départ se fait de l'aéroport Charles de Gaulle 2E\n"+
+      "**Réservation** : ZT59SQ",
+    anecdotesLabel: "Informations bagages",
     anecdotes: [
-      "Réservation ZT59SQ",
-      "Petit sac à ranger devant soi : 40 x 30 x 15 cm",
+            "Petit sac à ranger devant soi : 40 x 30 x 15 cm",
       "Valise cabine à ranger dans le compartiment supérieur : 55 x 25 x 35 cm",
       "Le poids total des bagages à main ne doit pas dépasser 12 kg",
       "Bagages en soute de 23 kg maximum",
@@ -840,11 +844,13 @@
     image: "/images/Vol/Istanbul Nantes.webp",
     photos: [
     ],
+    historyLabel:"Détails du vol",
     history: "Vol Transavia **TO3421** de Istanbul (IST) à Nantes (NTE). Départ à **14h00** pour une arrivée à 17h10\n"+
     "**Sièges** : 15D, 15E, 15F, 16F, 16F\n"+
-    "Priority boarding",
+    "Priority boarding\n"+
+    "**Réservation** : XBGN4C",
+    anecdotesLabel:"Informations bagages",
     anecdotes: [
-      "Réservation **XBGN4C**",
       "Petit sac à ranger devant soi : 40 x 30 x 20 cm",
       "Valise cabine à ranger dans le compartiment supérieur : 55 x 25 x 40 cm",
       "Le poids total des bagages à main ne doit pas dépasser 12 kg",
