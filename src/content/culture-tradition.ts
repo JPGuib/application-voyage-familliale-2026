@@ -114,4 +114,48 @@ export const CULTURE_TRADITION_TOPICS = [
       "Le burqini, inventé en Australie, a connu un succès inattendu en Turquie, où certaines marques locales en proposent des versions colorées et stylées, parfois vendues à côté des bikinis dans les boutiques de plage.",
     ],
   },
+ {
+    id: "hammam-bains-turcs",
+    name: "Les Hammam et bains turcs",
+    shortDesc: "Rituel millénaire de purification, de détente et de socialisation",
+    tag: "Bien-être",
+    image:
+      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop&auto=format",
+    photos: [
+      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/hammam_traditionnel.webp",
+    ],
+    audioTitle: "Vapeur et marbre",
+    audioDuration: "3 min 15 sec",
+    audioSrc: "/audio/Culture/Les_Hammam.mp3",
+    history:
+      "Le hammam, ou bain turc, est bien plus qu'un simple lieu de toilette : c'est un rituel social et spirituel hérité des Romains, perfectionné par les Ottomans. Dans l'architecture ottomane, chaque quartier possédait son hammam, souvent construit à côté d'une mosquée. L'espace se divise en trois pièces chauffées à des températures croissantes : le camekan (vestiaire), le soğukluk (salle tiède) et le hararet (salle chaude) avec son grand göbek taşı — la pierre de marbre chauffée au centre où l'on s'étend pour se faire frotter et savonner par le tellak (masseur). La purification du corps précède celle de l'âme, et la visite au hammam reste aujourd'hui un moment de détente partagé entre amis, familles ou avant un mariage, où les futures mariées y passent la veille des noces dans une cérémonie appelée kına gecesi.",
+    anecdotes: [
+      "Dans le hammam Çemberlitaş d'Istanbul, construit en 1584 par l'architecte Sinan, on raconte que les femmes de la cour ottomane venaient y tenir conseil et régler leurs querelles dans la chaleur anonyme de la vapeur.",
+      "Le savon noir (kese) utilisé pour le gommage est si efficace que les habitués du hammam prétendent qu'on y perd non seulement sa peau morte, mais aussi parfois un bronzage acquis trois semaines plus tôt.",
+    ],
+  },
+  {
+    id: "derviche-tourneurs",
+    name: "Les derviches tourneurs",
+    shortDesc: "La danse mystique soufie, poésie en mouvement vers l'infini",
+    tag: "Spiritualité",
+    image:
+      "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&h=500&fit=crop&auto=format",
+    photos: [
+      "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&h=500&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1542317370-c155fa5cf19a?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/derviche_tourneur.webp",
+    ],
+    audioTitle: "La roue vers l'Absolu",
+    audioDuration: "2 min 50 sec",
+    audioSrc: "/audio/Culture/Les_derviches_tourneurs.mp3",
+    history:
+      "La cérémonie des derviches tourneurs, ou Sema, est une pratique soufie née au XIIIe siècle sous l'impulsion de Jalal ad-Din Rumi, fondateur de l'ordre mevlevi à Konya. La danse n'est pas un spectacle mais une méditation active : le derviche, vêtu d'une longue jupe blanche symbolisant le linceul, tourne sur lui-même la tête inclinée et les bras ouverts — la main droite vers le ciel pour recevoir la grâce divine, la gauche vers la terre pour la transmettre. La rotation, toujours dans le sens inverse des aiguilles d'une montre, symbolise les planètes en orbite autour du soleil et l'âme tournant vers Dieu. Bien que l'ordre mevlevi ait été interdit en 1925 par Atatürk, la Sema a été réhabilitée comme patrimoine culturel immatériel de l'UNESCO en 2008 et se pratique aujourd'hui dans des cadres touristiques et spirituels, notamment à Konya et à Istanbul.",
+    anecdotes: [
+      "À Konya, lors du festival annuel de Mevlana en décembre, des milliers de derviches tournent simultanément dans la grande salle de la Mevlana Museum, créant un murmure de tissus blancs si hypnotique que certains spectateurs oublient de cligner des yeux pendant des minutes entières.",
+      "Avant chaque cérémonie, les derviches retirent leurs manteaux noirs symbolisant le tombeau terrestre pour révéler leurs robes blanches — un passage de la mort à la résurrection spirituelle qui dure exactement le temps d'un soupir collectif dans la salle.",
+    ],
+  },
 ];
