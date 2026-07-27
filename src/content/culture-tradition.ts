@@ -165,7 +165,7 @@ export const CULTURE_TRADITION_TOPICS = [
       "/images/Culture/Turquie sport.webp",
     photos: [
       "/images/Culture/Turquie sport.webp",
-      "/images/Culture/foot/Sport en Turquie altero.webp",
+      "/images/Culture/Sport en Turquie altero.webp",
     ],
     audioTitle: "Une nation en mouvement",
     audioDuration: "4 min 20 sec",
@@ -213,10 +213,9 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "L'art ancestral du javelot à cheval, patrimoine immatériel de l'UNESCO",
     tag: "Tradition",
     image:
-      "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/cirit/Cirit 1.webp",
     photos: [
-      "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=800&h=500&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1508217126498-e0e23c0e80ce?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/cirit/Cirit 1.webp",
       "/images/Culture/cirit/Cirit 2.webp",
       "/images/Culture/cirit/Cirit 3.webp",
       "/images/Culture/cirit/Cirit 4.webp",
