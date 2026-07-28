@@ -3109,9 +3109,9 @@ function TipsScreen({ onBack }: { onBack: () => void }) {
                 {TIPS.exchangeRate.eurToTry}
               </p>
             </div>
-            <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
-              {TIPS.exchangeRate.note}
-            </p>
+            <div className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+              {renderFormattedText(TIPS.exchangeRate.note)}
+            </div>
           </div>
         )}
         {content[tab].map((item, i) => (
