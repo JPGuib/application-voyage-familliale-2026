@@ -3127,9 +3127,9 @@ function TipsScreen({ onBack }: { onBack: () => void }) {
                   {item.phonetic}
                 </p>
               )}
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                {item.desc}
-              </p>
+              <div className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                {renderFormattedText(item.desc)}
+              </div>
             </div>
           </div>
         ))}

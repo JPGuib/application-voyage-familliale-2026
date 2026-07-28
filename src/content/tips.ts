@@ -196,9 +196,11 @@ export const TIPS = {
     tryToEur: "1 ₺ = 0,0186 €",
     eurToTry: "1 € ≈ 53,80 ₺",
     note: "Taux indicatif du jour, à actualiser avant le départ car il fluctue régulièrement.\n"+
-    "Le moyen pour convertir de tête les livres turques en euro : retirer 2 zéros (ou déplacer la virgule vers la gauche 2 fois) et multiplier par 2\n"+
+    "**Le moyen pour convertir de tête les livres turques en euro :** \n"+
+    "Retirer 2 zéros (ou déplacer la virgule vers la gauche 2 fois) et multiplier par 2\n"+
     "Exemple : 500 livres > 5 > 10 euros\n"+
-    "Autre exemple : 48 livres > 0,48 > 0,96 euros\n"+
+    "Autre exemple : \n"+
+    "48 livres > 0,48 > 0,96 euros\n"+
     "Le montant est approximatif mais l'ordre d'idée est le bon.\n",
   },
   weather: {
