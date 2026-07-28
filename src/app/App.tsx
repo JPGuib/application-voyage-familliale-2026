@@ -348,7 +348,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     id: "culture",
     emoji: "🎭",
     title: "Culture et Tradition",
-    subtitle: "Gastronomie, sport, arts et coutumes",
+    subtitle: "Gastronomie, arts et coutumes",
     colorBg: "bg-[#FFF8E1]",
     colorText: "text-[#F57F17]",
   },
@@ -1581,6 +1581,7 @@ function DashboardScreen({
   daysUntilStart: number | null;
   todayFormatted: string;
 }) {
+  const [mapLightboxOpen, setMapLightboxOpen] = useState(false);
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       {/* Header */}
@@ -1681,13 +1682,39 @@ function DashboardScreen({
           Circuit du séjour
         </p>
         <div className="rounded-2xl overflow-hidden bg-muted relative">
-          <img
-            src="/images/Carte du voyage.png"
-            alt="Carte du circuit du séjour en Turquie"
-            className="w-full h-auto object-contain"
-          />
+          <button onClick={() => setMapLightboxOpen(true)} className="block w-full active:scale-95 transition-transform">
+            <img
+              src="/images/Carte du voyage.png"
+              alt="Carte du circuit du séjour en Turquie"
+              className="w-full h-auto object-contain"
+            />
+          </button>
         </div>
       </div>
+
+      {mapLightboxOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex flex-col"
+          onClick={() => setMapLightboxOpen(false)}
+        >
+          <div className="flex items-center justify-end px-4 pt-12 pb-3 flex-shrink-0">
+            <button
+              onClick={() => setMapLightboxOpen(false)}
+              aria-label="Fermer"
+              className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-white"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className="flex-1 flex items-center justify-center px-2 min-h-0" onClick={(e) => e.stopPropagation()}>
+            <img
+              src="/images/Carte du voyage.png"
+              alt="Carte du circuit du séjour en Turquie"
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Photos du séjour */}
       <div className="px-4 mt-5 mb-6">

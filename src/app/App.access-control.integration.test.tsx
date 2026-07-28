@@ -88,7 +88,7 @@ describe("App access-control integration", () => {
     });
 
     expect(screen.queryByRole("button", { name: "Accueil" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Guide" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Séjour" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
 
@@ -194,9 +194,9 @@ describe("App access-control integration", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Guide" }));
+    fireEvent.click(screen.getByRole("button", { name: "Séjour" }));
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Guide de Turquie/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Jeu" }));
@@ -435,9 +435,9 @@ describe("App access-control integration", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Guide" }));
+    fireEvent.click(screen.getByRole("button", { name: "Séjour" }));
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Guide de Turquie/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
     });
 
     snapshot = makeSnapshot("before");

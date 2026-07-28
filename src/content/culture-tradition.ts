@@ -213,13 +213,12 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "L'art ancestral du javelot à cheval, patrimoine immatériel de l'UNESCO",
     tag: "Tradition",
     image:
-      "/images/Culture/cirit/Cirit 1.webp",
+      "/images/Culture/cirit/Cirit 5.webp",
     photos: [
-      "/images/Culture/cirit/Cirit 1.webp",
+      "/images/Culture/cirit/Cirit 5.webp",
       "/images/Culture/cirit/Cirit 2.webp",
       "/images/Culture/cirit/Cirit 3.webp",
       "/images/Culture/cirit/Cirit 4.webp",
-      "/images/Culture/cirit/Cirit 5.webp",
       "/images/Culture/cirit/Cirit 6.webp",
       "/images/Culture/cirit/Cirit 7.webp",
       "/images/Culture/cirit/Cirit 8.webp",    
