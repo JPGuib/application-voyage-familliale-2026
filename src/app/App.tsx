@@ -37,6 +37,7 @@ import {
   RIDDLE_POINTS,
 } from "../content/game";
 import { TIPS } from "../content/tips";
+import { getScheduledCoordinates, useDeviceLocation, useWeather } from "./weather";
 import {
   computeBadges,
   parseGameHistory,
@@ -3017,7 +3018,14 @@ function ResultsScreen({
 
 // ─── TIPS SCREEN ─────────────────────────────────────────────────────────────
 
-function TipsScreen({ onBack }: { onBack: () => void }) {
+function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: number }) {
+  const dayEntry = JOURS_DESTINATIONS.find((d) => d.jour === currentDay) as
+    | Record<string, unknown>
+    | undefined;
+  const { coords: deviceCoords } = useDeviceLocation();
+  const scheduledCoords = getScheduledCoordinates(dayEntry);
+  const activeCoords = deviceCoords ?? scheduledCoords;
+  const { weather, loading: weatherLoading, error: weatherError } = useWeather(activeCoords);
   const [tab, setTab] = useState<
     "transport" | "customs" | "dictionary" | "payment" | "emergency" | "food"
   >("transport");
@@ -3059,21 +3067,35 @@ function TipsScreen({ onBack }: { onBack: () => void }) {
       {/* Weather */}
       <div className="px-4 mt-4 flex-shrink-0">
         <div className="bg-[#E3F2FD] rounded-2xl p-4 flex items-center gap-4">
-          <span className="text-4xl">☀️</span>
-          <div className="flex-1">
-            <p className="font-black text-2xl text-[#1565C0]">
-              {TIPS.weather.temp}
-            </p>
-            <p className="text-sm font-bold text-foreground">
-              {TIPS.weather.condition}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Humidité : {TIPS.weather.humidity}
-            </p>
-          </div>
-          <p className="text-xs text-[#1565C0] font-bold text-right max-w-[100px]">
-            {TIPS.weather.tip}
-          </p>
+          {weather ? (
+            <>
+              <span className="text-4xl">{weather.emoji}</span>
+              <div className="flex-1">
+                <p className="font-black text-2xl text-[#1565C0]">
+                  {weather.temp}
+                </p>
+                <p className="text-sm font-bold text-foreground">
+                  {weather.condition}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Humidité : {weather.humidity}
+                </p>
+              </div>
+              <p className="text-xs text-[#1565C0] font-bold text-right max-w-[100px]">
+                {TIPS.weather.tip}
+              </p>
+            </>
+          ) : (
+            <div className="flex-1 text-sm text-muted-foreground">
+              {!activeCoords
+                ? "Position non disponible pour le moment (GPS refusé et aucune coordonnée programmée pour aujourd'hui)."
+                : weatherLoading
+                ? "Récupération de la météo du jour…"
+                : weatherError
+                ? "Météo indisponible pour le moment."
+                : "Météo indisponible pour le moment."}
+            </div>
+          )}
         </div>
       </div>
 
@@ -6602,7 +6624,7 @@ export default function App() {
       }
 
       if (effectiveScreen === "tips") {
-        return <TipsScreen onBack={() => goToScreen("dashboard")} />;
+        return <TipsScreen onBack={() => goToScreen("dashboard")} currentDay={currentDay} />;
       }
 
       return (
@@ -6868,7 +6890,7 @@ export default function App() {
           />
         );
       case "tips":
-        return <TipsScreen onBack={() => goToScreen("dashboard")} />;
+        return <TipsScreen onBack={() => goToScreen("dashboard")} currentDay={currentDay} />;
       case "settings":
         return (
           <SettingsScreen

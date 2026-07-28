@@ -1,0 +1,63 @@
+Nouvelles fonctionnalités
+------------------------
+
+P3 - Story 12.1 — Redirection après changement de profil 
+P3 - Story 12.3 (ex-2.3) — Création personnalisée de catégories de checklist
+A REVOIR P3 - Story 16.1 (fusion ex-6.1, ex-6.2, ex-6.3) — Ouverture des liens Wanderlog et Polarsteps
+P3 - Story 17.2 (ex-7.2) — Météo en temps réel via géolocalisation, avec conseil adapté
+P3 - Story 18.2 — Accès complet du propriétaire + indicateur d'état de verrouillage
+EN COURS - P0 - Story 18.3 — Suppression de son propre profil
+P3 - Story 18.4 — Affichage de la question de récupération de mot de passe
+P3 - Story 18.5 — Consultation de la question et réponse de récupération
+P3 - Story 18.6 — Connexion via la question de récupération (mot de passe oublié)
+P3 - Story 18.7 — Retrait du bouton "Retirer le mot de passe"
+P3 - Story 18.8 — Retrait de la "Phrase de récupération" et affichage du code propriétaire actuel
+P3 - Story 18.9 — Mot de passe et récupération obligatoires à la création d'un profil
+P3 - Story 18.10 — Conserver l'écran courant après un hard refresh
+P2 - Story 19.1 — Verrouillage du défi du jour après complétion
+P2 - Story 19.2 — Podium cumulé des utilisateurs dans l'écran Résultats
+P2 - Story 19.3 — Correction du "Score total" et du "Score par journée"
+
+
+CLAUDE - Revoir l'icone de l'application => compliqué
+CLAUDE - Relie toutes les phrases et à adapter si nécessaire
+CLAUDE - Revoir les icones
+CLAUDE - Remplacer le orange par une photo, revoir le texte, faire comme sur wanderlog
+
+ORDRE D'EXECUTION : 
+Ordre d’exécution concret (proposé)
+Je te propose une exécution par lots, en gardant la logique métier et les dépendances:
+
+P0 immédiat
+	18.3 suppression profil => implémenté mais il y a un bug=> la suppression n'est pas effective
+	BUG : quand je change de profil et que je mets le profil admin, il ne me demande plus de mot de passe ! Gros bug !
+	BUG de navigation, quand je suis par exemple jour 2, je clique dans le détail de saint Sophie, j'appuie sur le bouton pour revenir en arrière, il me renvoie au niveau du guide jour 1
+	Clique sur photo pour voir en plus grand ?
+	Quand pas d'audio dans le .ts => pas d'audio dans le rendu final
+	Rendre les tags histoire, le savais-tu paramétrable pour chaque rubrique ou item ?
+
+
+P2 valeur produit jeux/resultats
+			19.1 verrouillage defi jour
+			19.3 score total par jour
+			19.2 podium resultats
+P3 UX et confort
+			12.1 redirection changement profil
+			12.3 categories personnalisees
+			17.2 meteo geolocalisation
+			18.10 refresh ecran courant
+			18.2 acces proprietaire
+			18.4 question recuperation
+			18.5 question reponse recuperation
+			18.6 connexion recuperation
+			18.7 retrait bouton mdp
+			18.8 code proprietaire affichage
+			18.9 mdp obligatoire creation
+
+
+Backlog
+-------
+
+* Créer les utilisateurs et mot de passe par défaut ? 
+* Avoir des utilisateurs qui sont des visiteurs avec des droits plus restreints à définir
+* rajouter des j'aime j'aime pas et possibilité de commenter les lieux visités ?	
