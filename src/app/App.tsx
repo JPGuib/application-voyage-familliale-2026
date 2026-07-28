@@ -37,7 +37,7 @@ import {
   RIDDLE_POINTS,
 } from "../content/game";
 import { TIPS } from "../content/tips";
-import { getScheduledCoordinates, useDeviceLocation, useWeather } from "./weather";
+import { getScheduledCoordinates, getWeatherAdvice, useDeviceLocation, useWeather } from "./weather";
 import {
   computeBadges,
   parseGameHistory,
@@ -3082,7 +3082,7 @@ function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: nu
                 </p>
               </div>
               <p className="text-xs text-[#1565C0] font-bold text-right max-w-[100px]">
-                {TIPS.weather.tip}
+                {getWeatherAdvice(weather)}
               </p>
             </>
           ) : (

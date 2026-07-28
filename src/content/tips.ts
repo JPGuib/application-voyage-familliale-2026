@@ -203,10 +203,4 @@ export const TIPS = {
     "48 livres > 0,48 > 0,96 euros\n"+
     "Le montant est approximatif mais l'ordre d'idée est le bon.\n",
   },
-  weather: {
-    temp: "29°C",
-    condition: "Ensoleillé",
-    humidity: "54%",
-    tip: "Pensez à l'eau, à la casquette et à la crème solaire.",
-  },
 };

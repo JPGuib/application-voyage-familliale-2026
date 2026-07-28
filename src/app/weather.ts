@@ -96,6 +96,9 @@ export type WeatherInfo = {
   condition: string;
   emoji: string;
   humidity: string;
+  rawTemp: number;
+  windSpeedKmh: number;
+  isPrecipitation: boolean;
 };
 
 type WeatherState = {
@@ -119,6 +122,23 @@ function describeWeatherCode(code: number): { condition: string; emoji: string }
   return { condition: "Conditions variables", emoji: "🌡️" };
 }
 
+// Codes météo WMO impliquant des précipitations (bruine, pluie, neige, averses, orage).
+const PRECIPITATION_CODES = new Set([
+  51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 71, 73, 75, 77, 80, 81, 82, 85, 86, 95, 96, 99,
+]);
+
+/**
+ * Conseil textuel adapté à la météo courante, une seule règle à la fois par
+ * ordre de priorité : précipitations > froid > chaleur > vent fort > défaut.
+ */
+export function getWeatherAdvice(weather: WeatherInfo): string {
+  if (weather.isPrecipitation) return "Prenez un parapluie ou une veste imperméable.";
+  if (weather.rawTemp <= 10) return "Prévoyez une veste chaude, il fait frais.";
+  if (weather.rawTemp >= 28) return "Pensez à l'eau, la casquette et la crème solaire.";
+  if (weather.windSpeedKmh > 40) return "Attention au vent, évitez les objets qui pourraient s'envoler.";
+  return "Météo agréable, profitez de votre journée !";
+}
+
 export function useWeather(coords: Coordinates | null): WeatherState {
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [loading, setLoading] = useState(false);
@@ -133,7 +153,7 @@ export function useWeather(coords: Coordinates | null): WeatherState {
     setLoading(true);
     setError(false);
 
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,weather_code&timezone=auto`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto`;
 
     fetch(url)
       .then((res) => {
@@ -155,6 +175,9 @@ export function useWeather(coords: Coordinates | null): WeatherState {
             typeof current.relative_humidity_2m === "number"
               ? `${Math.round(current.relative_humidity_2m)}%`
               : "—",
+          rawTemp: current.temperature_2m,
+          windSpeedKmh: typeof current.wind_speed_10m === "number" ? current.wind_speed_10m : 0,
+          isPrecipitation: PRECIPITATION_CODES.has(current.weather_code),
         });
         setLoading(false);
       })
