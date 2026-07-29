@@ -4743,9 +4743,11 @@ export default function App() {
 
     const cloudProfile = cloudSnapshot.profiles[profile.id];
     if (!cloudProfile) {
-      // Profile no longer exists in cloud (deleted from another device).
+      // Profile no longer exists in cloud (deleted from another device, or by
+      // ourselves via deleteOwnProfile — which already handles its own reset
+      // once the deletion completes, so skip here to avoid racing it).
       // If we were previously hydrated with this profile, fail closed to profile selection.
-      if (hydratedCloudProfileIdRef.current === profile.id) {
+      if (hydratedCloudProfileIdRef.current === profile.id && !isDeletingProfileRef.current) {
         resetForProfileSwitch();
       }
       return;
@@ -4844,6 +4846,11 @@ export default function App() {
   // locale avant que la confirmation du push n'arrive.
   const pendingTripStartDateRef = useRef<string | null | "none">("none");
   const ownerDeviceRegisteredRef = useRef(false);
+  // Empêche le push automatique de re-créer un profil dans le cloud pendant
+  // la fenêtre asynchrone entre la suppression cloud et le reset local de
+  // l'état "profile" (l'écho temps réel de Firebase peut arriver avant que
+  // resetForProfileSwitch() n'ait vidé role/surname).
+  const isDeletingProfileRef = useRef(false);
 
   useEffect(() => {
     if (!cloudEnabled || !isAuthenticated) {
@@ -4864,6 +4871,7 @@ export default function App() {
 
   useEffect(() => {
     if (!cloudEnabled || !cloudReady) return;
+    if (isDeletingProfileRef.current) return;
 
     const hasCloudProfile = Boolean(cloudSnapshot?.profiles[profile.id]);
     const canPush = shouldPushCloudSnapshot({
@@ -5546,9 +5554,11 @@ export default function App() {
     const deletedProfileId = profile.id;
 
     if (cloudEnabled) {
+      isDeletingProfileRef.current = true;
       try {
         await deleteProfile(deletedProfileId);
       } catch {
+        isDeletingProfileRef.current = false;
         return { ok: false, message: "Erreur lors de la suppression. Réessayez." };
       }
     }
@@ -5582,6 +5592,7 @@ export default function App() {
     });
 
     resetForProfileSwitch();
+    isDeletingProfileRef.current = false;
     return { ok: true, message: "" };
   };
 

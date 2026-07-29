@@ -6,7 +6,7 @@ P3 - Story 12.3 (ex-2.3) — Création personnalisée de catégories de checklis
 A REVOIR P3 - Story 16.1 (fusion ex-6.1, ex-6.2, ex-6.3) — Ouverture des liens Wanderlog et Polarsteps
 P3 - Story 17.2 (ex-7.2) — Météo en temps réel via géolocalisation, avec conseil adapté
 P3 - Story 18.2 — Accès complet du propriétaire + indicateur d'état de verrouillage
-EN COURS - P0 - Story 18.3 — Suppression de son propre profil
+FIX APPLIQUE (à valider) - P0 - Story 18.3 — Suppression de son propre profil
 P3 - Story 18.4 — Affichage de la question de récupération de mot de passe
 P3 - Story 18.5 — Consultation de la question et réponse de récupération
 P3 - Story 18.6 — Connexion via la question de récupération (mot de passe oublié)
@@ -29,7 +29,7 @@ Ordre d’exécution concret (proposé)
 Je te propose une exécution par lots, en gardant la logique métier et les dépendances:
 
 P0 immédiat
-	18.3 suppression profil => implémenté mais il y a un bug=> la suppression n'est pas effective
+	18.3 suppression profil => bug corrigé (race d'auto-push cloud qui recréait le profil juste après sa suppression) => à valider en manuel
 	BUG : quand je change de profil et que je mets le profil admin, il ne me demande plus de mot de passe ! Gros bug !
 	BUG de navigation, quand je suis par exemple jour 2, je clique dans le détail de saint Sophie, j'appuie sur le bouton pour revenir en arrière, il me renvoie au niveau du guide jour 1
 	Clique sur photo pour voir en plus grand ?

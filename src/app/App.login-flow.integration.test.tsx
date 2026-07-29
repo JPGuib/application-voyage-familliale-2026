@@ -1315,6 +1315,71 @@ describe("App profile deletion (story 18.3)", () => {
     // Maman (owner) should still appear in the profile selection list
     expect(screen.getByRole("button", { name: /Maman/i })).toBeInTheDocument();
   });
+
+  it("does not resurrect the deleted profile if the cloud snapshot echoes the deletion before local state resets", async () => {
+    let resolveDelete: () => void = () => {};
+    const deleteInFlight = new Promise<void>((resolve) => {
+      resolveDelete = resolve;
+    });
+    const inFlightDeleteProfileMock = vi.fn().mockImplementation(() => deleteInFlight);
+    const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+
+    const snapshotWithoutP2 = {
+      ...baseSnapshot,
+      familyState: {
+        ...baseSnapshot.familyState,
+        profiles: baseSnapshot.familyState.profiles.filter((p) => p.id !== "p2"),
+      },
+      profiles: { p1: baseSnapshot.profiles.p1 },
+    };
+
+    let currentReturn = {
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: baseSnapshot,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      deleteProfile: inFlightDeleteProfileMock,
+      familyId: "famille-voyage-2026",
+    };
+    cloudSyncMock.mockImplementation(() => currentReturn);
+
+    const { rerender } = render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    // Ordinary session sync pushes happen while logged in, before any
+    // deletion is attempted; only calls from here on are relevant to the race.
+    pushSnapshotMock.mockClear();
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer mon profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer définitivement" }));
+
+    // The cloud delete call is now in-flight. Simulate Firebase's realtime
+    // listener echoing the server-side deletion back to the client before
+    // deleteOwnProfile has had a chance to reset local profile state
+    // (role/surname still point at the profile being deleted).
+    currentReturn = { ...currentReturn, cloudSnapshot: snapshotWithoutP2 };
+    rerender(<App />);
+
+    expect(pushSnapshotMock).not.toHaveBeenCalled();
+
+    resolveDelete();
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
+    });
+
+    expect(pushSnapshotMock).not.toHaveBeenCalled();
+  });
 });
 
 // ─── Metadata hydration (story 10.4) ─────────────────────────────────────────
