@@ -1862,12 +1862,15 @@ function GuideScreen({
   onBack,
   onPlaceSelect,
   currentDay,
+  selectedDay,
+  onSelectedDayChange,
 }: {
   onBack: () => void;
   onPlaceSelect: (id: string) => void;
   currentDay: number;
+  selectedDay: number;
+  onSelectedDayChange: (day: number) => void;
 }) {
-  const [selectedDay, setSelectedDay] = useState(currentDay);
   const [selectorOpen, setSelectorOpen] = useState(false);
 
   const dayPlaces = PLACES.filter((place) =>
@@ -1925,7 +1928,7 @@ function GuideScreen({
                   <button
                     key={entry.jour}
                     onClick={() => {
-                      setSelectedDay(entry.jour);
+                      onSelectedDayChange(entry.jour);
                       setSelectorOpen(false);
                     }}
                     className={`w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted transition-colors border-b border-border/60 last:border-b-0 ${
@@ -4241,6 +4244,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("checklist");
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [guideSelectedDay, setGuideSelectedDay] = useState<number | null>(null);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [selectedGeographieTopicId, setSelectedGeographieTopicId] = useState<string | null>(null);
   const [selectedCultureTopicId, setSelectedCultureTopicId] = useState<string | null>(null);
@@ -6492,6 +6496,8 @@ export default function App() {
             onBack={() => goToScreen("dashboard")}
             onPlaceSelect={openPlace}
             currentDay={currentDay}
+            selectedDay={guideSelectedDay ?? currentDay}
+            onSelectedDayChange={setGuideSelectedDay}
           />
         );
       }
@@ -6780,6 +6786,8 @@ export default function App() {
             onBack={() => goToScreen("dashboard")}
             onPlaceSelect={openPlace}
             currentDay={currentDay}
+            selectedDay={guideSelectedDay ?? currentDay}
+            onSelectedDayChange={setGuideSelectedDay}
           />
         );
       case "place":
