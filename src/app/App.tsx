@@ -276,6 +276,7 @@ const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
 type Screen = "checklist" | "dashboard" | "guide" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
 type QuickScreen = "checklist" | "guide" | "histoire" | "geographie" | "culture" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
@@ -4225,7 +4226,20 @@ export default function App() {
       return null;
     }
   });
-  const [screen, setScreen] = useState<Screen>("checklist");
+  const [screen, setScreen] = useState<Screen>(() => {
+    if (cloudEnabled) {
+      // En mode cloud, l'écran est restauré après le bootstrap d'authentification
+      // (voir l'effet plus bas qui lit "jp-screen" une fois le profil connu).
+      return "checklist";
+    }
+
+    try {
+      const saved = localStorage.getItem("jp-screen");
+      return SCREEN_VALUES.includes(saved as Screen) ? (saved as Screen) : "checklist";
+    } catch {
+      return "checklist";
+    }
+  });
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [guideSelectedDay, setGuideSelectedDay] = useState<number | null>(null);
@@ -5014,6 +5028,17 @@ export default function App() {
   }, [unlockLockedUntil]);
 
   useEffect(() => {
+    // Pendant le bootstrap cloud (auth, snapshot, hydratation du profil), le rôle
+    // et la phase peuvent transiter par des valeurs par défaut/incohérentes avant
+    // de se stabiliser. Vérifier l'accès à ce moment-là déclenchait un refus
+    // d'accès fantôme (message rouge) et repoussait l'écran restauré vers
+    // Checklist. On attend que le même chargement que l'écran de chargement
+    // (CloudLoadingScreen) soit terminé avant de faire respecter les accès.
+    const isBootstrapping =
+      isInitializing ||
+      (cloudEnabled && (!cloudReady || isAuthBootstrapPending || isProfileHydrationPending || !isAuthenticated));
+    if (isBootstrapping) return;
+
     if (!canAccessScreen(profile.role, phase, screen)) {
       setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, screen));
       const safeScreen = getSafeScreen(profile.role, phase);
@@ -5021,7 +5046,17 @@ export default function App() {
         setScreen(safeScreen);
       }
     }
-  }, [phase, profile.role, screen]);
+  }, [
+    phase,
+    profile.role,
+    screen,
+    cloudEnabled,
+    cloudReady,
+    isAuthBootstrapPending,
+    isProfileHydrationPending,
+    isAuthenticated,
+    isInitializing,
+  ]);
 
   useEffect(() => {
     if (!accessDeniedMessage) {
@@ -5451,6 +5486,7 @@ export default function App() {
   const resetForProfileSwitch = () => {
     try {
       localStorage.removeItem(ACTIVE_PROFILE_ID_KEY);
+      localStorage.removeItem("jp-screen");
     } catch {
       // Ignore local storage failures; in-memory state reset still works.
     }
