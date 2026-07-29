@@ -13,14 +13,11 @@ dist/
 /.agents/
 /.github/agents/
 /_bmad/
-/_bmad-output/
 
 # Local helper file used to prepare BMAD commits
 /BMAD_COMMIT_FILES.md
 
 # BMAD generated artifacts inside guidelines (planning/execution traces)
-/guidelines/_bmad-output/implementation-artifacts/
-/guidelines/_bmad-output/planning-artifacts/
 /guidelines/_bmad-output/docs/
 
 # BMAD planning docs generated for delivery workflow

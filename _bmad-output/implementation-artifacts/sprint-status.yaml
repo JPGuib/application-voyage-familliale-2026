@@ -1,0 +1,168 @@
+# generated: 2026-07-05
+# last_updated: 2026-07-19
+# project: application de voyage 2026
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+#
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+generated: 2026-07-05
+last_updated: 2026-07-19
+project_key: NOKEY
+tracking_system: file-system
+story_location: {project-root}/_bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: done
+  1-1-creer-un-profil-local: done
+  1-2-gerer-le-profil-dans-parametres: done
+  1-3-configurer-le-code-proprietaire: done
+  1-4-debloquer-on-est-partis-avec-code: done
+  epic-1-retrospective: optional
+
+  epic-2: done
+  2-1-cocher-decocher-les-items-de-checklist: done
+  2-2-afficher-la-progression-globale-en-temps-reel: done
+  epic-2-retrospective: optional
+
+  epic-3: done
+  3-1-afficher-le-contexte-du-jour-sur-dashboard: done
+  3-2-naviguer-vers-modules-internes: done
+  3-3-ouvrir-wanderlog-et-polarsteps: done
+  3-4-consulter-conseils-voyage-par-onglets: done
+  epic-3-retrospective: optional
+
+  epic-4: done
+  4-1-externaliser-le-contenu-voyage: done
+  4-2-mettre-a-jour-tout-le-contenu-en-turquie: done
+  4-3-afficher-la-liste-des-lieux-dans-guide: done
+  4-4-afficher-une-fiche-lieu-detaillee-avec-galerie: done
+  4-5-lire-laudio-du-lieu: done
+  epic-4-retrospective: optional
+
+  epic-5: done
+  5-1-completer-le-quiz-du-jour: done
+  5-2-completer-une-enigme-du-jour: done
+  5-3-completer-un-defi-du-jour: done
+  5-4-calculer-et-afficher-resultats: done
+  epic-5-retrospective: optional
+
+  epic-6: in-progress
+  6-1-activer-un-mode-hors-ligne-mvp: done
+  6-2-deployer-lapplication-sur-vercel: done
+  epic-6-retrospective: optional
+
+  epic-7: done
+  7-1-synchroniser-donnees-multi-device-cloud-sync: done
+  7-2-login-et-selection-profil: done
+  7-3-deconnexion-et-changement-profil: done
+  epic-7-retrospective: optional
+
+  epic-8: done
+  8-1-stocker-un-hash-du-code-proprietaire: done
+  8-2-bloquer-promotion-manuelle-vers-proprietaire: done
+  8-3-couvrir-invariants-owner-unique-en-integration-et-e2e: done
+  epic-8-retrospective: optional
+
+  epic-9: done
+  9-1-configurer-une-phrase-de-recuperation-proprietaire: done
+  9-2-reinitialiser-le-code-via-le-flow-code-oublie: done
+  9-3-couvrir-les-gardes-de-recuperation-par-tests: done
+  epic-9-retrospective: optional
+
+  epic-10: done
+  10-1-regles-visibilite-rubriques-role-deblocage: done
+  10-2-authentification-mot-de-passe-par-profil: done
+  10-3-checklist-persistante-apres-deblocage: done
+  10-4-adaptation-checklist-par-profil: done
+  10-5-mise-a-jour-contenu-checklist: done
+  10-6-recuperation-mot-de-passe-par-question-reponse-par-profil: done
+  10-7-mot-de-passe-oublie-au-changement-profil-via-recovery: done
+  10-8-changement-mot-de-passe-en-session-ancien-ou-recovery: done
+  10-9-afficher-masquer-les-saisies-sensibles-sans-revelation-stockee: done
+  epic-10-retrospective: optional
+
+  epic-11: done
+  11-1-corriger-contrat-rendu-phase-screen-ecran-blanc: done
+  11-2-initialisation-atomique-avant-rendu-metier: done
+  11-3-source-de-verite-cloud-pour-state-partage: done
+  11-4-isolation-stricte-switch-profil-et-garde-push-auth: done
+  11-5-auditer-versionner-security-rules-firebase: done
+  11-6-decider-et-appliquer-deblocage-famille-wide: done
+  11-7-finaliser-deprecation-code-owner-legacy-clair: done
+  11-8-recette-non-regression-multi-appareils: done
+  epic-11-retrospective: optional
+
+  epic-12: backlog
+  12-1-redirection-changement-profil: backlog
+  12-2-isolation-checklist-par-profil-resolue-par-1-4: done
+  12-3-categories-personnalisees: backlog
+  epic-12-retrospective: optional
+
+  epic-13: done
+  13-1-changement-code-avec-confirmation: done
+  13-2-affichage-masque-du-code-a-la-demande: done
+  epic-13-retrospective: optional
+
+  epic-14: backlog
+  14-1-jour-voyage: backlog
+  14-2-table-jour-destination: backlog
+  14-3-navigation-accueil: backlog
+  epic-14-retrospective: optional
+
+  epic-15: in-progress
+  15-1-photos-guide: backlog
+  15-2-photos-lieu-detail-corrige: done
+  15-3-selecteur-guide: backlog
+  15-4-retrait-badges-guide: backlog
+  15-5-guide-de-visite: backlog
+  15-6-audio-lieux: backlog
+  epic-15-retrospective: optional
+
+  epic-16: backlog
+  16-1-wanderlog-polarsteps: backlog
+  16-2-fusionnee-dans-16-1: done
+  16-3-fusionnee-dans-16-1: done
+  epic-16-retrospective: optional
+
+  epic-17: backlog
+  17-1-isolation-reponses-jeu-resolue-par-1-4: done
+  17-2-meteo-geolocalisation: backlog
+  epic-17-retrospective: optional
+
+  epic-18: in-progress
+  18-1-reverrouillage: ready-for-dev
+  18-2-acces-proprietaire: backlog
+  18-3-suppression-profil: backlog
+  18-4-question-recuperation: backlog
+  18-5-question-reponse-recuperation: backlog
+  18-6-connexion-recuperation: backlog
+  18-7-retrait-bouton-mdp: backlog
+  18-8-code-proprietaire-affichage: backlog
+  18-9-mdp-obligatoire-creation: backlog
+  18-10-refresh-ecran-courant: backlog
+  18-11-nom-lieu-tronque: backlog
+  epic-18-retrospective: optional
+
+  epic-19: backlog
+  19-1-verrouillage-defi-jour: backlog
+  19-2-podium-resultats: backlog
+  19-3-score-total-par-jour: backlog
+  epic-19-retrospective: optional
