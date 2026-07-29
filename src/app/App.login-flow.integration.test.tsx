@@ -348,41 +348,28 @@ describe("App cloud login flow", () => {
     expect(screen.queryByRole("heading", { name: "Préparer nos bagages" })).not.toBeInTheDocument();
   });
 
-  it("can remove a profile password from settings", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+  it("does not show a button to remove a configured profile password", async () => {
+    render(<App />);
 
-    try {
-      render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
-      fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-      fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
 
-      await waitFor(() => {
-        expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
-      });
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
 
-      fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+    fireEvent.change(screen.getAllByPlaceholderText("Minimum 4 caractères")[0], {
+      target: { value: "safe-pass" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Définir le mot de passe" }));
 
-      fireEvent.change(screen.getAllByPlaceholderText("Minimum 4 caractères")[0], {
-        target: { value: "safe-pass" },
-      });
-      fireEvent.click(screen.getByRole("button", { name: "Définir le mot de passe" }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Changer le mot de passe en session" })).toBeInTheDocument();
+    });
 
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: "Retirer le mot de passe" })).toBeInTheDocument();
-      });
-
-      fireEvent.click(screen.getByRole("button", { name: "Retirer le mot de passe" }));
-
-      await waitFor(() => {
-        expect(screen.getByRole("button", { name: "Définir le mot de passe" })).toBeInTheDocument();
-      });
-      expect(
-        screen.getByText("Aucun mot de passe configuré. Ce profil reste accessible sans mot de passe.")
-      ).toBeInTheDocument();
-    } finally {
-      confirmSpy.mockRestore();
-    }
+    expect(screen.queryByRole("button", { name: "Retirer le mot de passe" })).not.toBeInTheDocument();
   });
 
   it("shows forgot-password link when profile recovery is configured", async () => {

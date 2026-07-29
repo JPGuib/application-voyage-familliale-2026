@@ -3581,22 +3581,6 @@ function SettingsScreen({
             {passwordChangeFeedback && (
               <p className="mt-2 text-xs font-bold text-muted-foreground">{passwordChangeFeedback}</p>
             )}
-            {profilePasswordConfigured && (
-              <button
-                onClick={async () => {
-                  const confirmed = window.confirm("Retirer le mot de passe de ce profil ?");
-                  if (!confirmed) {
-                    return;
-                  }
-                  const result = await onRemoveProfilePassword();
-                  setProfilePasswordFeedback(result.message);
-                  if (result.ok) setProfilePasswordInput("");
-                }}
-                className="mt-2 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
-              >
-                Retirer le mot de passe
-              </button>
-            )}
             {profilePasswordFeedback && (
               <p className="mt-2 text-xs font-bold text-muted-foreground">{profilePasswordFeedback}</p>
             )}
