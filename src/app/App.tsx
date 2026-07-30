@@ -3183,7 +3183,7 @@ function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: nu
 function SettingsScreen({
   profile,
   ownerCodeConfigured,
-  ownerRecoveryConfigured,
+  ownerCodeCurrent,
   profilePasswordConfigured,
   profileRecoveryConfigured,
   profileRecoveryQuestion,
@@ -3193,7 +3193,6 @@ function SettingsScreen({
   onSaveSurname,
   onSaveProfileMetadata,
   onSaveOwnerCode,
-  onSaveOwnerRecoveryPhrase,
   onConfirmRelock,
   onSaveProfilePassword,
   onChangeProfilePasswordInSession,
@@ -3207,7 +3206,7 @@ function SettingsScreen({
 }: {
   profile: Profile;
   ownerCodeConfigured: boolean;
-  ownerRecoveryConfigured: boolean;
+  ownerCodeCurrent: string;
   profilePasswordConfigured: boolean;
   profileRecoveryConfigured: boolean;
   profileRecoveryQuestion: string;
@@ -3217,7 +3216,6 @@ function SettingsScreen({
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
   onSaveProfileMetadata: (gender: Gender, householdRole: HouseholdRole) => void;
   onSaveOwnerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
-  onSaveOwnerRecoveryPhrase: (phrase: string) => Promise<{ ok: boolean; message: string }>;
   onConfirmRelock: (code: string) => Promise<{ ok: boolean; message: string }>;
   onSaveProfilePassword: (password: string) => Promise<{ ok: boolean; message: string }>;
   onChangeProfilePasswordInSession: (
@@ -3254,8 +3252,6 @@ function SettingsScreen({
   const [ownerCodeFeedback, setOwnerCodeFeedback] = useState<string | null>(null);
   const [relockCodeInput, setRelockCodeInput] = useState("");
   const [relockFeedback, setRelockFeedback] = useState<string | null>(null);
-  const [ownerRecoveryInput, setOwnerRecoveryInput] = useState("");
-  const [ownerRecoveryFeedback, setOwnerRecoveryFeedback] = useState<string | null>(null);
   const [profilePasswordInput, setProfilePasswordInput] = useState("");
   const [profilePasswordFeedback, setProfilePasswordFeedback] = useState<string | null>(null);
   const [profileRecoveryQuestionInput, setProfileRecoveryQuestionInput] = useState(profileRecoveryQuestion);
@@ -3268,9 +3264,9 @@ function SettingsScreen({
   }, [profileRecoveryAnswer]);
   const [profileRecoveryFeedback, setProfileRecoveryFeedback] = useState<string | null>(null);
   const [showOwnerCodeInput, setShowOwnerCodeInput] = useState(false);
+  const [showOwnerCodeCurrent, setShowOwnerCodeCurrent] = useState(false);
   const [showRelockPrompt, setShowRelockPrompt] = useState(false);
   const [showRelockCodeInput, setShowRelockCodeInput] = useState(false);
-  const [showOwnerRecoveryInput, setShowOwnerRecoveryInput] = useState(false);
   const [showProfilePasswordInput, setShowProfilePasswordInput] = useState(false);
   const [showPasswordChangeFlow, setShowPasswordChangeFlow] = useState(false);
   const [passwordProofMethod, setPasswordProofMethod] =
@@ -3733,6 +3729,32 @@ function SettingsScreen({
                 ? "Un code est déjà configuré. Vous pouvez le remplacer."
                 : "Aucun code configuré pour le moment."}
             </p>
+
+            {ownerCodeConfigured && (
+              <div className="mt-3 rounded-xl border border-border bg-muted/30 px-3 py-3">
+                <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+                  Code actuel
+                </p>
+                {ownerCodeCurrent ? (
+                  <>
+                    <p className="mt-1 text-sm font-black text-foreground tracking-[0.3em]">
+                      {showOwnerCodeCurrent ? ownerCodeCurrent : "●".repeat(ownerCodeCurrent.length)}
+                    </p>
+                    <button
+                      onClick={() => setShowOwnerCodeCurrent((previous) => !previous)}
+                      className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+                    >
+                      {showOwnerCodeCurrent ? "Masquer" : "Afficher"} le code actuel
+                    </button>
+                  </>
+                ) : (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Code configuré avant l'ajout de cet affichage : redéfinissez-le ci-dessous pour pouvoir le consulter.
+                  </p>
+                )}
+              </div>
+            )}
+
             <input
               type={showOwnerCodeInput ? "text" : "password"}
               value={ownerCodeInput}
@@ -3857,57 +3879,6 @@ function SettingsScreen({
             </p>
             <p className="text-xs text-muted-foreground mt-2">
               Seul un profil propriétaire peut configurer ce code.
-            </p>
-          </div>
-        )}
-
-        {profile.role === "proprietaire" ? (
-          <div className="bg-card rounded-2xl border border-border p-4">
-            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
-              Phrase de récupération
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              {ownerRecoveryConfigured
-                ? "Une phrase est déjà configurée. Vous pouvez la remplacer."
-                : "Aucune phrase configurée pour le moment."}
-            </p>
-            <input
-              type={showOwnerRecoveryInput ? "text" : "password"}
-              value={ownerRecoveryInput}
-              onChange={(e) => {
-                setOwnerRecoveryInput(e.target.value);
-                if (ownerRecoveryFeedback) setOwnerRecoveryFeedback(null);
-              }}
-              placeholder="Votre phrase personnelle (min. 5 caractères)"
-              className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-            />
-            <button
-              onClick={() => setShowOwnerRecoveryInput((previous) => !previous)}
-              className="mt-2 text-xs font-black text-primary underline underline-offset-4"
-            >
-              {showOwnerRecoveryInput ? "Masquer" : "Afficher"} la phrase saisie
-            </button>
-            <button
-              onClick={async () => {
-                const result = await onSaveOwnerRecoveryPhrase(ownerRecoveryInput);
-                setOwnerRecoveryFeedback(result.message);
-                if (result.ok) setOwnerRecoveryInput("");
-              }}
-              className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
-            >
-              {ownerRecoveryConfigured ? "Mettre à jour la phrase" : "Définir la phrase"}
-            </button>
-            {ownerRecoveryFeedback && (
-              <p className="mt-2 text-xs font-bold text-muted-foreground">{ownerRecoveryFeedback}</p>
-            )}
-          </div>
-        ) : (
-          <div className="bg-card rounded-2xl border border-border p-4">
-            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
-              Phrase de récupération
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Seul un profil propriétaire peut configurer cette phrase.
             </p>
           </div>
         )}
@@ -4370,6 +4341,17 @@ export default function App() {
       return "";
     }
   });
+  const [ownerCodePlain, setOwnerCodePlain] = useState<string>(() => {
+    if (cloudEnabled) {
+      return "";
+    }
+
+    try {
+      return localStorage.getItem("jp-owner-code-plain") || "";
+    } catch {
+      return "";
+    }
+  });
   const [ownerRecoveryHash, setOwnerRecoveryHash] = useState<string>(() => {
     if (cloudEnabled) {
       return "";
@@ -4666,6 +4648,7 @@ export default function App() {
         localStorage.removeItem("jp-profile");
         localStorage.removeItem("jp-family-state");
         localStorage.removeItem("jp-owner-code-hash");
+        localStorage.removeItem("jp-owner-code-plain");
         localStorage.removeItem("jp-owner-code");
         localStorage.removeItem("jp-owner-recovery-hash");
         localStorage.removeItem("jp-profile-password-hashes");
@@ -4687,6 +4670,7 @@ export default function App() {
         );
         try {
           localStorage.setItem("jp-owner-code-hash", ownerCodeHash);
+          localStorage.setItem("jp-owner-code-plain", ownerCodePlain);
           localStorage.setItem("jp-owner-recovery-hash", ownerRecoveryHash);
           localStorage.removeItem("jp-owner-code");
           localStorage.setItem(
@@ -4745,6 +4729,7 @@ export default function App() {
     profile,
     familyState,
     ownerCodeHash,
+    ownerCodePlain,
     ownerRecoveryHash,
     profilePasswordHashes,
     profileRecoveryHashes,
@@ -4795,6 +4780,9 @@ export default function App() {
     );
     setOwnerCodeHash((previous) =>
       previous === cloudSnapshot.ownerCodeHash ? previous : cloudSnapshot.ownerCodeHash
+    );
+    setOwnerCodePlain((previous) =>
+      previous === (cloudSnapshot.ownerCodePlain || "") ? previous : (cloudSnapshot.ownerCodePlain || "")
     );
     setOwnerRecoveryHash((previous) =>
       previous === (cloudSnapshot.ownerRecoveryHash || "") ? previous : (cloudSnapshot.ownerRecoveryHash || "")
@@ -5002,6 +4990,7 @@ export default function App() {
       canWriteFamilyState,
       familyState: normalized,
       ownerCodeHash,
+      ownerCodePlain,
       ownerRecoveryHash,
       ownerRecoveryConfiguredAt: ownerRecoveryHash ? true : false,
       profileId: profile.id,
@@ -5031,6 +5020,7 @@ export default function App() {
       canWriteFamilyState,
       familyState: normalized,
       ownerCodeHash,
+      ownerCodePlain,
       ownerRecoveryHash,
       ownerRecoveryConfiguredAt: undefined,
       profileId: profile.id,
@@ -5062,6 +5052,7 @@ export default function App() {
     isAuthenticated,
     isAuthBootstrapPending,
     ownerCodeHash,
+    ownerCodePlain,
     ownerRecoveryHash,
     profilePasswordHashes,
     profileRecoveryHashes,
@@ -5745,6 +5736,7 @@ export default function App() {
       canWriteFamilyState,
       familyState: normalizedFamilyState,
       ownerCodeHash,
+      ownerCodePlain,
       ownerRecoveryHash,
       ownerRecoveryConfiguredAt: cloudSnapshot.ownerRecoveryConfiguredAt,
       profileId: profile.id,
@@ -5997,6 +5989,7 @@ export default function App() {
           canWriteFamilyState: false,
           familyState: cloudSnapshot.familyState,
           ownerCodeHash: cloudSnapshot.ownerCodeHash,
+          ownerCodePlain: cloudSnapshot.ownerCodePlain,
           ownerRecoveryHash: cloudSnapshot.ownerRecoveryHash,
           ownerRecoveryConfiguredAt: cloudSnapshot.ownerRecoveryConfiguredAt,
           profileId: selected.profileId,
@@ -6458,7 +6451,7 @@ export default function App() {
           <SettingsScreen
             profile={profile}
             ownerCodeConfigured={ownerCodeHash.length > 0}
-            ownerRecoveryConfigured={ownerRecoveryHash.length > 0}
+            ownerCodeCurrent={ownerCodePlain}
             profilePasswordConfigured={currentProfilePasswordHash.length > 0}
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             profileRecoveryQuestion={currentProfileRecoveryQuestion}
@@ -6493,30 +6486,8 @@ export default function App() {
               }
               const nextHash = await hashOwnerCode(normalized);
               setOwnerCodeHash(nextHash);
+              setOwnerCodePlain(normalized);
               return { ok: true, message: "Code propriétaire mis à jour." };
-            }}
-            onSaveOwnerRecoveryPhrase={async (phrase) => {
-              if (!canUpdateOwnerCode(familyState, profile.id)) {
-                return {
-                  ok: false,
-                  message: "Seul le profil propriétaire peut configurer la phrase.",
-                };
-              }
-              const normalized = phrase.trim();
-              if (normalized.length < 5) {
-                return {
-                  ok: false,
-                  message: "La phrase doit contenir au moins 5 caractères.",
-                };
-              }
-              try {
-                const nextHash = await hashOwnerRecoveryPhrase(normalized);
-                setOwnerRecoveryHash(nextHash);
-                return { ok: true, message: "Phrase de récupération mise à jour." };
-              } catch (e) {
-                const message = e instanceof Error ? e.message : "Erreur lors du hachage de la phrase.";
-                return { ok: false, message };
-              }
             }}
             onConfirmRelock={confirmRelockJourney}
             onSaveProfilePassword={async (password) => {
@@ -7047,7 +7018,7 @@ export default function App() {
           <SettingsScreen
             profile={profile}
             ownerCodeConfigured={ownerCodeHash.length > 0}
-            ownerRecoveryConfigured={ownerRecoveryHash.length > 0}
+            ownerCodeCurrent={ownerCodePlain}
             profilePasswordConfigured={currentProfilePasswordHash.length > 0}
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             profileRecoveryQuestion={currentProfileRecoveryQuestion}
@@ -7082,30 +7053,8 @@ export default function App() {
               }
               const nextHash = await hashOwnerCode(normalized);
               setOwnerCodeHash(nextHash);
+              setOwnerCodePlain(normalized);
               return { ok: true, message: "Code propriétaire mis à jour." };
-            }}
-            onSaveOwnerRecoveryPhrase={async (phrase) => {
-              if (!canUpdateOwnerCode(familyState, profile.id)) {
-                return {
-                  ok: false,
-                  message: "Seul le profil propriétaire peut configurer la phrase.",
-                };
-              }
-              const normalized = phrase.trim();
-              if (normalized.length < 5) {
-                return {
-                  ok: false,
-                  message: "La phrase doit contenir au moins 5 caractères.",
-                };
-              }
-              try {
-                const nextHash = await hashOwnerRecoveryPhrase(normalized);
-                setOwnerRecoveryHash(nextHash);
-                return { ok: true, message: "Phrase de récupération mise à jour." };
-              } catch (e) {
-                const message = e instanceof Error ? e.message : "Erreur lors du hachage de la phrase.";
-                return { ok: false, message };
-              }
             }}
             onConfirmRelock={confirmRelockJourney}
             onSaveProfilePassword={async (password) => {

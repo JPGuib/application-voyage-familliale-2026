@@ -37,6 +37,7 @@ type PushSnapshotInput = {
   canWriteFamilyState: boolean;
   familyState: SharedFamilyState;
   ownerCodeHash: string;
+  ownerCodePlain?: string;
   ownerRecoveryHash?: string;
   ownerRecoveryConfiguredAt?: number;
   profileId: string;
@@ -304,6 +305,7 @@ export function useCloudSync() {
         canWriteFamilyState: snapshot.canWriteFamilyState,
         familyState: snapshot.familyState,
         ownerCodeHash: snapshot.ownerCodeHash,
+        ownerCodePlain: snapshot.ownerCodePlain,
         ownerRecoveryHash: snapshot.ownerRecoveryHash,
         ownerRecoveryConfiguredAt: snapshot.ownerRecoveryConfiguredAt,
         profileId: snapshot.profileId,

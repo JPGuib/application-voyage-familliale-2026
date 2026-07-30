@@ -144,7 +144,7 @@ describe("owner recovery phrase integration", () => {
     await expect(verifyOwnerCode("old-1234", nextHash)).resolves.toBe(true);
   });
 
-  it("redirects to settings with guidance when no recovery phrase is configured", async () => {
+  it("redirects to settings when no recovery phrase is configured", async () => {
     await seedOwnerSession({ withRecoveryPhrase: false });
     render(React.createElement(App));
 
@@ -153,7 +153,7 @@ describe("owner recovery phrase integration", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Profil & paramètres ⚙️")).toBeInTheDocument();
-      expect(screen.getByText("Aucune phrase configurée pour le moment.")).toBeInTheDocument();
     });
+    expect(screen.queryByText("Phrase de récupération")).not.toBeInTheDocument();
   });
 });

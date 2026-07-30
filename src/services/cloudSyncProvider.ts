@@ -242,6 +242,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   return {
     familyState,
     ownerCodeHash: typeof root.ownerCodeHash === "string" ? root.ownerCodeHash : "",
+    ownerCodePlain: toOptionalNonEmptyString(root.ownerCodePlain),
     phase: sharedPhase,
     tripStartDate: typeof root.tripStartDate === "string" ? root.tripStartDate : null,
     ownerGlobalChecklistAdditions: parseChecklistCustomItems(ownerGlobalAdditionRecords),
@@ -367,6 +368,7 @@ export async function pushCloudSnapshot(
     // chemin différent (ownerUids) qui n'a pas de règle Firebase définie et
     // ferait échouer tout l'envoi groupé.
     updates.ownerCodeHash = payload.ownerCodeHash;
+    updates.ownerCodePlain = payload.ownerCodePlain?.trim() || null;
     updates.phase = payload.phase;
     // On n'écrit jamais explicitement null ici : tant qu'aucune fonctionnalité
     // "effacer la date" n'existe, une valeur locale vide/nulle ne doit jamais
