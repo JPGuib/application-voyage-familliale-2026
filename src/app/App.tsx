@@ -22,6 +22,8 @@ import {
   VolumeX,
   Theater,
   X,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
@@ -1004,20 +1006,23 @@ function CloudLoginScreen({
                 <p className="text-xs text-muted-foreground mt-1">
                   Saisissez le mot de passe du profil {passwordPromptProfileSurname}.
                 </p>
-                <input
-                  type={showPasswordPrompt ? "text" : "password"}
-                  value={passwordPromptValue}
-                  onChange={(e) => onPasswordPromptValueChange(e.target.value)}
-                  placeholder="Mot de passe"
-                  className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPasswordPrompt((previous) => !previous)}
-                  className="mt-2 text-xs font-black text-primary underline underline-offset-4"
-                >
-                  {showPasswordPrompt ? "Masquer" : "Afficher"} le mot de passe saisi
-                </button>
+                <div className="relative mt-3">
+                  <input
+                    type={showPasswordPrompt ? "text" : "password"}
+                    value={passwordPromptValue}
+                    onChange={(e) => onPasswordPromptValueChange(e.target.value)}
+                    placeholder="Mot de passe"
+                    className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordPrompt((previous) => !previous)}
+                    aria-label={showPasswordPrompt ? "Masquer le mot de passe saisi" : "Afficher le mot de passe saisi"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showPasswordPrompt ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {passwordPromptError && (
                   <p className="mt-2 text-xs font-bold text-destructive">{passwordPromptError}</p>
                 )}
