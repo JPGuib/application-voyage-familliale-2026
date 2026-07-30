@@ -47,12 +47,13 @@ function makeSnapshot(ownerCodePlain: string) {
 
 async function renderSettingsAsOwner(ownerCodePlain: string) {
   localStorage.setItem("jp-active-profile-id", "p1");
+  const snapshot = makeSnapshot(ownerCodePlain);
   cloudSyncMock.mockImplementation(() => ({
     cloudEnabled: true,
     cloudReady: true,
     cloudAuthError: null,
     cloudActorUid: "actor-1",
-    cloudSnapshot: makeSnapshot(ownerCodePlain),
+    cloudSnapshot: snapshot,
     pushSnapshot: vi.fn().mockResolvedValue(undefined),
     claimRoleForProfile: vi.fn().mockResolvedValue(null),
     familyId: "famille-voyage-2026",
@@ -83,37 +84,37 @@ describe("owner code display in settings (story 18.8)", () => {
     expect(screen.queryByText("Phrase de récupération")).not.toBeInTheDocument();
   });
 
-  it("shows the current code masked by default and reveals it on demand", async () => {
+  it("pre-fills the single code field with the current code, masked by default, revealed via the eye icon", async () => {
     await renderSettingsAsOwner("1234");
 
-    expect(screen.getByText("Code actuel")).toBeInTheDocument();
-    expect(screen.queryByText("1234")).not.toBeInTheDocument();
+    const codeInput = screen.getByDisplayValue("1234") as HTMLInputElement;
+    expect(codeInput).toHaveAttribute("type", "password");
 
-    fireEvent.click(screen.getByRole("button", { name: "Afficher le code actuel" }));
-    expect(screen.getByText("1234")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Afficher le code" }));
+    expect(codeInput).toHaveAttribute("type", "text");
 
-    fireEvent.click(screen.getByRole("button", { name: "Masquer le code actuel" }));
-    expect(screen.queryByText("1234")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Masquer le code" }));
+    expect(codeInput).toHaveAttribute("type", "password");
   });
 
-  it("keeps 'afficher le code saisi' (new code) independent from the current code reveal", async () => {
+  it("lets the owner edit the pre-filled field and save a new code", async () => {
     await renderSettingsAsOwner("1234");
 
-    const newCodeInputs = screen.getAllByPlaceholderText("Minimum 4 caractères");
-    fireEvent.change(newCodeInputs[0], {
-      target: { value: "5678" },
+    const codeInput = screen.getByDisplayValue("1234");
+    fireEvent.change(codeInput, { target: { value: "5678" } });
+    fireEvent.click(screen.getByRole("button", { name: "Mettre à jour le code" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Code propriétaire mis à jour.")).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole("button", { name: "Afficher le code saisi" }));
-
     expect(screen.getByDisplayValue("5678")).toBeInTheDocument();
-    expect(screen.queryByText("1234")).not.toBeInTheDocument();
   });
 
-  it("re-masks the current code after leaving and returning to settings", async () => {
+  it("re-masks the code field after leaving and returning to settings", async () => {
     await renderSettingsAsOwner("1234");
 
-    fireEvent.click(screen.getByRole("button", { name: "Afficher le code actuel" }));
-    expect(screen.getByText("1234")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Afficher le code" }));
+    expect(screen.getByDisplayValue("1234")).toHaveAttribute("type", "text");
 
     fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
     await waitFor(() => {
@@ -125,15 +126,16 @@ describe("owner code display in settings (story 18.8)", () => {
       expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
     });
 
-    expect(screen.queryByText("1234")).not.toBeInTheDocument();
+    expect(screen.getByDisplayValue("1234")).toHaveAttribute("type", "password");
   });
 
-  it("shows guidance instead of the code when it was set before this feature existed", async () => {
+  it("shows guidance and an empty field when the code was set before this feature existed", async () => {
     await renderSettingsAsOwner("");
 
     expect(
-      screen.getByText(/redéfinissez-le ci-dessous pour pouvoir le consulter/i)
+      screen.getByText(/saisissez-le à nouveau ci-dessous pour pouvoir le consulter/i)
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Afficher le code actuel" })).not.toBeInTheDocument();
+    const [ownerCodeInput] = screen.getAllByPlaceholderText("Minimum 4 caractères");
+    expect(ownerCodeInput).toHaveValue("");
   });
 });

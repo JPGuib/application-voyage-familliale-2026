@@ -3248,7 +3248,10 @@ function SettingsScreen({
   const [selectedGender, setSelectedGender] = useState<Gender>(profile.gender);
   const [selectedHouseholdRole, setSelectedHouseholdRole] = useState<HouseholdRole>(profile.householdRole);
   const [metadataFeedback, setMetadataFeedback] = useState<string | null>(null);
-  const [ownerCodeInput, setOwnerCodeInput] = useState("");
+  const [ownerCodeInput, setOwnerCodeInput] = useState(ownerCodeCurrent);
+  useEffect(() => {
+    setOwnerCodeInput(ownerCodeCurrent);
+  }, [ownerCodeCurrent]);
   const [ownerCodeFeedback, setOwnerCodeFeedback] = useState<string | null>(null);
   const [relockCodeInput, setRelockCodeInput] = useState("");
   const [relockFeedback, setRelockFeedback] = useState<string | null>(null);
@@ -3264,7 +3267,6 @@ function SettingsScreen({
   }, [profileRecoveryAnswer]);
   const [profileRecoveryFeedback, setProfileRecoveryFeedback] = useState<string | null>(null);
   const [showOwnerCodeInput, setShowOwnerCodeInput] = useState(false);
-  const [showOwnerCodeCurrent, setShowOwnerCodeCurrent] = useState(false);
   const [showRelockPrompt, setShowRelockPrompt] = useState(false);
   const [showRelockCodeInput, setShowRelockCodeInput] = useState(false);
   const [showProfilePasswordInput, setShowProfilePasswordInput] = useState(false);
@@ -3726,56 +3728,36 @@ function SettingsScreen({
             </p>
             <p className="text-xs text-muted-foreground mt-2">
               {ownerCodeConfigured
-                ? "Un code est déjà configuré. Vous pouvez le remplacer."
+                ? ownerCodeCurrent
+                  ? "Un code est déjà configuré. Vous pouvez le consulter ou le remplacer."
+                  : "Code configuré avant l'ajout de cet affichage : saisissez-le à nouveau ci-dessous pour pouvoir le consulter."
                 : "Aucun code configuré pour le moment."}
             </p>
 
-            {ownerCodeConfigured && (
-              <div className="mt-3 rounded-xl border border-border bg-muted/30 px-3 py-3">
-                <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
-                  Code actuel
-                </p>
-                {ownerCodeCurrent ? (
-                  <>
-                    <p className="mt-1 text-sm font-black text-foreground tracking-[0.3em]">
-                      {showOwnerCodeCurrent ? ownerCodeCurrent : "●".repeat(ownerCodeCurrent.length)}
-                    </p>
-                    <button
-                      onClick={() => setShowOwnerCodeCurrent((previous) => !previous)}
-                      className="mt-2 text-xs font-black text-primary underline underline-offset-4"
-                    >
-                      {showOwnerCodeCurrent ? "Masquer" : "Afficher"} le code actuel
-                    </button>
-                  </>
-                ) : (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Code configuré avant l'ajout de cet affichage : redéfinissez-le ci-dessous pour pouvoir le consulter.
-                  </p>
-                )}
-              </div>
-            )}
-
-            <input
-              type={showOwnerCodeInput ? "text" : "password"}
-              value={ownerCodeInput}
-              onChange={(e) => {
-                setOwnerCodeInput(e.target.value);
-                if (ownerCodeFeedback) setOwnerCodeFeedback(null);
-              }}
-              placeholder="Minimum 4 caractères"
-              className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-            />
-            <button
-              onClick={() => setShowOwnerCodeInput((previous) => !previous)}
-              className="mt-2 text-xs font-black text-primary underline underline-offset-4"
-            >
-              {showOwnerCodeInput ? "Masquer" : "Afficher"} le code saisi
-            </button>
+            <div className="relative mt-2">
+              <input
+                type={showOwnerCodeInput ? "text" : "password"}
+                value={ownerCodeInput}
+                onChange={(e) => {
+                  setOwnerCodeInput(e.target.value);
+                  if (ownerCodeFeedback) setOwnerCodeFeedback(null);
+                }}
+                placeholder="Minimum 4 caractères"
+                className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+              />
+              <button
+                type="button"
+                onClick={() => setShowOwnerCodeInput((previous) => !previous)}
+                aria-label={showOwnerCodeInput ? "Masquer le code" : "Afficher le code"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                {showOwnerCodeInput ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             <button
               onClick={async () => {
                 const result = await onSaveOwnerCode(ownerCodeInput);
                 setOwnerCodeFeedback(result.message);
-                if (result.ok) setOwnerCodeInput("");
               }}
               className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
             >
