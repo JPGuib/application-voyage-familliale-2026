@@ -39,6 +39,7 @@ export type CloudProfileRecord = {
   passwordHash?: string;
   recoveryHash?: string;
   recoveryQuestion?: string;
+  recoveryAnswer?: string;
   recoveryConfiguredAt?: number;
   gender?: ProfileGender;
   householdRole?: ProfileHouseholdRole;
@@ -53,6 +54,7 @@ export type CloudProfileState = {
   passwordHash?: string;
   recoveryHash?: string;
   recoveryQuestion?: string;
+  recoveryAnswer?: string;
   recoveryConfiguredAt?: number;
   gender?: ProfileGender;
   householdRole?: ProfileHouseholdRole;
@@ -88,6 +90,7 @@ export type CloudSyncWritePayload = {
   profilePasswordHash?: string;
   profileRecoveryHash?: string;
   profileRecoveryQuestion?: string;
+  profileRecoveryAnswer?: string;
   profileRecoveryConfiguredAt?: number;
   gender?: ProfileGender;
   householdRole?: ProfileHouseholdRole;

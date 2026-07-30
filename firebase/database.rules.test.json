@@ -61,6 +61,12 @@
             "recoveryHash": {
               ".validate": "newData.val() === null || (newData.isString() && newData.val().matches(/^sha256:[0-9a-f]{64}$/))"
             },
+            "recoveryQuestion": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 200)"
+            },
+            "recoveryAnswer": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 200)"
+            },
             "recoveryConfiguredAt": {
               ".validate": "newData.val() === null || newData.isNumber()"
             },

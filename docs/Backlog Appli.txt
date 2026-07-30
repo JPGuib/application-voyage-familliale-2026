@@ -1,6 +1,5 @@
 Nouvelles fonctionnalités
 ------------------------
-P3 - Story 12.1 — Redirection après changement de profil 
 P3 - Story 12.3 (ex-2.3) — Création personnalisée de catégories de checklist
 A REVOIR P3 - Story 16.1 (fusion ex-6.1, ex-6.2, ex-6.3) — Ouverture des liens Wanderlog et Polarsteps
 P3 - Story 18.2 — Accès complet du propriétaire + indicateur d'état de verrouillage

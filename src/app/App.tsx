@@ -272,6 +272,7 @@ const CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY = "jp-custom-checklist-items-by-profi
 const OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY = "jp-owner-global-checklist-additions";
 const OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY = "jp-owner-global-checklist-removals";
 const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
+const PROFILE_RECOVERY_ANSWER_STORAGE_KEY = "jp-profile-recovery-answers";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -3172,6 +3173,7 @@ function SettingsScreen({
   profilePasswordConfigured,
   profileRecoveryConfigured,
   profileRecoveryQuestion,
+  profileRecoveryAnswer,
   relockActionVisible,
   onBack,
   onSaveSurname,
@@ -3195,6 +3197,7 @@ function SettingsScreen({
   profilePasswordConfigured: boolean;
   profileRecoveryConfigured: boolean;
   profileRecoveryQuestion: string;
+  profileRecoveryAnswer: string;
   relockActionVisible: boolean;
   onBack: () => void;
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
@@ -3245,7 +3248,10 @@ function SettingsScreen({
   useEffect(() => {
     setProfileRecoveryQuestionInput(profileRecoveryQuestion);
   }, [profileRecoveryQuestion]);
-  const [profileRecoveryInput, setProfileRecoveryInput] = useState("");
+  const [profileRecoveryInput, setProfileRecoveryInput] = useState(profileRecoveryAnswer);
+  useEffect(() => {
+    setProfileRecoveryInput(profileRecoveryAnswer);
+  }, [profileRecoveryAnswer]);
   const [profileRecoveryFeedback, setProfileRecoveryFeedback] = useState<string | null>(null);
   const [showOwnerCodeInput, setShowOwnerCodeInput] = useState(false);
   const [showRelockPrompt, setShowRelockPrompt] = useState(false);
@@ -3596,6 +3602,11 @@ function SettingsScreen({
                 ? "Une question/réponse de récupération est configurée pour ce profil."
                 : "Aucune récupération configurée pour ce profil."}
             </p>
+            {profileRecoveryConfigured && (
+              <p className="mt-3 text-[11px] font-extrabold text-muted-foreground uppercase tracking-widest">
+                Question actuelle
+              </p>
+            )}
             <input
               type="text"
               value={profileRecoveryQuestionInput}
@@ -3607,6 +3618,11 @@ function SettingsScreen({
               maxLength={200}
               className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
+            {profileRecoveryConfigured && (
+              <p className="mt-3 text-[11px] font-extrabold text-muted-foreground uppercase tracking-widest">
+                Réponse actuelle
+              </p>
+            )}
             <input
               type={showProfileRecoveryInput ? "text" : "password"}
               value={profileRecoveryInput}
@@ -3630,7 +3646,6 @@ function SettingsScreen({
                   profileRecoveryInput
                 );
                 setProfileRecoveryFeedback(result.message);
-                if (result.ok) setProfileRecoveryInput("");
               }}
               className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
             >
@@ -4384,6 +4399,19 @@ export default function App() {
       return {};
     }
   });
+  const [profileRecoveryAnswers, setProfileRecoveryAnswers] = useState<Record<string, string>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const raw = localStorage.getItem(PROFILE_RECOVERY_ANSWER_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, string>) : {};
+    } catch {
+      return {};
+    }
+  });
   const [passwordPromptProfileId, setPasswordPromptProfileId] = useState<string | null>(null);
   const [passwordPromptInput, setPasswordPromptInput] = useState("");
   const [passwordPromptError, setPasswordPromptError] = useState<string | null>(null);
@@ -4620,6 +4648,7 @@ export default function App() {
         localStorage.removeItem("jp-profile-password-hashes");
         localStorage.removeItem("jp-profile-recovery-hashes");
         localStorage.removeItem(PROFILE_RECOVERY_QUESTION_STORAGE_KEY);
+        localStorage.removeItem(PROFILE_RECOVERY_ANSWER_STORAGE_KEY);
         localStorage.removeItem("jp-phase");
         localStorage.removeItem("jp-trip-start-date");
         localStorage.removeItem("jp-checklist");
@@ -4648,6 +4677,10 @@ export default function App() {
           localStorage.setItem(
             PROFILE_RECOVERY_QUESTION_STORAGE_KEY,
             JSON.stringify(profileRecoveryQuestions)
+          );
+          localStorage.setItem(
+            PROFILE_RECOVERY_ANSWER_STORAGE_KEY,
+            JSON.stringify(profileRecoveryAnswers)
           );
           localStorage.setItem("jp-phase", phase);
           if (tripStartDate) {
@@ -4693,6 +4726,7 @@ export default function App() {
     profilePasswordHashes,
     profileRecoveryHashes,
     profileRecoveryQuestions,
+    profileRecoveryAnswers,
     phase,
     tripStartDate,
     screen,
@@ -4783,6 +4817,16 @@ export default function App() {
       return {
         ...previous,
         [profile.id]: nextQuestion,
+      };
+    });
+    setProfileRecoveryAnswers((previous) => {
+      const nextAnswer = cloudProfile.recoveryAnswer || "";
+      if ((previous[profile.id] || "") === nextAnswer) {
+        return previous;
+      }
+      return {
+        ...previous,
+        [profile.id]: nextAnswer,
       };
     });
 
@@ -4928,6 +4972,7 @@ export default function App() {
     const profilePasswordHash = profilePasswordHashes[profile.id] || "";
     const profileRecoveryHash = profileRecoveryHashes[profile.id] || "";
     const profileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";
+    const profileRecoveryAnswer = profileRecoveryAnswers[profile.id] || "";
     const profileCustomChecklistItems = customChecklistItemsByProfile[profile.id] ?? [];
     const payload = JSON.stringify({
       actorUid: cloudActorUid,
@@ -4944,6 +4989,7 @@ export default function App() {
       profilePasswordHash,
       profileRecoveryHash,
       profileRecoveryQuestion,
+      profileRecoveryAnswer,
       checklist: checked,
       profileCustomChecklistItems,
       ownerGlobalChecklistAdditions,
@@ -4970,6 +5016,7 @@ export default function App() {
       profilePasswordHash,
       profileRecoveryHash,
       profileRecoveryQuestion,
+      profileRecoveryAnswer,
       profileRecoveryConfiguredAt: profileRecoveryHash ? Date.now() : undefined,
       gender: profile.gender,
       householdRole: profile.householdRole,
@@ -4996,6 +5043,7 @@ export default function App() {
     profilePasswordHashes,
     profileRecoveryHashes,
     profileRecoveryQuestions,
+    profileRecoveryAnswers,
     customChecklistItemsByProfile,
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
@@ -5682,6 +5730,7 @@ export default function App() {
       profilePasswordHash: profilePasswordHashes[profile.id] || "",
       profileRecoveryHash: profileRecoveryHashes[profile.id] || "",
       profileRecoveryQuestion: profileRecoveryQuestions[profile.id] || "",
+      profileRecoveryAnswer: profileRecoveryAnswers[profile.id] || "",
       profileRecoveryConfiguredAt: cloudSnapshot.profiles[profile.id]?.recoveryConfiguredAt,
       gender: profile.gender,
       householdRole: profile.householdRole,
@@ -5838,6 +5887,7 @@ export default function App() {
   const currentProfilePasswordHash = profilePasswordHashes[profile.id] || "";
   const currentProfileRecoveryHash = profileRecoveryHashes[profile.id] || "";
   const currentProfileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";
+  const currentProfileRecoveryAnswer = profileRecoveryAnswers[profile.id] || "";
 
   const changeProfilePasswordInSession = async (
     method: InSessionPasswordProofMethod,
@@ -5932,6 +5982,7 @@ export default function App() {
           profilePasswordHash: nextHash,
           profileRecoveryHash: selected.recoveryHash,
           profileRecoveryQuestion: selected.recoveryQuestion,
+          profileRecoveryAnswer: selected.recoveryAnswer,
           profileRecoveryConfiguredAt: selected.recoveryConfiguredAt,
           gender: selected.gender,
           householdRole: selected.householdRole,
@@ -6162,6 +6213,7 @@ export default function App() {
                   profilePasswordHash: newPasswordHash,
                   profileRecoveryHash: selected.recoveryHash,
                   profileRecoveryQuestion: selected.recoveryQuestion,
+                  profileRecoveryAnswer: selected.recoveryAnswer,
                   profileRecoveryConfiguredAt: selected.recoveryConfiguredAt,
                   gender: selected.gender,
                   householdRole: selected.householdRole,
@@ -6387,6 +6439,7 @@ export default function App() {
             profilePasswordConfigured={currentProfilePasswordHash.length > 0}
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             profileRecoveryQuestion={currentProfileRecoveryQuestion}
+            profileRecoveryAnswer={currentProfileRecoveryAnswer}
             relockActionVisible={false}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("checklist")}
@@ -6501,6 +6554,10 @@ export default function App() {
               setProfileRecoveryQuestions((previous) => ({
                 ...previous,
                 [profile.id]: normalizedQuestion,
+              }));
+              setProfileRecoveryAnswers((previous) => ({
+                ...previous,
+                [profile.id]: normalizedAnswer,
               }));
               return {
                 ok: true,
@@ -6971,6 +7028,7 @@ export default function App() {
             profilePasswordConfigured={currentProfilePasswordHash.length > 0}
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             profileRecoveryQuestion={currentProfileRecoveryQuestion}
+            profileRecoveryAnswer={currentProfileRecoveryAnswer}
             relockActionVisible={phase === "during"}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("dashboard")}
@@ -7085,6 +7143,10 @@ export default function App() {
               setProfileRecoveryQuestions((previous) => ({
                 ...previous,
                 [profile.id]: normalizedQuestion,
+              }));
+              setProfileRecoveryAnswers((previous) => ({
+                ...previous,
+                [profile.id]: normalizedAnswer,
               }));
               return {
                 ok: true,

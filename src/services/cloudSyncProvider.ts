@@ -157,6 +157,7 @@ function parseProfileRecord(value: unknown): CloudProfileRecord | null {
   const passwordHash = toOptionalNonEmptyString(record.passwordHash);
   const recoveryHash = toOptionalNonEmptyString(record.recoveryHash);
   const recoveryQuestion = toOptionalNonEmptyString(record.recoveryQuestion);
+  const recoveryAnswer = toOptionalNonEmptyString(record.recoveryAnswer);
   return {
     surname: typeof record.surname === "string" ? record.surname : "",
     role,
@@ -165,6 +166,7 @@ function parseProfileRecord(value: unknown): CloudProfileRecord | null {
     passwordHash,
     recoveryHash,
     recoveryQuestion: recoveryHash ? recoveryQuestion : undefined,
+    recoveryAnswer: recoveryHash ? recoveryAnswer : undefined,
     recoveryConfiguredAt:
       recoveryHash &&
       typeof record.recoveryConfiguredAt === "number" &&
@@ -219,6 +221,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
       passwordHash: record.passwordHash,
       recoveryHash: record.recoveryHash,
       recoveryQuestion: record.recoveryQuestion,
+      recoveryAnswer: record.recoveryAnswer,
       recoveryConfiguredAt: record.recoveryConfiguredAt,
       gender: record.gender,
       householdRole: record.householdRole,
@@ -337,11 +340,14 @@ export async function pushCloudSnapshot(
       updates[`profiles/${payload.profileId}/recoveryHash`] = payload.profileRecoveryHash;
       updates[`profiles/${payload.profileId}/recoveryQuestion`] =
         payload.profileRecoveryQuestion?.trim() || null;
+      updates[`profiles/${payload.profileId}/recoveryAnswer`] =
+        payload.profileRecoveryAnswer?.trim() || null;
       updates[`profiles/${payload.profileId}/recoveryConfiguredAt`] =
         payload.profileRecoveryConfiguredAt ?? timestamp;
     } else {
       updates[`profiles/${payload.profileId}/recoveryHash`] = null;
       updates[`profiles/${payload.profileId}/recoveryQuestion`] = null;
+      updates[`profiles/${payload.profileId}/recoveryAnswer`] = null;
       updates[`profiles/${payload.profileId}/recoveryConfiguredAt`] = null;
     }
   }

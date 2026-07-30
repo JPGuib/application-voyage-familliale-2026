@@ -44,6 +44,8 @@ type PushSnapshotInput = {
   role: Role;
   profilePasswordHash?: string;
   profileRecoveryHash?: string;
+  profileRecoveryQuestion?: string;
+  profileRecoveryAnswer?: string;
   profileRecoveryConfiguredAt?: number;
   gender?: ProfileGender;
   householdRole?: ProfileHouseholdRole;
@@ -309,6 +311,8 @@ export function useCloudSync() {
         role: snapshot.role,
         profilePasswordHash: snapshot.profilePasswordHash,
         profileRecoveryHash: snapshot.profileRecoveryHash,
+        profileRecoveryQuestion: snapshot.profileRecoveryQuestion,
+        profileRecoveryAnswer: snapshot.profileRecoveryAnswer,
         profileRecoveryConfiguredAt: snapshot.profileRecoveryConfiguredAt,
         gender: snapshot.gender,
         householdRole: snapshot.householdRole,
