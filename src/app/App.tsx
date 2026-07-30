@@ -940,48 +940,57 @@ function CloudLoginScreen({
                 <p className="mt-1 rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm font-bold text-foreground">
                   {profileRecoveryQuestion || "Question indisponible"}
                 </p>
-                <input
-                  type={showRecoveryAnswer ? "text" : "password"}
-                  value={profileRecoveryAnswerInput}
-                  onChange={(e) => onProfileRecoveryAnswerChange(e.target.value)}
-                  placeholder="Réponse"
-                  className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowRecoveryAnswer((previous) => !previous)}
-                  className="mt-2 text-xs font-black text-primary underline underline-offset-4"
-                >
-                  {showRecoveryAnswer ? "Masquer" : "Afficher"} la réponse saisie
-                </button>
-                <input
-                  type={showRecoveryNewPassword ? "text" : "password"}
-                  value={profileRecoveryNewPasswordInput}
-                  onChange={(e) => onProfileRecoveryNewPasswordChange(e.target.value)}
-                  placeholder="Nouveau mot de passe"
-                  className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowRecoveryNewPassword((previous) => !previous)}
-                  className="mt-2 text-xs font-black text-primary underline underline-offset-4"
-                >
-                  {showRecoveryNewPassword ? "Masquer" : "Afficher"} le nouveau mot de passe saisi
-                </button>
-                <input
-                  type={showRecoveryConfirm ? "text" : "password"}
-                  value={profileRecoveryNewPasswordConfirmInput}
-                  onChange={(e) => onProfileRecoveryNewPasswordConfirmChange(e.target.value)}
-                  placeholder="Confirmer le nouveau mot de passe"
-                  className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowRecoveryConfirm((previous) => !previous)}
-                  className="mt-2 text-xs font-black text-primary underline underline-offset-4"
-                >
-                  {showRecoveryConfirm ? "Masquer" : "Afficher"} la confirmation saisie
-                </button>
+                <div className="relative mt-3">
+                  <input
+                    type={showRecoveryAnswer ? "text" : "password"}
+                    value={profileRecoveryAnswerInput}
+                    onChange={(e) => onProfileRecoveryAnswerChange(e.target.value)}
+                    placeholder="Réponse"
+                    className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRecoveryAnswer((previous) => !previous)}
+                    aria-label={showRecoveryAnswer ? "Masquer la réponse saisie" : "Afficher la réponse saisie"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showRecoveryAnswer ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                <div className="relative mt-2">
+                  <input
+                    type={showRecoveryNewPassword ? "text" : "password"}
+                    value={profileRecoveryNewPasswordInput}
+                    onChange={(e) => onProfileRecoveryNewPasswordChange(e.target.value)}
+                    placeholder="Nouveau mot de passe"
+                    className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRecoveryNewPassword((previous) => !previous)}
+                    aria-label={showRecoveryNewPassword ? "Masquer le nouveau mot de passe saisi" : "Afficher le nouveau mot de passe saisi"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showRecoveryNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                <div className="relative mt-2">
+                  <input
+                    type={showRecoveryConfirm ? "text" : "password"}
+                    value={profileRecoveryNewPasswordConfirmInput}
+                    onChange={(e) => onProfileRecoveryNewPasswordConfirmChange(e.target.value)}
+                    placeholder="Confirmer le nouveau mot de passe"
+                    className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRecoveryConfirm((previous) => !previous)}
+                    aria-label={showRecoveryConfirm ? "Masquer la confirmation saisie" : "Afficher la confirmation saisie"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  >
+                    {showRecoveryConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
                 {profileRecoveryError && (
                   <p className="mt-2 text-xs font-bold text-destructive">{profileRecoveryError}</p>
                 )}
