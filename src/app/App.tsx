@@ -4749,7 +4749,7 @@ export default function App() {
       // ourselves via deleteOwnProfile — which already handles its own reset
       // once the deletion completes, so skip here to avoid racing it).
       // If we were previously hydrated with this profile, fail closed to profile selection.
-      if (hydratedCloudProfileIdRef.current === profile.id && !isDeletingProfileRef.current) {
+      if (hydratedProfileId === profile.id && !isDeletingProfileRef.current) {
         resetForProfileSwitch();
       }
       return;
@@ -4786,7 +4786,7 @@ export default function App() {
       };
     });
 
-    hydratedCloudProfileIdRef.current = profile.id;
+    setHydratedProfileId(profile.id);
 
     setProfile((previous) => {
       const nextRole = cloudProfile.role;
@@ -4841,7 +4841,16 @@ export default function App() {
 
   const lastCloudPushRef = useRef<string | null>(null);
   const pendingCloudPhaseRef = useRef<TravelPhase | null>(null);
-  const hydratedCloudProfileIdRef = useRef<string | null>(null);
+  // State (not a ref): the hydration effect below also updates
+  // profilePasswordHashes/profileRecoveryHashes/etc. for the same profile.
+  // Using a ref here would make this "hydrated" flag flip synchronously
+  // within the same effect flush, before those sibling state updates commit
+  // — so effects reading the ref (auto-push, isProfileHydrationPending)
+  // could see "hydrated" but still read stale (pre-hydration) password/
+  // recovery hashes from state, and push an empty hash that wipes the real
+  // one in Firebase. As state, it commits together with the other hydrated
+  // fields on the same render, closing that race.
+  const [hydratedProfileId, setHydratedProfileId] = useState<string | null>(null);
   // "none" = pas d'écriture en attente. Sinon, contient la valeur qu'on vient
   // d'envoyer et qu'on attend de voir confirmée par un instantané cloud, pour
   // éviter qu'un instantané cloud périmé (déjà en vol) n'écrase l'édition
@@ -4860,7 +4869,7 @@ export default function App() {
     }
 
     const hasCloudProfile = Boolean(cloudSnapshot?.profiles[profile.id]);
-    const isHydratedProfile = hydratedCloudProfileIdRef.current === profile.id;
+    const isHydratedProfile = hydratedProfileId === profile.id;
     if (cloudSnapshot && pendingCloudPhaseRef.current === cloudSnapshot.phase) {
       pendingCloudPhaseRef.current = null;
     }
@@ -4869,7 +4878,7 @@ export default function App() {
       ? phase === cloudSnapshot.phase || isAwaitingCommittedPhase
       : false;
     setIsProfileHydrationPending(hasCloudProfile && (!isHydratedProfile || !isPhaseSynced));
-  }, [cloudEnabled, cloudSnapshot, isAuthenticated, phase, profile.id]);
+  }, [cloudEnabled, cloudSnapshot, isAuthenticated, phase, profile.id, hydratedProfileId]);
 
   useEffect(() => {
     if (!cloudEnabled || !cloudReady) return;
@@ -4886,7 +4895,7 @@ export default function App() {
       hasSurname: profile.surname.trim().length > 0,
       hasCloudProfile,
       currentProfileId: profile.id,
-      hydratedProfileId: hydratedCloudProfileIdRef.current,
+      hydratedProfileId,
     });
     if (!canPush) {
       if (IS_DEV) {
@@ -4992,6 +5001,7 @@ export default function App() {
     ownerGlobalChecklistRemovals,
     phase,
     tripStartDate,
+    hydratedProfileId,
     profile.id,
     profile.role,
     profile.surname,
@@ -5003,6 +5013,13 @@ export default function App() {
   useEffect(() => {
     const currentRole = profile.role;
     if (!currentRole) return;
+    // When cloud is enabled, only merge this profile into the shared roster
+    // once cloud itself confirms it exists (via the hydration effect or a
+    // successful claim). Merging a speculative/unconfirmed profile id here
+    // would let a later owner push write a bare `role` for it in Firebase
+    // (via the owner-only role-sync loop) with no surname ever set, creating
+    // an orphan blank-surname profile.
+    if (cloudEnabled && !cloudSnapshot?.profiles[profile.id]) return;
 
     setFamilyState((previous) => {
       const mutation = applyProfileRoleMutation(previous, profile.id, currentRole);
@@ -5019,7 +5036,16 @@ export default function App() {
 
       return mutation.state;
     });
-  }, [profile.id, profile.role]);
+    // Intentionally not reacting to cloudSnapshot changes here: cloudSnapshot
+    // is only consulted for its value at the moment profile.id/profile.role
+    // change (e.g. right after creation/login). Reacting to every snapshot
+    // update (which gets a new object reference on every realtime echo, even
+    // no-op ones) would re-run this effect far too often. Eventual
+    // consistency once cloud confirms a profile is handled separately by the
+    // cloud-hydration effect, which syncs familyState from cloudSnapshot with
+    // a proper equality check.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.id, profile.role, cloudEnabled]);
 
   useEffect(() => {
     if (unlockLockedUntil <= Date.now()) return;
@@ -5518,7 +5544,7 @@ export default function App() {
     setUnlockLockedUntil(0);
 
     lastCloudPushRef.current = null;
-    hydratedCloudProfileIdRef.current = null;
+    setHydratedProfileId(null);
     setIsProfileHydrationPending(false);
     setSelectedLoginProfileId(null);
     setCreateProfileSurname("");
@@ -6319,7 +6345,13 @@ export default function App() {
 
               if (nextFamilyState) {
                 setFamilyState(enforceOwnerUniqueness(nextFamilyState));
-              } else {
+              } else if (!cloudEnabled) {
+                // Only mutate the shared roster locally in true offline mode.
+                // When cloud is enabled but the claim failed (e.g. transient
+                // network/permission error), merging this profile into
+                // familyState here would let a later owner push write a
+                // bare `role` for it in Firebase before its own surname has
+                // ever been synced, creating an orphan blank-surname profile.
                 setFamilyState((previous) => {
                   const mutation = applyProfileRoleMutation(previous, nextProfile.id, assignedRole);
                   if (mutation.rejected && IS_DEV) {
