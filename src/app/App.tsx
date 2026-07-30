@@ -3501,61 +3501,70 @@ function SettingsScreen({
                         </button>
                       )}
                     </div>
-                    <input
-                      type={showPasswordProofInput ? "text" : "password"}
-                      value={passwordProofInput}
-                      onChange={(e) => {
-                        setPasswordProofInput(e.target.value);
-                        if (passwordChangeFeedback) setPasswordChangeFeedback(null);
-                      }}
-                      placeholder={
-                        passwordProofMethod === "current-password"
-                          ? "Mot de passe actuel"
-                          : "Réponse de récupération"
-                      }
-                      className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPasswordProofInput((previous) => !previous)}
-                      className="mt-2 text-xs font-black text-primary underline underline-offset-4"
-                    >
-                      {showPasswordProofInput ? "Masquer" : "Afficher"} la valeur saisie
-                    </button>
-                    <input
-                      type={showPasswordChangeInput ? "text" : "password"}
-                      value={passwordChangeInput}
-                      onChange={(e) => {
-                        setPasswordChangeInput(e.target.value);
-                        if (passwordChangeFeedback) setPasswordChangeFeedback(null);
-                      }}
-                      placeholder="Nouveau mot de passe (min. 4 caractères)"
-                      className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPasswordChangeInput((previous) => !previous)}
-                      className="mt-2 text-xs font-black text-primary underline underline-offset-4"
-                    >
-                      {showPasswordChangeInput ? "Masquer" : "Afficher"} le nouveau mot de passe saisi
-                    </button>
-                    <input
-                      type={showPasswordChangeConfirmInput ? "text" : "password"}
-                      value={passwordChangeConfirmInput}
-                      onChange={(e) => {
-                        setPasswordChangeConfirmInput(e.target.value);
-                        if (passwordChangeFeedback) setPasswordChangeFeedback(null);
-                      }}
-                      placeholder="Confirmer le nouveau mot de passe"
-                      className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPasswordChangeConfirmInput((previous) => !previous)}
-                      className="mt-2 text-xs font-black text-primary underline underline-offset-4"
-                    >
-                      {showPasswordChangeConfirmInput ? "Masquer" : "Afficher"} la confirmation saisie
-                    </button>
+                    <div className="relative mt-2">
+                      <input
+                        type={showPasswordProofInput ? "text" : "password"}
+                        value={passwordProofInput}
+                        onChange={(e) => {
+                          setPasswordProofInput(e.target.value);
+                          if (passwordChangeFeedback) setPasswordChangeFeedback(null);
+                        }}
+                        placeholder={
+                          passwordProofMethod === "current-password"
+                            ? "Mot de passe actuel"
+                            : "Réponse de récupération"
+                        }
+                        className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordProofInput((previous) => !previous)}
+                        aria-label={showPasswordProofInput ? "Masquer la valeur saisie" : "Afficher la valeur saisie"}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      >
+                        {showPasswordProofInput ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    <div className="relative mt-2">
+                      <input
+                        type={showPasswordChangeInput ? "text" : "password"}
+                        value={passwordChangeInput}
+                        onChange={(e) => {
+                          setPasswordChangeInput(e.target.value);
+                          if (passwordChangeFeedback) setPasswordChangeFeedback(null);
+                        }}
+                        placeholder="Nouveau mot de passe (min. 4 caractères)"
+                        className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordChangeInput((previous) => !previous)}
+                        aria-label={showPasswordChangeInput ? "Masquer le nouveau mot de passe saisi" : "Afficher le nouveau mot de passe saisi"}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      >
+                        {showPasswordChangeInput ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    <div className="relative mt-2">
+                      <input
+                        type={showPasswordChangeConfirmInput ? "text" : "password"}
+                        value={passwordChangeConfirmInput}
+                        onChange={(e) => {
+                          setPasswordChangeConfirmInput(e.target.value);
+                          if (passwordChangeFeedback) setPasswordChangeFeedback(null);
+                        }}
+                        placeholder="Confirmer le nouveau mot de passe"
+                        className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordChangeConfirmInput((previous) => !previous)}
+                        aria-label={showPasswordChangeConfirmInput ? "Masquer la confirmation saisie" : "Afficher la confirmation saisie"}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      >
+                        {showPasswordChangeConfirmInput ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                     <div className="mt-2 grid grid-cols-2 gap-2">
                       <button
                         type="button"
