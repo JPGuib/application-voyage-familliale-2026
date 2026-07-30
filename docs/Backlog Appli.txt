@@ -9,7 +9,6 @@ P3 - Story 18.5 — Consultation de la question et réponse de récupération
 P3 - Story 18.6 — Connexion via la question de récupération (mot de passe oublié)
 P3 - Story 18.8 — Retrait de la "Phrase de récupération" et affichage du code propriétaire actuel
 P3 - Story 18.9 — Mot de passe et récupération obligatoires à la création d'un profil
-P3 - Story 18.10 — Conserver l'écran courant après un hard refresh
 
 P2 - Story 19.1 — Verrouillage du défi du jour après complétion
 P2 - Story 19.2 — Podium cumulé des utilisateurs dans l'écran Résultats

@@ -142,22 +142,22 @@ development_status:
   16-3-fusionnee-dans-16-1: done
   epic-16-retrospective: optional
 
-  epic-17: backlog
+  epic-17: done
   17-1-isolation-reponses-jeu-resolue-par-1-4: done
-  17-2-meteo-geolocalisation: backlog
+  17-2-meteo-geolocalisation: done
   epic-17-retrospective: optional
 
   epic-18: in-progress
   18-1-reverrouillage: done
   18-2-acces-proprietaire: backlog
-  18-3-suppression-profil: review
+  18-3-suppression-profil: done
   18-4-question-recuperation: backlog
   18-5-question-reponse-recuperation: backlog
   18-6-connexion-recuperation: backlog
-  18-7-retrait-bouton-mdp: backlog
+  18-7-retrait-bouton-mdp: done
   18-8-code-proprietaire-affichage: backlog
   18-9-mdp-obligatoire-creation: backlog
-  18-10-refresh-ecran-courant: backlog
+  18-10-refresh-ecran-courant: done
   18-11-nom-lieu-tronque: done
   epic-18-retrospective: optional
 

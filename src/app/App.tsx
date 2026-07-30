@@ -4525,9 +4525,9 @@ export default function App() {
         gender: rememberedProfile.gender ?? "unspecified",
         householdRole: rememberedProfile.householdRole ?? "member",
       }));
-      const nextPhase = rememberedProfile.phase || cloudSnapshot.phase;
+      const nextPhase = cloudSnapshot.phase;
       setPhase(nextPhase);
-      
+
       // Try to restore the previous screen, fallback to landing screen
       const savedScreen = localStorage.getItem("jp-screen");
       const screenToRestore = (savedScreen as Screen) || getPostAuthLandingScreen(nextPhase);
@@ -6039,7 +6039,7 @@ export default function App() {
               surname: selected.surname,
               role: selected.role,
             }));
-            const nextPhase = selected.phase || cloudSnapshot.phase;
+            const nextPhase = cloudSnapshot.phase;
             setPhase(nextPhase);
             setScreen(getPostAuthLandingScreen(nextPhase));
             setIsProfileHydrationPending(true);
@@ -6164,7 +6164,7 @@ export default function App() {
                 gender: selected.gender ?? "unspecified",
                 householdRole: selected.householdRole ?? "member",
               }));
-              const nextPhase = selected.phase || cloudSnapshot.phase;
+              const nextPhase = cloudSnapshot.phase;
               setPhase(nextPhase);
               setScreen(getPostAuthLandingScreen(nextPhase));
               setIsProfileHydrationPending(true);
@@ -6216,7 +6216,7 @@ export default function App() {
                 surname: selected.surname,
                 role: selected.role,
               }));
-              const nextPhase = selected.phase || cloudSnapshot.phase;
+              const nextPhase = cloudSnapshot.phase;
               setPhase(nextPhase);
               setScreen(getPostAuthLandingScreen(nextPhase));
               setIsProfileHydrationPending(true);
