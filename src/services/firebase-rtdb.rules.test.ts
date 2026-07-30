@@ -104,6 +104,24 @@ suite("firebase rtdb rules owner phase guard", () => {
 
     await assertSucceeds(nonOwnerDb.ref(`families/${FAMILY_ID}/checklists/${NON_OWNER_PROFILE_ID}/item-a`).set(true));
   });
+
+  it("allows owner to write ownerCodePlain", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(ownerDb.ref(`families/${FAMILY_ID}/ownerCodePlain`).set("1234"));
+  });
+
+  it("denies non-owner from writing ownerCodePlain", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(nonOwnerDb.ref(`families/${FAMILY_ID}/ownerCodePlain`).set("1234"));
+  });
+
+  it("denies an ownerCodePlain value shorter than 4 characters", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(ownerDb.ref(`families/${FAMILY_ID}/ownerCodePlain`).set("123"));
+  });
 });
 
 if (!hasDatabaseEmulator) {

@@ -32,6 +32,10 @@
           ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           ".validate": "newData.isString() && newData.val().matches(/^sha256:[0-9a-f]{64}$/)"
         },
+        "ownerCodePlain": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          ".validate": "newData.val() === null || (newData.isString() && newData.val().length >= 4 && newData.val().length <= 100)"
+        },
         "ownerProfileId": {
           ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
           ".validate": "newData.val() === null || newData.isString()"

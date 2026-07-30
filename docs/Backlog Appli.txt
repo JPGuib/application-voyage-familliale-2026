@@ -15,7 +15,7 @@ CLAUDE - Revoir l'icone de l'application => compliqué
 CLAUDE - Relie toutes les phrases et à adapter si nécessaire
 CLAUDE - Revoir les icones
 CLAUDE - Remplacer le orange par une photo, revoir le texte, faire comme sur wanderlog
-
+		- Attention le libellé de l'icone sur windows qui de Turquie
 Backlog
 -------
 
