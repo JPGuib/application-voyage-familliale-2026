@@ -1,7 +1,6 @@
 Nouvelles fonctionnalités
 ------------------------
 P3 - Story 12.3 (ex-2.3) — Création personnalisée de catégories de checklist
-A VALIDER (tests appareils réels) P3 - Story 16.1 (fusion ex-6.1, ex-6.2, ex-6.3) — Ouverture du lien Polarsteps (app native ou web, nouvel onglet)
 P3 - Story 18.2 — Accès complet du propriétaire + indicateur d'état de verrouillage
 
 P2 - Story 19.1 — Verrouillage du défi du jour après complétion
