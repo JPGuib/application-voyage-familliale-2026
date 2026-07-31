@@ -6524,18 +6524,21 @@ export default function App() {
 
             const continueSetup = async () => {
               // Hash the password/recovery answer up front (pure local
-              // computation) and mark them as "pending" for this profile
-              // BEFORE claimRoleForProfile talks to Firebase. That transaction
-              // writes a role/surname-only record first; without this guard,
-              // the cloud-hydration effect could see that intermediate,
-              // password-less echo and wipe the value we're about to set
-              // locally before our own full push ever reaches Firebase.
+              // computation), and commit them to local state BEFORE calling
+              // claimRoleForProfile. That call performs a Firebase transaction
+              // on the whole family root, which the current security rules
+              // structurally deny (no ancestor grants write there) — Firebase
+              // treats the denial as a retryable conflict and can take a very
+              // long time (or effectively never, in practice) to settle. If
+              // the password/recovery state only got set *after* awaiting
+              // that call, the app's own fallback role-assignment path (which
+              // doesn't wait on it) could complete profile creation — and
+              // trigger the first successful cloud push — before the password
+              // was ever attached to it, permanently leaving the profile
+              // unprotected. Setting it first means whichever path finishes
+              // the profile creation, the password is already there.
               const nextPasswordHash = await hashProfilePassword(normalizedPassword);
               const nextRecoveryHash = await hashOwnerRecoveryPhrase(normalizedRecoveryAnswer);
-
-              console.info("[cloud-sync-debug] continueSetup: hashes ready", {
-                profileIdAtClosureTime: profile.id,
-              });
 
               if (cloudEnabled) {
                 pendingProfileCredentialsRef.current = {
@@ -6547,15 +6550,28 @@ export default function App() {
                 };
               }
 
+              setProfilePasswordHashes((previous) => ({
+                ...previous,
+                [profile.id]: nextPasswordHash,
+              }));
+              setProfileRecoveryHashes((previous) => ({
+                ...previous,
+                [profile.id]: nextRecoveryHash,
+              }));
+              setProfileRecoveryQuestions((previous) => ({
+                ...previous,
+                [profile.id]: normalizedRecoveryQuestion,
+              }));
+              setProfileRecoveryAnswers((previous) => ({
+                ...previous,
+                [profile.id]: normalizedRecoveryAnswer,
+              }));
+
               let assignedRole = assignRoleOnProfileCreation(familyState);
               let nextFamilyState: SharedFamilyState | null = null;
 
               if (cloudEnabled) {
                 const result = await claimRoleForProfile(profile.id, normalizedSurname);
-                console.info("[cloud-sync-debug] continueSetup: claimRoleForProfile settled", {
-                  profileIdAtClosureTime: profile.id,
-                  claimSucceeded: Boolean(result),
-                });
                 if (result) {
                   assignedRole = result.assignedRole;
                   nextFamilyState = result.familyState;
@@ -6567,28 +6583,6 @@ export default function App() {
                 surname: normalizedSurname,
                 role: assignedRole,
               };
-
-              console.info("[cloud-sync-debug] continueSetup: about to set password hash locally", {
-                nextProfileId: nextProfile.id,
-                hasHash: Boolean(nextPasswordHash),
-              });
-
-              setProfilePasswordHashes((previous) => ({
-                ...previous,
-                [nextProfile.id]: nextPasswordHash,
-              }));
-              setProfileRecoveryHashes((previous) => ({
-                ...previous,
-                [nextProfile.id]: nextRecoveryHash,
-              }));
-              setProfileRecoveryQuestions((previous) => ({
-                ...previous,
-                [nextProfile.id]: normalizedRecoveryQuestion,
-              }));
-              setProfileRecoveryAnswers((previous) => ({
-                ...previous,
-                [nextProfile.id]: normalizedRecoveryAnswer,
-              }));
 
               setProfile(nextProfile);
 
