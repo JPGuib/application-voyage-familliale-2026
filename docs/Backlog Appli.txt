@@ -11,7 +11,7 @@ P2 - Story 19.3 — Correction du "Score total" et du "Score par journée"
 Backlog
 -------
 
-* Avoir des utilisateurs qui sont des visiteurs avec des droits plus restreints à définir
+* Avoir des utilisateurs qui sont des visiteurs avec des droits plus restreints à définir (dans ce cas faut-il créer les utilisateurs famille avant ?)
 * rajouter des j'aime j'aime pas et possibilité de commenter les lieux visités ?	
 * Remplacer le orange par une photo, revoir le texte, faire comme sur wanderlog
 

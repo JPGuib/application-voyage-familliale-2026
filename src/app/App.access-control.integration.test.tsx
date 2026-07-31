@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import App from "./App";
 import { hashOwnerCode } from "./owner-code";
 
@@ -66,7 +66,7 @@ describe("App access-control integration", () => {
     cloudSyncMock.mockReset();
   });
 
-  it("keeps owner locked to checklist and settings before unlock", async () => {
+  it("grants owner full access to all screens before unlock (story 18.2)", async () => {
     localStorage.setItem("jp-active-profile-id", "p1");
 
     let snapshot = makeSnapshot("before");
@@ -87,8 +87,23 @@ describe("App access-control integration", () => {
       expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("button", { name: "Accueil" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Séjour" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Accueil" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Séjour" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Séjour" }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(within(screen.getByRole("navigation")).getByRole("button", { name: "Accueil" }));
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
 
     fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
 
@@ -97,6 +112,31 @@ describe("App access-control integration", () => {
     });
 
     expect(screen.getByText(/Code propriétaire/i)).toBeInTheDocument();
+  });
+
+  it("keeps a non-owner locked to checklist while the owner keeps full access (story 18.2)", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    const snapshot = makeSnapshot("before");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("button", { name: "Accueil" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Séjour" })).not.toBeInTheDocument();
   });
 
   it("keeps user locked to checklist and settings before unlock", async () => {
@@ -215,7 +255,70 @@ describe("App access-control integration", () => {
     });
   });
 
-  it("allows the owner to re-lock from settings after entering the correct code", async () => {
+  it("shows a lock-state badge and a single toggle button in the owner's settings (story 18.2)", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const snapshot = makeSnapshot("during");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Débloquée/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Bloquer l'application/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Débloquer l'application/i })).not.toBeInTheDocument();
+  });
+
+  it("does not show the lock badge or toggle button in a non-owner's settings (story 18.2)", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    const snapshot = makeSnapshot("during");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText(/Débloquée/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Verrouillée/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Bloquer l'application/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Débloquer l'application/i })).not.toBeInTheDocument();
+  });
+
+  it("allows the owner to lock the application from settings without leaving the screen (story 18.2)", async () => {
     localStorage.setItem("jp-active-profile-id", "p1");
 
     const ownerCodeHash = await hashOwnerCode("1234");
@@ -248,10 +351,10 @@ describe("App access-control integration", () => {
       expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Re-verrouiller l'application/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Bloquer l'application/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Entrez le code propriétaire pour re-verrouiller l'application/i)).toBeInTheDocument();
+      expect(screen.getByText(/Entrez le code propriétaire pour bloquer l'application/i)).toBeInTheDocument();
     });
 
     fireEvent.change(screen.getByPlaceholderText(/Code propriétaire/i), {
@@ -269,12 +372,15 @@ describe("App access-control integration", () => {
       );
     });
 
+    // The owner stays on the settings screen and sees the badge/button update immediately.
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+      expect(screen.getByText(/Verrouillée/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Débloquer l'application/i })).toBeInTheDocument();
     });
   });
 
-  it("supports a full owner lock-unlock cycle after re-lock", async () => {
+  it("supports a full owner lock-unlock cycle from the same settings button", async () => {
     localStorage.setItem("jp-active-profile-id", "p1");
 
     const ownerCodeHash = await hashOwnerCode("1234");
@@ -316,9 +422,9 @@ describe("App access-control integration", () => {
       expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Re-verrouiller l'application/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Bloquer l'application/i }));
     await waitFor(() => {
-      expect(screen.getByText(/Entrez le code propriétaire pour re-verrouiller l'application/i)).toBeInTheDocument();
+      expect(screen.getByText(/Entrez le code propriétaire pour bloquer l'application/i)).toBeInTheDocument();
     });
 
     fireEvent.change(screen.getByPlaceholderText(/Code propriétaire/i), {
@@ -333,12 +439,12 @@ describe("App access-control integration", () => {
     view.rerender(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Débloquer l'application/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /On est partis/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Débloquer l'application/i }));
     await waitFor(() => {
-      expect(screen.getByText(/Entrez le code propriétaire pour débloquer le voyage/i)).toBeInTheDocument();
+      expect(screen.getByText(/Entrez le code propriétaire pour débloquer l'application/i)).toBeInTheDocument();
     });
 
     fireEvent.change(screen.getByPlaceholderText(/Code propriétaire/i), {
@@ -353,11 +459,12 @@ describe("App access-control integration", () => {
     view.rerender(<App />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+      expect(screen.getByText(/Débloquée/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Bloquer l'application/i })).toBeInTheDocument();
     });
   });
 
-  it("shows an error and keeps the app unlocked when the re-lock code is wrong", async () => {
+  it("shows an error and keeps the app unlocked when the lock code is wrong", async () => {
     localStorage.setItem("jp-active-profile-id", "p1");
 
     const ownerCodeHash = await hashOwnerCode("1234");
@@ -389,9 +496,9 @@ describe("App access-control integration", () => {
       expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Re-verrouiller l'application/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Bloquer l'application/i }));
     await waitFor(() => {
-      expect(screen.getByText(/Entrez le code propriétaire pour re-verrouiller l'application/i)).toBeInTheDocument();
+      expect(screen.getByText(/Entrez le code propriétaire pour bloquer l'application/i)).toBeInTheDocument();
     });
 
     const callCountBeforeValidation = pushSnapshot.mock.calls.length;
@@ -412,9 +519,10 @@ describe("App access-control integration", () => {
       )
     ).toBe(false);
     expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+    expect(screen.getByText(/Débloquée/i)).toBeInTheDocument();
   });
 
-  it("redirects the owner to checklist when a re-lock arrives while viewing guide", async () => {
+  it("keeps the owner on the guide screen when a lock arrives while browsing (story 18.2)", async () => {
     localStorage.setItem("jp-active-profile-id", "p1");
 
     let snapshot = makeSnapshot("during");
@@ -444,7 +552,7 @@ describe("App access-control integration", () => {
     view.rerender(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
     });
   });
 

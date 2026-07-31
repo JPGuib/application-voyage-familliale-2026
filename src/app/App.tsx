@@ -3251,12 +3251,12 @@ function SettingsScreen({
   profileRecoveryConfigured,
   profileRecoveryQuestion,
   profileRecoveryAnswer,
-  relockActionVisible,
+  appLocked,
   onBack,
   onSaveSurname,
   onSaveProfileMetadata,
   onSaveOwnerCode,
-  onConfirmRelock,
+  onToggleLock,
   onSaveProfilePassword,
   onChangeProfilePasswordInSession,
   onRemoveProfilePassword,
@@ -3274,12 +3274,12 @@ function SettingsScreen({
   profileRecoveryConfigured: boolean;
   profileRecoveryQuestion: string;
   profileRecoveryAnswer: string;
-  relockActionVisible: boolean;
+  appLocked: boolean;
   onBack: () => void;
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
   onSaveProfileMetadata: (gender: Gender, householdRole: HouseholdRole) => void;
   onSaveOwnerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
-  onConfirmRelock: (code: string) => Promise<{ ok: boolean; message: string }>;
+  onToggleLock: (code: string) => Promise<{ ok: boolean; message: string }>;
   onSaveProfilePassword: (password: string) => Promise<{ ok: boolean; message: string }>;
   onChangeProfilePasswordInSession: (
     method: InSessionPasswordProofMethod,
@@ -3316,8 +3316,8 @@ function SettingsScreen({
     setOwnerCodeInput(ownerCodeCurrent);
   }, [ownerCodeCurrent]);
   const [ownerCodeFeedback, setOwnerCodeFeedback] = useState<string | null>(null);
-  const [relockCodeInput, setRelockCodeInput] = useState("");
-  const [relockFeedback, setRelockFeedback] = useState<string | null>(null);
+  const [lockToggleCodeInput, setLockToggleCodeInput] = useState("");
+  const [lockToggleFeedback, setLockToggleFeedback] = useState<string | null>(null);
   const [profilePasswordInput, setProfilePasswordInput] = useState("");
   const [profilePasswordFeedback, setProfilePasswordFeedback] = useState<string | null>(null);
   const [profileRecoveryQuestionInput, setProfileRecoveryQuestionInput] = useState(profileRecoveryQuestion);
@@ -3330,8 +3330,8 @@ function SettingsScreen({
   }, [profileRecoveryAnswer]);
   const [profileRecoveryFeedback, setProfileRecoveryFeedback] = useState<string | null>(null);
   const [showOwnerCodeInput, setShowOwnerCodeInput] = useState(false);
-  const [showRelockPrompt, setShowRelockPrompt] = useState(false);
-  const [showRelockCodeInput, setShowRelockCodeInput] = useState(false);
+  const [showLockTogglePrompt, setShowLockTogglePrompt] = useState(false);
+  const [showLockToggleCodeInput, setShowLockToggleCodeInput] = useState(false);
   const [showProfilePasswordInput, setShowProfilePasswordInput] = useState(false);
   const [showPasswordChangeFlow, setShowPasswordChangeFlow] = useState(false);
   const [passwordProofMethod, setPasswordProofMethod] =
@@ -3830,64 +3830,70 @@ function SettingsScreen({
               <p className="mt-2 text-xs font-bold text-muted-foreground">{ownerCodeFeedback}</p>
             )}
 
-            {relockActionVisible && (
+            {profile.role === "proprietaire" && (
               <>
                 <div className="mt-4 border-t border-border pt-4">
                   <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
-                    Verrouillage
+                    État de l'application
                   </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Re-verrouillez immédiatement l'application pour toute la famille.
-                  </p>
+                  <span
+                    className={`inline-flex items-center gap-1 mt-2 rounded-full px-3 py-1 text-xs font-black ${
+                      appLocked
+                        ? "bg-destructive/15 text-destructive"
+                        : "bg-accent/20 text-accent"
+                    }`}
+                  >
+                    {appLocked ? "✈️ Verrouillée" : "✅ Débloquée"}
+                  </span>
                   <button
                     onClick={() => {
-                      setRelockCodeInput("");
-                      setRelockFeedback(null);
-                      setShowRelockCodeInput(false);
-                      setShowRelockPrompt(true);
+                      setLockToggleCodeInput("");
+                      setLockToggleFeedback(null);
+                      setShowLockToggleCodeInput(false);
+                      setShowLockTogglePrompt(true);
                     }}
                     className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
                   >
-                    Re-verrouiller l'application
+                    {appLocked ? "Débloquer l'application" : "Bloquer l'application"}
                   </button>
                 </div>
 
-                {showRelockPrompt && (
+                {showLockTogglePrompt && (
                   <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-20">
                     <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
                       <p className="text-sm font-black text-foreground">Validation propriétaire</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Entrez le code propriétaire pour re-verrouiller l'application.
+                        Entrez le code propriétaire pour {appLocked ? "débloquer" : "bloquer"} l'application.
                       </p>
 
                       <input
-                        type={showRelockCodeInput ? "text" : "password"}
-                        value={relockCodeInput}
+                        type={showLockToggleCodeInput ? "text" : "password"}
+                        value={lockToggleCodeInput}
                         onChange={(e) => {
-                          setRelockCodeInput(e.target.value);
-                          if (relockFeedback) setRelockFeedback(null);
+                          setLockToggleCodeInput(e.target.value);
+                          if (lockToggleFeedback) setLockToggleFeedback(null);
                         }}
                         placeholder="Code propriétaire"
                         className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
                       />
                       <button
-                        onClick={() => setShowRelockCodeInput((previous) => !previous)}
+                        onClick={() => setShowLockToggleCodeInput((previous) => !previous)}
                         className="mt-2 text-xs font-black text-primary underline underline-offset-4"
                       >
-                        {showRelockCodeInput ? "Masquer" : "Afficher"} le code saisi
+                        {showLockToggleCodeInput ? "Masquer" : "Afficher"} le code saisi
                       </button>
 
-                      {relockFeedback && (
-                        <p className="mt-2 text-xs font-bold text-destructive">{relockFeedback}</p>
+                      {lockToggleFeedback && (
+                        <p className="mt-2 text-xs font-bold text-destructive">{lockToggleFeedback}</p>
                       )}
 
                       <div className="mt-4 grid grid-cols-2 gap-2">
                         <button
                           onClick={() => {
-                            setShowRelockPrompt(false);
-                            setRelockCodeInput("");
-                            setRelockFeedback(null);
-                            setShowRelockCodeInput(false);
+                            setShowLockTogglePrompt(false);
+                            setLockToggleCodeInput("");
+                            setLockToggleFeedback(null);
+                            setShowLockToggleCodeInput(false);
                           }}
                           className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
                         >
@@ -3895,16 +3901,16 @@ function SettingsScreen({
                         </button>
                         <button
                           onClick={async () => {
-                            const result = await onConfirmRelock(relockCodeInput);
+                            const result = await onToggleLock(lockToggleCodeInput);
                             if (result.ok) {
-                              setShowRelockPrompt(false);
-                              setRelockCodeInput("");
-                              setRelockFeedback(null);
-                              setShowRelockCodeInput(false);
+                              setShowLockTogglePrompt(false);
+                              setLockToggleCodeInput("");
+                              setLockToggleFeedback(null);
+                              setShowLockToggleCodeInput(false);
                               return;
                             }
 
-                            setRelockFeedback(result.message);
+                            setLockToggleFeedback(result.message);
                           }}
                           className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
                         >
@@ -5840,11 +5846,11 @@ export default function App() {
     return { ok: true as const, message: null };
   };
 
-  const confirmRelockJourney = async (code: string) => {
+  const confirmOwnerLockToggle = async (code: string) => {
     if (!canUpdateOwnerCode(familyState, profile.id)) {
       return {
         ok: false,
-        message: "Seul le profil propriétaire peut re-verrouiller l'application.",
+        message: "Seul le profil propriétaire peut modifier le verrouillage de l'application.",
       };
     }
 
@@ -5883,7 +5889,8 @@ export default function App() {
       };
     }
 
-    const syncResult = await pushPhaseChange("before");
+    const nextPhase: "before" | "during" = phase === "during" ? "before" : "during";
+    const syncResult = await pushPhaseChange(nextPhase);
     if (!syncResult.ok) {
       return syncResult;
     }
@@ -5892,15 +5899,11 @@ export default function App() {
     setUnlockLockedUntil(0);
     setNowTs(Date.now());
     setAccessDeniedMessage(null);
-    setShowStartPrompt(false);
-    setStartCodeInput("");
-    setStartError(null);
-    setPhase("before");
-    setScreen("checklist");
+    setPhase(nextPhase);
 
     return {
       ok: true,
-      message: "Application re-verrouillée.",
+      message: nextPhase === "before" ? "Application verrouillée." : "Application débloquée.",
     };
   };
 
@@ -6610,7 +6613,7 @@ export default function App() {
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             profileRecoveryQuestion={currentProfileRecoveryQuestion}
             profileRecoveryAnswer={currentProfileRecoveryAnswer}
-            relockActionVisible={false}
+            appLocked
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("checklist")}
             onSaveSurname={(surname) => {
@@ -6643,7 +6646,7 @@ export default function App() {
               setOwnerCodePlain(normalized);
               return { ok: true, message: "Code propriétaire mis à jour." };
             }}
-            onConfirmRelock={confirmRelockJourney}
+            onToggleLock={confirmOwnerLockToggle}
             onSaveProfilePassword={async (password) => {
               const normalized = password.trim();
               if (normalized.length < 4) {
@@ -7177,7 +7180,7 @@ export default function App() {
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             profileRecoveryQuestion={currentProfileRecoveryQuestion}
             profileRecoveryAnswer={currentProfileRecoveryAnswer}
-            relockActionVisible={phase === "during"}
+            appLocked={phase === "before"}
             cloudEnabled={cloudEnabled}
             onBack={() => goToScreen("dashboard")}
             onSaveSurname={(surname) => {
@@ -7210,7 +7213,7 @@ export default function App() {
               setOwnerCodePlain(normalized);
               return { ok: true, message: "Code propriétaire mis à jour." };
             }}
-            onConfirmRelock={confirmRelockJourney}
+            onToggleLock={confirmOwnerLockToggle}
             onSaveProfilePassword={async (password) => {
               const normalized = password.trim();
               if (normalized.length < 4) {

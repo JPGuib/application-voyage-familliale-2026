@@ -116,7 +116,7 @@ describe("owner code display in settings (story 18.8)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Afficher le code" }));
     expect(screen.getByDisplayValue("1234")).toHaveAttribute("type", "text");
 
-    fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Accueil" })[0]);
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
     });

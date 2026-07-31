@@ -20,15 +20,15 @@ const ALL_SECTIONS: AccessSection[] = [
 ];
 
 describe("access-control policy", () => {
-  it("restricts owner before unlock to checklist settings and owner actions", () => {
+  it("grants owner full access even before unlock (story 18.2)", () => {
     const allowed = getAllowedSections("proprietaire", "before");
 
-    expect(allowed).toEqual(["checklist", "settings", "owner-code-actions"]);
-    expect(canAccessSection("proprietaire", "before", "dashboard")).toBe(false);
-    expect(canAccessSection("proprietaire", "before", "guide")).toBe(false);
-    expect(canAccessSection("proprietaire", "before", "game")).toBe(false);
-    expect(canAccessSection("proprietaire", "before", "tips")).toBe(false);
-    expect(canAccessSection("proprietaire", "before", "results")).toBe(false);
+    expect(allowed).toEqual(ALL_SECTIONS);
+    expect(canAccessSection("proprietaire", "before", "dashboard")).toBe(true);
+    expect(canAccessSection("proprietaire", "before", "guide")).toBe(true);
+    expect(canAccessSection("proprietaire", "before", "game")).toBe(true);
+    expect(canAccessSection("proprietaire", "before", "tips")).toBe(true);
+    expect(canAccessSection("proprietaire", "before", "results")).toBe(true);
   });
 
   it("grants owner full access after unlock", () => {

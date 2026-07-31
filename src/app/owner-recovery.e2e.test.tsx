@@ -70,6 +70,14 @@ describe("owner recovery minimal e2e", () => {
     view.unmount();
     render(React.createElement(App));
 
+    // Story 18.2: the owner keeps full access while the app is locked, so the
+    // last-viewed screen (dashboard) is restored instead of an automatic
+    // redirect to checklist. Navigate there explicitly to unlock.
+    fireEvent.click(screen.getByRole("button", { name: /Checklist/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "On est partis ! 🎉" })).toBeInTheDocument();
+    });
+
     fireEvent.click(screen.getByRole("button", { name: "On est partis ! 🎉" }));
     fireEvent.change(screen.getByPlaceholderText("Code propriétaire"), {
       target: { value: "new-9876" },
@@ -79,5 +87,5 @@ describe("owner recovery minimal e2e", () => {
     await waitFor(() => {
       expect(screen.getByText(/Jour\s+\d+/i)).toBeInTheDocument();
     });
-  });
+  }, 15000);
 });

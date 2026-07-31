@@ -32,13 +32,7 @@ export type AppScreen =
   | "tips"
   | "settings";
 
-const OWNER_BEFORE_ALLOWED: ReadonlyArray<AccessSection> = [
-  "checklist",
-  "settings",
-  "owner-code-actions",
-];
-
-const OWNER_DURING_ALLOWED: ReadonlyArray<AccessSection> = [
+const OWNER_ALLOWED: ReadonlyArray<AccessSection> = [
   "checklist",
   "dashboard",
   "guide",
@@ -93,7 +87,7 @@ export function getAllowedSections(role: Role | null, phase: TravelPhase): Acces
   }
 
   if (role === "proprietaire") {
-    return phase === "during" ? [...OWNER_DURING_ALLOWED] : [...OWNER_BEFORE_ALLOWED];
+    return [...OWNER_ALLOWED];
   }
 
   return phase === "during" ? [...USER_AFTER_ALLOWED] : [...USER_BEFORE_ALLOWED];
