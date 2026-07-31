@@ -567,6 +567,15 @@ describe("App cloud login flow", () => {
       );
       expect(includesOrphan).toBe(false);
     }
+
+    const expectedPasswordHash = await hashProfilePassword("new-profile-pw");
+    const matchingCall = pushSnapshotMock.mock.calls.find(
+      (call) => (call[0] as { profileId: string }).profileId === activeProfileId
+    );
+    expect(matchingCall).toBeDefined();
+    expect((matchingCall![0] as { profilePasswordHash: string }).profilePasswordHash).toBe(
+      expectedPasswordHash
+    );
   });
 
   it("requires password for protected profile and keeps generic error messaging", async () => {

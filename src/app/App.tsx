@@ -5021,6 +5021,22 @@ export default function App() {
       currentProfileId: profile.id,
       hydratedProfileId,
     });
+    // TEMP diagnostic (story 18.9 investigation): unconditional, not IS_DEV-gated,
+    // to see in production whether/why the profile-creation push is skipped.
+    // Remove once the missing-password-at-creation bug is confirmed fixed.
+    console.info("[cloud-sync-debug] push check", {
+      profileId: profile.id,
+      canPush,
+      hasCloudProfile,
+      hasSnapshot: Boolean(cloudSnapshot),
+      isAuthenticated,
+      isAuthBootstrapPending,
+      hasActorUid: Boolean(cloudActorUid),
+      hasRole: Boolean(profile.role),
+      hasSurname: profile.surname.trim().length > 0,
+      hydratedProfileId,
+      hasLocalPasswordHash: Boolean(profilePasswordHashes[profile.id]),
+    });
     if (!canPush) {
       if (IS_DEV) {
         console.info(
@@ -5033,9 +5049,11 @@ export default function App() {
     if (!profile.role || !cloudActorUid) return;
 
     if (hasCloudProfile && cloudSnapshot && phase !== cloudSnapshot.phase) {
-      if (IS_DEV) {
-        console.info("[cloud-sync] Push skipped: awaiting phase synchronization with cloud snapshot.");
-      }
+      console.info("[cloud-sync-debug] Push skipped: awaiting phase synchronization with cloud snapshot.", {
+        profileId: profile.id,
+        phase,
+        cloudPhase: cloudSnapshot.phase,
+      });
       return;
     }
 
@@ -5080,10 +5098,19 @@ export default function App() {
       gameHistory,
     });
     if (lastCloudPushRef.current === payload) {
+      console.info("[cloud-sync-debug] Push skipped: identical payload already sent.", {
+        profileId: profile.id,
+        hasPasswordHash: Boolean(profilePasswordHash),
+      });
       return;
     }
 
     lastCloudPushRef.current = payload;
+    console.info("[cloud-sync-debug] pushing snapshot", {
+      profileId: profile.id,
+      hasPasswordHash: Boolean(profilePasswordHash),
+      hasRecoveryHash: Boolean(profileRecoveryHash),
+    });
     void pushSnapshot({
       actorUid: cloudActorUid,
       canWriteFamilyState,
