@@ -31,7 +31,7 @@ describe("computeBadges", () => {
       makeEntry({ day: 5, location: "Bursa" }),
     ];
 
-    const badges = computeBadges(history, 5);
+    const badges = computeBadges(history, () => 5);
 
     expect(badges.find((badge) => badge.name === "Maître Culture")?.earned).toBe(true);
     expect(badges.find((badge) => badge.name === "Grand Explorateur")?.earned).toBe(true);
@@ -42,7 +42,7 @@ describe("computeBadges", () => {
   it("laisse les badges verrouilles quand les conditions ne sont pas atteintes", () => {
     const history = [makeEntry({ day: 1, location: "Istanbul", durationSec: 220, correctCount: 3 })];
 
-    const badges = computeBadges(history, 5);
+    const badges = computeBadges(history, () => 5);
 
     expect(badges.find((badge) => badge.name === "Maître Culture")?.earned).toBe(false);
     expect(badges.find((badge) => badge.name === "Grand Explorateur")?.earned).toBe(false);

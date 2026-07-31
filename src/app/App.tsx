@@ -32,11 +32,14 @@ import { GEOGRAPHIE_ECONOMIE_TOPICS } from "../content/geographie-economie";
 import { CULTURE_TRADITION_TOPICS } from "../content/culture-tradition";
 import {
   CHALLENGE_POINTS,
-  DAILY_CHALLENGE,
-  DAILY_RIDDLE,
+  getChallengeForDay,
+  getQuestionsForDay,
+  getRiddleForDay,
   QUESTION_POINTS,
-  QUESTIONS,
   RIDDLE_POINTS,
+  type DailyChallenge,
+  type DailyRiddle,
+  type QuizQuestion,
 } from "../content/game";
 import { TIPS } from "../content/tips";
 import { getScheduledCoordinates, getWeatherAdvice, useDeviceLocation, useWeather } from "./weather";
@@ -2635,7 +2638,6 @@ function GameScreen({
   onStart,
   onAnswer,
   onBack,
-  onReset,
   onContinueToRiddle,
   onRiddleAnswerChange,
   onValidateRiddle,
@@ -2645,6 +2647,9 @@ function GameScreen({
   currentDay,
   alreadyPlayedToday,
   gameDayOverride,
+  questions,
+  riddle,
+  challenge,
 }: {
   gameState: GameState;
   currentQ: number;
@@ -2660,7 +2665,6 @@ function GameScreen({
   onStart: () => void;
   onAnswer: (idx: number) => void;
   onBack: () => void;
-  onReset: () => void;
   onContinueToRiddle: () => void;
   onRiddleAnswerChange: (value: string) => void;
   onValidateRiddle: () => void;
@@ -2670,8 +2674,11 @@ function GameScreen({
   currentDay: number;
   alreadyPlayedToday: GameHistoryEntry | null;
   gameDayOverride: "open" | "closed" | null;
+  questions: QuizQuestion[];
+  riddle: DailyRiddle;
+  challenge: DailyChallenge;
 }) {
-  const q = QUESTIONS[currentQ];
+  const q = questions[currentQ];
 
   if (gameState === "intro") {
     const isClosedByOwner = gameDayOverride === "closed";
@@ -2724,7 +2731,7 @@ function GameScreen({
               Prêts pour le défi ?
             </h2>
             <p className="text-sm text-muted-foreground mb-2">
-              {QUESTIONS.length} questions sur les lieux visités aujourd&apos;hui en Turquie.
+              {questions.length} questions sur les lieux visités aujourd&apos;hui en Turquie.
             </p>
             <p className="text-sm text-muted-foreground mb-10">
               Chaque bonne réponse rapporte{" "}
@@ -2743,7 +2750,12 @@ function GameScreen({
   }
 
   if (gameState === "done") {
-    const stars = correctCount >= 5 ? 3 : correctCount >= 3 ? 2 : 1;
+    const stars =
+      correctCount === questions.length
+        ? 3
+        : correctCount >= Math.ceil(questions.length / 2)
+          ? 2
+          : 1;
     return (
       <div className="flex flex-col h-full overflow-y-auto">
         <div className="relative bg-[#FF6B3D] text-white px-6 pt-12 pb-6 flex-shrink-0">
@@ -2768,10 +2780,10 @@ function GameScreen({
           </div>
           <p className="text-6xl font-black text-primary mb-1">{gameScore}</p>
           <p className="text-sm text-muted-foreground mb-6">
-            points gagnés · {correctCount}/{QUESTIONS.length} bonnes réponses
+            points gagnés · {correctCount}/{questions.length} bonnes réponses
           </p>
           <div className="w-full space-y-2 mb-8">
-            {QUESTIONS.map((question, i) => {
+            {questions.map((question, i) => {
               const userAns = answers[i];
               const correct = userAns === question.correct;
               return (
@@ -2796,15 +2808,9 @@ function GameScreen({
           </div>
           <button
             onClick={onContinueToRiddle}
-            className="w-full bg-primary text-primary-foreground rounded-2xl py-4 px-8 font-black active:scale-95 transition-transform"
+            className="w-full bg-primary text-primary-foreground rounded-2xl py-4 px-8 font-black active:scale-95 transition-transform mb-6"
           >
             Continuer vers l&apos;énigme 🧩
-          </button>
-          <button
-            onClick={onReset}
-            className="w-full mt-3 bg-muted text-foreground rounded-2xl py-4 px-8 font-black active:scale-95 transition-transform mb-6"
-          >
-            Rejouer 🔄
           </button>
         </div>
       </div>
@@ -2825,10 +2831,10 @@ function GameScreen({
           <div className="bg-card rounded-2xl border border-border p-5">
             <p className="text-sm font-black text-foreground mb-2">Énigme</p>
             <p className="text-sm text-foreground/80 leading-relaxed">
-              {DAILY_RIDDLE.question}
+              {riddle.question}
             </p>
             <p className="text-xs text-muted-foreground mt-3">
-              Indice: {DAILY_RIDDLE.hint}
+              Indice: {riddle.hint}
             </p>
             <input
               value={riddleAnswer}
@@ -2881,9 +2887,12 @@ function GameScreen({
         </div>
         <div className="flex-1 px-4 py-5">
           <div className="bg-card rounded-2xl border border-border p-5">
-            <p className="text-sm font-black text-foreground mb-2">{DAILY_CHALLENGE.title}</p>
+            <p className="text-sm font-black text-foreground mb-2">{challenge.title}</p>
             <p className="text-sm text-foreground/80 leading-relaxed">
-              {DAILY_CHALLENGE.description}
+              {challenge.description}
+            </p>
+            <p className="mt-3 text-xs font-bold text-[#6B3DFF] bg-[#F3E5F5] rounded-xl px-3 py-2.5 leading-relaxed">
+              📌 {challenge.note}
             </p>
             <button
               onClick={onCompleteChallenge}
@@ -2911,16 +2920,16 @@ function GameScreen({
         <MemphisDecor />
         <div className="relative z-10 flex items-center justify-between mb-3">
           <p className="text-sm font-extrabold opacity-80">
-            Question {currentQ + 1} / {QUESTIONS.length}
+            Question {currentQ + 1} / {questions.length}
           </p>
           <p className="text-sm font-black bg-white/20 px-3 py-1 rounded-full">
-            {answers.filter((a, i) => a === QUESTIONS[i]?.correct).length * QUESTION_POINTS} pts
+            {answers.filter((a, i) => a === questions[i]?.correct).length * QUESTION_POINTS} pts
           </p>
         </div>
         <div className="relative z-10 bg-white/20 rounded-full h-2">
           <div
             className="bg-secondary h-2 rounded-full transition-all duration-500"
-            style={{ width: `${(currentQ / QUESTIONS.length) * 100}%` }}
+            style={{ width: `${(currentQ / questions.length) * 100}%` }}
           />
         </div>
       </div>
@@ -2980,13 +2989,15 @@ function ResultsScreen({
   onBack,
   history,
   familyMembers,
+  currentDay,
 }: {
   onBack: () => void;
   history: GameHistoryEntry[];
   familyMembers: PodiumProfileInput[];
+  currentDay: number;
 }) {
   const latestEntry = history.length > 0 ? history[history.length - 1] : null;
-  const badges = computeBadges(history, QUESTIONS.length);
+  const badges = computeBadges(history, (day) => getQuestionsForDay(day).length);
   const dailyScores = history.map((entry) => ({
     day: entry.day,
     location: entry.location,
@@ -2995,6 +3006,13 @@ function ResultsScreen({
   const total = dailyScores.reduce((sum, entry) => sum + entry.score, 0);
   const podium = computePodium(familyMembers);
   const medalByRank: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+  const todayParticipants = familyMembers
+    .filter((member) => member.role !== "proprietaire")
+    .map((member) => ({
+      profileId: member.profileId,
+      surname: member.surname,
+      hasPlayed: member.gameResults.some((entry) => entry.day === currentDay),
+    }));
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -3044,6 +3062,38 @@ function ResultsScreen({
                     <span className="text-sm font-black text-foreground">{entry.surname}</span>
                   </div>
                   <span className="text-sm font-black text-[#6B3DFF]">{entry.total} pts</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Participation au défi du jour */}
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+            Défi du jour {currentDay} — qui a joué ?
+          </p>
+          {todayParticipants.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aucun participant à afficher.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {todayParticipants.map((participant) => (
+                <div
+                  key={participant.profileId}
+                  className="flex items-center justify-between rounded-xl px-3 py-2.5 bg-muted/50"
+                >
+                  <span className="text-sm font-black text-foreground">
+                    {participant.surname}
+                  </span>
+                  <span
+                    className={`text-xs font-black ${
+                      participant.hasPlayed ? "text-[#2E7D32]" : "text-muted-foreground"
+                    }`}
+                  >
+                    {participant.hasPlayed ? "✅ A joué" : "⏳ N'a pas encore joué"}
+                  </span>
                 </div>
               ))}
             </div>
@@ -4659,6 +4709,7 @@ export default function App() {
       return "checklist";
     }
   });
+  const [pendingScreen, setPendingScreen] = useState<Screen | null>(null);
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [guideSelectedDay, setGuideSelectedDay] = useState<number | null>(null);
@@ -5913,7 +5964,7 @@ export default function App() {
     }
   };
 
-  const goToScreen = (s: Screen) => {
+  const performNavigation = (s: Screen) => {
     if (!canAccessScreen(profile.role, phase, s)) {
       setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, s));
       setScreen(getSafeScreen(profile.role, phase));
@@ -5935,6 +5986,15 @@ export default function App() {
       setChallengeDone(false);
     }
     setScreen(s);
+  };
+
+  const goToScreen = (s: Screen) => {
+    const gameInProgress = screen === "game" && gameState !== "intro";
+    if (gameInProgress && s !== "game") {
+      setPendingScreen(s);
+      return;
+    }
+    performNavigation(s);
   };
 
   const openPlace = (id: string) => {
@@ -6384,13 +6444,24 @@ export default function App() {
     };
   };
 
+  const lastDefinedDay =
+    JOURS_DESTINATIONS.length > 0
+      ? JOURS_DESTINATIONS[JOURS_DESTINATIONS.length - 1].jour
+      : null;
+  const rawCurrentDay = computeCurrentDay(tripStartDate);
+  const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
+  const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
+  const todaysQuestions = getQuestionsForDay(currentDay);
+  const todaysRiddle = getRiddleForDay(currentDay);
+  const todaysChallenge = getChallengeForDay(currentDay);
+
   const answerQ = (idx: number) => {
     if (selectedAns !== null) return;
     setSelectedAns(idx);
     const newAnswers = [...answers, idx];
     setAnswers(newAnswers);
     setTimeout(() => {
-      if (currentQ < QUESTIONS.length - 1) {
+      if (currentQ < todaysQuestions.length - 1) {
         setCurrentQ((q) => q + 1);
         setSelectedAns(null);
       } else {
@@ -6404,7 +6475,7 @@ export default function App() {
   };
 
   const correctCount = answers.filter(
-    (a, i) => a === QUESTIONS[i]?.correct
+    (a, i) => a === todaysQuestions[i]?.correct
   ).length;
   const gameScore = correctCount * QUESTION_POINTS;
   const riddleScore = riddleSolved ? RIDDLE_POINTS : 0;
@@ -6418,13 +6489,13 @@ export default function App() {
       return;
     }
 
-    const solved = normalizedInput === normalizeAnswer(DAILY_RIDDLE.answer);
+    const solved = normalizedInput === normalizeAnswer(todaysRiddle.answer);
     setRiddleValidated(true);
     setRiddleSolved(solved);
     setRiddleFeedback(
       solved
         ? `Bonne réponse ! Vous gagnez ${RIDDLE_POINTS} points.`
-        : `Pas tout à fait. La bonne réponse était "${DAILY_RIDDLE.answer}".`
+        : `Pas tout à fait. La bonne réponse était "${todaysRiddle.answer}".`
     );
   };
 
@@ -6587,13 +6658,6 @@ export default function App() {
   const visibleBottomNavItems = BOTTOM_NAV_ITEMS.filter((item) =>
     canAccessScreen(profile.role, phase, item.id)
   );
-  const lastDefinedDay =
-    JOURS_DESTINATIONS.length > 0
-      ? JOURS_DESTINATIONS[JOURS_DESTINATIONS.length - 1].jour
-      : null;
-  const rawCurrentDay = computeCurrentDay(tripStartDate);
-  const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
-  const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
   const daysUntilStart = computeDaysUntilStart(tripStartDate);
   const todayFormatted = new Intl.DateTimeFormat("fr-FR", {
     weekday: "long",
@@ -7351,6 +7415,9 @@ export default function App() {
             currentDay={currentDay}
             alreadyPlayedToday={alreadyPlayedToday}
             gameDayOverride={gameDayOverride}
+            questions={todaysQuestions}
+            riddle={todaysRiddle}
+            challenge={todaysChallenge}
             onStart={() => {
               setGameState("playing");
               setCurrentQ(0);
@@ -7366,19 +7433,6 @@ export default function App() {
             }}
             onAnswer={answerQ}
             onBack={() => goToScreen("dashboard")}
-            onReset={() => {
-              setGameState("intro");
-              setAnswers([]);
-              setCurrentQ(0);
-              setSelectedAns(null);
-              setQuizStartedAt(null);
-              setQuizDurationSec(0);
-              setRiddleAnswer("");
-              setRiddleFeedback(null);
-              setRiddleValidated(false);
-              setRiddleSolved(false);
-              setChallengeDone(false);
-            }}
             onContinueToRiddle={() => setGameState("riddle")}
             onRiddleAnswerChange={(value) => {
               setRiddleAnswer(value);
@@ -7398,6 +7452,7 @@ export default function App() {
             onBack={() => goToScreen("dashboard")}
             history={gameHistory}
             familyMembers={familyMembersForPodium}
+            currentDay={currentDay}
           />
         );
       }
@@ -7626,6 +7681,9 @@ export default function App() {
             currentDay={currentDay}
             alreadyPlayedToday={alreadyPlayedToday}
             gameDayOverride={gameDayOverride}
+            questions={todaysQuestions}
+            riddle={todaysRiddle}
+            challenge={todaysChallenge}
             onStart={() => {
               setGameState("playing");
               setCurrentQ(0);
@@ -7641,19 +7699,6 @@ export default function App() {
             }}
             onAnswer={answerQ}
             onBack={() => goToScreen("dashboard")}
-            onReset={() => {
-              setGameState("intro");
-              setAnswers([]);
-              setCurrentQ(0);
-              setSelectedAns(null);
-              setQuizStartedAt(null);
-              setQuizDurationSec(0);
-              setRiddleAnswer("");
-              setRiddleFeedback(null);
-              setRiddleValidated(false);
-              setRiddleSolved(false);
-              setChallengeDone(false);
-            }}
             onContinueToRiddle={() => setGameState("riddle")}
             onRiddleAnswerChange={(value) => {
               setRiddleAnswer(value);
@@ -7671,6 +7716,7 @@ export default function App() {
             onBack={() => goToScreen("dashboard")}
             history={gameHistory}
             familyMembers={familyMembersForPodium}
+            currentDay={currentDay}
           />
         );
       case "tips":
@@ -7843,6 +7889,37 @@ export default function App() {
         {renderScreen()}
         {visibleBottomNavItems.length > 0 && (effectiveScreen !== "checklist" || canAccessScreen(profile.role, phase, "dashboard")) && (
           <BottomNav current={effectiveScreen} items={visibleBottomNavItems} onNavigate={goToScreen} />
+        )}
+        {pendingScreen && (
+          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-6">
+            <div className="bg-card rounded-2xl p-6 max-w-xs w-full text-center shadow-2xl">
+              <div className="text-5xl mb-3">⚠️</div>
+              <p className="text-lg font-black text-foreground mb-2">
+                Quitter le défi en cours ?
+              </p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Si vous quittez maintenant, votre progression sera perdue et il ne sera pas possible de reprendre le jeu là où vous vous étiez arrêté.
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => setPendingScreen(null)}
+                  className="w-full bg-primary text-primary-foreground rounded-2xl py-3 font-black active:scale-95 transition-transform"
+                >
+                  Continuer le jeu
+                </button>
+                <button
+                  onClick={() => {
+                    const target = pendingScreen;
+                    setPendingScreen(null);
+                    performNavigation(target);
+                  }}
+                  className="w-full bg-muted text-foreground rounded-2xl py-3 font-black active:scale-95 transition-transform"
+                >
+                  Quitter quand même
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

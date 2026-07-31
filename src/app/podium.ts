@@ -4,7 +4,7 @@ export type PodiumProfileInput = {
   profileId: string;
   surname: string;
   role: Role;
-  gameResults: ReadonlyArray<{ totalScore: number }>;
+  gameResults: ReadonlyArray<{ day: number; totalScore: number }>;
 };
 
 export type PodiumEntry = {

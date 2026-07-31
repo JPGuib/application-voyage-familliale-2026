@@ -51,7 +51,7 @@ export function upsertGameHistory(
 
 export function computeBadges(
   history: GameHistoryEntry[],
-  questionCount: number
+  getQuestionCountForDay: (day: number) => number
 ): Badge[] {
   return [
     {
@@ -76,7 +76,9 @@ export function computeBadges(
       icon: "🎯",
       name: "Sans faute !",
       desc: "Score parfait",
-      earned: history.some((entry) => entry.correctCount === questionCount),
+      earned: history.some(
+        (entry) => entry.correctCount === getQuestionCountForDay(entry.day)
+      ),
     },
   ];
 }
