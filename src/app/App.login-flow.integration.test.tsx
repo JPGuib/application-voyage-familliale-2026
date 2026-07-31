@@ -55,6 +55,18 @@ const baseSnapshot = {
   updatedAt: 1,
 };
 
+function fillMandatoryProfileCreationFields() {
+  fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
+    target: { value: "new-profile-pw" },
+  });
+  fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+    target: { value: "Quel est votre dessert préféré ?" },
+  });
+  fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+    target: { value: "Tiramisu" },
+  });
+}
+
 describe("App cloud login flow", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -252,6 +264,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
+    fillMandatoryProfileCreationFields();
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
@@ -262,6 +275,140 @@ describe("App cloud login flow", () => {
     expect(activeProfileId).toMatch(/^profile-/);
     expect(claimRoleForProfileMock).toHaveBeenCalledTimes(1);
     expect(claimRoleForProfileMock).toHaveBeenCalledWith(activeProfileId, "Emma");
+  });
+
+  it("blocks profile creation when the mandatory password and recovery fields are missing (story 18.9)", async () => {
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Emma" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Le mot de passe et la question/réponse de récupération sont obligatoires pour créer un profil."
+        )
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    expect(claimRoleForProfileMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks profile creation with a too-short password", async () => {
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Emma" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
+      target: { value: "abc" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+      target: { value: "Quel est votre dessert préféré ?" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+      target: { value: "Tiramisu" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Le mot de passe doit contenir au moins 4 caractères.")
+      ).toBeInTheDocument();
+    });
+    expect(claimRoleForProfileMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks profile creation with a too-short recovery answer", async () => {
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Emma" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
+      target: { value: "new-profile-pw" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+      target: { value: "Quel est votre dessert préféré ?" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+      target: { value: "No" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("La réponse de récupération doit contenir au moins 5 caractères.")
+      ).toBeInTheDocument();
+    });
+    expect(claimRoleForProfileMock).not.toHaveBeenCalled();
+  });
+
+  it("creates the new profile with a working password and recovery once all mandatory fields are valid", async () => {
+    const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: baseSnapshot,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Emma" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fillMandatoryProfileCreationFields();
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    const activeProfileId = localStorage.getItem("jp-active-profile-id");
+
+    await waitFor(() => {
+      expect(pushSnapshotMock).toHaveBeenCalled();
+    });
+
+    const expectedPasswordHash = await hashProfilePassword("new-profile-pw");
+    const matchingCall = pushSnapshotMock.mock.calls.find(
+      (call) => (call[0] as { profileId: string }).profileId === activeProfileId
+    );
+    expect(matchingCall).toBeDefined();
+    const payload = matchingCall![0] as {
+      profilePasswordHash: string;
+      profileRecoveryQuestion: string;
+    };
+    expect(payload.profilePasswordHash).toBe(expectedPasswordHash);
+    expect(payload.profileRecoveryQuestion).toBe("Quel est votre dessert préféré ?");
   });
 
   it("does not merge the new profile into the shared roster when the cloud claim fails, to avoid a later owner push creating an orphan blank-surname profile", async () => {
@@ -294,6 +441,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
+    fillMandatoryProfileCreationFields();
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {

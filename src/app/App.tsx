@@ -670,8 +670,14 @@ function ProfileSetupScreen({
   onSurnameChange: (v: string) => void;
   onGenderChange: (v: Gender) => void;
   onHouseholdRoleChange: (v: HouseholdRole) => void;
-  onContinue: () => void;
+  onContinue: (password: string, recoveryQuestion: string, recoveryAnswer: string) => void;
 }) {
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [recoveryQuestion, setRecoveryQuestion] = useState("");
+  const [recoveryAnswer, setRecoveryAnswer] = useState("");
+  const [showRecoveryAnswer, setShowRecoveryAnswer] = useState(false);
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
@@ -755,6 +761,63 @@ function ProfileSetupScreen({
             </p>
           </div>
 
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-5 mb-2">
+            Mot de passe du profil *
+          </p>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Minimum 4 caractères"
+              className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((previous) => !previous)}
+              aria-label={showPassword ? "Masquer le mot de passe saisi" : "Afficher le mot de passe saisi"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Obligatoire pour protéger votre profil dès sa création.
+          </p>
+
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-5 mb-2">
+            Question de récupération *
+          </p>
+          <input
+            type="text"
+            value={recoveryQuestion}
+            onChange={(e) => setRecoveryQuestion(e.target.value)}
+            placeholder="Ex: Quel est votre plat préféré ?"
+            maxLength={200}
+            className="w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+          />
+
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-3 mb-2">
+            Réponse de récupération *
+          </p>
+          <div className="relative">
+            <input
+              type={showRecoveryAnswer ? "text" : "password"}
+              value={recoveryAnswer}
+              onChange={(e) => setRecoveryAnswer(e.target.value)}
+              placeholder="Votre réponse personnelle (min. 5 caractères)"
+              className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+            <button
+              type="button"
+              onClick={() => setShowRecoveryAnswer((previous) => !previous)}
+              aria-label={showRecoveryAnswer ? "Masquer la réponse saisie" : "Afficher la réponse saisie"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            >
+              {showRecoveryAnswer ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+
           {error && (
             <p className="mt-4 text-sm font-bold text-destructive">{error}</p>
           )}
@@ -763,7 +826,7 @@ function ProfileSetupScreen({
 
       <div className="flex-shrink-0 px-4 pb-8 pt-3 bg-background border-t border-border">
         <button
-          onClick={onContinue}
+          onClick={() => onContinue(password, recoveryQuestion, recoveryAnswer)}
           className="w-full bg-primary text-primary-foreground rounded-2xl py-5 text-lg font-black shadow-lg active:scale-95 transition-transform"
         >
           Continuer
@@ -6361,7 +6424,7 @@ export default function App() {
           }}
           onGenderChange={(v) => setProfile((p) => ({ ...p, gender: v }))}
           onHouseholdRoleChange={(v) => setProfile((p) => ({ ...p, householdRole: v }))}
-          onContinue={() => {
+          onContinue={(password, recoveryQuestion, recoveryAnswer) => {
             if (cloudEnabled && !cloudReady) {
               setProfileError("Synchronisation cloud en cours. Patientez quelques secondes.");
               return;
@@ -6370,6 +6433,37 @@ export default function App() {
             const normalizedSurname = profile.surname.trim();
             if (!normalizedSurname) {
               setProfileError("Le surnom est obligatoire.");
+              return;
+            }
+
+            const normalizedPassword = password.trim();
+            const normalizedRecoveryQuestion = recoveryQuestion.trim();
+            const normalizedRecoveryAnswer = recoveryAnswer.trim();
+
+            if (!normalizedPassword || !normalizedRecoveryQuestion || !normalizedRecoveryAnswer) {
+              setProfileError(
+                "Le mot de passe et la question/réponse de récupération sont obligatoires pour créer un profil."
+              );
+              return;
+            }
+
+            if (normalizedPassword.length < 4) {
+              setProfileError("Le mot de passe doit contenir au moins 4 caractères.");
+              return;
+            }
+
+            if (normalizedRecoveryQuestion.length < 8) {
+              setProfileError("La question de récupération doit contenir au moins 8 caractères.");
+              return;
+            }
+
+            if (normalizedRecoveryQuestion.length > 200) {
+              setProfileError("La question de récupération ne doit pas dépasser 200 caractères.");
+              return;
+            }
+
+            if (normalizedRecoveryAnswer.length < 5) {
+              setProfileError("La réponse de récupération doit contenir au moins 5 caractères.");
               return;
             }
 
@@ -6390,6 +6484,25 @@ export default function App() {
                 surname: normalizedSurname,
                 role: assignedRole,
               };
+
+              const nextPasswordHash = await hashProfilePassword(normalizedPassword);
+              const nextRecoveryHash = await hashOwnerRecoveryPhrase(normalizedRecoveryAnswer);
+              setProfilePasswordHashes((previous) => ({
+                ...previous,
+                [nextProfile.id]: nextPasswordHash,
+              }));
+              setProfileRecoveryHashes((previous) => ({
+                ...previous,
+                [nextProfile.id]: nextRecoveryHash,
+              }));
+              setProfileRecoveryQuestions((previous) => ({
+                ...previous,
+                [nextProfile.id]: normalizedRecoveryQuestion,
+              }));
+              setProfileRecoveryAnswers((previous) => ({
+                ...previous,
+                [nextProfile.id]: normalizedRecoveryAnswer,
+              }));
 
               setProfile(nextProfile);
 
