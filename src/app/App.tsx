@@ -4845,46 +4845,52 @@ export default function App() {
       return;
     }
 
-    setProfilePasswordHashes((previous) => {
-      const nextHash = cloudProfile.passwordHash || "";
-      if ((previous[profile.id] || "") === nextHash) {
-        return previous;
+    const cloudPasswordHash = cloudProfile.passwordHash || "";
+    const cloudRecoveryHash = cloudProfile.recoveryHash || "";
+    const cloudRecoveryQuestion = cloudProfile.recoveryQuestion || "";
+    const cloudRecoveryAnswer = cloudProfile.recoveryAnswer || "";
+
+    const pendingCredentials = pendingProfileCredentialsRef.current;
+    const isPendingForThisProfile =
+      pendingCredentials !== "none" && pendingCredentials.profileId === profile.id;
+    const pendingConfirmed =
+      !isPendingForThisProfile ||
+      (cloudPasswordHash === pendingCredentials.passwordHash &&
+        cloudRecoveryHash === pendingCredentials.recoveryHash &&
+        cloudRecoveryQuestion === pendingCredentials.recoveryQuestion &&
+        cloudRecoveryAnswer === pendingCredentials.recoveryAnswer);
+
+    if (isPendingForThisProfile && !pendingConfirmed) {
+      // Cet instantané ne reflète pas encore le mot de passe/la récupération
+      // qu'on vient de définir localement (ex : écho intermédiaire de
+      // claimRoleForProfile, qui n'écrit que le rôle/surnom) : on l'ignore
+      // pour ne pas effacer localement une valeur pas encore confirmée par
+      // notre propre push complet.
+    } else {
+      if (isPendingForThisProfile) {
+        pendingProfileCredentialsRef.current = "none";
       }
-      return {
-        ...previous,
-        [profile.id]: nextHash,
-      };
-    });
-    setProfileRecoveryHashes((previous) => {
-      const nextHash = cloudProfile.recoveryHash || "";
-      if ((previous[profile.id] || "") === nextHash) {
-        return previous;
-      }
-      return {
-        ...previous,
-        [profile.id]: nextHash,
-      };
-    });
-    setProfileRecoveryQuestions((previous) => {
-      const nextQuestion = cloudProfile.recoveryQuestion || "";
-      if ((previous[profile.id] || "") === nextQuestion) {
-        return previous;
-      }
-      return {
-        ...previous,
-        [profile.id]: nextQuestion,
-      };
-    });
-    setProfileRecoveryAnswers((previous) => {
-      const nextAnswer = cloudProfile.recoveryAnswer || "";
-      if ((previous[profile.id] || "") === nextAnswer) {
-        return previous;
-      }
-      return {
-        ...previous,
-        [profile.id]: nextAnswer,
-      };
-    });
+      setProfilePasswordHashes((previous) =>
+        (previous[profile.id] || "") === cloudPasswordHash
+          ? previous
+          : { ...previous, [profile.id]: cloudPasswordHash }
+      );
+      setProfileRecoveryHashes((previous) =>
+        (previous[profile.id] || "") === cloudRecoveryHash
+          ? previous
+          : { ...previous, [profile.id]: cloudRecoveryHash }
+      );
+      setProfileRecoveryQuestions((previous) =>
+        (previous[profile.id] || "") === cloudRecoveryQuestion
+          ? previous
+          : { ...previous, [profile.id]: cloudRecoveryQuestion }
+      );
+      setProfileRecoveryAnswers((previous) =>
+        (previous[profile.id] || "") === cloudRecoveryAnswer
+          ? previous
+          : { ...previous, [profile.id]: cloudRecoveryAnswer }
+      );
+    }
 
     setHydratedProfileId(profile.id);
 
@@ -4956,6 +4962,24 @@ export default function App() {
   // éviter qu'un instantané cloud périmé (déjà en vol) n'écrase l'édition
   // locale avant que la confirmation du push n'arrive.
   const pendingTripStartDateRef = useRef<string | null | "none">("none");
+  // Même mécanisme que pendingTripStartDateRef, pour le mot de passe/la
+  // récupération saisis à la création d'un profil (story 18.9). Le premier
+  // écho cloud après claimRoleForProfile ne contient encore que le rôle/
+  // surnom (écriture séparée, transaction Firebase dédiée à l'attribution du
+  // rôle) : sans ce garde-fou, l'effet d'hydratation ci-dessous prendrait ce
+  // profil "encore incomplet" pour la vérité et effacerait localement le mot
+  // de passe/la récupération qu'on vient de définir, avant même que notre
+  // propre push complet n'ait atteint Firebase.
+  const pendingProfileCredentialsRef = useRef<
+    | {
+        profileId: string;
+        passwordHash: string;
+        recoveryHash: string;
+        recoveryQuestion: string;
+        recoveryAnswer: string;
+      }
+    | "none"
+  >("none");
   const ownerDeviceRegisteredRef = useRef(false);
   // Empêche le push automatique de re-créer un profil dans le cloud pendant
   // la fenêtre asynchrone entre la suppression cloud et le reset local de
@@ -6468,6 +6492,26 @@ export default function App() {
             }
 
             const continueSetup = async () => {
+              // Hash the password/recovery answer up front (pure local
+              // computation) and mark them as "pending" for this profile
+              // BEFORE claimRoleForProfile talks to Firebase. That transaction
+              // writes a role/surname-only record first; without this guard,
+              // the cloud-hydration effect could see that intermediate,
+              // password-less echo and wipe the value we're about to set
+              // locally before our own full push ever reaches Firebase.
+              const nextPasswordHash = await hashProfilePassword(normalizedPassword);
+              const nextRecoveryHash = await hashOwnerRecoveryPhrase(normalizedRecoveryAnswer);
+
+              if (cloudEnabled) {
+                pendingProfileCredentialsRef.current = {
+                  profileId: profile.id,
+                  passwordHash: nextPasswordHash,
+                  recoveryHash: nextRecoveryHash,
+                  recoveryQuestion: normalizedRecoveryQuestion,
+                  recoveryAnswer: normalizedRecoveryAnswer,
+                };
+              }
+
               let assignedRole = assignRoleOnProfileCreation(familyState);
               let nextFamilyState: SharedFamilyState | null = null;
 
@@ -6485,8 +6529,6 @@ export default function App() {
                 role: assignedRole,
               };
 
-              const nextPasswordHash = await hashProfilePassword(normalizedPassword);
-              const nextRecoveryHash = await hashOwnerRecoveryPhrase(normalizedRecoveryAnswer);
               setProfilePasswordHashes((previous) => ({
                 ...previous,
                 [nextProfile.id]: nextPasswordHash,

@@ -411,6 +411,111 @@ describe("App cloud login flow", () => {
     expect(payload.profileRecoveryQuestion).toBe("Quel est votre dessert préféré ?");
   });
 
+  it("does not wipe the freshly-set password/recovery when claimRoleForProfile's role-only echo lands before our own full push (story 18.9 regression)", async () => {
+    // Regression test: claimRoleForProfile writes a role/surname-only record
+    // to Firebase via its own transaction, separate from the full profile
+    // push that carries the password/recovery hashes. If the realtime cloud
+    // snapshot reflects that intermediate, password-less record before our
+    // own full push lands, a naive cloud-hydration effect would copy the
+    // "no password" state back into local state and permanently erase the
+    // password/recovery the user just set at creation time.
+    const pushSnapshotMock = vi.fn();
+    let currentSnapshot = baseSnapshot;
+    pushSnapshotMock.mockImplementation(async (payload: Record<string, unknown>) => {
+      const profileId = payload.profileId as string;
+      currentSnapshot = {
+        ...currentSnapshot,
+        profiles: {
+          ...currentSnapshot.profiles,
+          [profileId]: {
+            ...(currentSnapshot.profiles as Record<string, unknown>)[profileId],
+            profileId,
+            surname: payload.surname,
+            role: payload.role,
+            passwordHash: payload.profilePasswordHash,
+            recoveryHash: payload.profileRecoveryHash,
+            recoveryQuestion: payload.profileRecoveryQuestion,
+            recoveryAnswer: payload.profileRecoveryAnswer,
+            createdAt: 1,
+            lastSyncAt: 1,
+            checklist: {},
+            gameResults: [],
+            phase: "before",
+          },
+        },
+      } as typeof baseSnapshot;
+    });
+
+    claimRoleForProfileMock.mockImplementation(async (profileId: string, surname: string) => {
+      // Simulate the realtime listener echoing claimRoleForProfile's own
+      // Firebase transaction back *before* our full password/recovery push
+      // has had a chance to land: role/surname only, no password fields yet.
+      currentSnapshot = {
+        ...currentSnapshot,
+        familyState: {
+          ...currentSnapshot.familyState,
+          profiles: [
+            ...currentSnapshot.familyState.profiles,
+            { id: profileId, role: "utilisateur" as const },
+          ],
+        },
+        profiles: {
+          ...currentSnapshot.profiles,
+          [profileId]: {
+            profileId,
+            surname,
+            role: "utilisateur" as const,
+            createdAt: 1,
+            lastSyncAt: 1,
+            checklist: {},
+            gameResults: [],
+            phase: "before" as const,
+          },
+        },
+      };
+      return { assignedRole: "utilisateur" as const, familyState: currentSnapshot.familyState };
+    });
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: currentSnapshot,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Emma" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fillMandatoryProfileCreationFields();
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    const activeProfileId = localStorage.getItem("jp-active-profile-id")!;
+    const expectedPasswordHash = await hashProfilePassword("new-profile-pw");
+
+    await waitFor(() => {
+      const finalProfile = currentSnapshot.profiles[
+        activeProfileId as keyof typeof currentSnapshot.profiles
+      ] as unknown as { passwordHash?: string; recoveryQuestion?: string } | undefined;
+      expect(finalProfile?.passwordHash).toBe(expectedPasswordHash);
+      expect(finalProfile?.recoveryQuestion).toBe("Quel est votre dessert préféré ?");
+    });
+  });
+
   it("does not merge the new profile into the shared roster when the cloud claim fails, to avoid a later owner push creating an orphan blank-surname profile", async () => {
     // Regression test: when claimRoleForProfile fails (returns null) while
     // cloud is enabled, the app must still let the user proceed locally, but
