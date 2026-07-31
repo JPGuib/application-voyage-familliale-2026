@@ -4840,6 +4840,10 @@ export default function App() {
       // once the deletion completes, so skip here to avoid racing it).
       // If we were previously hydrated with this profile, fail closed to profile selection.
       if (hydratedProfileId === profile.id && !isDeletingProfileRef.current) {
+        console.info("[cloud-sync-debug] hydration: cloud profile vanished, resetting profile switch", {
+          profileId: profile.id,
+          hydratedProfileId,
+        });
         resetForProfileSwitch();
       }
       return;
@@ -6529,6 +6533,10 @@ export default function App() {
               const nextPasswordHash = await hashProfilePassword(normalizedPassword);
               const nextRecoveryHash = await hashOwnerRecoveryPhrase(normalizedRecoveryAnswer);
 
+              console.info("[cloud-sync-debug] continueSetup: hashes ready", {
+                profileIdAtClosureTime: profile.id,
+              });
+
               if (cloudEnabled) {
                 pendingProfileCredentialsRef.current = {
                   profileId: profile.id,
@@ -6544,6 +6552,10 @@ export default function App() {
 
               if (cloudEnabled) {
                 const result = await claimRoleForProfile(profile.id, normalizedSurname);
+                console.info("[cloud-sync-debug] continueSetup: claimRoleForProfile settled", {
+                  profileIdAtClosureTime: profile.id,
+                  claimSucceeded: Boolean(result),
+                });
                 if (result) {
                   assignedRole = result.assignedRole;
                   nextFamilyState = result.familyState;
@@ -6555,6 +6567,11 @@ export default function App() {
                 surname: normalizedSurname,
                 role: assignedRole,
               };
+
+              console.info("[cloud-sync-debug] continueSetup: about to set password hash locally", {
+                nextProfileId: nextProfile.id,
+                hasHash: Boolean(nextPasswordHash),
+              });
 
               setProfilePasswordHashes((previous) => ({
                 ...previous,
