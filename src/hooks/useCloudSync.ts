@@ -328,9 +328,6 @@ export function useCloudSync() {
       };
 
       if (typeof navigator !== "undefined" && !navigator.onLine) {
-        console.info("[cloud-sync-debug] pushSnapshot queued: navigator reports offline.", {
-          profileId: mutation.profileId,
-        });
         enqueuePendingMutation(mutation);
         return;
       }
@@ -338,10 +335,6 @@ export function useCloudSync() {
       try {
         await pushCloudSnapshot(database, familyId, mutation);
         setCloudAuthError(null);
-        console.info("[cloud-sync-debug] pushCloudSnapshot succeeded.", {
-          profileId: mutation.profileId,
-          hasPasswordHash: Boolean(mutation.profilePasswordHash),
-        });
       } catch (err) {
         // Conservé volontairement (pas seulement en dev) : un échec d'écriture
         // silencieux ici est difficile à diagnostiquer sans ce log.
