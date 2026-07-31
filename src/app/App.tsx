@@ -4078,6 +4078,16 @@ function SettingsScreen({
                     </button>
                   </div>
                 )}
+                {deleteProfileProofMethod === "recovery" && profileRecoveryConfigured && (
+                  <>
+                    <p className="mt-3 text-[11px] font-extrabold text-muted-foreground uppercase tracking-widest">
+                      Question de récupération
+                    </p>
+                    <p className="mt-1 rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm font-bold text-foreground">
+                      {profileRecoveryQuestion || "Question indisponible"}
+                    </p>
+                  </>
+                )}
                 <input
                   type={showDeleteProfileProofInput ? "text" : "password"}
                   value={deleteProfileProofInput}
