@@ -7,6 +7,8 @@ import {
   ensureOwnerMembership,
   observeFamilySnapshot,
   pushCloudSnapshot,
+  pushGameDayOverride,
+  resetGameResultsInCloud,
 } from "../services/cloudSyncProvider";
 import {
   ensureFirebaseAnonymousAuth,
@@ -22,6 +24,7 @@ import type {
   CloudGameHistoryEntry,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
+  GameDayOverride,
   ProfileGender,
   ProfileHouseholdRole,
   TravelPhase,
@@ -382,6 +385,30 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  const setGameDayOverride = useCallback(
+    async (day: number, value: GameDayOverride | null): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+      await pushGameDayOverride(database, familyId, day, value);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  const resetGameResults = useCallback(
+    async (day?: number): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid || !cloudSnapshot) {
+        throw new Error("auth-required");
+      }
+      const currentResultsByProfile: Record<string, CloudGameHistoryEntry[]> = {};
+      for (const [profileId, profileState] of Object.entries(cloudSnapshot.profiles)) {
+        currentResultsByProfile[profileId] = profileState.gameResults;
+      }
+      await resetGameResultsInCloud(database, familyId, currentResultsByProfile, day);
+    },
+    [cloudSnapshot, cloudUserUid, database, familyId, isEnabled]
+  );
+
   // À appeler dès que l'app détermine, côté client, que le profil courant est
   // bien le propriétaire (ownerProfileId === profile.id). Enregistre cet
   // appareil/navigateur comme un "ownerMember" reconnu par les règles Firebase,
@@ -408,6 +435,8 @@ export function useCloudSync() {
     pushSnapshot,
     claimRoleForProfile,
     deleteProfile,
+    setGameDayOverride,
+    resetGameResults,
     registerAsOwnerDevice,
     familyId,
   };

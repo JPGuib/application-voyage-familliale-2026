@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { deleteProfileFromCloud, parseCloudSnapshot, pushCloudSnapshot } from "./cloudSyncProvider";
+import {
+  deleteProfileFromCloud,
+  parseCloudSnapshot,
+  pushCloudSnapshot,
+  pushGameDayOverride,
+  resetGameResultsInCloud,
+} from "./cloudSyncProvider";
 
 const mockUpdate = vi.fn().mockResolvedValue(undefined);
 const mockRef = vi.fn().mockReturnValue({});
@@ -493,5 +499,110 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
     for (const key of nulledKeys) {
       expect(key).toMatch(/famille-test.*profile-abc/);
     }
+  });
+});
+
+describe("gameDayOverrides parsing (story 19.1 owner override)", () => {
+  it("parses valid open/closed override entries keyed by day", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      profiles: {},
+      gameDayOverrides: { "3": "open", "5": "closed" },
+    });
+
+    expect(snapshot.gameDayOverrides).toEqual({ 3: "open", 5: "closed" });
+  });
+
+  it("drops invalid override values and non-numeric keys", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      profiles: {},
+      gameDayOverrides: { "2": "maybe", abc: "open", "4": "closed" },
+    });
+
+    expect(snapshot.gameDayOverrides).toEqual({ 4: "closed" });
+  });
+
+  it("defaults to an empty object when gameDayOverrides is absent", () => {
+    const snapshot = parseCloudSnapshot({ phase: "before", profiles: {} });
+
+    expect(snapshot.gameDayOverrides).toEqual({});
+  });
+});
+
+describe("pushGameDayOverride (story 19.1 owner override)", () => {
+  const db = {} as import("firebase/database").Database;
+  const familyId = "famille-test";
+
+  it("writes the requested override value under gameDayOverrides/{day}", async () => {
+    mockUpdate.mockClear();
+
+    await pushGameDayOverride(db, familyId, 3, "closed");
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["gameDayOverrides/3"]).toBe("closed");
+    expect(typeof updates.updatedAt).toBe("number");
+  });
+
+  it("writes null to clear an override and revert to automatic", async () => {
+    mockUpdate.mockClear();
+
+    await pushGameDayOverride(db, familyId, 3, null);
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["gameDayOverrides/3"]).toBeNull();
+  });
+});
+
+describe("resetGameResultsInCloud (owner score reset)", () => {
+  const db = {} as import("firebase/database").Database;
+  const familyId = "famille-test";
+  const entryFor = (day: number, totalScore: number) => ({
+    day,
+    location: "Istanbul",
+    quizScore: totalScore,
+    correctCount: 1,
+    riddleSolved: false,
+    challengeDone: false,
+    durationSec: 60,
+    totalScore,
+    completedAt: "2026-07-15T10:00:00.000Z",
+  });
+
+  it("nulls out gameResults for every profile on a full reset", async () => {
+    mockUpdate.mockClear();
+
+    await resetGameResultsInCloud(db, familyId, {
+      "profile-a": [entryFor(1, 10), entryFor(2, 20)],
+      "profile-b": [entryFor(1, 5)],
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["families/famille-test/gameResults/profile-a"]).toBeNull();
+    expect(updates["families/famille-test/gameResults/profile-b"]).toBeNull();
+  });
+
+  it("only removes the targeted day for a per-day reset, keeping other days intact", async () => {
+    mockUpdate.mockClear();
+
+    await resetGameResultsInCloud(
+      db,
+      familyId,
+      { "profile-a": [entryFor(1, 10), entryFor(2, 20)] },
+      2
+    );
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["families/famille-test/gameResults/profile-a"]).toEqual([entryFor(1, 10)]);
+  });
+
+  it("writes null for a per-day reset when it empties the profile's history", async () => {
+    mockUpdate.mockClear();
+
+    await resetGameResultsInCloud(db, familyId, { "profile-a": [entryFor(1, 10)] }, 1);
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["families/famille-test/gameResults/profile-a"]).toBeNull();
   });
 });

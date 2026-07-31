@@ -46,6 +46,7 @@ import {
   type GameHistoryEntry,
   upsertGameHistory,
 } from "./game-results";
+import { computePodium, type PodiumProfileInput } from "./podium";
 import {
   applyProfileRoleMutation,
   assignRoleOnProfileCreation,
@@ -2642,6 +2643,8 @@ function GameScreen({
   onCompleteChallenge,
   onFinishSession,
   currentDay,
+  alreadyPlayedToday,
+  gameDayOverride,
 }: {
   gameState: GameState;
   currentQ: number;
@@ -2665,10 +2668,15 @@ function GameScreen({
   onCompleteChallenge: () => void;
   onFinishSession: () => void;
   currentDay: number;
+  alreadyPlayedToday: GameHistoryEntry | null;
+  gameDayOverride: "open" | "closed" | null;
 }) {
   const q = QUESTIONS[currentQ];
 
   if (gameState === "intro") {
+    const isClosedByOwner = gameDayOverride === "closed";
+    const isLockedByCompletion = gameDayOverride !== "open" && alreadyPlayedToday !== null;
+
     return (
       <div className="flex flex-col h-full overflow-y-auto">
         <div className="relative bg-[#FF6B3D] text-white px-6 pt-12 pb-6 flex-shrink-0">
@@ -2686,25 +2694,50 @@ function GameScreen({
             Quiz Turquie — Jour {currentDay}
           </p>
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-          <div className="text-8xl mb-6">🕌</div>
-          <h2 className="text-2xl font-black text-foreground mb-2">
-            Prêts pour le défi ?
-          </h2>
-          <p className="text-sm text-muted-foreground mb-2">
-            {QUESTIONS.length} questions sur les lieux visités aujourd&apos;hui en Turquie.
-          </p>
-          <p className="text-sm text-muted-foreground mb-10">
-            Chaque bonne réponse rapporte{" "}
-            <strong className="text-primary">{QUESTION_POINTS} points</strong> à l&apos;équipe !
-          </p>
-          <button
-            onClick={onStart}
-            className="bg-primary text-primary-foreground rounded-2xl py-5 px-10 text-lg font-black shadow-lg active:scale-95 transition-transform"
-          >
-            C&apos;est parti ! 🚀
-          </button>
-        </div>
+        {isClosedByOwner ? (
+          <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+            <div className="text-8xl mb-6">🔒</div>
+            <h2 className="text-2xl font-black text-foreground mb-2">
+              Jeu fermé pour le moment
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Le propriétaire a fermé le défi de cette journée. Revenez un peu plus tard !
+            </p>
+          </div>
+        ) : isLockedByCompletion ? (
+          <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+            <div className="text-8xl mb-6">🎉</div>
+            <h2 className="text-2xl font-black text-foreground mb-2">
+              Défi du jour déjà relevé !
+            </h2>
+            <p className="text-5xl font-black text-primary mb-2">
+              {alreadyPlayedToday?.totalScore} pts
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Revenez demain pour un nouveau défi !
+            </p>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+            <div className="text-8xl mb-6">🕌</div>
+            <h2 className="text-2xl font-black text-foreground mb-2">
+              Prêts pour le défi ?
+            </h2>
+            <p className="text-sm text-muted-foreground mb-2">
+              {QUESTIONS.length} questions sur les lieux visités aujourd&apos;hui en Turquie.
+            </p>
+            <p className="text-sm text-muted-foreground mb-10">
+              Chaque bonne réponse rapporte{" "}
+              <strong className="text-primary">{QUESTION_POINTS} points</strong> à l&apos;équipe !
+            </p>
+            <button
+              onClick={onStart}
+              className="bg-primary text-primary-foreground rounded-2xl py-5 px-10 text-lg font-black shadow-lg active:scale-95 transition-transform"
+            >
+              C&apos;est parti ! 🚀
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -2946,9 +2979,11 @@ function GameScreen({
 function ResultsScreen({
   onBack,
   history,
+  familyMembers,
 }: {
   onBack: () => void;
   history: GameHistoryEntry[];
+  familyMembers: PodiumProfileInput[];
 }) {
   const latestEntry = history.length > 0 ? history[history.length - 1] : null;
   const badges = computeBadges(history, QUESTIONS.length);
@@ -2958,7 +2993,8 @@ function ResultsScreen({
     score: entry.totalScore,
   }));
   const total = dailyScores.reduce((sum, entry) => sum + entry.score, 0);
-  const maxTotal = Math.max(dailyScores.length, 1) * 100;
+  const podium = computePodium(familyMembers);
+  const medalByRank: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -2979,6 +3015,41 @@ function ResultsScreen({
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {/* Podium */}
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+            Podium 🏆
+          </p>
+          {podium.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aucun profil (hors propriétaire) n&apos;a encore de score.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {podium.map((entry) => (
+                <div
+                  key={entry.profileId}
+                  className={`flex items-center justify-between rounded-xl px-3 py-2.5 ${
+                    entry.rank === 1
+                      ? "bg-[#FFF3E0]"
+                      : entry.rank === 2
+                        ? "bg-[#F5F5F5]"
+                        : entry.rank === 3
+                          ? "bg-[#FBE9E7]"
+                          : "bg-muted/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{medalByRank[entry.rank] ?? `#${entry.rank}`}</span>
+                    <span className="text-sm font-black text-foreground">{entry.surname}</span>
+                  </div>
+                  <span className="text-sm font-black text-[#6B3DFF]">{entry.total} pts</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {latestEntry && (
           <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
             <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
@@ -3016,15 +3087,6 @@ function ResultsScreen({
           </p>
           <div className="flex items-end gap-2">
             <p className="text-5xl font-black text-[#6B3DFF]">{total}</p>
-            <p className="text-sm text-muted-foreground mb-2">
-              / {maxTotal} points possibles
-            </p>
-          </div>
-          <div className="mt-3 bg-muted rounded-full h-3">
-            <div
-              className="bg-[#6B3DFF] h-3 rounded-full transition-all"
-              style={{ width: `${(total / maxTotal) * 100}%` }}
-            />
           </div>
         </div>
 
@@ -3266,6 +3328,11 @@ function SettingsScreen({
   onDeleteOwnProfile,
   tripStartDate,
   onSaveTripStartDate,
+  currentDay,
+  lastDefinedDay,
+  gameDayOverride,
+  onSetGameDayOverride,
+  onResetScores,
 }: {
   profile: Profile;
   ownerCodeConfigured: boolean;
@@ -3300,6 +3367,17 @@ function SettingsScreen({
   ) => Promise<{ ok: boolean; message: string }>;
   tripStartDate: string | null;
   onSaveTripStartDate: (date: string) => { ok: boolean; message: string };
+  currentDay: number;
+  lastDefinedDay: number | null;
+  gameDayOverride: "open" | "closed" | null;
+  onSetGameDayOverride: (
+    code: string,
+    value: "open" | "closed" | null
+  ) => Promise<{ ok: boolean; message: string }>;
+  onResetScores: (
+    code: string,
+    action: { kind: "all" } | { kind: "day"; day: number }
+  ) => Promise<{ ok: boolean; message: string }>;
 }) {
   const [surnameInput, setSurnameInput] = useState(profile.surname);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -3332,6 +3410,21 @@ function SettingsScreen({
   const [showOwnerCodeInput, setShowOwnerCodeInput] = useState(false);
   const [showLockTogglePrompt, setShowLockTogglePrompt] = useState(false);
   const [showLockToggleCodeInput, setShowLockToggleCodeInput] = useState(false);
+  const [pendingDayOverrideAction, setPendingDayOverrideAction] = useState<
+    "open" | "closed" | null
+  >(null);
+  const [showDayOverridePrompt, setShowDayOverridePrompt] = useState(false);
+  const [dayOverrideCodeInput, setDayOverrideCodeInput] = useState("");
+  const [showDayOverrideCodeInput, setShowDayOverrideCodeInput] = useState(false);
+  const [dayOverrideFeedback, setDayOverrideFeedback] = useState<string | null>(null);
+  const [pendingScoreResetAction, setPendingScoreResetAction] = useState<
+    { kind: "all" } | { kind: "day"; day: number } | null
+  >(null);
+  const [showScoreResetPrompt, setShowScoreResetPrompt] = useState(false);
+  const [scoreResetCodeInput, setScoreResetCodeInput] = useState("");
+  const [showScoreResetCodeInput, setShowScoreResetCodeInput] = useState(false);
+  const [scoreResetFeedback, setScoreResetFeedback] = useState<string | null>(null);
+  const [scoreResetDayInput, setScoreResetDayInput] = useState(currentDay);
   const [showProfilePasswordInput, setShowProfilePasswordInput] = useState(false);
   const [showPasswordChangeFlow, setShowPasswordChangeFlow] = useState(false);
   const [passwordProofMethod, setPasswordProofMethod] =
@@ -3934,6 +4027,260 @@ function SettingsScreen({
           </div>
         )}
 
+        {profile.role === "proprietaire" && cloudEnabled && (
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+              Journée de jeu
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Jour {currentDay} —{" "}
+              {gameDayOverride === "open"
+                ? "ouverte manuellement (rejouable)"
+                : gameDayOverride === "closed"
+                  ? "fermée manuellement"
+                  : "automatique (verrouillage normal après complétion)"}
+            </p>
+            <div className="mt-3 grid grid-cols-1 gap-2">
+              <button
+                onClick={() => {
+                  setPendingDayOverrideAction("open");
+                  setDayOverrideCodeInput("");
+                  setDayOverrideFeedback(null);
+                  setShowDayOverrideCodeInput(false);
+                  setShowDayOverridePrompt(true);
+                }}
+                disabled={gameDayOverride === "open"}
+                className="w-full rounded-xl py-3 text-sm font-black border border-border text-foreground disabled:opacity-40"
+              >
+                Forcer l&apos;ouverture du jour {currentDay}
+              </button>
+              <button
+                onClick={() => {
+                  setPendingDayOverrideAction("closed");
+                  setDayOverrideCodeInput("");
+                  setDayOverrideFeedback(null);
+                  setShowDayOverrideCodeInput(false);
+                  setShowDayOverridePrompt(true);
+                }}
+                disabled={gameDayOverride === "closed"}
+                className="w-full rounded-xl py-3 text-sm font-black border border-border text-foreground disabled:opacity-40"
+              >
+                Forcer la fermeture du jour {currentDay}
+              </button>
+              <button
+                onClick={() => {
+                  setPendingDayOverrideAction(null);
+                  setDayOverrideCodeInput("");
+                  setDayOverrideFeedback(null);
+                  setShowDayOverrideCodeInput(false);
+                  setShowDayOverridePrompt(true);
+                }}
+                disabled={gameDayOverride === null}
+                className="w-full rounded-xl py-3 text-sm font-black border border-border text-foreground disabled:opacity-40"
+              >
+                Revenir à l&apos;automatique
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showDayOverridePrompt && (
+          <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-20">
+            <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
+              <p className="text-sm font-black text-foreground">Validation propriétaire</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Entrez le code propriétaire pour{" "}
+                {pendingDayOverrideAction === "open"
+                  ? `forcer l'ouverture du jour ${currentDay}`
+                  : pendingDayOverrideAction === "closed"
+                    ? `forcer la fermeture du jour ${currentDay}`
+                    : "revenir à l'automatique"}
+                .
+              </p>
+
+              <input
+                type={showDayOverrideCodeInput ? "text" : "password"}
+                value={dayOverrideCodeInput}
+                onChange={(e) => {
+                  setDayOverrideCodeInput(e.target.value);
+                  if (dayOverrideFeedback) setDayOverrideFeedback(null);
+                }}
+                placeholder="Code propriétaire"
+                className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+              />
+              <button
+                onClick={() => setShowDayOverrideCodeInput((previous) => !previous)}
+                className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+              >
+                {showDayOverrideCodeInput ? "Masquer" : "Afficher"} le code saisi
+              </button>
+
+              {dayOverrideFeedback && (
+                <p className="mt-2 text-xs font-bold text-destructive">{dayOverrideFeedback}</p>
+              )}
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setShowDayOverridePrompt(false);
+                    setDayOverrideCodeInput("");
+                    setDayOverrideFeedback(null);
+                    setShowDayOverrideCodeInput(false);
+                  }}
+                  className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={async () => {
+                    const result = await onSetGameDayOverride(
+                      dayOverrideCodeInput,
+                      pendingDayOverrideAction
+                    );
+                    if (result.ok) {
+                      setShowDayOverridePrompt(false);
+                      setDayOverrideCodeInput("");
+                      setDayOverrideFeedback(null);
+                      setShowDayOverrideCodeInput(false);
+                      return;
+                    }
+
+                    setDayOverrideFeedback(result.message);
+                  }}
+                  className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
+                >
+                  Valider
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {profile.role === "proprietaire" && cloudEnabled && (
+          <div className="bg-card rounded-2xl border border-destructive/30 p-4">
+            <p className="text-xs font-extrabold text-destructive uppercase tracking-widest">
+              Réinitialiser les scores
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Remet à 0 les compteurs de toute la famille (et donc le podium). À utiliser en cas de
+              souci — action irréversible.
+            </p>
+            <button
+              onClick={() => {
+                setPendingScoreResetAction({ kind: "all" });
+                setScoreResetCodeInput("");
+                setScoreResetFeedback(null);
+                setShowScoreResetCodeInput(false);
+                setShowScoreResetPrompt(true);
+              }}
+              className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-destructive text-destructive"
+            >
+              Réinitialiser tous les scores
+            </button>
+
+            <div className="mt-3 flex items-center gap-2">
+              <select
+                value={scoreResetDayInput}
+                onChange={(e) => setScoreResetDayInput(Number(e.target.value))}
+                className="flex-1 rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+              >
+                {Array.from(
+                  { length: Math.max(lastDefinedDay ?? currentDay, 1) },
+                  (_, i) => i + 1
+                ).map((day) => (
+                  <option key={day} value={day}>
+                    Jour {day}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => {
+                  setPendingScoreResetAction({ kind: "day", day: scoreResetDayInput });
+                  setScoreResetCodeInput("");
+                  setScoreResetFeedback(null);
+                  setShowScoreResetCodeInput(false);
+                  setShowScoreResetPrompt(true);
+                }}
+                className="rounded-xl py-3 px-4 text-sm font-black border border-destructive text-destructive"
+              >
+                Réinitialiser ce jour
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showScoreResetPrompt && pendingScoreResetAction && (
+          <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-20">
+            <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
+              <p className="text-sm font-black text-foreground">Validation propriétaire</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Entrez le code propriétaire pour confirmer{" "}
+                {pendingScoreResetAction.kind === "all"
+                  ? "la réinitialisation de tous les scores"
+                  : `la réinitialisation des scores du jour ${pendingScoreResetAction.day}`}
+                . Cette action est irréversible.
+              </p>
+
+              <input
+                type={showScoreResetCodeInput ? "text" : "password"}
+                value={scoreResetCodeInput}
+                onChange={(e) => {
+                  setScoreResetCodeInput(e.target.value);
+                  if (scoreResetFeedback) setScoreResetFeedback(null);
+                }}
+                placeholder="Code propriétaire"
+                className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+              />
+              <button
+                onClick={() => setShowScoreResetCodeInput((previous) => !previous)}
+                className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+              >
+                {showScoreResetCodeInput ? "Masquer" : "Afficher"} le code saisi
+              </button>
+
+              {scoreResetFeedback && (
+                <p className="mt-2 text-xs font-bold text-destructive">{scoreResetFeedback}</p>
+              )}
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setShowScoreResetPrompt(false);
+                    setPendingScoreResetAction(null);
+                    setScoreResetCodeInput("");
+                    setScoreResetFeedback(null);
+                    setShowScoreResetCodeInput(false);
+                  }}
+                  className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={async () => {
+                    const result = await onResetScores(
+                      scoreResetCodeInput,
+                      pendingScoreResetAction
+                    );
+                    if (result.ok) {
+                      setShowScoreResetPrompt(false);
+                      setPendingScoreResetAction(null);
+                      setScoreResetCodeInput("");
+                      setScoreResetFeedback(null);
+                      setShowScoreResetCodeInput(false);
+                      return;
+                    }
+
+                    setScoreResetFeedback(result.message);
+                  }}
+                  className="rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground"
+                >
+                  Valider
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {cloudEnabled && (
           <div className="bg-card rounded-2xl border border-border p-4">
             <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
@@ -4212,6 +4559,8 @@ export default function App() {
     pushSnapshot,
     claimRoleForProfile,
     deleteProfile,
+    setGameDayOverride,
+    resetGameResults,
     registerAsOwnerDevice,
   } = useCloudSync();
   const [isOnline, setIsOnline] = useState(() => {
@@ -5907,6 +6256,134 @@ export default function App() {
     };
   };
 
+  const confirmDayOverrideChange = async (
+    code: string,
+    value: "open" | "closed" | null
+  ): Promise<{ ok: boolean; message: string }> => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return {
+        ok: false,
+        message: "Seul le profil propriétaire peut modifier le verrouillage d'une journée.",
+      };
+    }
+
+    if (!ownerCodeHash) {
+      return {
+        ok: false,
+        message: "Configurez d'abord un code propriétaire dans Paramètres.",
+      };
+    }
+
+    if (lockRemainingMs > 0) {
+      return {
+        ok: false,
+        message: `Trop de tentatives. Réessayez dans ${lockRemainingSec}s.`,
+      };
+    }
+
+    const isCodeValid = await verifyOwnerCode(code, ownerCodeHash);
+    if (!isCodeValid) {
+      const nextAttempts = unlockFailedAttempts + 1;
+      if (nextAttempts >= 3) {
+        const nextLock = Date.now() + 30000;
+        setUnlockFailedAttempts(0);
+        setUnlockLockedUntil(nextLock);
+        setNowTs(Date.now());
+        return { ok: false, message: "Code incorrect. Blocage temporaire de 30 secondes." };
+      }
+
+      setUnlockFailedAttempts(nextAttempts);
+      return { ok: false, message: "Code incorrect. Réessayez." };
+    }
+
+    try {
+      await setGameDayOverride(currentDay, value);
+    } catch {
+      return { ok: false, message: "Synchronisation cloud indisponible pour le moment." };
+    }
+
+    setUnlockFailedAttempts(0);
+    setUnlockLockedUntil(0);
+    setNowTs(Date.now());
+
+    return {
+      ok: true,
+      message:
+        value === "open"
+          ? `Jour ${currentDay} ouvert manuellement.`
+          : value === "closed"
+            ? `Jour ${currentDay} fermé manuellement.`
+            : `Jour ${currentDay} repassé en automatique.`,
+    };
+  };
+
+  const confirmScoreReset = async (
+    code: string,
+    action: { kind: "all" } | { kind: "day"; day: number }
+  ): Promise<{ ok: boolean; message: string }> => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return {
+        ok: false,
+        message: "Seul le profil propriétaire peut réinitialiser les scores.",
+      };
+    }
+
+    if (!ownerCodeHash) {
+      return {
+        ok: false,
+        message: "Configurez d'abord un code propriétaire dans Paramètres.",
+      };
+    }
+
+    if (lockRemainingMs > 0) {
+      return {
+        ok: false,
+        message: `Trop de tentatives. Réessayez dans ${lockRemainingSec}s.`,
+      };
+    }
+
+    const isCodeValid = await verifyOwnerCode(code, ownerCodeHash);
+    if (!isCodeValid) {
+      const nextAttempts = unlockFailedAttempts + 1;
+      if (nextAttempts >= 3) {
+        const nextLock = Date.now() + 30000;
+        setUnlockFailedAttempts(0);
+        setUnlockLockedUntil(nextLock);
+        setNowTs(Date.now());
+        return { ok: false, message: "Code incorrect. Blocage temporaire de 30 secondes." };
+      }
+
+      setUnlockFailedAttempts(nextAttempts);
+      return { ok: false, message: "Code incorrect. Réessayez." };
+    }
+
+    const day = action.kind === "day" ? action.day : undefined;
+
+    try {
+      if (cloudEnabled) {
+        await resetGameResults(day);
+      }
+    } catch {
+      return { ok: false, message: "Synchronisation cloud indisponible pour le moment." };
+    }
+
+    setGameHistory((previous) =>
+      day === undefined ? [] : previous.filter((entry) => entry.day !== day)
+    );
+
+    setUnlockFailedAttempts(0);
+    setUnlockLockedUntil(0);
+    setNowTs(Date.now());
+
+    return {
+      ok: true,
+      message:
+        action.kind === "all"
+          ? "Tous les scores ont été réinitialisés."
+          : `Les scores du jour ${action.day} ont été réinitialisés.`,
+    };
+  };
+
   const answerQ = (idx: number) => {
     if (selectedAns !== null) return;
     setSelectedAns(idx);
@@ -6127,6 +6604,23 @@ export default function App() {
   const todayDestination = todayEntry?.destination ?? TRIP.todayDestination;
   const todaySubtitle = todayEntry?.visites_prevues ?? TRIP.todaySubtitle;
   const totalDays = lastDefinedDay ?? TRIP.totalDays;
+  const alreadyPlayedToday = gameHistory.find((entry) => entry.day === currentDay) ?? null;
+  const gameDayOverride = cloudSnapshot?.gameDayOverrides?.[currentDay] ?? null;
+  const familyMembersForPodium: PodiumProfileInput[] = cloudSnapshot
+    ? Object.values(cloudSnapshot.profiles).map((item) => ({
+        profileId: item.profileId,
+        surname: item.surname,
+        role: item.role,
+        gameResults: item.gameResults,
+      }))
+    : [
+        {
+          profileId: profile.id,
+          surname: profile.surname,
+          role: profile.role ?? "utilisateur",
+          gameResults: gameHistory,
+        },
+      ];
   const effectiveScreen = canAccessScreen(profile.role, phase, screen)
     ? screen
     : getSafeScreen(profile.role, phase);
@@ -6732,6 +7226,11 @@ export default function App() {
               setTripStartDate(date);
               return { ok: true, message: "Date de début du voyage mise à jour." };
             }}
+            currentDay={currentDay}
+            lastDefinedDay={lastDefinedDay}
+            gameDayOverride={gameDayOverride}
+            onSetGameDayOverride={confirmDayOverrideChange}
+            onResetScores={confirmScoreReset}
           />
         );
       }
@@ -6850,6 +7349,8 @@ export default function App() {
             riddleSolved={riddleSolved}
             challengeDone={challengeDone}
             currentDay={currentDay}
+            alreadyPlayedToday={alreadyPlayedToday}
+            gameDayOverride={gameDayOverride}
             onStart={() => {
               setGameState("playing");
               setCurrentQ(0);
@@ -6896,6 +7397,7 @@ export default function App() {
           <ResultsScreen
             onBack={() => goToScreen("dashboard")}
             history={gameHistory}
+            familyMembers={familyMembersForPodium}
           />
         );
       }
@@ -7122,6 +7624,8 @@ export default function App() {
             riddleSolved={riddleSolved}
             challengeDone={challengeDone}
             currentDay={currentDay}
+            alreadyPlayedToday={alreadyPlayedToday}
+            gameDayOverride={gameDayOverride}
             onStart={() => {
               setGameState("playing");
               setCurrentQ(0);
@@ -7166,6 +7670,7 @@ export default function App() {
           <ResultsScreen
             onBack={() => goToScreen("dashboard")}
             history={gameHistory}
+            familyMembers={familyMembersForPodium}
           />
         );
       case "tips":
@@ -7299,6 +7804,11 @@ export default function App() {
               setTripStartDate(date);
               return { ok: true, message: "Date de début du voyage mise à jour." };
             }}
+            currentDay={currentDay}
+            lastDefinedDay={lastDefinedDay}
+            gameDayOverride={gameDayOverride}
+            onSetGameDayOverride={confirmDayOverrideChange}
+            onResetScores={confirmScoreReset}
           />
         );
       default:

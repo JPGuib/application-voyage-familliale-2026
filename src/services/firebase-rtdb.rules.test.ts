@@ -99,6 +99,30 @@ suite("firebase rtdb rules owner phase guard", () => {
     );
   });
 
+  it("allows owner to force-open a gameDayOverrides entry", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(ownerDb.ref(`families/${FAMILY_ID}/gameDayOverrides/3`).set("open"));
+  });
+
+  it("allows owner to clear a gameDayOverrides entry", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(ownerDb.ref(`families/${FAMILY_ID}/gameDayOverrides/3`).set(null));
+  });
+
+  it("denies non-owner from writing a gameDayOverrides entry", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(nonOwnerDb.ref(`families/${FAMILY_ID}/gameDayOverrides/3`).set("closed"));
+  });
+
+  it("denies an invalid gameDayOverrides value", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(ownerDb.ref(`families/${FAMILY_ID}/gameDayOverrides/3`).set("maybe"));
+  });
+
   it("allows non-owner to write profile-scoped checklist", async () => {
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
 

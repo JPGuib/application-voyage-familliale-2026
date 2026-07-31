@@ -64,6 +64,8 @@ export type CloudProfileState = {
   phase: TravelPhase;
 };
 
+export type GameDayOverride = "open" | "closed";
+
 export type CloudSyncSnapshot = {
   familyState: SharedFamilyState;
   ownerCodeHash: string;
@@ -74,6 +76,7 @@ export type CloudSyncSnapshot = {
   tripStartDate: string | null;
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
+  gameDayOverrides: Record<number, GameDayOverride>;
   profiles: Record<string, CloudProfileState>;
   updatedAt: number;
 };

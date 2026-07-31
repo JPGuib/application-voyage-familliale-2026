@@ -20,6 +20,7 @@ import type {
   CloudProfileRecord,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
+  GameDayOverride,
   ProfileGender,
   ProfileHouseholdRole,
   TravelPhase,
@@ -135,6 +136,23 @@ function parseGameResults(value: unknown): CloudGameHistoryEntry[] {
   return value.filter(isCloudGameEntry).sort((left, right) => left.day - right.day);
 }
 
+function parseGameDayOverrides(value: unknown): Record<number, GameDayOverride> {
+  const raw = asRecord(value);
+  const next: Record<number, GameDayOverride> = {};
+
+  for (const [key, candidate] of Object.entries(raw)) {
+    if (candidate !== "open" && candidate !== "closed") {
+      continue;
+    }
+    const day = Number(key);
+    if (Number.isFinite(day)) {
+      next[day] = candidate;
+    }
+  }
+
+  return next;
+}
+
 function toProfileGender(value: unknown): ProfileGender {
   if (value === "male" || value === "female") return value;
   return "unspecified";
@@ -247,6 +265,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     tripStartDate: typeof root.tripStartDate === "string" ? root.tripStartDate : null,
     ownerGlobalChecklistAdditions: parseChecklistCustomItems(ownerGlobalAdditionRecords),
     ownerGlobalChecklistRemovals: parseChecklistRemovals(ownerGlobalRemovalRecords),
+    gameDayOverrides: parseGameDayOverrides(root.gameDayOverrides),
     profiles,
     updatedAt: toFiniteNumber(root.updatedAt, 0),
   };
@@ -462,6 +481,54 @@ export async function deleteProfileFromCloud(
     [`families/${familyId}/gameResults/${profileIdToDelete}`]: null,
     [`families/${familyId}/updatedAt`]: Date.now(),
   };
+
+  await update(ref(database), updates);
+}
+
+/**
+ * Force l'ouverture/fermeture d'une journée de jeu (override propriétaire du
+ * verrouillage automatique par jour, story 19.1). `value === null` efface
+ * l'override et revient au comportement automatique.
+ */
+export async function pushGameDayOverride(
+  database: Database,
+  familyId: string,
+  day: number,
+  value: GameDayOverride | null
+): Promise<void> {
+  const updates: Record<string, unknown> = {
+    [`gameDayOverrides/${day}`]: value,
+    updatedAt: Date.now(),
+  };
+
+  await update(ref(database, familyPath(familyId)), updates);
+}
+
+/**
+ * Réinitialisation propriétaire des scores (story 19 — besoin ajouté par le
+ * PO) : reset total (day === undefined, tous profils) ou ciblé sur une seule
+ * journée (les autres jours de chaque profil restent intacts).
+ */
+export async function resetGameResultsInCloud(
+  database: Database,
+  familyId: string,
+  currentResultsByProfile: Record<string, CloudGameHistoryEntry[]>,
+  day?: number
+): Promise<void> {
+  const updates: Record<string, unknown> = {
+    [`families/${familyId}/updatedAt`]: Date.now(),
+  };
+
+  for (const [profileId, entries] of Object.entries(currentResultsByProfile)) {
+    if (day === undefined) {
+      updates[`families/${familyId}/gameResults/${profileId}`] = null;
+      continue;
+    }
+
+    const filtered = entries.filter((entry) => entry.day !== day);
+    updates[`families/${familyId}/gameResults/${profileId}`] =
+      filtered.length > 0 ? filtered : null;
+  }
 
   await update(ref(database), updates);
 }
