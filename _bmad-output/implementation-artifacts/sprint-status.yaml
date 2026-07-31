@@ -147,9 +147,9 @@ development_status:
   17-2-meteo-geolocalisation: done
   epic-17-retrospective: optional
 
-  epic-18: in-progress
+  epic-18: done
   18-1-reverrouillage: done
-  18-2-acces-proprietaire: backlog
+  18-2-acces-proprietaire: done
   18-3-suppression-profil: done
   18-4-question-recuperation: done
   18-5-question-reponse-recuperation: done
@@ -166,3 +166,40 @@ development_status:
   19-2-podium-resultats: backlog
   19-3-score-total-par-jour: backlog
   epic-19-retrospective: optional
+
+  epic-20: backlog
+  20-1-planning-complet-itineraire: backlog
+  20-2-documents-voyage-centralises: backlog
+  20-3-convertisseur-devises-eur-try: backlog
+  epic-20-retrospective: optional
+
+  epic-21: backlog
+  21-1-carte-interactive-globale: backlog
+  21-2-avis-commentaires-lieux-visites: backlog
+  epic-21-retrospective: optional
+
+  epic-22: backlog
+  22-1-rappels-notifications: backlog
+  22-2-graphique-progression-scores: backlog
+  22-3-defi-collaboratif-familial: backlog
+  epic-22-retrospective: optional
+
+  epic-23: backlog
+  23-1-reinitialisation-nouveau-voyage: backlog
+  epic-23-retrospective: optional
+
+  epic-24: backlog
+  24-1-choix-voyageur-visiteur-creation: backlog
+  24-2-configuration-code-voyageur: backlog
+  24-3-droits-acces-visiteur: backlog
+  epic-24-retrospective: optional
+
+  epic-25: backlog
+  25-1-ecran-teaser-pre-depart: backlog
+  25-2-sondage-destination: backlog
+  25-3-transformation-faq-sondage-consultable: backlog
+  epic-25-retrospective: optional
+
+  epic-26: backlog
+  26-1-formulaire-connexion-classique: backlog
+  epic-26-retrospective: optional

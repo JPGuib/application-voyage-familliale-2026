@@ -1,7 +1,6 @@
 Nouvelles fonctionnalités
 ------------------------
 P3 - Story 12.3 (ex-2.3) — Création personnalisée de catégories de checklist
-P3 - Story 18.2 — Accès complet du propriétaire + indicateur d'état de verrouillage
 
 P2 - Story 19.1 — Verrouillage du défi du jour après complétion
 P2 - Story 19.2 — Podium cumulé des utilisateurs dans l'écran Résultats

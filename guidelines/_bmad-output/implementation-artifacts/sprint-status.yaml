@@ -110,10 +110,10 @@ development_status:
   11-8-recette-non-regression-multi-appareils: done
   epic-11-retrospective: optional
 
-  epic-12: backlog
-  12-1-redirection-changement-profil: backlog
+  epic-12: done
+  12-1-redirection-changement-profil: done
   12-2-isolation-checklist-par-profil-resolue-par-1-4: done
-  12-3-categories-personnalisees: backlog
+  12-3-categories-personnalisees: done
   epic-12-retrospective: optional
 
   epic-13: done
@@ -136,8 +136,8 @@ development_status:
   15-6-audio-lieux: done
   epic-15-retrospective: optional
 
-  epic-16: backlog
-  16-1-wanderlog-polarsteps: backlog
+  epic-16: done
+  16-1-wanderlog-polarsteps: done
   16-2-fusionnee-dans-16-1: done
   16-3-fusionnee-dans-16-1: done
   epic-16-retrospective: optional
@@ -147,16 +147,16 @@ development_status:
   17-2-meteo-geolocalisation: done
   epic-17-retrospective: optional
 
-  epic-18: in-progress
+  epic-18: done
   18-1-reverrouillage: done
-  18-2-acces-proprietaire: backlog
+  18-2-acces-proprietaire: done
   18-3-suppression-profil: done
-  18-4-question-recuperation: backlog
-  18-5-question-reponse-recuperation: backlog
-  18-6-connexion-recuperation: backlog
+  18-4-question-recuperation: done
+  18-5-question-reponse-recuperation: done
+  18-6-connexion-recuperation: done
   18-7-retrait-bouton-mdp: done
-  18-8-code-proprietaire-affichage: backlog
-  18-9-mdp-obligatoire-creation: backlog
+  18-8-code-proprietaire-affichage: done
+  18-9-mdp-obligatoire-creation: done
   18-10-refresh-ecran-courant: done
   18-11-nom-lieu-tronque: done
   epic-18-retrospective: optional
