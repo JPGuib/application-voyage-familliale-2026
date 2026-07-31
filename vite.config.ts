@@ -30,7 +30,7 @@ export default defineConfig({
       manifest: {
         name: 'Application de voyage familiale 2026',
         short_name: 'Voyage 2026',
-        description: 'Compagnon de voyage familial mobile-first pour la Turquie.',
+        description: 'Compagnon de voyage familial mobile-first.',
         theme_color: '#B8A898',
         background_color: '#FFF8F1',
         display: 'standalone',
