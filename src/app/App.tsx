@@ -5758,6 +5758,14 @@ export default function App() {
 
     setProfile((previous) => {
       const nextRole = isRolePendingForThisProfile && !rolePendingConfirmed ? previous.role : cloudProfile.role;
+      console.log("[DEBUG-24.1] hydration role sync", {
+        profileId: profile.id,
+        previousRole: previous.role,
+        cloudRole: cloudProfile.role,
+        isRolePendingForThisProfile,
+        rolePendingConfirmed,
+        nextRole,
+      });
       const nextSurname = cloudProfile.surname || previous.surname;
       const nextGender: Gender = cloudProfile.gender ?? "unspecified";
       const nextHouseholdRole: HouseholdRole = cloudProfile.householdRole ?? "member";
@@ -7716,6 +7724,11 @@ export default function App() {
           onGenderChange={(v) => setProfile((p) => ({ ...p, gender: v }))}
           onHouseholdRoleChange={(v) => setProfile((p) => ({ ...p, householdRole: v }))}
           onContinue={(password, recoveryQuestion, recoveryAnswer, travelerChoice, travelerCode) => {
+            console.log("[DEBUG-24.1] onContinue called", {
+              travelerChoice,
+              ownerProfileId: familyState.ownerProfileId,
+              cloudEnabled,
+            });
             if (cloudEnabled && !cloudReady) {
               setProfileError("Synchronisation cloud en cours. Patientez quelques secondes.");
               return;
@@ -7855,6 +7868,13 @@ export default function App() {
                 }
               }
 
+              console.log("[DEBUG-24.1] before override", {
+                ownerAlreadyConfigured,
+                travelerChoice,
+                assignedRole,
+                cloudEnabled,
+                nextFamilyStateExists: Boolean(nextFamilyState),
+              });
               // Story 24.1 : le choix "Visiteur" ne s'applique jamais au tout
               // premier profil (la course propriétaire/utilisateur ci-dessus
               // aurait alors renvoyé "proprietaire", jamais "utilisateur").
@@ -7876,6 +7896,10 @@ export default function App() {
                 role: assignedRole,
               };
 
+              console.log("[DEBUG-24.1] setProfile with final role", {
+                profileId: nextProfile.id,
+                role: nextProfile.role,
+              });
               setProfile(nextProfile);
 
               if (nextFamilyState) {
