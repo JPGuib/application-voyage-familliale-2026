@@ -5685,7 +5685,18 @@ export default function App() {
       setRiddleSolved(false);
       setChallengeDone(false);
     }
-  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id, currentDay, gameState]);
+    // gameState est délibérément exclu des dépendances : cet effet ne doit
+    // se ré-exécuter QUE sur un vrai changement d'instantané cloud, jamais
+    // simplement parce qu'on vient de changer gameState localement (ex :
+    // cliquer "C'est parti"). Sinon, il se redéclenche immédiatement avec
+    // un cloudSnapshot pas encore à jour (notre propre écriture n'a pas
+    // encore fait l'aller-retour), voit "pas de progression pour ce jour"
+    // et annule aussitôt l'action qu'on vient de faire localement — bug
+    // vécu le 2026-08-01 : "C'est parti" semblait ne rien faire. La valeur
+    // de gameState lue ci-dessus reste néanmoins toujours à jour (fermeture
+    // React normale), seul le déclenchement de l'effet ignore ses changements.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id, currentDay]);
 
   const lastCloudPushRef = useRef<string | null>(null);
   const pendingCloudPhaseRef = useRef<TravelPhase | null>(null);
