@@ -2678,7 +2678,11 @@ function GameScreen({
   riddle: DailyRiddle;
   challenge: DailyChallenge;
 }) {
-  const q = questions[currentQ];
+  // Garde-fou défensif : currentQ ne doit jamais dépasser la dernière
+  // question (sinon questions[currentQ] est undefined et fait planter tout
+  // l'écran — bug vécu le 2026-08-01 via une resynchronisation cloud trop
+  // agressive, corrigé à la source, mais ce clamp reste une sécurité utile).
+  const q = questions[Math.min(currentQ, questions.length - 1)];
 
   if (gameState === "intro") {
     const isClosedByOwner = gameDayOverride === "closed";
@@ -5450,6 +5454,12 @@ export default function App() {
     isAuthenticated,
   ]);
 
+  // Clé "profileId:day" du dernier resume de gameProgress appliqué depuis le
+  // cloud — sert de garde-fou "une seule fois par profil+jour" juste en
+  // dessous, pour ne pas laisser un écho cloud pendant une partie active
+  // réécraser currentQ/answers en plein jeu (cf. commentaire sur place).
+  const cloudGameProgressAppliedKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (
       !shouldHydrateFromCloudSnapshot({
@@ -5604,8 +5614,21 @@ export default function App() {
     // Reprise de la progression en cours (quiz déjà soumis, énigme ou défi
     // photo) : seulement si elle correspond au jour courant, sinon elle est
     // ignorée (journée précédente jamais terminée, on repart sur "intro").
+    // Appliquée UNE SEULE FOIS par profil+jour (comme localGameProgressCheckedRef
+    // en mode local) : sans ce garde-fou, chaque écho cloud pendant une partie
+    // active en "playing" réappliquait cloudProgress.answers.length à currentQ,
+    // y compris pendant la fenêtre entre la dernière réponse (answers déjà au
+    // complet) et le passage à "done" — plaçant currentQ juste après la
+    // dernière question et faisant planter l'écran (questions[currentQ]
+    // devient undefined). Bug reproduit et corrigé le 2026-08-01.
     const cloudProgress = cloudProfile.gameProgress;
-    if (cloudProgress && cloudProgress.day === currentDay) {
+    const gameProgressHydrationKey = `${profile.id}:${currentDay}`;
+    if (
+      cloudProgress &&
+      cloudProgress.day === currentDay &&
+      cloudGameProgressAppliedKeyRef.current !== gameProgressHydrationKey
+    ) {
+      cloudGameProgressAppliedKeyRef.current = gameProgressHydrationKey;
       setGameState((previous) => (previous === cloudProgress.phase ? previous : cloudProgress.phase));
       setCurrentQ((previous) =>
         previous === cloudProgress.answers.length ? previous : cloudProgress.answers.length

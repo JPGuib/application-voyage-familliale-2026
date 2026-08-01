@@ -2,11 +2,15 @@
   import { createRoot } from "react-dom/client";
   import { registerSW } from "virtual:pwa-register";
   import App from "./app/App.tsx";
+  import { ErrorBoundary } from "./app/ErrorBoundary.tsx";
   import "./styles/index.css";
 
   registerSW({
     immediate: true,
   });
 
-  createRoot(document.getElementById("root")!).render(<App />);
-  
+  createRoot(document.getElementById("root")!).render(
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
