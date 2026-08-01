@@ -1853,6 +1853,63 @@ describe("App profile deletion (story 18.3)", () => {
     expect(screen.queryByRole("button", { name: "Supprimer mon profil" })).not.toBeInTheDocument();
   });
 
+  it("visiteur profile sees delete action in settings and can delete itself, same as a voyageur (story 24.x)", async () => {
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: {
+        ...baseSnapshot,
+        familyState: {
+          ...baseSnapshot.familyState,
+          profiles: [
+            ...baseSnapshot.familyState.profiles,
+            { id: "p3", role: "visiteur" as const },
+          ],
+        },
+        profiles: {
+          ...baseSnapshot.profiles,
+          p3: {
+            profileId: "p3",
+            surname: "Tonton",
+            role: "visiteur" as const,
+            createdAt: 1,
+            lastSyncAt: 1,
+            checklist: {},
+            gameResults: [],
+            phase: "before" as const,
+          },
+        },
+      },
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      deleteProfile: deleteProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    // Login as visiteur (Tonton = p3, no password configured)
+    fireEvent.click(screen.getByRole("button", { name: /Tonton/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Paramètres" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
+
+    expect(screen.getByRole("button", { name: "Supprimer mon profil" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer mon profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Supprimer définitivement" }));
+
+    await waitFor(() => {
+      expect(deleteProfileMock).toHaveBeenCalledWith("p3");
+    });
+  });
+
   it("no-password flow: warning dialog shows and confirm deletes and redirects to login screen", async () => {
     render(<App />);
 

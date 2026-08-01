@@ -4637,7 +4637,7 @@ function SettingsScreen({
           </div>
         )}
 
-        {profile.role === "utilisateur" && (
+        {profile.role !== "proprietaire" && (
           <div className="bg-card rounded-2xl border border-destructive/30 p-4">
             <p className="text-xs font-extrabold text-destructive uppercase tracking-widest">
               Zone dangereuse
@@ -6713,7 +6713,7 @@ export default function App() {
   ): Promise<{ ok: boolean; message: string }> => {
     const genericError = "Authentification impossible. Vérifiez les informations saisies.";
 
-    if (profile.role !== "utilisateur") {
+    if (profile.role === "proprietaire") {
       return { ok: false, message: "Le profil propriétaire ne peut pas être supprimé." };
     }
 
