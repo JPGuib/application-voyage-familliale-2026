@@ -405,10 +405,18 @@ export function useCloudSync() {
         throw new Error("auth-required");
       }
       const currentResultsByProfile: Record<string, CloudGameHistoryEntry[]> = {};
+      const currentProgressByProfile: Record<string, CloudGameProgress> = {};
       for (const [profileId, profileState] of Object.entries(cloudSnapshot.profiles)) {
         currentResultsByProfile[profileId] = profileState.gameResults;
+        currentProgressByProfile[profileId] = profileState.gameProgress;
       }
-      await resetGameResultsInCloud(database, familyId, currentResultsByProfile, day);
+      await resetGameResultsInCloud(
+        database,
+        familyId,
+        currentResultsByProfile,
+        currentProgressByProfile,
+        day
+      );
     },
     [cloudSnapshot, cloudUserUid, database, familyId, isEnabled]
   );

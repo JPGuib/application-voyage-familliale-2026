@@ -537,12 +537,18 @@ export async function pushGameDayOverride(
 /**
  * Réinitialisation propriétaire des scores (story 19 — besoin ajouté par le
  * PO) : reset total (day === undefined, tous profils) ou ciblé sur une seule
- * journée (les autres jours de chaque profil restent intacts).
+ * journée (les autres jours de chaque profil restent intacts). Efface aussi
+ * la partie EN COURS (gameProgress) des profils concernés par ce reset — un
+ * profil resté coincé en plein quiz/énigme/défi pour le(s) jour(s)
+ * réinitialisé(s) doit pouvoir rejouer depuis "intro", sinon le jour reste
+ * verrouillé sur son ancienne progression malgré le reset des scores (bug
+ * corrigé le 2026-08-01).
  */
 export async function resetGameResultsInCloud(
   database: Database,
   familyId: string,
   currentResultsByProfile: Record<string, CloudGameHistoryEntry[]>,
+  currentProgressByProfile: Record<string, CloudGameProgress>,
   day?: number
 ): Promise<void> {
   const updates: Record<string, unknown> = {
@@ -558,6 +564,14 @@ export async function resetGameResultsInCloud(
     const filtered = entries.filter((entry) => entry.day !== day);
     updates[`families/${familyId}/gameResults/${profileId}`] =
       filtered.length > 0 ? filtered : null;
+  }
+
+  for (const [profileId, progress] of Object.entries(currentProgressByProfile)) {
+    if (day === undefined) {
+      updates[`families/${familyId}/gameProgress/${profileId}`] = null;
+    } else if (progress && progress.day === day) {
+      updates[`families/${familyId}/gameProgress/${profileId}`] = null;
+    }
   }
 
   await update(ref(database), updates);

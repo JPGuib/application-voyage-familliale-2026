@@ -5625,8 +5625,18 @@ export default function App() {
     // (gameState === "intro") au lieu d'un compteur d'essais élimine ces
     // deux classes de bug : c'est toujours sûr de réessayer tant que rien
     // n'a démarré localement, et plus jamais sûr dès que quelque chose a démarré.
-    const cloudProgress = cloudProfile.gameProgress;
-    if (cloudProgress && cloudProgress.day === currentDay && gameState === "intro") {
+    // Une journée fermée par le propriétaire (gameDayOverride "closed")
+    // bloque aussi la reprise (pas seulement un nouveau départ depuis
+    // "intro") : sans ce check, une session déjà en cours se reprenait
+    // quand même après un F5, même la journée fermée entre-temps.
+    const cloudProgress = cloudProfile.gameProgress ?? null;
+    const dayOverrideForCurrentDay = cloudSnapshot.gameDayOverrides?.[currentDay] ?? null;
+    const hasMatchingCloudProgress =
+      cloudProgress !== null &&
+      cloudProgress.day === currentDay &&
+      dayOverrideForCurrentDay !== "closed";
+
+    if (hasMatchingCloudProgress && gameState === "intro") {
       setGameState((previous) => (previous === cloudProgress.phase ? previous : cloudProgress.phase));
       setCurrentQ((previous) =>
         previous === cloudProgress.answers.length ? previous : cloudProgress.answers.length
@@ -5655,6 +5665,25 @@ export default function App() {
             : `Pas tout à fait. La bonne réponse était "${getRiddleForDay(currentDay).answer}".`
         );
       }
+    } else if (!hasMatchingCloudProgress && gameState !== "intro") {
+      // Le cloud ne reflète plus (ou plus pour ce jour) de partie en cours
+      // pour ce profil : soit le propriétaire vient de la réinitialiser
+      // (outil "Réinitialiser une partie en cours" ou "Réinitialiser les
+      // scores"), soit la journée a été fermée entre-temps. On aligne
+      // l'état local en conséquence — sans ça, l'écran restait bloqué sur
+      // l'ancienne étape (riddle/challenge) malgré la réinitialisation
+      // distante, ce qui donnait l'impression que l'outil ne faisait rien.
+      setGameState("intro");
+      setCurrentQ(0);
+      setSelectedAns(null);
+      setAnswers([]);
+      setQuizStartedAt(null);
+      setQuizDurationSec(0);
+      setRiddleAnswer("");
+      setRiddleFeedback(null);
+      setRiddleValidated(false);
+      setRiddleSolved(false);
+      setChallengeDone(false);
     }
   }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id, currentDay, gameState]);
 

@@ -732,10 +732,15 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
   it("nulls out gameResults for every profile on a full reset", async () => {
     mockUpdate.mockClear();
 
-    await resetGameResultsInCloud(db, familyId, {
-      "profile-a": [entryFor(1, 10), entryFor(2, 20)],
-      "profile-b": [entryFor(1, 5)],
-    });
+    await resetGameResultsInCloud(
+      db,
+      familyId,
+      {
+        "profile-a": [entryFor(1, 10), entryFor(2, 20)],
+        "profile-b": [entryFor(1, 5)],
+      },
+      {}
+    );
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     expect(updates["families/famille-test/gameResults/profile-a"]).toBeNull();
@@ -749,6 +754,7 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
       db,
       familyId,
       { "profile-a": [entryFor(1, 10), entryFor(2, 20)] },
+      {},
       2
     );
 
@@ -759,9 +765,70 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
   it("writes null for a per-day reset when it empties the profile's history", async () => {
     mockUpdate.mockClear();
 
-    await resetGameResultsInCloud(db, familyId, { "profile-a": [entryFor(1, 10)] }, 1);
+    await resetGameResultsInCloud(db, familyId, { "profile-a": [entryFor(1, 10)] }, {}, 1);
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     expect(updates["families/famille-test/gameResults/profile-a"]).toBeNull();
+  });
+
+  it("also clears matching in-progress gameProgress on a full reset", async () => {
+    mockUpdate.mockClear();
+
+    await resetGameResultsInCloud(
+      db,
+      familyId,
+      { "profile-a": [entryFor(1, 10)] },
+      {
+        "profile-a": {
+          day: 1,
+          phase: "riddle",
+          answers: [1],
+          quizStartedAt: null,
+          quizDurationSec: 30,
+          riddleValidated: false,
+          riddleSolved: false,
+        },
+        "profile-b": null,
+      }
+    );
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["families/famille-test/gameProgress/profile-a"]).toBeNull();
+    expect(updates["families/famille-test/gameProgress/profile-b"]).toBeNull();
+  });
+
+  it("only clears gameProgress matching the targeted day on a per-day reset", async () => {
+    mockUpdate.mockClear();
+
+    await resetGameResultsInCloud(
+      db,
+      familyId,
+      { "profile-a": [entryFor(2, 10)] },
+      {
+        "profile-a": {
+          day: 2,
+          phase: "challenge",
+          answers: [1, 0],
+          quizStartedAt: null,
+          quizDurationSec: 30,
+          riddleValidated: true,
+          riddleSolved: true,
+        },
+        "profile-b": {
+          day: 5,
+          phase: "playing",
+          answers: [],
+          quizStartedAt: 1700000000000,
+          quizDurationSec: 0,
+          riddleValidated: false,
+          riddleSolved: false,
+        },
+      },
+      2
+    );
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["families/famille-test/gameProgress/profile-a"]).toBeNull();
+    expect(updates["families/famille-test/gameProgress/profile-b"]).toBeUndefined();
   });
 });
