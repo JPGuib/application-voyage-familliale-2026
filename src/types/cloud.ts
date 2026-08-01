@@ -28,6 +28,20 @@ export type CloudGameHistoryEntry = {
   completedAt: string;
 };
 
+// Progression en cours (session non terminée) du jeu du jour, pour reprendre
+// après une fermeture/rechargement de l'appli. Null = aucune session en
+// cours pour ce profil. Jamais "playing"/"done" : on ne peut pas quitter en
+// plein quiz, et le récap du quiz bascule directement vers l'énigme si on
+// quitte l'écran (voir App.tsx, goToScreen).
+export type CloudGameProgress = {
+  day: number;
+  phase: "riddle" | "challenge";
+  answers: number[];
+  quizDurationSec: number;
+  riddleValidated: boolean;
+  riddleSolved: boolean;
+} | null;
+
 export type ProfileGender = "unspecified" | "male" | "female";
 export type ProfileHouseholdRole = "member" | "parent" | "child";
 
@@ -61,6 +75,7 @@ export type CloudProfileState = {
   checklist: ChecklistState;
   customChecklistItems: ChecklistCustomItem[];
   gameResults: CloudGameHistoryEntry[];
+  gameProgress: CloudGameProgress;
   phase: TravelPhase;
 };
 
@@ -104,6 +119,7 @@ export type CloudSyncWritePayload = {
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   gameResults: CloudGameHistoryEntry[];
+  gameProgress: CloudGameProgress;
   phase: TravelPhase;
   tripStartDate?: string | null;
 };

@@ -161,10 +161,10 @@ development_status:
   18-11-nom-lieu-tronque: done
   epic-18-retrospective: optional
 
-  epic-19: backlog
-  19-1-verrouillage-defi-jour: backlog
-  19-2-podium-resultats: backlog
-  19-3-score-total-par-jour: backlog
+  epic-19: done
+  19-1-verrouillage-defi-jour: done
+  19-2-podium-resultats: done
+  19-3-score-total-par-jour: done
   epic-19-retrospective: optional
 
   epic-20: backlog

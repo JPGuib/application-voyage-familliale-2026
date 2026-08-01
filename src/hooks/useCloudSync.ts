@@ -22,6 +22,7 @@ import type {
   ChecklistRemovalState,
   ChecklistState,
   CloudGameHistoryEntry,
+  CloudGameProgress,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
   GameDayOverride,
@@ -58,6 +59,7 @@ type PushSnapshotInput = {
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   gameResults: CloudGameHistoryEntry[];
+  gameProgress: CloudGameProgress;
   phase: TravelPhase;
   tripStartDate?: string | null;
 };
@@ -326,6 +328,7 @@ export function useCloudSync() {
         ownerGlobalChecklistAdditions: snapshot.ownerGlobalChecklistAdditions,
         ownerGlobalChecklistRemovals: snapshot.ownerGlobalChecklistRemovals,
         gameResults: snapshot.gameResults,
+        gameProgress: snapshot.gameProgress,
         phase: snapshot.phase,
         tripStartDate: snapshot.tripStartDate,
       };

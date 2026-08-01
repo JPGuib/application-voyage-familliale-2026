@@ -233,6 +233,116 @@ describe("cloudSyncProvider phase migration", () => {
   });
 });
 
+describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
+  it("parses a valid in-progress gameProgress entry per profile", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {
+        "profile-a": { surname: "A", role: "utilisateur", createdAt: 1, lastSyncAt: 2 },
+      },
+      gameProgress: {
+        "profile-a": {
+          day: 3,
+          phase: "challenge",
+          answers: [1, 0, 2],
+          quizDurationSec: 75,
+          riddleValidated: true,
+          riddleSolved: true,
+        },
+      },
+    });
+
+    expect(snapshot.profiles["profile-a"]?.gameProgress).toEqual({
+      day: 3,
+      phase: "challenge",
+      answers: [1, 0, 2],
+      quizDurationSec: 75,
+      riddleValidated: true,
+      riddleSolved: true,
+    });
+  });
+
+  it("returns null when gameProgress is absent or malformed", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {
+        "profile-a": { surname: "A", role: "utilisateur", createdAt: 1, lastSyncAt: 2 },
+        "profile-b": { surname: "B", role: "utilisateur", createdAt: 1, lastSyncAt: 2 },
+      },
+      gameProgress: {
+        "profile-b": { day: 1, phase: "playing", answers: [], quizDurationSec: 0, riddleValidated: false, riddleSolved: false },
+      },
+    });
+
+    expect(snapshot.profiles["profile-a"]?.gameProgress).toBeNull();
+    // "playing" n'est pas une phase persistée valide : rejetée.
+    expect(snapshot.profiles["profile-b"]?.gameProgress).toBeNull();
+  });
+
+  it("writes gameProgress for the target profile on push, and null clears it", async () => {
+    mockUpdate.mockClear();
+    const db = {} as import("firebase/database").Database;
+    const familyId = "famille-test";
+    const basePayload = {
+      actorUid: "uid-1",
+      canWriteFamilyState: false,
+      familyState: { version: 1, ownerProfileId: null, profiles: [] } as import("../app/owner-policy").SharedFamilyState,
+      ownerCodeHash: "",
+      ownerRecoveryHash: "",
+      ownerRecoveryConfiguredAt: undefined,
+      profileId: "profile-1",
+      surname: "Maman",
+      role: "utilisateur" as import("../app/owner-policy").Role,
+      profilePasswordHash: "",
+      gender: "female" as const,
+      householdRole: "parent" as const,
+      checklist: {},
+      profileCustomChecklistItems: [],
+      ownerGlobalChecklistAdditions: [],
+      ownerGlobalChecklistRemovals: {},
+      gameResults: [],
+      phase: "before" as const,
+    };
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      gameProgress: {
+        day: 2,
+        phase: "riddle",
+        answers: [1, 1],
+        quizDurationSec: 40,
+        riddleValidated: false,
+        riddleSolved: false,
+      },
+    });
+    let updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["gameProgress/profile-1"]).toEqual({
+      day: 2,
+      phase: "riddle",
+      answers: [1, 1],
+      quizDurationSec: 40,
+      riddleValidated: false,
+      riddleSolved: false,
+    });
+
+    mockUpdate.mockClear();
+    await pushCloudSnapshot(db, familyId, { ...basePayload, gameProgress: null });
+    updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["gameProgress/profile-1"]).toBeNull();
+  });
+
+  it("clears gameProgress alongside profiles/checklists/gameResults on profile deletion", async () => {
+    mockUpdate.mockClear();
+    const db = {} as import("firebase/database").Database;
+    const familyId = "famille-test";
+
+    await deleteProfileFromCloud(db, familyId, "profile-to-delete");
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["families/famille-test/gameProgress/profile-to-delete"]).toBeNull();
+  });
+});
+
 describe("cloudSyncProvider metadata (story 10.4)", () => {
   it("parses gender and householdRole when present", () => {
     const snapshot = parseCloudSnapshot({
@@ -350,6 +460,7 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     ownerGlobalChecklistAdditions: [],
     ownerGlobalChecklistRemovals: {},
     gameResults: [],
+    gameProgress: null,
     phase: "before" as const,
   };
 
@@ -484,7 +595,7 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     const nulledPaths = Object.entries(updates)
-      .filter(([key, val]) => val === null && key !== "families/famille-test/profiles/profile-y" && key !== "families/famille-test/checklists/profile-y" && key !== "families/famille-test/gameResults/profile-y")
+      .filter(([key, val]) => val === null && key !== "families/famille-test/profiles/profile-y" && key !== "families/famille-test/checklists/profile-y" && key !== "families/famille-test/gameResults/profile-y" && key !== "families/famille-test/gameProgress/profile-y")
       .map(([key]) => key);
     expect(nulledPaths).toHaveLength(0);
   });

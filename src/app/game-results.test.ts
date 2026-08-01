@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   computeBadges,
   parseGameHistory,
+  parseGameProgress,
   upsertGameHistory,
   type GameHistoryEntry,
+  type GameProgress,
 } from "./game-results";
 
 function makeEntry(overrides: Partial<GameHistoryEntry> = {}): GameHistoryEntry {
@@ -82,5 +84,42 @@ describe("persistence helpers", () => {
   it("retourne une liste vide pour une sauvegarde illisible", () => {
     expect(parseGameHistory("{bad-json")).toEqual([]);
     expect(parseGameHistory(null)).toEqual([]);
+  });
+});
+
+describe("parseGameProgress", () => {
+  function makeProgress(overrides: Partial<GameProgress> = {}): GameProgress {
+    return {
+      day: 2,
+      phase: "riddle",
+      answers: [1, 1, 2, 0],
+      quizDurationSec: 90,
+      riddleValidated: false,
+      riddleSolved: false,
+      ...overrides,
+    };
+  }
+
+  it("parse une progression valide", () => {
+    const progress = makeProgress({ phase: "challenge", riddleValidated: true, riddleSolved: true });
+
+    expect(parseGameProgress(JSON.stringify(progress))).toEqual(progress);
+  });
+
+  it("rejette une progression avec une phase invalide", () => {
+    const raw = JSON.stringify({ ...makeProgress(), phase: "playing" });
+
+    expect(parseGameProgress(raw)).toBeNull();
+  });
+
+  it("rejette une progression avec des reponses non numeriques", () => {
+    const raw = JSON.stringify({ ...makeProgress(), answers: [1, "x"] });
+
+    expect(parseGameProgress(raw)).toBeNull();
+  });
+
+  it("retourne null pour une entree vide ou illisible", () => {
+    expect(parseGameProgress(null)).toBeNull();
+    expect(parseGameProgress("{bad-json")).toBeNull();
   });
 });

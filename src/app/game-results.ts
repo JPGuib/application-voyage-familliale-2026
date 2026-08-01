@@ -17,6 +17,42 @@ type Badge = {
   earned: boolean;
 };
 
+// Progression en cours (session non terminée) pour le jour donné : "riddle"
+// une fois le quiz soumis (on ne peut plus revenir en arrière dessus), puis
+// "challenge" une fois l'énigme validée. Jamais "playing"/"done"/"intro" :
+// on ne peut pas quitter en plein quiz, et le récap du quiz n'est visible
+// qu'une fois (on bascule directement vers l'énigme si on quitte l'écran).
+export type GameProgress = {
+  day: number;
+  phase: "riddle" | "challenge";
+  answers: number[];
+  quizDurationSec: number;
+  riddleValidated: boolean;
+  riddleSolved: boolean;
+};
+
+export function parseGameProgress(raw: string | null): GameProgress | null {
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (
+      typeof parsed?.day === "number" &&
+      (parsed?.phase === "riddle" || parsed?.phase === "challenge") &&
+      Array.isArray(parsed?.answers) &&
+      parsed.answers.every((value: unknown) => typeof value === "number") &&
+      typeof parsed?.quizDurationSec === "number" &&
+      typeof parsed?.riddleValidated === "boolean" &&
+      typeof parsed?.riddleSolved === "boolean"
+    ) {
+      return parsed as GameProgress;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function parseGameHistory(raw: string | null): GameHistoryEntry[] {
   if (!raw) return [];
 

@@ -118,6 +118,12 @@
             }
           }
         },
+        "gameProgress": {
+          "$profileId": {
+            ".write": "auth != null",
+            ".validate": "newData.val() === null || (newData.hasChildren(['day','phase','answers','quizDurationSec','riddleValidated','riddleSolved']) && (newData.child('phase').val() === 'riddle' || newData.child('phase').val() === 'challenge'))"
+          }
+        },
         "phase": {
           ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           ".validate": "newData.val() === 'before' || newData.val() === 'during'"

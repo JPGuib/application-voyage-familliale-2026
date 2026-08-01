@@ -17,6 +17,7 @@ import type {
   ChecklistState,
   ClaimRoleResult,
   CloudGameHistoryEntry,
+  CloudGameProgress,
   CloudProfileRecord,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
@@ -136,6 +137,29 @@ function parseGameResults(value: unknown): CloudGameHistoryEntry[] {
   return value.filter(isCloudGameEntry).sort((left, right) => left.day - right.day);
 }
 
+function parseGameProgress(value: unknown): CloudGameProgress {
+  const entry = asRecord(value);
+  if (
+    typeof entry.day === "number" &&
+    (entry.phase === "riddle" || entry.phase === "challenge") &&
+    Array.isArray(entry.answers) &&
+    entry.answers.every((item) => typeof item === "number") &&
+    typeof entry.quizDurationSec === "number" &&
+    typeof entry.riddleValidated === "boolean" &&
+    typeof entry.riddleSolved === "boolean"
+  ) {
+    return {
+      day: entry.day,
+      phase: entry.phase,
+      answers: entry.answers as number[],
+      quizDurationSec: entry.quizDurationSec,
+      riddleValidated: entry.riddleValidated,
+      riddleSolved: entry.riddleSolved,
+    };
+  }
+  return null;
+}
+
 function parseGameDayOverrides(value: unknown): Record<number, GameDayOverride> {
   const raw = asRecord(value);
   const next: Record<number, GameDayOverride> = {};
@@ -207,6 +231,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const ownerGlobalAdditionRecords = asRecord(root.checklistCatalogAdditions);
   const ownerGlobalRemovalRecords = asRecord(root.checklistCatalogRemovals);
   const gameResultRecords = asRecord(root.gameResults);
+  const gameProgressRecords = asRecord(root.gameProgress);
   const phaseRecords = asRecord(root.phase);
 
   const hasFamilyWidePhase = root.phase === "before" || root.phase === "during";
@@ -246,6 +271,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
       checklist: parseChecklist(checklistRecords[profileId]),
       customChecklistItems: parseChecklistCustomItems(asRecord(value).customChecklistItems),
       gameResults: parseGameResults(gameResultRecords[profileId]),
+      gameProgress: parseGameProgress(gameProgressRecords[profileId]),
       phase: toTravelPhase(phaseRecords[profileId]),
     };
   }
@@ -347,6 +373,7 @@ export async function pushCloudSnapshot(
     }, {}),
     [`checklists/${payload.profileId}`]: payload.checklist,
     [`gameResults/${payload.profileId}`]: payload.gameResults,
+    [`gameProgress/${payload.profileId}`]: payload.gameProgress,
   };
 
   if (typeof payload.profilePasswordHash === "string") {
@@ -479,6 +506,7 @@ export async function deleteProfileFromCloud(
     [`families/${familyId}/profiles/${profileIdToDelete}`]: null,
     [`families/${familyId}/checklists/${profileIdToDelete}`]: null,
     [`families/${familyId}/gameResults/${profileIdToDelete}`]: null,
+    [`families/${familyId}/gameProgress/${profileIdToDelete}`]: null,
     [`families/${familyId}/updatedAt`]: Date.now(),
   };
 

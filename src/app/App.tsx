@@ -46,7 +46,9 @@ import { getScheduledCoordinates, getWeatherAdvice, useDeviceLocation, useWeathe
 import {
   computeBadges,
   parseGameHistory,
+  parseGameProgress,
   type GameHistoryEntry,
+  type GameProgress,
   upsertGameHistory,
 } from "./game-results";
 import { computePodium, type PodiumProfileInput } from "./podium";
@@ -2643,7 +2645,6 @@ function GameScreen({
   onValidateRiddle,
   onContinueToChallenge,
   onCompleteChallenge,
-  onFinishSession,
   currentDay,
   alreadyPlayedToday,
   gameDayOverride,
@@ -2670,7 +2671,6 @@ function GameScreen({
   onValidateRiddle: () => void;
   onContinueToChallenge: () => void;
   onCompleteChallenge: () => void;
-  onFinishSession: () => void;
   currentDay: number;
   alreadyPlayedToday: GameHistoryEntry | null;
   gameDayOverride: "open" | "closed" | null;
@@ -2894,20 +2894,17 @@ function GameScreen({
             <p className="mt-3 text-xs font-bold text-[#6B3DFF] bg-[#F3E5F5] rounded-xl px-3 py-2.5 leading-relaxed">
               📌 {challenge.note}
             </p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Une fois le défi terminé, le jeu du jour se termine : impossible d&apos;y revenir ensuite.
+            </p>
             <button
               onClick={onCompleteChallenge}
               disabled={challengeDone}
               className="mt-4 w-full rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground disabled:opacity-50"
             >
-              {challengeDone ? "Défi validé ✅" : "Marquer comme accompli"}
+              {challengeDone ? "Défi validé ✅" : "Terminer le défi du jour 🏆"}
             </button>
           </div>
-          <button
-            onClick={onFinishSession}
-            className="mt-4 w-full bg-[#6B3DFF] text-white rounded-2xl py-4 text-sm font-black"
-          >
-            Voir les résultats 🏆
-          </button>
         </div>
       </div>
     );
@@ -4790,7 +4787,16 @@ export default function App() {
     }
   });
   const [newItemDrafts, setNewItemDrafts] = useState<Record<string, string>>({});
-  const [gameState, setGameState] = useState<GameState>("intro");
+  const [gameState, setGameState] = useState<GameState>(() => {
+    if (cloudEnabled) {
+      return "intro";
+    }
+    try {
+      return parseGameProgress(localStorage.getItem("jp-game-progress"))?.phase ?? "intro";
+    } catch {
+      return "intro";
+    }
+  });
   const [ownerCodeHash, setOwnerCodeHash] = useState<string>(() => {
     if (cloudEnabled) {
       return "";
@@ -4919,13 +4925,49 @@ export default function App() {
   const [nowTs, setNowTs] = useState(Date.now());
   const [currentQ, setCurrentQ] = useState(0);
   const [selectedAns, setSelectedAns] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [answers, setAnswers] = useState<number[]>(() => {
+    if (cloudEnabled) {
+      return [];
+    }
+    try {
+      return parseGameProgress(localStorage.getItem("jp-game-progress"))?.answers ?? [];
+    } catch {
+      return [];
+    }
+  });
   const [quizStartedAt, setQuizStartedAt] = useState<number | null>(null);
-  const [quizDurationSec, setQuizDurationSec] = useState(0);
+  const [quizDurationSec, setQuizDurationSec] = useState(() => {
+    if (cloudEnabled) {
+      return 0;
+    }
+    try {
+      return parseGameProgress(localStorage.getItem("jp-game-progress"))?.quizDurationSec ?? 0;
+    } catch {
+      return 0;
+    }
+  });
   const [riddleAnswer, setRiddleAnswer] = useState("");
   const [riddleFeedback, setRiddleFeedback] = useState<string | null>(null);
-  const [riddleValidated, setRiddleValidated] = useState(false);
-  const [riddleSolved, setRiddleSolved] = useState(false);
+  const [riddleValidated, setRiddleValidated] = useState(() => {
+    if (cloudEnabled) {
+      return false;
+    }
+    try {
+      return parseGameProgress(localStorage.getItem("jp-game-progress"))?.riddleValidated ?? false;
+    } catch {
+      return false;
+    }
+  });
+  const [riddleSolved, setRiddleSolved] = useState(() => {
+    if (cloudEnabled) {
+      return false;
+    }
+    try {
+      return parseGameProgress(localStorage.getItem("jp-game-progress"))?.riddleSolved ?? false;
+    } catch {
+      return false;
+    }
+  });
   const [challengeDone, setChallengeDone] = useState(false);
   const [gameHistory, setGameHistory] = useState<GameHistoryEntry[]>(() => {
     if (cloudEnabled) {
@@ -4938,6 +4980,33 @@ export default function App() {
       return [];
     }
   });
+
+  // Calculé tôt (avant l'effet d'hydratation cloud plus bas) car la
+  // progression de jeu en cours (gameProgress) doit être comparée au jour
+  // courant dès l'hydratation, pas seulement au moment du scoring.
+  const lastDefinedDay =
+    JOURS_DESTINATIONS.length > 0
+      ? JOURS_DESTINATIONS[JOURS_DESTINATIONS.length - 1].jour
+      : null;
+  const rawCurrentDay = computeCurrentDay(tripStartDate);
+  const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
+  const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
+
+  // Progression en cours du jeu du jour (null si "intro"/"playing"/"done" :
+  // rien à reprendre tant que le quiz n'est pas soumis, cf. goToScreen).
+  // Calculé une fois ici et réutilisé pour la sauvegarde locale et tous les
+  // envois cloud, pour ne jamais désynchroniser les deux.
+  const currentGameProgress: GameProgress | null =
+    gameState === "riddle" || gameState === "challenge"
+      ? {
+          day: currentDay,
+          phase: gameState,
+          answers,
+          quizDurationSec,
+          riddleValidated,
+          riddleSolved,
+        }
+      : null;
 
   const getPostAuthLandingScreen = (nextPhase: "before" | "during") =>
     nextPhase === "during" ? "dashboard" : "checklist";
@@ -5120,6 +5189,7 @@ export default function App() {
         localStorage.removeItem("jp-trip-start-date");
         localStorage.removeItem("jp-checklist");
         localStorage.removeItem("jp-game-history");
+        localStorage.removeItem("jp-game-progress");
         localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY);
@@ -5158,6 +5228,11 @@ export default function App() {
           }
           localStorage.setItem("jp-checklist", JSON.stringify(checked));
           localStorage.setItem("jp-game-history", JSON.stringify(gameHistory));
+          if (currentGameProgress) {
+            localStorage.setItem("jp-game-progress", JSON.stringify(currentGameProgress));
+          } else {
+            localStorage.removeItem("jp-game-progress");
+          }
           localStorage.setItem(
             CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY,
             JSON.stringify(customChecklistItemsByProfile)
@@ -5206,6 +5281,12 @@ export default function App() {
     unlockFailedAttempts,
     unlockLockedUntil,
     gameHistory,
+    gameState,
+    currentDay,
+    answers,
+    quizDurationSec,
+    riddleValidated,
+    riddleSolved,
     isAuthenticated,
   ]);
 
@@ -5359,7 +5440,36 @@ export default function App() {
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
-  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id]);
+
+    // Reprise de la progression en cours (quiz déjà soumis, énigme ou défi
+    // photo) : seulement si elle correspond au jour courant, sinon elle est
+    // ignorée (journée précédente jamais terminée, on repart sur "intro").
+    const cloudProgress = cloudProfile.gameProgress;
+    if (cloudProgress && cloudProgress.day === currentDay) {
+      setGameState((previous) => (previous === cloudProgress.phase ? previous : cloudProgress.phase));
+      setAnswers((previous) =>
+        JSON.stringify(previous) === JSON.stringify(cloudProgress.answers)
+          ? previous
+          : cloudProgress.answers
+      );
+      setQuizDurationSec((previous) =>
+        previous === cloudProgress.quizDurationSec ? previous : cloudProgress.quizDurationSec
+      );
+      setRiddleValidated((previous) =>
+        previous === cloudProgress.riddleValidated ? previous : cloudProgress.riddleValidated
+      );
+      setRiddleSolved((previous) =>
+        previous === cloudProgress.riddleSolved ? previous : cloudProgress.riddleSolved
+      );
+      if (cloudProgress.riddleValidated) {
+        setRiddleFeedback(
+          cloudProgress.riddleSolved
+            ? `Bonne réponse ! Vous gagnez ${RIDDLE_POINTS} points.`
+            : `Pas tout à fait. La bonne réponse était "${getRiddleForDay(currentDay).answer}".`
+        );
+      }
+    }
+  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id, currentDay]);
 
   const lastCloudPushRef = useRef<string | null>(null);
   const pendingCloudPhaseRef = useRef<TravelPhase | null>(null);
@@ -5494,6 +5604,7 @@ export default function App() {
       phase,
       tripStartDate,
       gameHistory,
+      currentGameProgress,
     });
     if (lastCloudPushRef.current === payload) {
       return;
@@ -5523,6 +5634,7 @@ export default function App() {
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
       gameResults: gameHistory,
+      gameProgress: currentGameProgress,
       phase,
       tripStartDate,
     });
@@ -5534,6 +5646,12 @@ export default function App() {
     cloudActorUid,
     familyState,
     gameHistory,
+    gameState,
+    currentDay,
+    answers,
+    quizDurationSec,
+    riddleValidated,
+    riddleSolved,
     isAuthenticated,
     isAuthBootstrapPending,
     ownerCodeHash,
@@ -5972,27 +6090,31 @@ export default function App() {
     }
 
     setAccessDeniedMessage(null);
-    if (s === "game") {
-      setGameState("intro");
-      setAnswers([]);
-      setCurrentQ(0);
-      setSelectedAns(null);
-      setQuizStartedAt(null);
-      setQuizDurationSec(0);
-      setRiddleAnswer("");
-      setRiddleFeedback(null);
-      setRiddleValidated(false);
-      setRiddleSolved(false);
-      setChallengeDone(false);
-    }
     setScreen(s);
   };
 
+  // Règles de navigation pendant le jeu du jour (story jeu 2026-07-31) :
+  // - "playing" (quiz en cours) et "riddle" (énigme, avant d'avoir cliqué
+  //   "Continuer vers le défi") sont bloquants : impossible de changer
+  //   d'écran, on affiche juste un avertissement.
+  // - "done" (récap du quiz) et "challenge" (défi photo) autorisent à
+  //   quitter et reprendre plus tard, sans confirmation. Quitter pendant
+  //   "done" fait basculer directement vers l'énigme (le récap du quiz ne
+  //   se revoit pas, cf. règle "pas de rejeu").
   const goToScreen = (s: Screen) => {
-    const gameInProgress = screen === "game" && gameState !== "intro";
-    if (gameInProgress && s !== "game") {
+    const isLeavingGameScreen = screen === "game" && s !== "game";
+    if (!isLeavingGameScreen) {
+      performNavigation(s);
+      return;
+    }
+
+    if (gameState === "playing" || gameState === "riddle") {
       setPendingScreen(s);
       return;
+    }
+
+    if (gameState === "done") {
+      setGameState("riddle");
     }
     performNavigation(s);
   };
@@ -6248,6 +6370,7 @@ export default function App() {
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
       gameResults: gameHistory,
+      gameProgress: currentGameProgress,
       phase: nextPhase,
       tripStartDate,
     });
@@ -6444,16 +6567,38 @@ export default function App() {
     };
   };
 
-  const lastDefinedDay =
-    JOURS_DESTINATIONS.length > 0
-      ? JOURS_DESTINATIONS[JOURS_DESTINATIONS.length - 1].jour
-      : null;
-  const rawCurrentDay = computeCurrentDay(tripStartDate);
-  const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
-  const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
   const todaysQuestions = getQuestionsForDay(currentDay);
   const todaysRiddle = getRiddleForDay(currentDay);
   const todaysChallenge = getChallengeForDay(currentDay);
+
+  const localGameProgressCheckedRef = useRef(false);
+  useEffect(() => {
+    if (cloudEnabled) return; // Mode cloud : géré par l'effet d'hydratation cloud.
+    if (localGameProgressCheckedRef.current) return;
+    localGameProgressCheckedRef.current = true;
+
+    const progress = parseGameProgress(localStorage.getItem("jp-game-progress"));
+    if (!progress || progress.day !== currentDay) {
+      // Progression d'un jour précédent jamais terminée : on ne la reprend
+      // pas, on repart sur un jour neuf.
+      if (gameState !== "intro") {
+        setGameState("intro");
+        setAnswers([]);
+        setQuizDurationSec(0);
+        setRiddleValidated(false);
+        setRiddleSolved(false);
+      }
+      return;
+    }
+
+    if (progress.riddleValidated) {
+      setRiddleFeedback(
+        progress.riddleSolved
+          ? `Bonne réponse ! Vous gagnez ${RIDDLE_POINTS} points.`
+          : `Pas tout à fait. La bonne réponse était "${todaysRiddle.answer}".`
+      );
+    }
+  }, [cloudEnabled, currentDay, gameState, todaysRiddle.answer]);
 
   const answerQ = (idx: number) => {
     if (selectedAns !== null) return;
@@ -6479,7 +6624,6 @@ export default function App() {
   ).length;
   const gameScore = correctCount * QUESTION_POINTS;
   const riddleScore = riddleSolved ? RIDDLE_POINTS : 0;
-  const challengeScore = challengeDone ? CHALLENGE_POINTS : 0;
 
   const validateRiddle = () => {
     const normalizedInput = normalizeAnswer(riddleAnswer);
@@ -6499,22 +6643,36 @@ export default function App() {
     );
   };
 
-  const finishGameSession = () => {
+  // Terminer le défi photo termine immédiatement la session du jour (pas de
+  // bouton "Voir les résultats" séparé) : le défi photo est donc désormais
+  // obligatoire pour clore la journée, et il n'y a plus de retour possible
+  // ensuite (alreadyPlayedToday verrouille l'écran "game" dès que
+  // gameHistory contient une entrée pour currentDay).
+  const completeChallengeAndFinishSession = () => {
     const entry: GameHistoryEntry = {
       day: currentDay,
       location: todayDestination,
       quizScore: gameScore,
       correctCount,
       riddleSolved,
-      challengeDone,
+      challengeDone: true,
       durationSec: quizDurationSec,
-      totalScore: gameScore + riddleScore + challengeScore,
+      totalScore: gameScore + riddleScore + CHALLENGE_POINTS,
       completedAt: new Date().toISOString(),
     };
 
-    setGameHistory((previous) => {
-      return upsertGameHistory(previous, entry);
-    });
+    setGameHistory((previous) => upsertGameHistory(previous, entry));
+    setGameState("intro");
+    setAnswers([]);
+    setCurrentQ(0);
+    setSelectedAns(null);
+    setQuizStartedAt(null);
+    setQuizDurationSec(0);
+    setRiddleAnswer("");
+    setRiddleFeedback(null);
+    setRiddleValidated(false);
+    setRiddleSolved(false);
+    setChallengeDone(false);
     setScreen("results");
   };
 
@@ -6637,6 +6795,7 @@ export default function App() {
           ownerGlobalChecklistAdditions: cloudSnapshot.ownerGlobalChecklistAdditions,
           ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
           gameResults: selected.gameResults,
+          gameProgress: selected.gameProgress,
           phase: selected.phase || cloudSnapshot.phase,
           tripStartDate: cloudSnapshot.tripStartDate,
         });
@@ -6878,6 +7037,7 @@ export default function App() {
                   ownerGlobalChecklistAdditions: cloudSnapshot.ownerGlobalChecklistAdditions,
                   ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
                   gameResults: selected.gameResults,
+                  gameProgress: selected.gameProgress,
                   phase: selected.phase || cloudSnapshot.phase,
                   tripStartDate: cloudSnapshot.tripStartDate,
                 });
@@ -7440,8 +7600,7 @@ export default function App() {
             }}
             onValidateRiddle={validateRiddle}
             onContinueToChallenge={() => setGameState("challenge")}
-            onCompleteChallenge={() => setChallengeDone(true)}
-            onFinishSession={finishGameSession}
+            onCompleteChallenge={completeChallengeAndFinishSession}
           />
         );
       }
@@ -7706,8 +7865,7 @@ export default function App() {
             }}
             onValidateRiddle={validateRiddle}
             onContinueToChallenge={() => setGameState("challenge")}
-            onCompleteChallenge={() => setChallengeDone(true)}
-            onFinishSession={finishGameSession}
+            onCompleteChallenge={completeChallengeAndFinishSession}
           />
         );
       case "results":
@@ -7893,31 +8051,21 @@ export default function App() {
         {pendingScreen && (
           <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-6">
             <div className="bg-card rounded-2xl p-6 max-w-xs w-full text-center shadow-2xl">
-              <div className="text-5xl mb-3">⚠️</div>
+              <div className="text-5xl mb-3">🚫</div>
               <p className="text-lg font-black text-foreground mb-2">
-                Quitter le défi en cours ?
+                Impossible de quitter maintenant
               </p>
               <p className="text-sm text-muted-foreground mb-6">
-                Si vous quittez maintenant, votre progression sera perdue et il ne sera pas possible de reprendre le jeu là où vous vous étiez arrêté.
+                {gameState === "playing"
+                  ? "Vous devez terminer le quiz avant de changer d'écran."
+                  : "Vous devez valider l'énigme avant de changer d'écran."}
               </p>
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => setPendingScreen(null)}
-                  className="w-full bg-primary text-primary-foreground rounded-2xl py-3 font-black active:scale-95 transition-transform"
-                >
-                  Continuer le jeu
-                </button>
-                <button
-                  onClick={() => {
-                    const target = pendingScreen;
-                    setPendingScreen(null);
-                    performNavigation(target);
-                  }}
-                  className="w-full bg-muted text-foreground rounded-2xl py-3 font-black active:scale-95 transition-transform"
-                >
-                  Quitter quand même
-                </button>
-              </div>
+              <button
+                onClick={() => setPendingScreen(null)}
+                className="w-full bg-primary text-primary-foreground rounded-2xl py-3 font-black active:scale-95 transition-transform"
+              >
+                Continuer
+              </button>
             </div>
           </div>
         )}
