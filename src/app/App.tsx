@@ -5454,12 +5454,6 @@ export default function App() {
     isAuthenticated,
   ]);
 
-  // Clé "profileId:day" du dernier resume de gameProgress appliqué depuis le
-  // cloud — sert de garde-fou "une seule fois par profil+jour" juste en
-  // dessous, pour ne pas laisser un écho cloud pendant une partie active
-  // réécraser currentQ/answers en plein jeu (cf. commentaire sur place).
-  const cloudGameProgressAppliedKeyRef = useRef<string | null>(null);
-
   useEffect(() => {
     if (
       !shouldHydrateFromCloudSnapshot({
@@ -5614,21 +5608,25 @@ export default function App() {
     // Reprise de la progression en cours (quiz déjà soumis, énigme ou défi
     // photo) : seulement si elle correspond au jour courant, sinon elle est
     // ignorée (journée précédente jamais terminée, on repart sur "intro").
-    // Appliquée UNE SEULE FOIS par profil+jour (comme localGameProgressCheckedRef
-    // en mode local) : sans ce garde-fou, chaque écho cloud pendant une partie
-    // active en "playing" réappliquait cloudProgress.answers.length à currentQ,
-    // y compris pendant la fenêtre entre la dernière réponse (answers déjà au
-    // complet) et le passage à "done" — plaçant currentQ juste après la
-    // dernière question et faisant planter l'écran (questions[currentQ]
-    // devient undefined). Bug reproduit et corrigé le 2026-08-01.
+    // N'est appliquée que si l'état local est ENCORE "intro" (rien démarré
+    // localement pour l'instant) : dès que l'utilisateur clique "C'est
+    // parti" (ou reprend une partie déjà en cours), gameState quitte
+    // "intro" pour de bon, ce qui bloque toute réapplication ultérieure —
+    // qu'un écho cloud arrive pendant une partie active (ce qui faisait
+    // planter l'écran, cf. questions[currentQ] undefined, corrigé le
+    // 2026-08-01) ou qu'une donnée périmée traîne encore dans Firebase
+    // (parties de test précédentes, changement de jour simulé, etc. —
+    // second bug corrigé le même jour). Un ancien garde-fou "une seule
+    // fois par profil+jour" basé sur une ref avait ces deux défauts : soit
+    // il consommait son unique tentative sur une valeur transitoire
+    // incorrecte (currentDay pas encore stabilisé) et bloquait ensuite la
+    // vraie reprise, soit il autorisait une reprise tardive à s'appliquer
+    // en pleine partie fraîchement relancée. Se baser sur l'état réel
+    // (gameState === "intro") au lieu d'un compteur d'essais élimine ces
+    // deux classes de bug : c'est toujours sûr de réessayer tant que rien
+    // n'a démarré localement, et plus jamais sûr dès que quelque chose a démarré.
     const cloudProgress = cloudProfile.gameProgress;
-    const gameProgressHydrationKey = `${profile.id}:${currentDay}`;
-    if (
-      cloudProgress &&
-      cloudProgress.day === currentDay &&
-      cloudGameProgressAppliedKeyRef.current !== gameProgressHydrationKey
-    ) {
-      cloudGameProgressAppliedKeyRef.current = gameProgressHydrationKey;
+    if (cloudProgress && cloudProgress.day === currentDay && gameState === "intro") {
       setGameState((previous) => (previous === cloudProgress.phase ? previous : cloudProgress.phase));
       setCurrentQ((previous) =>
         previous === cloudProgress.answers.length ? previous : cloudProgress.answers.length
@@ -5658,7 +5656,7 @@ export default function App() {
         );
       }
     }
-  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id, currentDay]);
+  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id, currentDay, gameState]);
 
   const lastCloudPushRef = useRef<string | null>(null);
   const pendingCloudPhaseRef = useRef<TravelPhase | null>(null);
