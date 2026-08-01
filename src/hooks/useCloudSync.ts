@@ -8,6 +8,7 @@ import {
   observeFamilySnapshot,
   pushCloudSnapshot,
   pushGameDayOverride,
+  resetGameProgressInCloud,
   resetGameResultsInCloud,
 } from "../services/cloudSyncProvider";
 import {
@@ -412,6 +413,18 @@ export function useCloudSync() {
     [cloudSnapshot, cloudUserUid, database, familyId, isEnabled]
   );
 
+  // Réinitialisation propriétaire de la partie EN COURS (non terminée) d'un
+  // profil donné (ne touche pas gameResults, cf. cloudSyncProvider.ts).
+  const resetGameProgress = useCallback(
+    async (profileId: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+      await resetGameProgressInCloud(database, familyId, profileId);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   // À appeler dès que l'app détermine, côté client, que le profil courant est
   // bien le propriétaire (ownerProfileId === profile.id). Enregistre cet
   // appareil/navigateur comme un "ownerMember" reconnu par les règles Firebase,
@@ -440,6 +453,7 @@ export function useCloudSync() {
     deleteProfile,
     setGameDayOverride,
     resetGameResults,
+    resetGameProgress,
     registerAsOwnerDevice,
     familyId,
   };

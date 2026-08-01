@@ -562,3 +562,23 @@ export async function resetGameResultsInCloud(
 
   await update(ref(database), updates);
 }
+
+/**
+ * Réinitialisation propriétaire d'une partie EN COURS (non terminée) pour un
+ * profil donné : n'efface que la progression en cours (gameProgress), pas
+ * les scores déjà validés (gameResults) — cet outil sert à débloquer un
+ * profil resté coincé en plein quiz/énigme/défi, pas à effacer une journée
+ * déjà terminée (voir l'outil séparé "Réinitialiser les scores" pour ça).
+ */
+export async function resetGameProgressInCloud(
+  database: Database,
+  familyId: string,
+  profileId: string
+): Promise<void> {
+  const updates: Record<string, unknown> = {
+    [`families/${familyId}/gameProgress/${profileId}`]: null,
+    [`families/${familyId}/updatedAt`]: Date.now(),
+  };
+
+  await update(ref(database), updates);
+}

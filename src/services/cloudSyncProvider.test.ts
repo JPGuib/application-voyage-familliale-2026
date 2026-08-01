@@ -4,6 +4,7 @@ import {
   parseCloudSnapshot,
   pushCloudSnapshot,
   pushGameDayOverride,
+  resetGameProgressInCloud,
   resetGameResultsInCloud,
 } from "./cloudSyncProvider";
 
@@ -374,6 +375,19 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     expect(updates["families/famille-test/gameProgress/profile-to-delete"]).toBeNull();
+  });
+
+  it("resetGameProgressInCloud clears only the targeted profile's in-progress game", async () => {
+    mockUpdate.mockClear();
+    const db = {} as import("firebase/database").Database;
+    const familyId = "famille-test";
+
+    await resetGameProgressInCloud(db, familyId, "profile-stuck");
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["families/famille-test/gameProgress/profile-stuck"]).toBeNull();
+    expect(typeof updates["families/famille-test/updatedAt"]).toBe("number");
+    expect(Object.keys(updates)).toHaveLength(2);
   });
 });
 

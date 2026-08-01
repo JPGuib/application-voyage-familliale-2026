@@ -3385,6 +3385,8 @@ function SettingsScreen({
   gameDayOverride,
   onSetGameDayOverride,
   onResetScores,
+  familyMembersForGameProgressReset,
+  onResetGameProgress,
 }: {
   profile: Profile;
   ownerCodeConfigured: boolean;
@@ -3429,6 +3431,11 @@ function SettingsScreen({
   onResetScores: (
     code: string,
     action: { kind: "all" } | { kind: "day"; day: number }
+  ) => Promise<{ ok: boolean; message: string }>;
+  familyMembersForGameProgressReset: { profileId: string; surname: string }[];
+  onResetGameProgress: (
+    code: string,
+    targetProfileId: string
   ) => Promise<{ ok: boolean; message: string }>;
 }) {
   const [surnameInput, setSurnameInput] = useState(profile.surname);
@@ -3477,6 +3484,14 @@ function SettingsScreen({
   const [showScoreResetCodeInput, setShowScoreResetCodeInput] = useState(false);
   const [scoreResetFeedback, setScoreResetFeedback] = useState<string | null>(null);
   const [scoreResetDayInput, setScoreResetDayInput] = useState(currentDay);
+  const [gameProgressResetProfileInput, setGameProgressResetProfileInput] = useState(profile.id);
+  const [pendingGameProgressResetProfileId, setPendingGameProgressResetProfileId] = useState<
+    string | null
+  >(null);
+  const [showGameProgressResetPrompt, setShowGameProgressResetPrompt] = useState(false);
+  const [gameProgressResetCodeInput, setGameProgressResetCodeInput] = useState("");
+  const [showGameProgressResetCodeInput, setShowGameProgressResetCodeInput] = useState(false);
+  const [gameProgressResetFeedback, setGameProgressResetFeedback] = useState<string | null>(null);
   const [showProfilePasswordInput, setShowProfilePasswordInput] = useState(false);
   const [showPasswordChangeFlow, setShowPasswordChangeFlow] = useState(false);
   const [passwordProofMethod, setPasswordProofMethod] =
@@ -4261,6 +4276,116 @@ function SettingsScreen({
           </div>
         )}
 
+        {profile.role === "proprietaire" && cloudEnabled && familyMembersForGameProgressReset.length > 0 && (
+          <div className="bg-card rounded-2xl border border-destructive/30 p-4">
+            <p className="text-xs font-extrabold text-destructive uppercase tracking-widest">
+              Réinitialiser une partie en cours
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Remet à 0 le quiz/l&apos;énigme/le défi non terminés d&apos;un profil, qui repart au
+              début du quiz. Ne touche pas aux scores déjà validés des autres jours.
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <select
+                value={gameProgressResetProfileInput}
+                onChange={(e) => setGameProgressResetProfileInput(e.target.value)}
+                className="flex-1 rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+              >
+                {familyMembersForGameProgressReset.map((member) => (
+                  <option key={member.profileId} value={member.profileId}>
+                    {member.surname}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => {
+                  setPendingGameProgressResetProfileId(gameProgressResetProfileInput);
+                  setGameProgressResetCodeInput("");
+                  setGameProgressResetFeedback(null);
+                  setShowGameProgressResetCodeInput(false);
+                  setShowGameProgressResetPrompt(true);
+                }}
+                className="rounded-xl py-3 px-4 text-sm font-black border border-destructive text-destructive"
+              >
+                Réinitialiser
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showGameProgressResetPrompt && pendingGameProgressResetProfileId && (
+          <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-20">
+            <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
+              <p className="text-sm font-black text-foreground">Validation propriétaire</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Entrez le code propriétaire pour confirmer la réinitialisation de la partie en cours
+                de{" "}
+                {familyMembersForGameProgressReset.find(
+                  (member) => member.profileId === pendingGameProgressResetProfileId
+                )?.surname ?? "ce profil"}
+                . Cette action est irréversible.
+              </p>
+
+              <input
+                type={showGameProgressResetCodeInput ? "text" : "password"}
+                value={gameProgressResetCodeInput}
+                onChange={(e) => {
+                  setGameProgressResetCodeInput(e.target.value);
+                  if (gameProgressResetFeedback) setGameProgressResetFeedback(null);
+                }}
+                placeholder="Code propriétaire"
+                className="mt-3 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+              />
+              <button
+                onClick={() => setShowGameProgressResetCodeInput((previous) => !previous)}
+                className="mt-2 text-xs font-black text-primary underline underline-offset-4"
+              >
+                {showGameProgressResetCodeInput ? "Masquer" : "Afficher"} le code saisi
+              </button>
+
+              {gameProgressResetFeedback && (
+                <p className="mt-2 text-xs font-bold text-destructive">{gameProgressResetFeedback}</p>
+              )}
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setShowGameProgressResetPrompt(false);
+                    setPendingGameProgressResetProfileId(null);
+                    setGameProgressResetCodeInput("");
+                    setGameProgressResetFeedback(null);
+                    setShowGameProgressResetCodeInput(false);
+                  }}
+                  className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={async () => {
+                    const result = await onResetGameProgress(
+                      gameProgressResetCodeInput,
+                      pendingGameProgressResetProfileId
+                    );
+                    if (result.ok) {
+                      setShowGameProgressResetPrompt(false);
+                      setPendingGameProgressResetProfileId(null);
+                      setGameProgressResetCodeInput("");
+                      setGameProgressResetFeedback(null);
+                      setShowGameProgressResetCodeInput(false);
+                      return;
+                    }
+
+                    setGameProgressResetFeedback(result.message);
+                  }}
+                  className="rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground"
+                >
+                  Valider
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showScoreResetPrompt && pendingScoreResetAction && (
           <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-20">
             <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
@@ -4613,6 +4738,7 @@ export default function App() {
     deleteProfile,
     setGameDayOverride,
     resetGameResults,
+    resetGameProgress,
     registerAsOwnerDevice,
   } = useCloudSync();
   const [isOnline, setIsOnline] = useState(() => {
@@ -5018,17 +5144,21 @@ export default function App() {
   const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
   const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
 
-  // Progression en cours du jeu du jour (null si "intro"/"done" : rien à
-  // reprendre avant d'avoir commencé, et le récap du quiz ne se reprend
-  // jamais tel quel, cf. goToScreen). Persistée dès "playing" (survit à un
+  // Progression en cours du jeu du jour (null si "intro" : rien à reprendre
+  // avant d'avoir commencé). Persistée dès "playing" (survit à un
   // F5/fermeture d'appli en plein quiz) pour ne jamais repartir à zéro.
+  // "done" (récap du score, avant l'énigme) est sauvegardé comme "riddle" :
+  // ce récap ne se revoit jamais, qu'on quitte l'écran en direct (cf.
+  // goToScreen, qui fait le même bascule) ou qu'on ferme l'appli dessus —
+  // sans ça, fermer l'appli pile sur ce récap perdait la progression et
+  // permettait de rejouer le quiz (bug corrigé le 2026-08-01).
   // Calculé une fois ici et réutilisé pour la sauvegarde locale et tous les
   // envois cloud, pour ne jamais désynchroniser les deux.
   const currentGameProgress: GameProgress | null =
-    gameState === "playing" || gameState === "riddle" || gameState === "challenge"
+    gameState === "playing" || gameState === "done" || gameState === "riddle" || gameState === "challenge"
       ? {
           day: currentDay,
-          phase: gameState,
+          phase: gameState === "done" ? "riddle" : gameState,
           answers,
           quizStartedAt,
           quizDurationSec,
@@ -6604,6 +6734,88 @@ export default function App() {
     };
   };
 
+  // Réinitialisation propriétaire de la partie EN COURS (non terminée) d'un
+  // profil précis : remet le quiz/l'énigme/le défi à zéro pour ce profil et
+  // rend le jeu de nouveau disponible (repart au quiz), sans toucher aux
+  // scores déjà validés d'autres journées (cf. resetGameProgressInCloud).
+  const confirmGameProgressReset = async (
+    code: string,
+    targetProfileId: string
+  ): Promise<{ ok: boolean; message: string }> => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return {
+        ok: false,
+        message: "Seul le profil propriétaire peut réinitialiser une partie en cours.",
+      };
+    }
+
+    if (!ownerCodeHash) {
+      return {
+        ok: false,
+        message: "Configurez d'abord un code propriétaire dans Paramètres.",
+      };
+    }
+
+    if (lockRemainingMs > 0) {
+      return {
+        ok: false,
+        message: `Trop de tentatives. Réessayez dans ${lockRemainingSec}s.`,
+      };
+    }
+
+    const isCodeValid = await verifyOwnerCode(code, ownerCodeHash);
+    if (!isCodeValid) {
+      const nextAttempts = unlockFailedAttempts + 1;
+      if (nextAttempts >= 3) {
+        const nextLock = Date.now() + 30000;
+        setUnlockFailedAttempts(0);
+        setUnlockLockedUntil(nextLock);
+        setNowTs(Date.now());
+        return { ok: false, message: "Code incorrect. Blocage temporaire de 30 secondes." };
+      }
+
+      setUnlockFailedAttempts(nextAttempts);
+      return { ok: false, message: "Code incorrect. Réessayez." };
+    }
+
+    try {
+      if (cloudEnabled) {
+        await resetGameProgress(targetProfileId);
+      }
+    } catch {
+      return { ok: false, message: "Synchronisation cloud indisponible pour le moment." };
+    }
+
+    if (targetProfileId === profile.id) {
+      // Le propriétaire réinitialise sa propre partie : on remet aussi
+      // l'état local à zéro immédiatement, sans attendre l'écho cloud.
+      setGameState("intro");
+      setCurrentQ(0);
+      setSelectedAns(null);
+      setAnswers([]);
+      setQuizStartedAt(null);
+      setQuizDurationSec(0);
+      setRiddleAnswer("");
+      setRiddleFeedback(null);
+      setRiddleValidated(false);
+      setRiddleSolved(false);
+      setChallengeDone(false);
+    }
+
+    setUnlockFailedAttempts(0);
+    setUnlockLockedUntil(0);
+    setNowTs(Date.now());
+
+    const targetSurname =
+      familyMembersForPodium.find((member) => member.profileId === targetProfileId)?.surname ??
+      "ce profil";
+
+    return {
+      ok: true,
+      message: `La partie en cours de ${targetSurname} a été réinitialisée.`,
+    };
+  };
+
   const todaysQuestions = getQuestionsForDay(currentDay);
   const todaysRiddle = getRiddleForDay(currentDay);
   const todaysChallenge = getChallengeForDay(currentDay);
@@ -7494,6 +7706,11 @@ export default function App() {
             gameDayOverride={gameDayOverride}
             onSetGameDayOverride={confirmDayOverrideChange}
             onResetScores={confirmScoreReset}
+            familyMembersForGameProgressReset={familyMembersForPodium.map((member) => ({
+              profileId: member.profileId,
+              surname: member.surname,
+            }))}
+            onResetGameProgress={confirmGameProgressReset}
           />
         );
       }
@@ -8052,6 +8269,11 @@ export default function App() {
             gameDayOverride={gameDayOverride}
             onSetGameDayOverride={confirmDayOverrideChange}
             onResetScores={confirmScoreReset}
+            familyMembersForGameProgressReset={familyMembersForPodium.map((member) => ({
+              profileId: member.profileId,
+              surname: member.surname,
+            }))}
+            onResetGameProgress={confirmGameProgressReset}
           />
         );
       default:
