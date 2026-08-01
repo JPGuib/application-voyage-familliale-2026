@@ -693,6 +693,7 @@ function ProfileSetupScreen({
   const [showRecoveryAnswer, setShowRecoveryAnswer] = useState(false);
   const [travelerChoice, setTravelerChoice] = useState<"voyageur" | "visiteur" | null>(null);
   const [travelerCode, setTravelerCode] = useState("");
+  const [showTravelerCode, setShowTravelerCode] = useState(false);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -800,13 +801,23 @@ function ProfileSetupScreen({
                       <label className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
                         Code voyageur
                       </label>
-                      <input
-                        type="password"
-                        value={travelerCode}
-                        onChange={(e) => setTravelerCode(e.target.value)}
-                        placeholder="Code transmis par le propriétaire"
-                        className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                      />
+                      <div className="relative mt-2">
+                        <input
+                          type={showTravelerCode ? "text" : "password"}
+                          value={travelerCode}
+                          onChange={(e) => setTravelerCode(e.target.value)}
+                          placeholder="Code transmis par le propriétaire"
+                          className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowTravelerCode((previous) => !previous)}
+                          aria-label={showTravelerCode ? "Masquer le code voyageur saisi" : "Afficher le code voyageur saisi"}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        >
+                          {showTravelerCode ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </>
                   ) : (
                     <p className="text-xs text-muted-foreground">
@@ -1028,7 +1039,11 @@ function CloudLoginScreen({
                   >
                     <p className="text-sm font-black text-foreground">{candidate.surname}</p>
                     <p className="text-[11px] font-bold text-muted-foreground mt-0.5">
-                      {candidate.role === "proprietaire" ? "Propriétaire" : "Utilisateur"}
+                      {candidate.role === "proprietaire"
+                        ? "Propriétaire"
+                        : candidate.role === "visiteur"
+                          ? "Visiteur"
+                          : "Voyageur"}
                       {candidate.passwordHash ? " · Protégé" : ""}
                     </p>
                   </button>
@@ -3617,7 +3632,12 @@ function SettingsScreen({
     setShowPasswordChangeConfirmInput(false);
   };
 
-  const roleLabel = profile.role === "proprietaire" ? "Propriétaire" : "Utilisateur";
+  const roleLabel =
+    profile.role === "proprietaire"
+      ? "Propriétaire"
+      : profile.role === "visiteur"
+        ? "Visiteur"
+        : "Voyageur";
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
