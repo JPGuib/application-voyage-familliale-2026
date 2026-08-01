@@ -5171,6 +5171,27 @@ export default function App() {
         }
       : null;
 
+  // Horodatage du dernier changement LOCAL de currentGameProgress (mis à jour
+  // en dehors de tout effet, directement au rendu — sûr car on ne fait que
+  // muter une ref, sans jamais la relire pendant CE rendu). Sert de fenêtre
+  // de grâce dans l'effet d'hydratation cloud plus bas : tant qu'on vient de
+  // changer quelque chose localement (ex: cliquer "C'est parti"), on ignore
+  // un cloudSnapshot qui semble "ne rien avoir" — c'est simplement le
+  // temps que notre propre écriture fasse l'aller-retour, pas une vraie
+  // réinitialisation distante. Sans ça, avec plusieurs profils actifs en
+  // même temps (usage normal en famille), le moindre écho d'un AUTRE
+  // profil pouvait faire annuler "C'est parti" avant même que le push local
+  // n'ait eu la moindre chance d'arriver (bug vécu le 2026-08-01, la
+  // première tentative de correctif — retirer gameState des dépendances de
+  // l'effet — réduisait le risque mais ne l'éliminait pas en usage multi-profils).
+  const previousGameProgressJsonRef = useRef<string>("null");
+  const lastLocalGameProgressChangeAtRef = useRef<number>(0);
+  const currentGameProgressJson = JSON.stringify(currentGameProgress);
+  if (previousGameProgressJsonRef.current !== currentGameProgressJson) {
+    previousGameProgressJsonRef.current = currentGameProgressJson;
+    lastLocalGameProgressChangeAtRef.current = Date.now();
+  }
+
   const getPostAuthLandingScreen = (nextPhase: "before" | "during") =>
     nextPhase === "during" ? "dashboard" : "checklist";
 
@@ -5665,7 +5686,11 @@ export default function App() {
             : `Pas tout à fait. La bonne réponse était "${getRiddleForDay(currentDay).answer}".`
         );
       }
-    } else if (!hasMatchingCloudProgress && gameState !== "intro") {
+    } else if (
+      !hasMatchingCloudProgress &&
+      gameState !== "intro" &&
+      Date.now() - lastLocalGameProgressChangeAtRef.current > 4000
+    ) {
       // Le cloud ne reflète plus (ou plus pour ce jour) de partie en cours
       // pour ce profil : soit le propriétaire vient de la réinitialiser
       // (outil "Réinitialiser une partie en cours" ou "Réinitialiser les
@@ -5673,6 +5698,10 @@ export default function App() {
       // l'état local en conséquence — sans ça, l'écran restait bloqué sur
       // l'ancienne étape (riddle/challenge) malgré la réinitialisation
       // distante, ce qui donnait l'impression que l'outil ne faisait rien.
+      // Fenêtre de grâce de 4s (cf. lastLocalGameProgressChangeAtRef) : si
+      // on vient tout juste de changer quelque chose localement (ex:
+      // "C'est parti"), on laisse le temps à notre propre écriture de
+      // remonter avant de conclure à une vraie réinitialisation distante.
       setGameState("intro");
       setCurrentQ(0);
       setSelectedAns(null);
