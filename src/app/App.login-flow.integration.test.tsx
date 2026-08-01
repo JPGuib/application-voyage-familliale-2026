@@ -760,6 +760,117 @@ describe("App cloud login flow", () => {
     });
   });
 
+  it("does not fall back to utilisateur when claimRoleForProfile's role-only echo (\"utilisateur\") lands before our own visiteur push (story 24.1 regression)", async () => {
+    // Regression test: claimRoleForProfile's own Firebase transaction always
+    // writes "utilisateur" for a non-owner profile (it only knows about
+    // proprietaire/utilisateur) — the "Visiteur" choice applies a local
+    // override *after* that transaction resolves. If the realtime cloud
+    // snapshot echoes that intermediate "utilisateur" write before our own
+    // follow-up push (with role "visiteur") lands, a naive cloud-hydration
+    // effect would copy "utilisateur" back into local state and the profile
+    // would permanently stay "utilisateur" instead of "visiteur".
+    const pushSnapshotMock = vi.fn();
+    let currentSnapshot = baseSnapshot;
+    pushSnapshotMock.mockImplementation(async (payload: Record<string, unknown>) => {
+      const profileId = payload.profileId as string;
+      currentSnapshot = {
+        ...currentSnapshot,
+        profiles: {
+          ...currentSnapshot.profiles,
+          [profileId]: {
+            ...(currentSnapshot.profiles as Record<string, unknown>)[profileId],
+            profileId,
+            surname: payload.surname,
+            role: payload.role,
+            createdAt: 1,
+            lastSyncAt: 1,
+            checklist: {},
+            gameResults: [],
+            phase: "before",
+          },
+        },
+      } as typeof baseSnapshot;
+    });
+
+    claimRoleForProfileMock.mockImplementation(async (profileId: string, surname: string) => {
+      // Simulate the realtime listener echoing claimRoleForProfile's own
+      // Firebase transaction back *before* our own visiteur-role push lands:
+      // role "utilisateur" only, exactly like the real transaction.
+      currentSnapshot = {
+        ...currentSnapshot,
+        familyState: {
+          ...currentSnapshot.familyState,
+          profiles: [
+            ...currentSnapshot.familyState.profiles,
+            { id: profileId, role: "utilisateur" as const },
+          ],
+        },
+        profiles: {
+          ...currentSnapshot.profiles,
+          [profileId]: {
+            profileId,
+            surname,
+            role: "utilisateur" as const,
+            createdAt: 1,
+            lastSyncAt: 1,
+            checklist: {},
+            gameResults: [],
+            phase: "before" as const,
+          },
+        },
+      };
+      return { assignedRole: "utilisateur" as const, familyState: currentSnapshot.familyState };
+    });
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: currentSnapshot,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Tonton" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "👀 Je veux juste suivre le voyage" }));
+    fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
+      target: { value: "new-profile-pw" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+      target: { value: "Quel est votre dessert préféré ?" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+      target: { value: "Tiramisu" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    // Un visiteur atterrit sur le Dashboard (accès indépendant de la phase),
+    // jamais sur la Checklist (réservée aux voyageurs) : ce landing screen
+    // confirme que le rôle final est bien resté "visiteur".
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Jour\s+1/i })).toBeInTheDocument();
+    });
+
+    const activeProfileId = localStorage.getItem("jp-active-profile-id")!;
+    await waitFor(() => {
+      const finalProfile = currentSnapshot.profiles[
+        activeProfileId as keyof typeof currentSnapshot.profiles
+      ] as unknown as { role?: string } | undefined;
+      expect(finalProfile?.role).toBe("visiteur");
+    });
+  });
+
   it("does not merge the new profile into the shared roster when the cloud claim fails, to avoid a later owner push creating an orphan blank-surname profile", async () => {
     // Regression test: when claimRoleForProfile fails (returns null) while
     // cloud is enabled, the app must still let the user proceed locally, but

@@ -61,18 +61,17 @@ const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
   "settings",
 ];
 
-// Le visiteur (story 24.3) suit le voyage sans checklist ni action code
-// propriétaire, et n'est jamais bloqué par la phase avant/pendant : il suit
-// dès sa création, contrairement à l'utilisateur qui attend le déblocage.
+// Le visiteur (story 24.3, restreint le 2026-08-01) suit le voyage sans
+// checklist ni jeu/résultats ni action code propriétaire, et n'est jamais
+// bloqué par la phase avant/pendant : il suit dès sa création, contrairement
+// à l'utilisateur qui attend le déblocage.
 const VISITOR_ALLOWED: ReadonlyArray<AccessSection> = [
   "dashboard",
   "guide",
   "histoire",
   "geographie",
   "culture",
-  "game",
   "tips",
-  "results",
   "settings",
 ];
 
@@ -159,7 +158,7 @@ export function getAccessDeniedMessage(
     return "Acces refuse: cette action est reservee au profil proprietaire.";
   }
 
-  if (role === "visiteur" && section === "checklist") {
+  if (role === "visiteur" && (section === "checklist" || section === "game" || section === "results")) {
     return "Cette rubrique est reservee aux voyageurs.";
   }
 

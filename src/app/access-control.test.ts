@@ -69,7 +69,7 @@ describe("access-control policy", () => {
     expect(allowed).toEqual(["checklist", "settings"]);
   });
 
-  it("grants visitor access to everything except checklist and owner code actions (story 24.3)", () => {
+  it("grants visitor access only to read-only content and their own settings (story 24.3, restreint le 2026-08-01)", () => {
     const allowed = getAllowedSections("visiteur", "before");
 
     expect(allowed).toEqual([
@@ -78,25 +78,31 @@ describe("access-control policy", () => {
       "histoire",
       "geographie",
       "culture",
-      "game",
       "tips",
-      "results",
       "settings",
     ]);
     expect(canAccessSection("visiteur", "before", "checklist")).toBe(false);
+    expect(canAccessSection("visiteur", "before", "game")).toBe(false);
+    expect(canAccessSection("visiteur", "before", "results")).toBe(false);
     expect(canAccessSection("visiteur", "before", "owner-code-actions")).toBe(false);
   });
 
   it("does not gate visitor access on trip phase, unlike utilisateur (story 24.3)", () => {
     expect(getAllowedSections("visiteur", "before")).toEqual(getAllowedSections("visiteur", "during"));
     expect(canAccessSection("visiteur", "before", "dashboard")).toBe(true);
-    expect(canAccessSection("visiteur", "before", "game")).toBe(true);
+    expect(canAccessSection("visiteur", "during", "game")).toBe(false);
   });
 
-  it("returns a friendly denial message for a visitor targeting the checklist", () => {
-    const message = getAccessDeniedMessage("visiteur", "during", "checklist");
-
-    expect(message).toBe("Cette rubrique est reservee aux voyageurs.");
+  it("returns a friendly denial message for a visitor targeting the checklist, the game or the results (story 24.3)", () => {
+    expect(getAccessDeniedMessage("visiteur", "during", "checklist")).toBe(
+      "Cette rubrique est reservee aux voyageurs."
+    );
+    expect(getAccessDeniedMessage("visiteur", "during", "game")).toBe(
+      "Cette rubrique est reservee aux voyageurs."
+    );
+    expect(getAccessDeniedMessage("visiteur", "during", "results")).toBe(
+      "Cette rubrique est reservee aux voyageurs."
+    );
   });
 
   it("grants visitor access to their own settings screen", () => {

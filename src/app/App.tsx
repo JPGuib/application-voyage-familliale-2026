@@ -5748,8 +5748,16 @@ export default function App() {
 
     setHydratedProfileId(profile.id);
 
+    const pendingRole = pendingProfileRoleRef.current;
+    const isRolePendingForThisProfile =
+      pendingRole !== "none" && pendingRole.profileId === profile.id;
+    const rolePendingConfirmed = !isRolePendingForThisProfile || cloudProfile.role === pendingRole.role;
+    if (isRolePendingForThisProfile && rolePendingConfirmed) {
+      pendingProfileRoleRef.current = "none";
+    }
+
     setProfile((previous) => {
-      const nextRole = cloudProfile.role;
+      const nextRole = isRolePendingForThisProfile && !rolePendingConfirmed ? previous.role : cloudProfile.role;
       const nextSurname = cloudProfile.surname || previous.surname;
       const nextGender: Gender = cloudProfile.gender ?? "unspecified";
       const nextHouseholdRole: HouseholdRole = cloudProfile.householdRole ?? "member";
@@ -5934,6 +5942,14 @@ export default function App() {
       }
     | "none"
   >("none");
+  // Story 24.1 : même course que ci-dessus, mais pour le rôle lui-même.
+  // claimRoleForProfile écrit "utilisateur" via sa transaction (elle ne
+  // connaît que proprietaire/utilisateur) ; le choix "Visiteur" applique une
+  // surcouche locale juste après. Sans ce garde-fou, l'écho temps réel de
+  // cette transaction (encore "utilisateur") arrive parfois avant que notre
+  // propre push du rôle "visiteur" n'ait atteint Firebase, et l'effet
+  // d'hydratation ci-dessous rétablirait "utilisateur" de façon définitive.
+  const pendingProfileRoleRef = useRef<{ profileId: string; role: Role } | "none">("none");
   const ownerDeviceRegisteredRef = useRef(false);
   // Empêche le push automatique de re-créer un profil dans le cloud pendant
   // la fenêtre asynchrone entre la suppression cloud et le reset local de
@@ -7844,6 +7860,11 @@ export default function App() {
               // aurait alors renvoyé "proprietaire", jamais "utilisateur").
               if (ownerAlreadyConfigured && travelerChoice === "visiteur" && assignedRole === "utilisateur") {
                 assignedRole = "visiteur";
+                // claimRoleForProfile vient d'écrire "utilisateur" dans sa
+                // propre transaction Firebase ; cette surcouche locale doit
+                // survivre à l'écho temps réel de cet état intermédiaire
+                // (cf. pendingProfileRoleRef).
+                pendingProfileRoleRef.current = { profileId: profile.id, role: "visiteur" };
                 if (nextFamilyState) {
                   nextFamilyState = applyProfileRoleMutation(nextFamilyState, profile.id, "visiteur").state;
                 }
