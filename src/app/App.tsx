@@ -5758,14 +5758,6 @@ export default function App() {
 
     setProfile((previous) => {
       const nextRole = isRolePendingForThisProfile && !rolePendingConfirmed ? previous.role : cloudProfile.role;
-      console.log("[DEBUG-24.1] hydration role sync", {
-        profileId: profile.id,
-        previousRole: previous.role,
-        cloudRole: cloudProfile.role,
-        isRolePendingForThisProfile,
-        rolePendingConfirmed,
-        nextRole,
-      });
       const nextSurname = cloudProfile.surname || previous.surname;
       const nextGender: Gender = cloudProfile.gender ?? "unspecified";
       const nextHouseholdRole: HouseholdRole = cloudProfile.householdRole ?? "member";
@@ -7724,11 +7716,6 @@ export default function App() {
           onGenderChange={(v) => setProfile((p) => ({ ...p, gender: v }))}
           onHouseholdRoleChange={(v) => setProfile((p) => ({ ...p, householdRole: v }))}
           onContinue={(password, recoveryQuestion, recoveryAnswer, travelerChoice, travelerCode) => {
-            console.log("[DEBUG-24.1] onContinue called", {
-              travelerChoice,
-              ownerProfileId: familyState.ownerProfileId,
-              cloudEnabled,
-            });
             if (cloudEnabled && !cloudReady) {
               setProfileError("Synchronisation cloud en cours. Patientez quelques secondes.");
               return;
@@ -7860,33 +7847,36 @@ export default function App() {
               let assignedRole = assignRoleOnProfileCreation(familyState);
               let nextFamilyState: SharedFamilyState | null = null;
 
+              // Story 24.1 : le choix "Visiteur" ne s'applique jamais au tout
+              // premier profil (la course propriétaire/utilisateur ci-dessous
+              // aurait alors renvoyé "proprietaire", jamais "utilisateur").
+              // Cette surcouche est appliquée AVANT d'attendre
+              // claimRoleForProfile (et pas après) : sa transaction Firebase
+              // ne connaît que proprietaire/utilisateur et peut mettre très
+              // longtemps (voire jamais, en pratique) à se résoudre quand les
+              // règles de sécurité la refusent structurellement (cf. le
+              // commentaire plus bas) — si le rôle "visiteur" n'était appliqué
+              // qu'après ce await, il resterait bloqué sur "utilisateur" via
+              // l'écho de la transaction récupéré par l'effet d'hydratation
+              // (seul mécanisme qui, dans ce cas, fait réellement avancer
+              // l'écran au-delà de la création de profil).
+              const isVisitorOverride =
+                ownerAlreadyConfigured && travelerChoice === "visiteur" && assignedRole === "utilisateur";
+              if (isVisitorOverride) {
+                assignedRole = "visiteur";
+                pendingProfileRoleRef.current = { profileId: profile.id, role: "visiteur" };
+                setProfile((current) => ({ ...current, surname: normalizedSurname, role: "visiteur" }));
+              }
+
               if (cloudEnabled) {
                 const result = await claimRoleForProfile(profile.id, normalizedSurname);
                 if (result) {
-                  assignedRole = result.assignedRole;
-                  nextFamilyState = result.familyState;
-                }
-              }
-
-              console.log("[DEBUG-24.1] before override", {
-                ownerAlreadyConfigured,
-                travelerChoice,
-                assignedRole,
-                cloudEnabled,
-                nextFamilyStateExists: Boolean(nextFamilyState),
-              });
-              // Story 24.1 : le choix "Visiteur" ne s'applique jamais au tout
-              // premier profil (la course propriétaire/utilisateur ci-dessus
-              // aurait alors renvoyé "proprietaire", jamais "utilisateur").
-              if (ownerAlreadyConfigured && travelerChoice === "visiteur" && assignedRole === "utilisateur") {
-                assignedRole = "visiteur";
-                // claimRoleForProfile vient d'écrire "utilisateur" dans sa
-                // propre transaction Firebase ; cette surcouche locale doit
-                // survivre à l'écho temps réel de cet état intermédiaire
-                // (cf. pendingProfileRoleRef).
-                pendingProfileRoleRef.current = { profileId: profile.id, role: "visiteur" };
-                if (nextFamilyState) {
-                  nextFamilyState = applyProfileRoleMutation(nextFamilyState, profile.id, "visiteur").state;
+                  nextFamilyState = isVisitorOverride
+                    ? applyProfileRoleMutation(result.familyState, profile.id, "visiteur").state
+                    : result.familyState;
+                  if (!isVisitorOverride) {
+                    assignedRole = result.assignedRole;
+                  }
                 }
               }
 
@@ -7896,10 +7886,6 @@ export default function App() {
                 role: assignedRole,
               };
 
-              console.log("[DEBUG-24.1] setProfile with final role", {
-                profileId: nextProfile.id,
-                role: nextProfile.role,
-              });
               setProfile(nextProfile);
 
               if (nextFamilyState) {
