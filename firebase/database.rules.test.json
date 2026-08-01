@@ -121,7 +121,7 @@
         "gameProgress": {
           "$profileId": {
             ".write": "auth != null",
-            ".validate": "newData.val() === null || (newData.hasChildren(['day','phase','answers','quizDurationSec','riddleValidated','riddleSolved']) && (newData.child('phase').val() === 'playing' || newData.child('phase').val() === 'riddle' || newData.child('phase').val() === 'challenge') && (!newData.child('quizStartedAt').exists() || newData.child('quizStartedAt').isNumber()))"
+            ".validate": "newData.val() === null || (newData.hasChildren(['day','phase','quizDurationSec','riddleValidated','riddleSolved']) && (newData.child('phase').val() === 'playing' || newData.child('phase').val() === 'riddle' || newData.child('phase').val() === 'challenge') && (!newData.child('quizStartedAt').exists() || newData.child('quizStartedAt').isNumber()))"
           }
         },
         "phase": {
