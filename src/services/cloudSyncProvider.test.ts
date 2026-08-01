@@ -245,6 +245,7 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
           day: 3,
           phase: "challenge",
           answers: [1, 0, 2],
+          quizStartedAt: null,
           quizDurationSec: 75,
           riddleValidated: true,
           riddleSolved: true,
@@ -256,9 +257,40 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
       day: 3,
       phase: "challenge",
       answers: [1, 0, 2],
+      quizStartedAt: null,
       quizDurationSec: 75,
       riddleValidated: true,
       riddleSolved: true,
+    });
+  });
+
+  it("parses an in-progress quiz (playing) with quizStartedAt", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {
+        "profile-a": { surname: "A", role: "utilisateur", createdAt: 1, lastSyncAt: 2 },
+      },
+      gameProgress: {
+        "profile-a": {
+          day: 3,
+          phase: "playing",
+          answers: [1],
+          quizStartedAt: 1700000000000,
+          quizDurationSec: 0,
+          riddleValidated: false,
+          riddleSolved: false,
+        },
+      },
+    });
+
+    expect(snapshot.profiles["profile-a"]?.gameProgress).toEqual({
+      day: 3,
+      phase: "playing",
+      answers: [1],
+      quizStartedAt: 1700000000000,
+      quizDurationSec: 0,
+      riddleValidated: false,
+      riddleSolved: false,
     });
   });
 
@@ -270,12 +302,12 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
         "profile-b": { surname: "B", role: "utilisateur", createdAt: 1, lastSyncAt: 2 },
       },
       gameProgress: {
-        "profile-b": { day: 1, phase: "playing", answers: [], quizDurationSec: 0, riddleValidated: false, riddleSolved: false },
+        "profile-b": { day: 1, phase: "done", answers: [], quizStartedAt: null, quizDurationSec: 0, riddleValidated: false, riddleSolved: false },
       },
     });
 
     expect(snapshot.profiles["profile-a"]?.gameProgress).toBeNull();
-    // "playing" n'est pas une phase persistée valide : rejetée.
+    // "done" n'est pas une phase persistée valide (récap du quiz jamais repris) : rejetée.
     expect(snapshot.profiles["profile-b"]?.gameProgress).toBeNull();
   });
 
@@ -310,6 +342,7 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
         day: 2,
         phase: "riddle",
         answers: [1, 1],
+        quizStartedAt: null,
         quizDurationSec: 40,
         riddleValidated: false,
         riddleSolved: false,
@@ -320,6 +353,7 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
       day: 2,
       phase: "riddle",
       answers: [1, 1],
+      quizStartedAt: null,
       quizDurationSec: 40,
       riddleValidated: false,
       riddleSolved: false,

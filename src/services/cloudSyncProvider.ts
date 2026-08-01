@@ -141,9 +141,10 @@ function parseGameProgress(value: unknown): CloudGameProgress {
   const entry = asRecord(value);
   if (
     typeof entry.day === "number" &&
-    (entry.phase === "riddle" || entry.phase === "challenge") &&
+    (entry.phase === "playing" || entry.phase === "riddle" || entry.phase === "challenge") &&
     Array.isArray(entry.answers) &&
     entry.answers.every((item) => typeof item === "number") &&
+    (entry.quizStartedAt === null || entry.quizStartedAt === undefined || typeof entry.quizStartedAt === "number") &&
     typeof entry.quizDurationSec === "number" &&
     typeof entry.riddleValidated === "boolean" &&
     typeof entry.riddleSolved === "boolean"
@@ -152,6 +153,7 @@ function parseGameProgress(value: unknown): CloudGameProgress {
       day: entry.day,
       phase: entry.phase,
       answers: entry.answers as number[],
+      quizStartedAt: typeof entry.quizStartedAt === "number" ? entry.quizStartedAt : null,
       quizDurationSec: entry.quizDurationSec,
       riddleValidated: entry.riddleValidated,
       riddleSolved: entry.riddleSolved,

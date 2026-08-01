@@ -2733,9 +2733,14 @@ function GameScreen({
             <p className="text-sm text-muted-foreground mb-2">
               {questions.length} questions sur les lieux visités aujourd&apos;hui en Turquie.
             </p>
-            <p className="text-sm text-muted-foreground mb-10">
+            <p className="text-sm text-muted-foreground mb-6">
               Chaque bonne réponse rapporte{" "}
               <strong className="text-primary">{QUESTION_POINTS} points</strong> à l&apos;équipe !
+            </p>
+            <p className="text-xs font-bold text-[#C62828] bg-[#FFEBEE] rounded-xl px-4 py-3 mb-8 text-left">
+              ⚠️ Une fois lancé, impossible de quitter le jeu avant de l&apos;avoir terminé (quiz,
+              énigme puis défi photo). Mieux vaut y jouer en fin de journée, une fois toutes les
+              visites terminées.
             </p>
             <button
               onClick={onStart}
@@ -4923,7 +4928,19 @@ export default function App() {
     }
   });
   const [nowTs, setNowTs] = useState(Date.now());
-  const [currentQ, setCurrentQ] = useState(0);
+  // currentQ se déduit du nombre de réponses déjà enregistrées : on reprend
+  // toujours à la question suivante, jamais de désynchronisation possible
+  // entre les deux (cf. mémo "reprise du quiz après F5", 2026-08-01).
+  const [currentQ, setCurrentQ] = useState(() => {
+    if (cloudEnabled) {
+      return 0;
+    }
+    try {
+      return parseGameProgress(localStorage.getItem("jp-game-progress"))?.answers.length ?? 0;
+    } catch {
+      return 0;
+    }
+  });
   const [selectedAns, setSelectedAns] = useState<number | null>(null);
   const [answers, setAnswers] = useState<number[]>(() => {
     if (cloudEnabled) {
@@ -4935,7 +4952,16 @@ export default function App() {
       return [];
     }
   });
-  const [quizStartedAt, setQuizStartedAt] = useState<number | null>(null);
+  const [quizStartedAt, setQuizStartedAt] = useState<number | null>(() => {
+    if (cloudEnabled) {
+      return null;
+    }
+    try {
+      return parseGameProgress(localStorage.getItem("jp-game-progress"))?.quizStartedAt ?? null;
+    } catch {
+      return null;
+    }
+  });
   const [quizDurationSec, setQuizDurationSec] = useState(() => {
     if (cloudEnabled) {
       return 0;
@@ -4992,16 +5018,19 @@ export default function App() {
   const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
   const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
 
-  // Progression en cours du jeu du jour (null si "intro"/"playing"/"done" :
-  // rien à reprendre tant que le quiz n'est pas soumis, cf. goToScreen).
+  // Progression en cours du jeu du jour (null si "intro"/"done" : rien à
+  // reprendre avant d'avoir commencé, et le récap du quiz ne se reprend
+  // jamais tel quel, cf. goToScreen). Persistée dès "playing" (survit à un
+  // F5/fermeture d'appli en plein quiz) pour ne jamais repartir à zéro.
   // Calculé une fois ici et réutilisé pour la sauvegarde locale et tous les
   // envois cloud, pour ne jamais désynchroniser les deux.
   const currentGameProgress: GameProgress | null =
-    gameState === "riddle" || gameState === "challenge"
+    gameState === "playing" || gameState === "riddle" || gameState === "challenge"
       ? {
           day: currentDay,
           phase: gameState,
           answers,
+          quizStartedAt,
           quizDurationSec,
           riddleValidated,
           riddleSolved,
@@ -5284,6 +5313,7 @@ export default function App() {
     gameState,
     currentDay,
     answers,
+    quizStartedAt,
     quizDurationSec,
     riddleValidated,
     riddleSolved,
@@ -5447,10 +5477,16 @@ export default function App() {
     const cloudProgress = cloudProfile.gameProgress;
     if (cloudProgress && cloudProgress.day === currentDay) {
       setGameState((previous) => (previous === cloudProgress.phase ? previous : cloudProgress.phase));
+      setCurrentQ((previous) =>
+        previous === cloudProgress.answers.length ? previous : cloudProgress.answers.length
+      );
       setAnswers((previous) =>
         JSON.stringify(previous) === JSON.stringify(cloudProgress.answers)
           ? previous
           : cloudProgress.answers
+      );
+      setQuizStartedAt((previous) =>
+        previous === cloudProgress.quizStartedAt ? previous : cloudProgress.quizStartedAt
       );
       setQuizDurationSec((previous) =>
         previous === cloudProgress.quizDurationSec ? previous : cloudProgress.quizDurationSec
@@ -5649,6 +5685,7 @@ export default function App() {
     gameState,
     currentDay,
     answers,
+    quizStartedAt,
     quizDurationSec,
     riddleValidated,
     riddleSolved,
@@ -6583,7 +6620,9 @@ export default function App() {
       // pas, on repart sur un jour neuf.
       if (gameState !== "intro") {
         setGameState("intro");
+        setCurrentQ(0);
         setAnswers([]);
+        setQuizStartedAt(null);
         setQuizDurationSec(0);
         setRiddleValidated(false);
         setRiddleSolved(false);

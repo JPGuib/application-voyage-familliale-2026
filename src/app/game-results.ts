@@ -17,15 +17,18 @@ type Badge = {
   earned: boolean;
 };
 
-// Progression en cours (session non terminée) pour le jour donné : "riddle"
-// une fois le quiz soumis (on ne peut plus revenir en arrière dessus), puis
-// "challenge" une fois l'énigme validée. Jamais "playing"/"done"/"intro" :
-// on ne peut pas quitter en plein quiz, et le récap du quiz n'est visible
-// qu'une fois (on bascule directement vers l'énigme si on quitte l'écran).
+// Progression en cours (session non terminée) pour le jour donné : "playing"
+// pendant le quiz (survit à un rechargement/fermeture de l'appli, pour
+// reprendre exactement à la question en cours), "riddle" une fois le quiz
+// soumis (on ne peut plus revenir en arrière dessus), puis "challenge" une
+// fois l'énigme validée. Jamais "done"/"intro" : le récap du quiz n'est
+// visible qu'une fois (on bascule directement vers l'énigme si on quitte
+// l'écran). `quizStartedAt` n'est utile que pendant "playing" (null sinon).
 export type GameProgress = {
   day: number;
-  phase: "riddle" | "challenge";
+  phase: "playing" | "riddle" | "challenge";
   answers: number[];
+  quizStartedAt: number | null;
   quizDurationSec: number;
   riddleValidated: boolean;
   riddleSolved: boolean;
@@ -38,9 +41,10 @@ export function parseGameProgress(raw: string | null): GameProgress | null {
     const parsed = JSON.parse(raw);
     if (
       typeof parsed?.day === "number" &&
-      (parsed?.phase === "riddle" || parsed?.phase === "challenge") &&
+      (parsed?.phase === "playing" || parsed?.phase === "riddle" || parsed?.phase === "challenge") &&
       Array.isArray(parsed?.answers) &&
       parsed.answers.every((value: unknown) => typeof value === "number") &&
+      (parsed?.quizStartedAt === null || typeof parsed?.quizStartedAt === "number") &&
       typeof parsed?.quizDurationSec === "number" &&
       typeof parsed?.riddleValidated === "boolean" &&
       typeof parsed?.riddleSolved === "boolean"

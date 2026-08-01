@@ -29,14 +29,15 @@ export type CloudGameHistoryEntry = {
 };
 
 // Progression en cours (session non terminée) du jeu du jour, pour reprendre
-// après une fermeture/rechargement de l'appli. Null = aucune session en
-// cours pour ce profil. Jamais "playing"/"done" : on ne peut pas quitter en
-// plein quiz, et le récap du quiz bascule directement vers l'énigme si on
-// quitte l'écran (voir App.tsx, goToScreen).
+// après une fermeture/rechargement de l'appli, y compris en plein quiz
+// ("playing", survit à un F5). Null = aucune session en cours pour ce
+// profil. Jamais "done" : le récap du quiz bascule directement vers
+// l'énigme si on quitte l'écran (voir App.tsx, goToScreen).
 export type CloudGameProgress = {
   day: number;
-  phase: "riddle" | "challenge";
+  phase: "playing" | "riddle" | "challenge";
   answers: number[];
+  quizStartedAt: number | null;
   quizDurationSec: number;
   riddleValidated: boolean;
   riddleSolved: boolean;

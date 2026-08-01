@@ -93,6 +93,7 @@ describe("parseGameProgress", () => {
       day: 2,
       phase: "riddle",
       answers: [1, 1, 2, 0],
+      quizStartedAt: null,
       quizDurationSec: 90,
       riddleValidated: false,
       riddleSolved: false,
@@ -100,20 +101,32 @@ describe("parseGameProgress", () => {
     };
   }
 
-  it("parse une progression valide", () => {
+  it("parse une progression valide (riddle/challenge)", () => {
     const progress = makeProgress({ phase: "challenge", riddleValidated: true, riddleSolved: true });
 
     expect(parseGameProgress(JSON.stringify(progress))).toEqual(progress);
   });
 
+  it("parse une progression valide en plein quiz (playing, avec quizStartedAt)", () => {
+    const progress = makeProgress({ phase: "playing", answers: [1], quizStartedAt: 1700000000000 });
+
+    expect(parseGameProgress(JSON.stringify(progress))).toEqual(progress);
+  });
+
   it("rejette une progression avec une phase invalide", () => {
-    const raw = JSON.stringify({ ...makeProgress(), phase: "playing" });
+    const raw = JSON.stringify({ ...makeProgress(), phase: "done" });
 
     expect(parseGameProgress(raw)).toBeNull();
   });
 
   it("rejette une progression avec des reponses non numeriques", () => {
     const raw = JSON.stringify({ ...makeProgress(), answers: [1, "x"] });
+
+    expect(parseGameProgress(raw)).toBeNull();
+  });
+
+  it("rejette une progression avec un quizStartedAt ni null ni numerique", () => {
+    const raw = JSON.stringify({ ...makeProgress(), quizStartedAt: "now" });
 
     expect(parseGameProgress(raw)).toBeNull();
   });
