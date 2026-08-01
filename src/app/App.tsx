@@ -664,6 +664,7 @@ function ActionCard({
 function ProfileSetupScreen({
   profile,
   ownerAlreadyConfigured,
+  travelerCodeConfigured,
   error,
   onSurnameChange,
   onGenderChange,
@@ -672,17 +673,26 @@ function ProfileSetupScreen({
 }: {
   profile: Profile;
   ownerAlreadyConfigured: boolean;
+  travelerCodeConfigured: boolean;
   error: string | null;
   onSurnameChange: (v: string) => void;
   onGenderChange: (v: Gender) => void;
   onHouseholdRoleChange: (v: HouseholdRole) => void;
-  onContinue: (password: string, recoveryQuestion: string, recoveryAnswer: string) => void;
+  onContinue: (
+    password: string,
+    recoveryQuestion: string,
+    recoveryAnswer: string,
+    travelerChoice: "voyageur" | "visiteur" | null,
+    travelerCode: string
+  ) => void;
 }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [recoveryQuestion, setRecoveryQuestion] = useState("");
   const [recoveryAnswer, setRecoveryAnswer] = useState("");
   const [showRecoveryAnswer, setShowRecoveryAnswer] = useState(false);
+  const [travelerChoice, setTravelerChoice] = useState<"voyageur" | "visiteur" | null>(null);
+  const [travelerCode, setTravelerCode] = useState("");
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -753,19 +763,72 @@ function ProfileSetupScreen({
             ))}
           </div>
 
-          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-5 mb-2">
-            Rôle
-          </p>
-          <div className="rounded-xl border border-border bg-muted/30 px-3 py-3">
-            <p className="text-sm font-black text-foreground">
-              {ownerAlreadyConfigured ? "Utilisateur" : "Propriétaire"}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {ownerAlreadyConfigured
-                ? "Un propriétaire existe déjà pour la famille. Votre profil sera créé en utilisateur."
-                : "Aucun propriétaire n'est défini. Le premier profil devient propriétaire."}
-            </p>
-          </div>
+          {ownerAlreadyConfigured ? (
+            <>
+              <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-5 mb-2">
+                Vous êtes...
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTravelerChoice("voyageur")}
+                  className={`rounded-xl py-3 px-3 text-sm font-black border transition-colors text-left ${
+                    travelerChoice === "voyageur"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-foreground"
+                  }`}
+                >
+                  🧳 Je voyage avec vous
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTravelerChoice("visiteur")}
+                  className={`rounded-xl py-3 px-3 text-sm font-black border transition-colors text-left ${
+                    travelerChoice === "visiteur"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-foreground"
+                  }`}
+                >
+                  👀 Je veux juste suivre le voyage
+                </button>
+              </div>
+
+              {travelerChoice === "voyageur" && (
+                <div className="mt-3">
+                  {travelerCodeConfigured ? (
+                    <>
+                      <label className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+                        Code voyageur
+                      </label>
+                      <input
+                        type="password"
+                        value={travelerCode}
+                        onChange={(e) => setTravelerCode(e.target.value)}
+                        placeholder="Code transmis par le propriétaire"
+                        className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                      />
+                    </>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Le propriétaire doit d'abord configurer un code voyageur dans ses paramètres.
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-5 mb-2">
+                Rôle
+              </p>
+              <div className="rounded-xl border border-border bg-muted/30 px-3 py-3">
+                <p className="text-sm font-black text-foreground">Propriétaire</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Aucun propriétaire n'est défini. Le premier profil devient propriétaire.
+                </p>
+              </div>
+            </>
+          )}
 
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mt-5 mb-2">
             Mot de passe du profil *
@@ -832,7 +895,15 @@ function ProfileSetupScreen({
 
       <div className="flex-shrink-0 px-4 pb-8 pt-3 bg-background border-t border-border">
         <button
-          onClick={() => onContinue(password, recoveryQuestion, recoveryAnswer)}
+          onClick={() =>
+            onContinue(
+              password,
+              recoveryQuestion,
+              recoveryAnswer,
+              ownerAlreadyConfigured ? travelerChoice : null,
+              travelerCode
+            )
+          }
           className="w-full bg-primary text-primary-foreground rounded-2xl py-5 text-lg font-black shadow-lg active:scale-95 transition-transform"
         >
           Continuer
@@ -3013,7 +3084,7 @@ function ResultsScreen({
   const podium = computePodium(familyMembers);
   const medalByRank: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
   const todayParticipants = familyMembers
-    .filter((member) => member.role !== "proprietaire")
+    .filter((member) => member.role !== "proprietaire" && member.role !== "visiteur")
     .map((member) => ({
       profileId: member.profileId,
       surname: member.surname,
@@ -3365,6 +3436,8 @@ function SettingsScreen({
   profile,
   ownerCodeConfigured,
   ownerCodeCurrent,
+  travelerCodeConfigured,
+  travelerCodeCurrent,
   profilePasswordConfigured,
   profileRecoveryConfigured,
   profileRecoveryQuestion,
@@ -3374,6 +3447,7 @@ function SettingsScreen({
   onSaveSurname,
   onSaveProfileMetadata,
   onSaveOwnerCode,
+  onSaveTravelerCode,
   onToggleLock,
   onSaveProfilePassword,
   onChangeProfilePasswordInSession,
@@ -3395,6 +3469,8 @@ function SettingsScreen({
   profile: Profile;
   ownerCodeConfigured: boolean;
   ownerCodeCurrent: string;
+  travelerCodeConfigured: boolean;
+  travelerCodeCurrent: string;
   profilePasswordConfigured: boolean;
   profileRecoveryConfigured: boolean;
   profileRecoveryQuestion: string;
@@ -3404,6 +3480,7 @@ function SettingsScreen({
   onSaveSurname: (surname: string) => { ok: boolean; message: string };
   onSaveProfileMetadata: (gender: Gender, householdRole: HouseholdRole) => void;
   onSaveOwnerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
+  onSaveTravelerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
   onToggleLock: (code: string) => Promise<{ ok: boolean; message: string }>;
   onSaveProfilePassword: (password: string) => Promise<{ ok: boolean; message: string }>;
   onChangeProfilePasswordInSession: (
@@ -3457,6 +3534,12 @@ function SettingsScreen({
     setOwnerCodeInput(ownerCodeCurrent);
   }, [ownerCodeCurrent]);
   const [ownerCodeFeedback, setOwnerCodeFeedback] = useState<string | null>(null);
+  const [travelerCodeInput, setTravelerCodeInput] = useState(travelerCodeCurrent);
+  useEffect(() => {
+    setTravelerCodeInput(travelerCodeCurrent);
+  }, [travelerCodeCurrent]);
+  const [travelerCodeFeedback, setTravelerCodeFeedback] = useState<string | null>(null);
+  const [showTravelerCodeInput, setShowTravelerCodeInput] = useState(false);
   const [lockToggleCodeInput, setLockToggleCodeInput] = useState("");
   const [lockToggleFeedback, setLockToggleFeedback] = useState<string | null>(null);
   const [profilePasswordInput, setProfilePasswordInput] = useState("");
@@ -3993,6 +4076,61 @@ function SettingsScreen({
             {ownerCodeFeedback && (
               <p className="mt-2 text-xs font-bold text-muted-foreground">{ownerCodeFeedback}</p>
             )}
+
+            <div className="mt-4 border-t border-border pt-4">
+              <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+                Code voyageur
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                {travelerCodeConfigured
+                  ? travelerCodeCurrent
+                    ? "Un code est déjà configuré. Vous pouvez le consulter ou le remplacer."
+                    : "Code configuré avant l'ajout de cet affichage : saisissez-le à nouveau ci-dessous pour pouvoir le consulter."
+                  : "Non configuré. Les membres de la famille en ont besoin pour rejoindre en tant que Voyageur."}
+              </p>
+
+              <div className="relative mt-2">
+                <input
+                  type={showTravelerCodeInput ? "text" : "password"}
+                  value={travelerCodeInput}
+                  onChange={(e) => {
+                    setTravelerCodeInput(e.target.value);
+                    if (travelerCodeFeedback) setTravelerCodeFeedback(null);
+                  }}
+                  placeholder="Minimum 4 caractères"
+                  className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowTravelerCodeInput((previous) => !previous)}
+                  aria-label={showTravelerCodeInput ? "Masquer le code voyageur" : "Afficher le code voyageur"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                >
+                  {showTravelerCodeInput ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              <button
+                onClick={async () => {
+                  const result = await onSaveTravelerCode(travelerCodeInput);
+                  setTravelerCodeFeedback(result.message);
+                }}
+                className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+              >
+                {travelerCodeConfigured ? "Mettre à jour le code voyageur" : "Définir le code voyageur"}
+              </button>
+              {travelerCodeFeedback && (
+                <p className="mt-2 text-xs font-bold text-muted-foreground">{travelerCodeFeedback}</p>
+              )}
+              {ownerCodeConfigured &&
+                travelerCodeConfigured &&
+                ownerCodeCurrent &&
+                travelerCodeCurrent &&
+                ownerCodeCurrent === travelerCodeCurrent && (
+                  <p className="mt-2 text-xs font-bold text-amber-600">
+                    Ce code est identique au code propriétaire. Deux codes différents sont recommandés.
+                  </p>
+                )}
+            </div>
 
             {profile.role === "proprietaire" && (
               <>
@@ -4954,6 +5092,28 @@ export default function App() {
       return "";
     }
   });
+  const [travelerCodeHash, setTravelerCodeHash] = useState<string>(() => {
+    if (cloudEnabled) {
+      return "";
+    }
+
+    try {
+      return localStorage.getItem("jp-traveler-code-hash") || "";
+    } catch {
+      return "";
+    }
+  });
+  const [travelerCodePlain, setTravelerCodePlain] = useState<string>(() => {
+    if (cloudEnabled) {
+      return "";
+    }
+
+    try {
+      return localStorage.getItem("jp-traveler-code-plain") || "";
+    } catch {
+      return "";
+    }
+  });
   const [ownerRecoveryHash, setOwnerRecoveryHash] = useState<string>(() => {
     if (cloudEnabled) {
       return "";
@@ -5363,6 +5523,8 @@ export default function App() {
         localStorage.removeItem("jp-family-state");
         localStorage.removeItem("jp-owner-code-hash");
         localStorage.removeItem("jp-owner-code-plain");
+        localStorage.removeItem("jp-traveler-code-hash");
+        localStorage.removeItem("jp-traveler-code-plain");
         localStorage.removeItem("jp-owner-code");
         localStorage.removeItem("jp-owner-recovery-hash");
         localStorage.removeItem("jp-profile-password-hashes");
@@ -5386,6 +5548,8 @@ export default function App() {
         try {
           localStorage.setItem("jp-owner-code-hash", ownerCodeHash);
           localStorage.setItem("jp-owner-code-plain", ownerCodePlain);
+          localStorage.setItem("jp-traveler-code-hash", travelerCodeHash);
+          localStorage.setItem("jp-traveler-code-plain", travelerCodePlain);
           localStorage.setItem("jp-owner-recovery-hash", ownerRecoveryHash);
           localStorage.removeItem("jp-owner-code");
           localStorage.setItem(
@@ -5450,6 +5614,8 @@ export default function App() {
     familyState,
     ownerCodeHash,
     ownerCodePlain,
+    travelerCodeHash,
+    travelerCodePlain,
     ownerRecoveryHash,
     profilePasswordHashes,
     profileRecoveryHashes,
@@ -5510,6 +5676,12 @@ export default function App() {
     );
     setOwnerCodePlain((previous) =>
       previous === (cloudSnapshot.ownerCodePlain || "") ? previous : (cloudSnapshot.ownerCodePlain || "")
+    );
+    setTravelerCodeHash((previous) =>
+      previous === (cloudSnapshot.travelerCodeHash || "") ? previous : (cloudSnapshot.travelerCodeHash || "")
+    );
+    setTravelerCodePlain((previous) =>
+      previous === (cloudSnapshot.travelerCodePlain || "") ? previous : (cloudSnapshot.travelerCodePlain || "")
     );
     setOwnerRecoveryHash((previous) =>
       previous === (cloudSnapshot.ownerRecoveryHash || "") ? previous : (cloudSnapshot.ownerRecoveryHash || "")
@@ -5842,6 +6014,8 @@ export default function App() {
       familyState: normalized,
       ownerCodeHash,
       ownerCodePlain,
+      travelerCodeHash,
+      travelerCodePlain,
       ownerRecoveryHash,
       ownerRecoveryConfiguredAt: ownerRecoveryHash ? true : false,
       profileId: profile.id,
@@ -5873,6 +6047,8 @@ export default function App() {
       familyState: normalized,
       ownerCodeHash,
       ownerCodePlain,
+      travelerCodeHash,
+      travelerCodePlain,
       ownerRecoveryHash,
       ownerRecoveryConfiguredAt: undefined,
       profileId: profile.id,
@@ -5913,6 +6089,8 @@ export default function App() {
     isAuthBootstrapPending,
     ownerCodeHash,
     ownerCodePlain,
+    travelerCodeHash,
+    travelerCodePlain,
     ownerRecoveryHash,
     profilePasswordHashes,
     profileRecoveryHashes,
@@ -7513,6 +7691,7 @@ export default function App() {
         <ProfileSetupScreen
           profile={profile}
           ownerAlreadyConfigured={Boolean(familyState.ownerProfileId)}
+          travelerCodeConfigured={travelerCodeHash.length > 0}
           error={profileError}
           onSurnameChange={(v) => {
             setProfile((p) => ({ ...p, surname: v }));
@@ -7520,7 +7699,7 @@ export default function App() {
           }}
           onGenderChange={(v) => setProfile((p) => ({ ...p, gender: v }))}
           onHouseholdRoleChange={(v) => setProfile((p) => ({ ...p, householdRole: v }))}
-          onContinue={(password, recoveryQuestion, recoveryAnswer) => {
+          onContinue={(password, recoveryQuestion, recoveryAnswer, travelerChoice, travelerCode) => {
             if (cloudEnabled && !cloudReady) {
               setProfileError("Synchronisation cloud en cours. Patientez quelques secondes.");
               return;
@@ -7529,6 +7708,14 @@ export default function App() {
             const normalizedSurname = profile.surname.trim();
             if (!normalizedSurname) {
               setProfileError("Le surnom est obligatoire.");
+              return;
+            }
+
+            const ownerAlreadyConfigured = Boolean(familyState.ownerProfileId);
+            if (ownerAlreadyConfigured && travelerChoice === null) {
+              setProfileError(
+                "Merci d'indiquer si vous voyagez avec nous ou si vous souhaitez simplement suivre le voyage."
+              );
               return;
             }
 
@@ -7564,6 +7751,39 @@ export default function App() {
             }
 
             const continueSetup = async () => {
+              if (ownerAlreadyConfigured && travelerChoice === "voyageur") {
+                if (lockRemainingMs > 0) {
+                  setProfileError(`Trop de tentatives. Réessayez dans ${lockRemainingSec}s.`);
+                  return;
+                }
+
+                if (!travelerCodeHash) {
+                  setProfileError(
+                    "Le propriétaire doit d'abord configurer un code voyageur dans ses paramètres."
+                  );
+                  return;
+                }
+
+                const isTravelerCodeValid = await verifyOwnerCode(travelerCode, travelerCodeHash);
+                if (!isTravelerCodeValid) {
+                  const nextAttempts = unlockFailedAttempts + 1;
+                  if (nextAttempts >= 3) {
+                    setUnlockFailedAttempts(0);
+                    setUnlockLockedUntil(Date.now() + 30000);
+                    setNowTs(Date.now());
+                    setProfileError("Code voyageur incorrect. Blocage temporaire de 30 secondes.");
+                  } else {
+                    setUnlockFailedAttempts(nextAttempts);
+                    setProfileError("Code voyageur incorrect. Réessayez, ou choisissez Visiteur.");
+                  }
+                  return;
+                }
+
+                setUnlockFailedAttempts(0);
+                setUnlockLockedUntil(0);
+                setNowTs(Date.now());
+              }
+
               // Hash the password/recovery answer up front (pure local
               // computation), and commit them to local state BEFORE calling
               // claimRoleForProfile. That call performs a Firebase transaction
@@ -7619,6 +7839,16 @@ export default function App() {
                 }
               }
 
+              // Story 24.1 : le choix "Visiteur" ne s'applique jamais au tout
+              // premier profil (la course propriétaire/utilisateur ci-dessus
+              // aurait alors renvoyé "proprietaire", jamais "utilisateur").
+              if (ownerAlreadyConfigured && travelerChoice === "visiteur" && assignedRole === "utilisateur") {
+                assignedRole = "visiteur";
+                if (nextFamilyState) {
+                  nextFamilyState = applyProfileRoleMutation(nextFamilyState, profile.id, "visiteur").state;
+                }
+              }
+
               const nextProfile = {
                 ...profile,
                 surname: normalizedSurname,
@@ -7668,6 +7898,8 @@ export default function App() {
             profile={profile}
             ownerCodeConfigured={ownerCodeHash.length > 0}
             ownerCodeCurrent={ownerCodePlain}
+            travelerCodeConfigured={travelerCodeHash.length > 0}
+            travelerCodeCurrent={travelerCodePlain}
             profilePasswordConfigured={currentProfilePasswordHash.length > 0}
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             profileRecoveryQuestion={currentProfileRecoveryQuestion}
@@ -7704,6 +7936,25 @@ export default function App() {
               setOwnerCodeHash(nextHash);
               setOwnerCodePlain(normalized);
               return { ok: true, message: "Code propriétaire mis à jour." };
+            }}
+            onSaveTravelerCode={async (code) => {
+              if (!canUpdateOwnerCode(familyState, profile.id)) {
+                return {
+                  ok: false,
+                  message: "Seul le profil propriétaire peut configurer le code.",
+                };
+              }
+              const normalized = code.trim();
+              if (normalized.length < 4) {
+                return {
+                  ok: false,
+                  message: "Le code doit contenir au moins 4 caractères.",
+                };
+              }
+              const nextHash = await hashOwnerCode(normalized);
+              setTravelerCodeHash(nextHash);
+              setTravelerCodePlain(normalized);
+              return { ok: true, message: "Code voyageur mis à jour." };
             }}
             onToggleLock={confirmOwnerLockToggle}
             onSaveProfilePassword={async (password) => {
@@ -8231,6 +8482,8 @@ export default function App() {
             profile={profile}
             ownerCodeConfigured={ownerCodeHash.length > 0}
             ownerCodeCurrent={ownerCodePlain}
+            travelerCodeConfigured={travelerCodeHash.length > 0}
+            travelerCodeCurrent={travelerCodePlain}
             profilePasswordConfigured={currentProfilePasswordHash.length > 0}
             profileRecoveryConfigured={currentProfileRecoveryHash.length > 0}
             profileRecoveryQuestion={currentProfileRecoveryQuestion}
@@ -8267,6 +8520,25 @@ export default function App() {
               setOwnerCodeHash(nextHash);
               setOwnerCodePlain(normalized);
               return { ok: true, message: "Code propriétaire mis à jour." };
+            }}
+            onSaveTravelerCode={async (code) => {
+              if (!canUpdateOwnerCode(familyState, profile.id)) {
+                return {
+                  ok: false,
+                  message: "Seul le profil propriétaire peut configurer le code.",
+                };
+              }
+              const normalized = code.trim();
+              if (normalized.length < 4) {
+                return {
+                  ok: false,
+                  message: "Le code doit contenir au moins 4 caractères.",
+                };
+              }
+              const nextHash = await hashOwnerCode(normalized);
+              setTravelerCodeHash(nextHash);
+              setTravelerCodePlain(normalized);
+              return { ok: true, message: "Code voyageur mis à jour." };
             }}
             onToggleLock={confirmOwnerLockToggle}
             onSaveProfilePassword={async (password) => {

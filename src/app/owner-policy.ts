@@ -1,4 +1,4 @@
-export type Role = "proprietaire" | "utilisateur";
+export type Role = "proprietaire" | "utilisateur" | "visiteur";
 
 export type PersistedProfile = {
   id: string;
@@ -37,7 +37,9 @@ export function parseSharedFamilyState(raw: string | null): SharedFamilyState {
             return (
               profile &&
               typeof profile.id === "string" &&
-              (profile.role === "proprietaire" || profile.role === "utilisateur")
+              (profile.role === "proprietaire" ||
+                profile.role === "utilisateur" ||
+                profile.role === "visiteur")
             );
           })
           .map((profile) => ({ id: profile.id, role: profile.role as Role }))
@@ -100,7 +102,7 @@ export function applyProfileRoleMutation(
     };
   }
 
-  if (requestedRole === "utilisateur" && normalized.ownerProfileId === targetProfileId) {
+  if (requestedRole !== "proprietaire" && normalized.ownerProfileId === targetProfileId) {
     const withProfile = upsertProfile(normalized, {
       id: targetProfileId,
       role: "proprietaire",
@@ -124,7 +126,7 @@ export function applyProfileRoleMutation(
 
   const nextState = enforceOwnerUniqueness(withOwner);
   const nextRole =
-    nextState.ownerProfileId === targetProfileId ? "proprietaire" : "utilisateur";
+    nextState.profiles.find((profile) => profile.id === targetProfileId)?.role ?? "utilisateur";
 
   return {
     state: nextState,
@@ -182,6 +184,12 @@ export function enforceOwnerUniqueness(state: SharedFamilyState): SharedFamilySt
   const normalizedProfiles = state.profiles.map((profile) => {
     if (ownerId && profile.id === ownerId) {
       return { ...profile, role: "proprietaire" as const };
+    }
+    // Un profil visiteur (story 24.1/24.3) reste visiteur : seuls les
+    // profils qui n'étaient ni propriétaire ni déjà visiteur retombent sur
+    // "utilisateur" par défaut.
+    if (profile.role === "visiteur") {
+      return { ...profile, role: "visiteur" as const };
     }
     return { ...profile, role: "utilisateur" as const };
   });

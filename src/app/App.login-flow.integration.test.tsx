@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "./App";
 import { hashOwnerRecoveryPhrase } from "./owner-recovery";
 import { hashProfilePassword } from "./profile-password";
+import { hashOwnerCode } from "./owner-code";
 
 const cloudSyncMock = vi.fn();
 const claimRoleForProfileMock = vi.fn();
@@ -19,6 +20,14 @@ vi.mock("../content/trip", () => ({
   },
 }));
 
+// Story 24.1 : toute création de profil (hors 1er profil) demande
+// maintenant un choix Voyageur/Visiteur. Les tests génériques de ce fichier
+// (non spécifiques au rôle) utilisent "Voyageur" avec ce code préconfiguré
+// pour préserver le comportement historique (rôle "utilisateur" inchangé,
+// atterrissage sur la Checklist en phase "before").
+const TEST_TRAVELER_CODE = "famille2026";
+const testTravelerCodeHash = await hashOwnerCode(TEST_TRAVELER_CODE);
+
 const baseSnapshot = {
   familyState: {
     version: 1,
@@ -29,6 +38,7 @@ const baseSnapshot = {
     ],
   },
   ownerCodeHash: "",
+  travelerCodeHash: testTravelerCodeHash,
   phase: "before" as const,
   profiles: {
     p1: {
@@ -56,6 +66,10 @@ const baseSnapshot = {
 };
 
 function fillMandatoryProfileCreationFields() {
+  fireEvent.click(screen.getByRole("button", { name: "🧳 Je voyage avec vous" }));
+  fireEvent.change(screen.getByPlaceholderText("Code transmis par le propriétaire"), {
+    target: { value: TEST_TRAVELER_CODE },
+  });
   fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
     target: { value: "new-profile-pw" },
   });
@@ -288,6 +302,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
+    fireEvent.click(screen.getByRole("button", { name: "👀 Je veux juste suivre le voyage" }));
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
@@ -313,6 +328,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
+    fireEvent.click(screen.getByRole("button", { name: "👀 Je veux juste suivre le voyage" }));
     fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
       target: { value: "abc" },
     });
@@ -343,6 +359,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
+    fireEvent.click(screen.getByRole("button", { name: "👀 Je veux juste suivre le voyage" }));
     fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
       target: { value: "new-profile-pw" },
     });
@@ -409,6 +426,233 @@ describe("App cloud login flow", () => {
     };
     expect(payload.profilePasswordHash).toBe(expectedPasswordHash);
     expect(payload.profileRecoveryQuestion).toBe("Quel est votre dessert préféré ?");
+  });
+
+  it("blocks profile creation when neither Voyageur nor Visiteur is chosen (story 24.1)", async () => {
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Emma" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
+      target: { value: "new-profile-pw" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+      target: { value: "Quel est votre dessert préféré ?" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+      target: { value: "Tiramisu" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Merci d'indiquer si vous voyagez avec nous ou si vous souhaitez simplement suivre le voyage."
+        )
+      ).toBeInTheDocument();
+    });
+    expect(claimRoleForProfileMock).not.toHaveBeenCalled();
+  });
+
+  it("creating a profile as Visiteur assigns the visiteur role without requiring a code (story 24.1/24.3)", async () => {
+    const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+    claimRoleForProfileMock.mockResolvedValue({
+      assignedRole: "utilisateur",
+      familyState: baseSnapshot.familyState,
+    });
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: baseSnapshot,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Tonton" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "👀 Je veux juste suivre le voyage" }));
+    fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
+      target: { value: "new-profile-pw" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+      target: { value: "Quel est votre dessert préféré ?" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+      target: { value: "Tiramisu" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    // Contrairement à l'utilisateur (qui atterrit sur la Checklist tant que
+    // la phase est "before"), un visiteur suit le voyage dès sa création et
+    // atterrit directement sur le Dashboard (story 24.3).
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Jour\s+1/i })).toBeInTheDocument();
+    });
+
+    const activeProfileId = localStorage.getItem("jp-active-profile-id");
+    await waitFor(() => {
+      expect(pushSnapshotMock).toHaveBeenCalled();
+    });
+
+    const matchingCall = pushSnapshotMock.mock.calls.find(
+      (call) => (call[0] as { profileId: string }).profileId === activeProfileId
+    );
+    expect(matchingCall).toBeDefined();
+    expect((matchingCall![0] as { role: string }).role).toBe("visiteur");
+  });
+
+  it("Voyageur option shows guidance instead of a code field when no traveler code is configured (story 24.1)", async () => {
+    const snapshotWithoutTravelerCode = { ...baseSnapshot, travelerCodeHash: "" };
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshotWithoutTravelerCode,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Tonton" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "🧳 Je voyage avec vous" }));
+
+    expect(
+      screen.getByText("Le propriétaire doit d'abord configurer un code voyageur dans ses paramètres.")
+    ).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("Code transmis par le propriétaire")).not.toBeInTheDocument();
+  });
+
+  it("creating a profile as Voyageur with the correct code keeps the utilisateur role unchanged (story 24.1)", async () => {
+    const travelerCodeHash = await hashOwnerCode("famille2026");
+    const snapshotWithTravelerCode = { ...baseSnapshot, travelerCodeHash };
+    const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+    claimRoleForProfileMock.mockResolvedValue({
+      assignedRole: "utilisateur",
+      familyState: baseSnapshot.familyState,
+    });
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshotWithTravelerCode,
+      pushSnapshot: pushSnapshotMock,
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Oncle" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "🧳 Je voyage avec vous" }));
+    fireEvent.change(screen.getByPlaceholderText("Code transmis par le propriétaire"), {
+      target: { value: "famille2026" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
+      target: { value: "new-profile-pw" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+      target: { value: "Quel est votre dessert préféré ?" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+      target: { value: "Tiramisu" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+    });
+
+    const activeProfileId = localStorage.getItem("jp-active-profile-id");
+    await waitFor(() => {
+      expect(pushSnapshotMock).toHaveBeenCalled();
+    });
+
+    const matchingCall = pushSnapshotMock.mock.calls.find(
+      (call) => (call[0] as { profileId: string }).profileId === activeProfileId
+    );
+    expect(matchingCall).toBeDefined();
+    expect((matchingCall![0] as { role: string }).role).toBe("utilisateur");
+  });
+
+  it("creating a profile as Voyageur with an incorrect code shows an error and does not create the profile (story 24.1)", async () => {
+    const travelerCodeHash = await hashOwnerCode("famille2026");
+    const snapshotWithTravelerCode = { ...baseSnapshot, travelerCodeHash };
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshotWithTravelerCode,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    fireEvent.change(input, { target: { value: "Oncle" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "🧳 Je voyage avec vous" }));
+    fireEvent.change(screen.getByPlaceholderText("Code transmis par le propriétaire"), {
+      target: { value: "mauvais-code" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
+      target: { value: "new-profile-pw" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Ex: Quel est votre plat préféré ?"), {
+      target: { value: "Quel est votre dessert préféré ?" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse personnelle (min. 5 caractères)"), {
+      target: { value: "Tiramisu" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Code voyageur incorrect. Réessayez, ou choisissez Visiteur.")).toBeInTheDocument();
+    });
+    expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    expect(claimRoleForProfileMock).not.toHaveBeenCalled();
   });
 
   it("does not wipe the freshly-set password/recovery when claimRoleForProfile's role-only echo lands before our own full push (story 18.9 regression)", async () => {

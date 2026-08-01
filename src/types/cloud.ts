@@ -86,6 +86,8 @@ export type CloudSyncSnapshot = {
   familyState: SharedFamilyState;
   ownerCodeHash: string;
   ownerCodePlain?: string;
+  travelerCodeHash?: string;
+  travelerCodePlain?: string;
   ownerRecoveryHash?: string;
   ownerRecoveryConfiguredAt?: number;
   phase: TravelPhase;
@@ -103,6 +105,8 @@ export type CloudSyncWritePayload = {
   familyState: SharedFamilyState;
   ownerCodeHash: string;
   ownerCodePlain?: string;
+  travelerCodeHash?: string;
+  travelerCodePlain?: string;
   ownerRecoveryHash?: string;
   ownerRecoveryConfiguredAt?: number;
   profileId: string;

@@ -61,6 +61,21 @@ const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
   "settings",
 ];
 
+// Le visiteur (story 24.3) suit le voyage sans checklist ni action code
+// propriétaire, et n'est jamais bloqué par la phase avant/pendant : il suit
+// dès sa création, contrairement à l'utilisateur qui attend le déblocage.
+const VISITOR_ALLOWED: ReadonlyArray<AccessSection> = [
+  "dashboard",
+  "guide",
+  "histoire",
+  "geographie",
+  "culture",
+  "game",
+  "tips",
+  "results",
+  "settings",
+];
+
 function screenToSection(screen: AppScreen): AccessSection {
   if (screen === "place" || screen === "visite-guidee") {
     return "guide";
@@ -88,6 +103,10 @@ export function getAllowedSections(role: Role | null, phase: TravelPhase): Acces
 
   if (role === "proprietaire") {
     return [...OWNER_ALLOWED];
+  }
+
+  if (role === "visiteur") {
+    return [...VISITOR_ALLOWED];
   }
 
   return phase === "during" ? [...USER_AFTER_ALLOWED] : [...USER_BEFORE_ALLOWED];
@@ -138,6 +157,10 @@ export function getAccessDeniedMessage(
 
   if (section === "owner-code-actions" || (section === "settings" && role !== "proprietaire")) {
     return "Acces refuse: cette action est reservee au profil proprietaire.";
+  }
+
+  if (role === "visiteur" && section === "checklist") {
+    return "Cette rubrique est reservee aux voyageurs.";
   }
 
   if (role === "utilisateur" && phase === "before") {

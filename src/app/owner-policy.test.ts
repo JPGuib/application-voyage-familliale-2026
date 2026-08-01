@@ -6,6 +6,7 @@ import {
   canUpdateOwnerCode,
   claimRoleFirstWriterWins,
   enforceOwnerUniqueness,
+  parseSharedFamilyState,
   type SharedFamilyState,
 } from "./owner-policy";
 
@@ -125,5 +126,67 @@ describe("owner policy", () => {
     expect(result.reason).toBe("cannot-demote-owner");
     expect(result.role).toBe("proprietaire");
     expect(result.state.ownerProfileId).toBe("owner-1");
+  });
+
+  it("preserve le role visiteur lors de la normalisation (enforceOwnerUniqueness)", () => {
+    const normalized = enforceOwnerUniqueness(
+      makeState({
+        ownerProfileId: "owner-1",
+        profiles: [
+          { id: "owner-1", role: "proprietaire" },
+          { id: "user-1", role: "utilisateur" },
+          { id: "visitor-1", role: "visiteur" },
+        ],
+      })
+    );
+
+    expect(normalized.profiles.find((profile) => profile.id === "owner-1")?.role).toBe("proprietaire");
+    expect(normalized.profiles.find((profile) => profile.id === "user-1")?.role).toBe("utilisateur");
+    expect(normalized.profiles.find((profile) => profile.id === "visitor-1")?.role).toBe("visiteur");
+  });
+
+  it("attribue visiteur via applyProfileRoleMutation sans etre ecrase par l'unicite owner", () => {
+    const state = makeState({
+      ownerProfileId: "owner-1",
+      profiles: [
+        { id: "owner-1", role: "proprietaire" },
+        { id: "visitor-1", role: "utilisateur" },
+      ],
+    });
+
+    const result = applyProfileRoleMutation(state, "visitor-1", "visiteur");
+
+    expect(result.rejected).toBe(false);
+    expect(result.role).toBe("visiteur");
+    expect(result.state.profiles.find((profile) => profile.id === "visitor-1")?.role).toBe("visiteur");
+  });
+
+  it("refuse de demander le role visiteur pour le proprietaire", () => {
+    const state = makeState({
+      ownerProfileId: "owner-1",
+      profiles: [{ id: "owner-1", role: "proprietaire" }],
+    });
+
+    const result = applyProfileRoleMutation(state, "owner-1", "visiteur");
+
+    expect(result.rejected).toBe(true);
+    expect(result.reason).toBe("cannot-demote-owner");
+    expect(result.role).toBe("proprietaire");
+  });
+
+  it("parseSharedFamilyState conserve les profils visiteur", () => {
+    const raw = JSON.stringify(
+      makeState({
+        ownerProfileId: "owner-1",
+        profiles: [
+          { id: "owner-1", role: "proprietaire" },
+          { id: "visitor-1", role: "visiteur" },
+        ],
+      })
+    );
+
+    const parsed = parseSharedFamilyState(raw);
+
+    expect(parsed.profiles.find((profile) => profile.id === "visitor-1")?.role).toBe("visiteur");
   });
 });

@@ -192,7 +192,10 @@ function toProfileHouseholdRole(value: unknown): ProfileHouseholdRole {
 
 function parseProfileRecord(value: unknown): CloudProfileRecord | null {
   const record = asRecord(value);
-  const role = record.role === "proprietaire" || record.role === "utilisateur" ? record.role : null;
+  const role =
+    record.role === "proprietaire" || record.role === "utilisateur" || record.role === "visiteur"
+      ? record.role
+      : null;
   if (!role) {
     return null;
   }
@@ -289,6 +292,8 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     familyState,
     ownerCodeHash: typeof root.ownerCodeHash === "string" ? root.ownerCodeHash : "",
     ownerCodePlain: toOptionalNonEmptyString(root.ownerCodePlain),
+    travelerCodeHash: toOptionalNonEmptyString(root.travelerCodeHash),
+    travelerCodePlain: toOptionalNonEmptyString(root.travelerCodePlain),
     phase: sharedPhase,
     tripStartDate: typeof root.tripStartDate === "string" ? root.tripStartDate : null,
     ownerGlobalChecklistAdditions: parseChecklistCustomItems(ownerGlobalAdditionRecords),
@@ -357,7 +362,18 @@ export async function pushCloudSnapshot(
   const timestamp = Date.now();
   const normalizedFamilyState = enforceOwnerUniqueness(payload.familyState);
   const isPayloadOwner = normalizedFamilyState.ownerProfileId === payload.profileId;
-  const effectiveRole: Role = isPayloadOwner ? "proprietaire" : "utilisateur";
+  const existingRoleInFamilyState = normalizedFamilyState.profiles.find(
+    (profile) => profile.id === payload.profileId
+  )?.role;
+  // Un profil visiteur (story 24.1/24.3) ne doit jamais être rétrogradé en
+  // "utilisateur" par cette sanitization, que ce soit parce que son propre
+  // appareil pousse à nouveau son rôle, ou parce que le roster famille le
+  // connaît déjà comme visiteur.
+  const effectiveRole: Role = isPayloadOwner
+    ? "proprietaire"
+    : payload.role === "visiteur" || existingRoleInFamilyState === "visiteur"
+      ? "visiteur"
+      : "utilisateur";
 
   if (import.meta.env.DEV && payload.role !== effectiveRole) {
     console.info(
@@ -417,6 +433,10 @@ export async function pushCloudSnapshot(
     // ferait échouer tout l'envoi groupé.
     updates.ownerCodeHash = payload.ownerCodeHash;
     updates.ownerCodePlain = payload.ownerCodePlain?.trim() || null;
+    if (typeof payload.travelerCodeHash === "string" && payload.travelerCodeHash.trim().length > 0) {
+      updates.travelerCodeHash = payload.travelerCodeHash;
+      updates.travelerCodePlain = payload.travelerCodePlain?.trim() || null;
+    }
     updates.phase = payload.phase;
     // On n'écrit jamais explicitement null ici : tant qu'aucune fonctionnalité
     // "effacer la date" n'existe, une valeur locale vide/nulle ne doit jamais

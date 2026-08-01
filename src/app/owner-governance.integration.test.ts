@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyProfileRoleMutation,
   canUpdateOwnerCode,
   claimRoleFirstWriterWins,
   enforceOwnerUniqueness,
+  parseSharedFamilyState,
   type SharedFamilyState,
 } from "./owner-policy";
 import { hashOwnerCode, verifyOwnerCode } from "./owner-code";
@@ -88,5 +90,46 @@ describe("owner governance integration", () => {
 
     await expect(verifyOwnerCode("abcd", ownerCodeHash)).resolves.toBe(true);
     await expect(verifyOwnerCode("dcba", ownerCodeHash)).resolves.toBe(false);
+  });
+
+  it("couvre un parcours complet propriétaire + code voyageur + création visiteur + reload (story 24.1/24.3)", async () => {
+    let familyState = makeState();
+
+    const ownerClaim = claimRoleFirstWriterWins(familyState, "owner-a");
+    familyState = ownerClaim.state;
+    expect(ownerClaim.assignedRole).toBe("proprietaire");
+
+    const travelerCodeHash = await hashOwnerCode("famille2026");
+
+    // Choix "Voyageur" avec le bon code : la course propriétaire/utilisateur
+    // assigne d'abord "utilisateur" (comportement inchangé), le choix
+    // voyageur ne fait que confirmer ce rôle.
+    const travelerClaim = claimRoleFirstWriterWins(familyState, "user-b");
+    familyState = travelerClaim.state;
+    expect(travelerClaim.assignedRole).toBe("utilisateur");
+    await expect(verifyOwnerCode("famille2026", travelerCodeHash)).resolves.toBe(true);
+
+    // Choix "Visiteur" : après la course (qui renvoie "utilisateur" car un
+    // propriétaire existe déjà), une mutation locale explicite bascule le
+    // profil en "visiteur" — jamais appliquée si la course avait renvoyé
+    // "proprietaire" (1er profil, hors scope de ce choix).
+    const visitorPreClaim = claimRoleFirstWriterWins(familyState, "visitor-c");
+    familyState = visitorPreClaim.state;
+    expect(visitorPreClaim.assignedRole).toBe("utilisateur");
+
+    const visitorMutation = applyProfileRoleMutation(familyState, "visitor-c", "visiteur");
+    expect(visitorMutation.rejected).toBe(false);
+    familyState = visitorMutation.state;
+    expect(familyState.profiles.find((profile) => profile.id === "visitor-c")?.role).toBe("visiteur");
+
+    // Un rechargement relit l'état persisté (JSON round-trip) et le
+    // renormalise : le visiteur doit survivre, contrairement au bug latent
+    // que corrige cet epic.
+    const reloaded = parseSharedFamilyState(JSON.stringify(familyState));
+    const renormalized = enforceOwnerUniqueness(reloaded);
+
+    expect(renormalized.ownerProfileId).toBe("owner-a");
+    expect(renormalized.profiles.find((profile) => profile.id === "user-b")?.role).toBe("utilisateur");
+    expect(renormalized.profiles.find((profile) => profile.id === "visitor-c")?.role).toBe("visiteur");
   });
 });

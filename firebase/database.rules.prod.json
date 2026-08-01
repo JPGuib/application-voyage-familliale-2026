@@ -36,6 +36,14 @@
           ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           ".validate": "newData.val() === null || (newData.isString() && newData.val().length >= 4 && newData.val().length <= 100)"
         },
+        "travelerCodeHash": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          ".validate": "newData.isString() && newData.val().matches(/^sha256:[0-9a-f]{64}$/)"
+        },
+        "travelerCodePlain": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          ".validate": "newData.val() === null || (newData.isString() && newData.val().length >= 4 && newData.val().length <= 100)"
+        },
         "ownerProfileId": {
           ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
           ".validate": "newData.val() === null || newData.isString()"
@@ -51,7 +59,7 @@
               ".validate": "newData.isString() && newData.val().length <= 80"
             },
             "role": {
-              ".validate": "newData.val() === 'proprietaire' || newData.val() === 'utilisateur'"
+              ".validate": "newData.val() === 'proprietaire' || newData.val() === 'utilisateur' || newData.val() === 'visiteur'"
             },
             "createdAt": {
               ".validate": "newData.isNumber()"

@@ -57,4 +57,14 @@ describe("computePodium", () => {
 
     expect(podium).toEqual([]);
   });
+
+  it("excludes a visitor even if they have the highest score (story 24.3)", () => {
+    const podium = computePodium([
+      { profileId: "owner", surname: "Papa", role: "proprietaire", gameResults: [{ totalScore: 999 }] },
+      { profileId: "visitor", surname: "Tonton", role: "visiteur", gameResults: [{ totalScore: 500 }] },
+      { profileId: "a", surname: "Ana", role: "utilisateur", gameResults: [{ totalScore: 40 }] },
+    ]);
+
+    expect(podium.map((entry) => entry.profileId)).toEqual(["a"]);
+  });
 });

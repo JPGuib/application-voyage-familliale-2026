@@ -15,13 +15,14 @@ export type PodiumEntry = {
 };
 
 /**
- * Classement cumulé des profils non-propriétaires (story 19.2). Le
- * propriétaire n'apparaît jamais, même s'il a lui-même joué. Les égalités
- * partagent le même rang (pas de départage automatique).
+ * Classement cumulé des profils non-propriétaires et non-visiteurs (stories
+ * 19.2 et 24.3). Le propriétaire et les visiteurs n'apparaissent jamais,
+ * même s'ils ont eux-mêmes joué. Les égalités partagent le même rang (pas de
+ * départage automatique).
  */
 export function computePodium(profiles: ReadonlyArray<PodiumProfileInput>): PodiumEntry[] {
   const totals = profiles
-    .filter((profile) => profile.role !== "proprietaire")
+    .filter((profile) => profile.role !== "proprietaire" && profile.role !== "visiteur")
     .map((profile) => ({
       profileId: profile.profileId,
       surname: profile.surname,

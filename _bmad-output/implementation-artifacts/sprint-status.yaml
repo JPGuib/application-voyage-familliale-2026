@@ -188,10 +188,10 @@ development_status:
   23-1-reinitialisation-nouveau-voyage: backlog
   epic-23-retrospective: optional
 
-  epic-24: backlog
-  24-1-choix-voyageur-visiteur-creation: backlog
-  24-2-configuration-code-voyageur: backlog
-  24-3-droits-acces-visiteur: backlog
+  epic-24: en-cours
+  24-1-choix-voyageur-visiteur-creation: en-cours
+  24-2-configuration-code-voyageur: en-cours
+  24-3-droits-acces-visiteur: en-cours
   epic-24-retrospective: optional
 
   epic-25: backlog

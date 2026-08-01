@@ -487,6 +487,113 @@ describe("cloudSyncProvider metadata (story 10.4)", () => {
   });
 });
 
+describe("visiteur role round-trip (story 24.1/24.3)", () => {
+  const db = {} as import("firebase/database").Database;
+  const familyId = "famille-test";
+  const basePayload = {
+    actorUid: "uid-1",
+    canWriteFamilyState: false,
+    familyState: {
+      version: 1,
+      ownerProfileId: "owner-1",
+      profiles: [
+        { id: "owner-1", role: "proprietaire" as const },
+        { id: "profile-1", role: "visiteur" as const },
+      ],
+    } as import("../app/owner-policy").SharedFamilyState,
+    ownerCodeHash: "",
+    ownerRecoveryHash: "",
+    ownerRecoveryConfiguredAt: undefined,
+    profileId: "profile-1",
+    surname: "Tonton",
+    role: "visiteur" as import("../app/owner-policy").Role,
+    profilePasswordHash: "",
+    gender: "unspecified" as const,
+    householdRole: "member" as const,
+    checklist: {},
+    profileCustomChecklistItems: [],
+    ownerGlobalChecklistAdditions: [],
+    ownerGlobalChecklistRemovals: {},
+    gameResults: [],
+    gameProgress: null,
+    phase: "before" as const,
+  };
+
+  it("parseCloudSnapshot conserve un profil avec le role visiteur", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "before",
+      ownerProfileId: "owner-1",
+      profiles: {
+        "owner-1": { surname: "Papa", role: "proprietaire", createdAt: 1, lastSyncAt: 2 },
+        "profile-1": { surname: "Tonton", role: "visiteur", createdAt: 1, lastSyncAt: 2 },
+      },
+    });
+
+    expect(snapshot.profiles["profile-1"]).toBeDefined();
+    expect(snapshot.profiles["profile-1"]?.role).toBe("visiteur");
+    expect(snapshot.familyState.profiles.find((p) => p.id === "profile-1")?.role).toBe("visiteur");
+  });
+
+  it("pushCloudSnapshot depuis l'appareil du visiteur lui-meme ne sanitize pas son role en utilisateur", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, basePayload);
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["profiles/profile-1/role"]).toBe("visiteur");
+  });
+
+  it("pushCloudSnapshot depuis l'appareil du proprietaire rebroadcast bien le role visiteur d'un autre profil", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      profileId: "owner-1",
+      surname: "Papa",
+      role: "proprietaire",
+      canWriteFamilyState: true,
+      ownerCodeHash: "sha256:" + "d".repeat(64),
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["profiles/owner-1/role"]).toBe("proprietaire");
+    expect(updates["profiles/profile-1/role"]).toBe("visiteur");
+  });
+
+  it("pushCloudSnapshot ecrit le code voyageur uniquement quand le proprietaire l'a configure", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      profileId: "owner-1",
+      role: "proprietaire",
+      canWriteFamilyState: true,
+      ownerCodeHash: "sha256:" + "e".repeat(64),
+      travelerCodeHash: "sha256:" + "f".repeat(64),
+      travelerCodePlain: "1234",
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.travelerCodeHash).toBe("sha256:" + "f".repeat(64));
+    expect(updates.travelerCodePlain).toBe("1234");
+  });
+
+  it("pushCloudSnapshot n'ecrit pas travelerCodeHash quand il n'est pas configure", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      profileId: "owner-1",
+      role: "proprietaire",
+      canWriteFamilyState: true,
+      ownerCodeHash: "sha256:" + "e".repeat(64),
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.travelerCodeHash).toBeUndefined();
+  });
+});
+
 describe("pushCloudSnapshot write path (story 10.6)", () => {
   const db = {} as import("firebase/database").Database;
   const familyId = "famille-test";

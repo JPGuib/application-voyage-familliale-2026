@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canAccessSection,
+  getAccessDeniedMessage,
   getAllowedSections,
   type AccessSection,
 } from "./access-control";
@@ -66,5 +67,39 @@ describe("access-control policy", () => {
     const allowed = getAllowedSections(null, "during");
 
     expect(allowed).toEqual(["checklist", "settings"]);
+  });
+
+  it("grants visitor access to everything except checklist and owner code actions (story 24.3)", () => {
+    const allowed = getAllowedSections("visiteur", "before");
+
+    expect(allowed).toEqual([
+      "dashboard",
+      "guide",
+      "histoire",
+      "geographie",
+      "culture",
+      "game",
+      "tips",
+      "results",
+      "settings",
+    ]);
+    expect(canAccessSection("visiteur", "before", "checklist")).toBe(false);
+    expect(canAccessSection("visiteur", "before", "owner-code-actions")).toBe(false);
+  });
+
+  it("does not gate visitor access on trip phase, unlike utilisateur (story 24.3)", () => {
+    expect(getAllowedSections("visiteur", "before")).toEqual(getAllowedSections("visiteur", "during"));
+    expect(canAccessSection("visiteur", "before", "dashboard")).toBe(true);
+    expect(canAccessSection("visiteur", "before", "game")).toBe(true);
+  });
+
+  it("returns a friendly denial message for a visitor targeting the checklist", () => {
+    const message = getAccessDeniedMessage("visiteur", "during", "checklist");
+
+    expect(message).toBe("Cette rubrique est reservee aux voyageurs.");
+  });
+
+  it("grants visitor access to their own settings screen", () => {
+    expect(canAccessSection("visiteur", "during", "settings")).toBe(true);
   });
 });

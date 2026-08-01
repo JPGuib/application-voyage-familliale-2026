@@ -146,6 +146,51 @@ suite("firebase rtdb rules owner phase guard", () => {
 
     await assertFails(ownerDb.ref(`families/${FAMILY_ID}/ownerCodePlain`).set("123"));
   });
+
+  it("allows a profile role of visiteur (story 24.1/24.3)", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertSucceeds(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/profiles/${NON_OWNER_PROFILE_ID}/role`).set("visiteur")
+    );
+  });
+
+  it("denies an unknown profile role value", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/profiles/${NON_OWNER_PROFILE_ID}/role`).set("invite")
+    );
+  });
+
+  it("allows owner to write travelerCodeHash (story 24.2)", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb.ref(`families/${FAMILY_ID}/travelerCodeHash`).set(`sha256:${"a".repeat(64)}`)
+    );
+  });
+
+  it("denies non-owner from writing travelerCodeHash", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/travelerCodeHash`).set(`sha256:${"a".repeat(64)}`)
+    );
+  });
+
+  it("allows owner to write and clear travelerCodePlain", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(ownerDb.ref(`families/${FAMILY_ID}/travelerCodePlain`).set("5678"));
+    await assertSucceeds(ownerDb.ref(`families/${FAMILY_ID}/travelerCodePlain`).set(null));
+  });
+
+  it("denies a travelerCodePlain value shorter than 4 characters", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(ownerDb.ref(`families/${FAMILY_ID}/travelerCodePlain`).set("123"));
+  });
 });
 
 if (!hasDatabaseEmulator) {
