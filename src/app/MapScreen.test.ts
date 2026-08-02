@@ -14,6 +14,8 @@ vi.mock("react-leaflet", () => ({
   TileLayer: () => null,
   Marker: () => null,
   Popup: () => null,
+  CircleMarker: () => null,
+  useMap: () => ({ flyTo: () => {} }),
 }));
 
 // Mock the generated jours-destinations to control test data

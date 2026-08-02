@@ -1,11 +1,11 @@
 import "leaflet/dist/leaflet.css";
-import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useState, useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from "react-leaflet";
 import L from "leaflet";
-import { ChevronLeft, ChevronDown, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronDown, MapPin, LocateFixed } from "lucide-react";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
 import { PLACES } from "../content/places";
-import { parseGpsString } from "./weather";
+import { parseGpsString, useDeviceLocation } from "./weather";
 
 // Fix default Leaflet marker icons broken by Vite asset bundling
 const defaultIcon = L.icon({
@@ -76,6 +76,15 @@ function useIsOnline(): boolean {
   return online;
 }
 
+// Fly the map to given coordinates when triggered
+function MapFlyTo({ target }: { target: [number, number] | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (target) map.flyTo(target, 14, { duration: 1.2 });
+  }, [map, target]);
+  return null;
+}
+
 export function MapScreen({
   onBack,
   currentDay,
@@ -87,7 +96,9 @@ export function MapScreen({
 }) {
   const [selectedDay, setSelectedDay] = useState<number | "all">(currentDay);
   const [selectorOpen, setSelectorOpen] = useState(false);
+  const [flyTarget, setFlyTarget] = useState<[number, number] | null>(null);
   const isOnline = useIsOnline();
+  const { coords: deviceCoords } = useDeviceLocation();
 
   const lastDay = JOURS_DESTINATIONS.length > 0
     ? Math.max(...JOURS_DESTINATIONS.map((d) => d.jour))
@@ -145,7 +156,7 @@ export function MapScreen({
         <h1 className="relative z-10 text-2xl font-black">Carte interactive 🗺️</h1>
 
         {/* Day selector */}
-        <div className="relative z-20 mt-3">
+        <div className="relative z-[900] mt-3">
           <button
             onClick={() => setSelectorOpen((prev) => !prev)}
             className="w-full flex items-center justify-between bg-white/15 rounded-2xl px-4 py-3 backdrop-blur-sm"
@@ -174,36 +185,39 @@ export function MapScreen({
           </button>
 
           {selectorOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-xl overflow-hidden z-30 max-h-64 overflow-y-auto">
-              {dayOptions.map((opt) => (
-                <button
-                  key={String(opt.value)}
-                  onClick={() => {
-                    setSelectedDay(opt.value);
-                    setSelectorOpen(false);
-                  }}
-                  className={`w-full text-left px-4 py-3 text-sm border-b border-gray-100 last:border-0 transition-colors ${
-                    selectedDay === opt.value
-                      ? "bg-accent/10 font-bold text-accent"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <span className="block font-semibold">
-                    {opt.value === "all" ? "Tous les jours" : `Jour ${opt.value}`}
-                    {opt.isToday && (
-                      <span className="ml-2 text-[10px] font-black uppercase tracking-widest bg-accent/20 text-accent rounded-full px-2 py-0.5 align-middle">
-                        aujourd'hui
+            <>
+              <div className="fixed inset-0 z-[999]" onClick={() => setSelectorOpen(false)} />
+              <div className="absolute left-0 right-0 mt-1 bg-white rounded-2xl shadow-xl overflow-hidden z-[1000] max-h-64 overflow-y-auto">
+                {dayOptions.map((opt) => (
+                  <button
+                    key={String(opt.value)}
+                    onClick={() => {
+                      setSelectedDay(opt.value);
+                      setSelectorOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-3 text-sm border-b border-gray-100 last:border-0 transition-colors ${
+                      selectedDay === opt.value
+                        ? "bg-accent/10 font-bold text-accent"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span className="block font-semibold">
+                      {opt.value === "all" ? "Tous les jours" : `Jour ${opt.value}`}
+                      {opt.isToday && (
+                        <span className="ml-2 text-[10px] font-black uppercase tracking-widest bg-accent/20 text-accent rounded-full px-2 py-0.5 align-middle">
+                          aujourd'hui
+                        </span>
+                      )}
+                    </span>
+                    {opt.value !== "all" && (
+                      <span className="block text-xs text-gray-500 mt-0.5">
+                        {JOURS_DESTINATIONS.find((d) => d.jour === opt.value)?.destination ?? ""}
                       </span>
                     )}
-                  </span>
-                  {opt.value !== "all" && (
-                    <span className="block text-xs text-gray-500 mt-0.5">
-                      {JOURS_DESTINATIONS.find((d) => d.jour === opt.value)?.destination ?? ""}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
+                  </button>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -238,6 +252,17 @@ export function MapScreen({
         </div>
       ) : (
         <div className="flex-1 relative">
+          {/* Locate me button — floats over the map */}
+          {deviceCoords && (
+            <button
+              onClick={() => setFlyTarget([deviceCoords.lat, deviceCoords.lon])}
+              className="absolute bottom-4 right-4 z-[500] bg-white rounded-full shadow-lg p-3 border border-gray-200 active:scale-95 transition-transform"
+              title="Voir ma position"
+            >
+              <LocateFixed size={20} className="text-blue-600" />
+            </button>
+          )}
+
           <MapContainer
             key={`${String(selectedDay)}-${lastDay}`}
             center={center}
@@ -249,6 +274,21 @@ export function MapScreen({
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+            <MapFlyTo target={flyTarget} />
+
+            {/* Device GPS position — blue dot */}
+            {deviceCoords && (
+              <CircleMarker
+                center={[deviceCoords.lat, deviceCoords.lon]}
+                radius={8}
+                pathOptions={{ color: "#1d4ed8", fillColor: "#3b82f6", fillOpacity: 0.9, weight: 2 }}
+              >
+                <Popup>
+                  <span className="text-sm font-semibold">📍 Vous êtes ici</span>
+                </Popup>
+              </CircleMarker>
+            )}
+
             {markers.map((marker) => (
               <Marker
                 key={marker.key}
