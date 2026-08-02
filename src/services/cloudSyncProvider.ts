@@ -485,12 +485,16 @@ export async function pushCloudSnapshot(
     [`gameProgress/${payload.profileId}`]: payload.gameProgress,
   };
 
-  // Commentaires: n'écrire que la branche auteur courant pour respecter la
+  // Commentaires: n'écrire que les branches auteur courant pour respecter la
   // règle RTDB "author-only" et éviter les PERMISSION_DENIED sur les avis
-  // des autres membres de la famille.
+  // des autres membres de la famille. Un profil peut avoir plusieurs entrées
+  // (clé profileId pour le premier avis, profileId-timestamp pour les suivants).
   for (const [placeId, commentsById] of Object.entries(payload.placeComments)) {
-    const ownComment = commentsById[payload.profileId];
-    updates[`placeComments/${placeId}/${payload.profileId}`] = ownComment ?? null;
+    for (const [commentId, comment] of Object.entries(commentsById)) {
+      if (comment.authorProfileId === payload.profileId) {
+        updates[`placeComments/${placeId}/${commentId}`] = comment;
+      }
+    }
   }
 
   if (typeof payload.profilePasswordHash === "string") {

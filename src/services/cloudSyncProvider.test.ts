@@ -302,6 +302,26 @@ describe("place comments parsing and sync (story 21.2)", () => {
             createdAt: 1,
             updatedAt: 2,
           },
+          "profile-a-9999": {
+            commentId: "profile-a-9999",
+            placeId: "sainte-sophie",
+            authorProfileId: "profile-a",
+            authorSurnameSnapshot: "Maman",
+            reaction: null,
+            text: "Nouveau commentaire dans le fil",
+            createdAt: 9999,
+            updatedAt: 9999,
+          },
+          "profile-b": {
+            commentId: "profile-b",
+            placeId: "sainte-sophie",
+            authorProfileId: "profile-b",
+            authorSurnameSnapshot: "Papa",
+            reaction: "dislike",
+            text: "Avis d'un autre",
+            createdAt: 5,
+            updatedAt: 5,
+          },
         },
       },
       gameResults: [],
@@ -310,6 +330,7 @@ describe("place comments parsing and sync (story 21.2)", () => {
     });
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    // Doit écrire le commentaire original de l'auteur courant
     expect(updates["placeComments/sainte-sophie/profile-a"]).toEqual({
       commentId: "profile-a",
       placeId: "sainte-sophie",
@@ -320,6 +341,19 @@ describe("place comments parsing and sync (story 21.2)", () => {
       createdAt: 1,
       updatedAt: 2,
     });
+    // Doit aussi écrire les nouveaux commentaires de l'auteur courant (clé profileId-timestamp)
+    expect(updates["placeComments/sainte-sophie/profile-a-9999"]).toEqual({
+      commentId: "profile-a-9999",
+      placeId: "sainte-sophie",
+      authorProfileId: "profile-a",
+      authorSurnameSnapshot: "Maman",
+      reaction: null,
+      text: "Nouveau commentaire dans le fil",
+      createdAt: 9999,
+      updatedAt: 9999,
+    });
+    // Ne doit pas écrire les commentaires des autres profils
+    expect(updates["placeComments/sainte-sophie/profile-b"]).toBeUndefined();
   });
 });
 
