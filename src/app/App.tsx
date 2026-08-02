@@ -2284,10 +2284,14 @@ function ContentDetailScreen({
   item,
   onBack,
   onOpenVisiteGuidee,
+  visiteGuideeCtaText = "Voir le guide de visite complet",
+  visiteGuideeCtaSubtext = "Histoire détaillée, salle par salle",
 }: {
   item: ContentTopic;
   onBack: () => void;
   onOpenVisiteGuidee?: (item: ContentTopic) => void;
+  visiteGuideeCtaText?: string;
+  visiteGuideeCtaSubtext?: string;
 }) {
   const visiteGuidee = VISITES_GUIDEES[item.id];
   const photos = item.photos?.length ? item.photos : [item.image];
@@ -2566,11 +2570,13 @@ function ContentDetailScreen({
               <span className="text-2xl flex-shrink-0">📖</span>
               <div className="flex-1">
                 <p className="text-sm font-black text-foreground">
-                  Voir le guide de visite complet
+                  {visiteGuideeCtaText}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Histoire détaillée, salle par salle
-                </p>
+                {visiteGuideeCtaSubtext && (
+                  <p className="text-xs text-muted-foreground">
+                    {visiteGuideeCtaSubtext}
+                  </p>
+                )}
               </div>
               <ChevronRight size={20} className="text-muted-foreground flex-shrink-0" />
             </button>
@@ -2600,11 +2606,21 @@ function PlaceScreen({
 function HistoireTopicScreen({
   topic,
   onBack,
+  onOpenVisiteGuidee,
 }: {
   topic: (typeof HISTOIRE_TOPICS)[0];
   onBack: () => void;
+  onOpenVisiteGuidee: (item: ContentTopic) => void;
 }) {
-  return <ContentDetailScreen item={topic} onBack={onBack} />;
+  return (
+    <ContentDetailScreen
+      item={topic}
+      onBack={onBack}
+      onOpenVisiteGuidee={onOpenVisiteGuidee}
+      visiteGuideeCtaText="Pour en savoir plus"
+      visiteGuideeCtaSubtext={undefined}
+    />
+  );
 }
 
 function GeographieTopicScreen({
@@ -2616,17 +2632,35 @@ function GeographieTopicScreen({
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
 }) {
-  return <ContentDetailScreen item={topic} onBack={onBack} onOpenVisiteGuidee={onOpenVisiteGuidee} />;
+  return (
+    <ContentDetailScreen
+      item={topic}
+      onBack={onBack}
+      onOpenVisiteGuidee={onOpenVisiteGuidee}
+      visiteGuideeCtaText="Pour en savoir plus"
+      visiteGuideeCtaSubtext={undefined}
+    />
+  );
 }
 
 function CultureTopicScreen({
   topic,
   onBack,
+  onOpenVisiteGuidee,
 }: {
   topic: (typeof CULTURE_TRADITION_TOPICS)[0];
   onBack: () => void;
+  onOpenVisiteGuidee: (item: ContentTopic) => void;
 }) {
-  return <ContentDetailScreen item={topic} onBack={onBack} />;
+  return (
+    <ContentDetailScreen
+      item={topic}
+      onBack={onBack}
+      onOpenVisiteGuidee={onOpenVisiteGuidee}
+      visiteGuideeCtaText="Pour en savoir plus"
+      visiteGuideeCtaSubtext={undefined}
+    />
+  );
 }
 
 // ─── GUIDE DE VISITE SCREEN (contenu Word converti, sections + sommaire) ────
@@ -8179,6 +8213,7 @@ export default function App() {
           <HistoireTopicScreen
             topic={histoireTopic}
             onBack={() => goToScreen("histoire")}
+            onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "histoire-topic")}
           />
         ) : null;
       }
@@ -8216,6 +8251,7 @@ export default function App() {
           <CultureTopicScreen
             topic={cultureTopic}
             onBack={() => goToScreen("culture")}
+            onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
           />
         ) : null;
       }
@@ -8456,6 +8492,7 @@ export default function App() {
           <HistoireTopicScreen
             topic={histoireTopic}
             onBack={() => goToScreen("histoire")}
+            onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "histoire-topic")}
           />
         ) : null;
       case "geographie":
@@ -8485,6 +8522,7 @@ export default function App() {
           <CultureTopicScreen
             topic={cultureTopic}
             onBack={() => goToScreen("culture")}
+            onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
           />
         ) : null;
       case "game":
