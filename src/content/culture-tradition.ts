@@ -55,17 +55,17 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "Un système de santé très développé",
     tag: "Pratique",
     image:
-      "/images/Culture/Vestimentaire 1.webp",
+      "/images/Culture/soins-turquie.webp",
     photos: [
-      "/images/Culture/Vestimentaire 1.webp",
-      "/images/Culture/Vestimentaire 2.webp",
+      "/images/Culture/soins-turquie.webp",
+      "/images/Culture/hopital istanbul.webp",
     ],
-    labelhistory: "Présentation",
+    anecdotesLabel: "Présentation",
     history:
       "Le système de santé en Turquie est très développé, la sécurité sociale est gratuite et pour tous. Le pays est d’ailleurs une des destinations les plus importante au monde pour le tourisme médical. Il n’y a pas de vaccin obligatoire nécessaire à prévoir avant votre séjour. Il y a peu de risques sanitaires importants mais les plus courant sont l’hépatite A et la typhoïde et d’autres maladies transmises par l’alimentation et l’eau. Nous vous déconseillons de boire l’eau du robinet qui n’est généralement pas potable car trop chlorée.\n"+
       "On trouve en Turquie de nombreuses pharmacies (en turc « eczane ») qui vendent des médicaments souvent sans ordonnances à des prix bon marché.\n"+
       "Si toutefois vous devez vous rendre à l’hôpital, la Turquie possède de nombreux hôpitaux publics. Il y a également des cliniques privées modernes dans les grandes villes à des tarifs plus onéreux.",
-    labelanecdotes: "Numéros d'urgence",
+    anecdotesLabel: "Numéros d'urgence",
     anecdotes: [
       "112 : ambulance",
       "155 : police",
