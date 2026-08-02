@@ -162,7 +162,47 @@ describe("App place comments integration (story 21.2)", () => {
     expect(screen.queryByRole("button", { name: /Modifier/i })).not.toBeInTheDocument();
   });
 
-  it("lets an author delete an older own comment even when newer comments exist", async () => {
+  it("lets a visitor publish a comment without selecting a reaction", async () => {
+    localStorage.setItem("jp-active-profile-id", "p3");
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-visitor",
+      cloudSnapshot: makeSnapshot({}),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Séjour" }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(PLACES[0].name, "i") }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Avis de la famille")).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("Votre commentaire (optionnel)"), {
+      target: { value: "Commentaire sans reaction" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Publier" }));
+
+    expect(screen.getAllByText("Commentaire sans reaction").length).toBeGreaterThan(0);
+    expect(screen.getByText("Commentaire")).toBeInTheDocument();
+  });
+
+  it("preserves previous reaction when republishing text without changing reaction", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
     const placeId = PLACES[0].id;
@@ -180,7 +220,7 @@ describe("App place comments integration (story 21.2)", () => {
               authorProfileId: "p2",
               authorSurnameSnapshot: "Leo",
               reaction: "like",
-              text: "Mon ancien avis",
+              text: "Mon avis initial",
               createdAt: 10,
               updatedAt: 10,
               authorUid: "actor-user",
@@ -191,7 +231,7 @@ describe("App place comments integration (story 21.2)", () => {
               authorProfileId: "p3",
               authorSurnameSnapshot: "Nina",
               reaction: "dislike",
-              text: "Avis plus recent",
+              text: "Avis voisin",
               createdAt: 20,
               updatedAt: 20,
               authorUid: "actor-visitor",
@@ -219,15 +259,19 @@ describe("App place comments integration (story 21.2)", () => {
     fireEvent.click(screen.getByRole("button", { name: new RegExp(PLACES[0].name, "i") }));
 
     await waitFor(() => {
-      expect(screen.getAllByText("Mon ancien avis").length).toBeGreaterThan(0);
-      expect(screen.getByText("Avis plus recent")).toBeInTheDocument();
+      expect(screen.getAllByText("Mon avis initial").length).toBeGreaterThan(0);
+      expect(screen.getByText("Avis voisin")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Supprimer/i }));
-
-    await waitFor(() => {
-      expect(screen.queryByText("Mon ancien avis")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText("Votre commentaire (optionnel)"), {
+      target: { value: "Texte mis a jour" },
     });
-    expect(screen.getByText("Avis plus recent")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Republier" }));
+
+    expect(screen.getAllByText("Texte mis a jour").length).toBeGreaterThan(0);
+    expect(screen.getByText("Avis voisin")).toBeInTheDocument();
+    expect(screen.getAllByText("J'aime").length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /Supprimer/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Modifier/i })).not.toBeInTheDocument();
   });
 });

@@ -183,7 +183,10 @@ function parseGameDayOverrides(value: unknown): Record<number, GameDayOverride> 
 }
 
 function toPlaceCommentReaction(value: unknown): PlaceCommentReaction | null {
-  return value === "like" || value === "dislike" ? value : null;
+  if (value === "like" || value === "dislike") {
+    return value;
+  }
+  return null;
 }
 
 function parsePlaceComment(
@@ -212,7 +215,6 @@ function parsePlaceComment(
   const updatedAt = toFiniteNumber(entry.updatedAt, createdAt);
 
   if (
-    !reaction ||
     !authorProfileId ||
     !authorSurnameSnapshot ||
     !normalizedCommentId ||

@@ -18,6 +18,7 @@ Pour se connecter en tant que voyageur faut le code
 * Revoir tous les quizz ! avec les quides et faire un gros challenge en fin de séjour ?
 * BUG : un visiteur voit où on part quand c'est bloqué. A revoir.
 * Evolution de la 21.1 => voir sur un point les lieux de visite (pas uniquement la ville)
+* Bug : problème de refresh
 
 liens intéressants : 
 ------------------

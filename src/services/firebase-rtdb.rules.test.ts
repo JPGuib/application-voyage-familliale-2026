@@ -238,6 +238,23 @@ suite("firebase rtdb rules owner phase guard", () => {
     );
   });
 
+  it("allows a family member to create a comment without reaction", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertSucceeds(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({
+        commentId: NON_OWNER_PROFILE_ID,
+        placeId: COMMENT_PLACE_ID,
+        authorProfileId: NON_OWNER_PROFILE_ID,
+        authorSurnameSnapshot: "User",
+        text: "Commentaire seul",
+        createdAt: 10,
+        updatedAt: 10,
+        authorUid: NON_OWNER_UID,
+      })
+    );
+  });
+
   it("denies a non-author from updating someone else's comment", async () => {
     const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
     await ownerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({

@@ -28,7 +28,6 @@ import {
   ThumbsUp,
   ThumbsDown,
   MessageCircle,
-  Pencil,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
 import { TRIP } from "../content/trip";
@@ -311,7 +310,7 @@ type PlaceComment = {
   placeId: string;
   authorProfileId: string;
   authorSurnameSnapshot: string;
-  reaction: PlaceCommentReaction;
+  reaction: PlaceCommentReaction | null;
   text: string;
   createdAt: number;
   updatedAt: number;
@@ -684,10 +683,10 @@ function parsePlaceComments(raw: unknown): PlaceCommentsByPlace {
         continue;
       }
       const candidate = commentValue as Record<string, unknown>;
-      const reaction = candidate.reaction;
-      if (reaction !== "like" && reaction !== "dislike") {
-        continue;
-      }
+      const reaction: PlaceCommentReaction | null =
+        candidate.reaction === "like" || candidate.reaction === "dislike"
+          ? candidate.reaction
+          : null;
 
       const authorProfileId = typeof candidate.authorProfileId === "string" ? candidate.authorProfileId.trim() : "";
       const authorSurnameSnapshot =
@@ -2306,7 +2305,7 @@ function GuideScreen({
                   <ReactionCountersBadge
                     likes={counts.likes}
                     dislikes={counts.dislikes}
-                    className="absolute right-2 top-2"
+                    className="absolute bottom-2 right-2"
                   />
                 ) : null;
               })()}
@@ -2568,7 +2567,7 @@ function ContentDetailScreen({
           <ReactionCountersBadge
             likes={heroReactionCounts.likes}
             dislikes={heroReactionCounts.dislikes}
-            className="absolute right-4 top-12"
+            className="absolute bottom-4 right-4"
           />
         )}
         <div className="absolute bottom-4 left-4 right-4">
@@ -2769,14 +2768,12 @@ function PlaceCommentsSection({
   profile,
   familyProfiles,
   onUpsert,
-  onDelete,
 }: {
   placeId: string;
   comments: Record<string, PlaceComment>;
   profile: Profile;
   familyProfiles: Array<{ id: string; surname: string }>;
-  onUpsert: (input: { placeId: string; reaction: PlaceCommentReaction; text: string }) => void;
-  onDelete: (input: { placeId: string; commentId: string }) => void;
+  onUpsert: (input: { placeId: string; reaction: PlaceCommentReaction | null; text: string }) => void;
 }) {
   const ownComment = comments[profile.id] ?? null;
   const [reaction, setReaction] = useState<PlaceCommentReaction | null>(ownComment?.reaction ?? null);
@@ -2800,19 +2797,22 @@ function PlaceCommentsSection({
 
   const handleSubmit = () => {
     const trimmedText = text.trim();
-    if (!reaction) {
-      setError("Choisissez j'aime ou j'aime pas.");
-      return;
-    }
     if (trimmedText.length > MAX_PLACE_COMMENT_LENGTH) {
       setError(`Le commentaire doit rester sous ${MAX_PLACE_COMMENT_LENGTH} caracteres.`);
       return;
     }
 
+    if (!reaction && !trimmedText) {
+      setError("Ajoutez un commentaire ou une reaction.");
+      return;
+    }
+
+    const effectiveReaction = reaction ?? ownComment?.reaction ?? null;
+
     setError(null);
     onUpsert({
       placeId,
-      reaction,
+      reaction: effectiveReaction,
       text: trimmedText,
     });
   };
@@ -2830,7 +2830,6 @@ function PlaceCommentsSection({
         ) : (
           <div className="mt-4 space-y-3">
             {sortedComments.map((comment) => {
-              const isOwnComment = comment.authorProfileId === profile.id;
               return (
                 <div key={comment.commentId} className="rounded-xl border border-border/80 bg-background p-3">
                   <div className="flex items-start justify-between gap-2">
@@ -2841,33 +2840,17 @@ function PlaceCommentsSection({
                       </p>
                     </div>
                     <span className="text-xs font-bold text-muted-foreground">
-                      {comment.reaction === "like" ? "J'aime" : "J'aime pas"}
+                      {comment.reaction === "like"
+                        ? "J'aime"
+                        : comment.reaction === "dislike"
+                          ? "J'aime pas"
+                          : "Commentaire"}
                     </span>
                   </div>
                   {comment.text ? (
                     <p className="mt-2 text-sm text-foreground/85 break-words">{comment.text}</p>
                   ) : (
                     <p className="mt-2 text-sm italic text-muted-foreground">Reaction sans commentaire.</p>
-                  )}
-                  {isOwnComment && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <button
-                        onClick={() => {
-                          setReaction(comment.reaction);
-                          setText(comment.text);
-                          setError(null);
-                        }}
-                        className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-bold text-foreground active:scale-95 transition-transform"
-                      >
-                        <Pencil size={14} /> Modifier
-                      </button>
-                      <button
-                        onClick={() => onDelete({ placeId, commentId: comment.commentId })}
-                        className="inline-flex items-center gap-1 rounded-lg border border-destructive/30 px-2.5 py-1.5 text-xs font-bold text-destructive active:scale-95 transition-transform"
-                      >
-                        <Trash2 size={14} /> Supprimer
-                      </button>
-                    </div>
                   )}
                 </div>
               );
@@ -2920,7 +2903,7 @@ function PlaceCommentsSection({
             onClick={handleSubmit}
             className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-black text-primary-foreground active:scale-95 transition-transform"
           >
-            <Check size={16} /> {ownComment ? "Mettre a jour" : "Publier"}
+            <Check size={16} /> {ownComment ? "Republier" : "Publier"}
           </button>
         </div>
       </div>
@@ -2934,7 +2917,6 @@ function PlaceScreen({
   familyProfiles,
   comments,
   onUpsertComment,
-  onDeleteComment,
   onBack,
   onOpenVisiteGuidee,
 }: {
@@ -2942,8 +2924,7 @@ function PlaceScreen({
   profile: Profile;
   familyProfiles: Array<{ id: string; surname: string }>;
   comments: Record<string, PlaceComment>;
-  onUpsertComment: (input: { placeId: string; reaction: PlaceCommentReaction; text: string }) => void;
-  onDeleteComment: (input: { placeId: string; commentId: string }) => void;
+  onUpsertComment: (input: { placeId: string; reaction: PlaceCommentReaction | null; text: string }) => void;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
 }) {
@@ -2962,7 +2943,6 @@ function PlaceScreen({
           profile={profile}
           familyProfiles={familyProfiles}
           onUpsert={onUpsertComment}
-          onDelete={onDeleteComment}
         />
       }
     />
@@ -7054,7 +7034,7 @@ export default function App() {
 
   const upsertPlaceComment = (input: {
     placeId: string;
-    reaction: PlaceCommentReaction;
+    reaction: PlaceCommentReaction | null;
     text: string;
   }) => {
     if (!profile.role) {
@@ -7087,35 +7067,6 @@ export default function App() {
           ...placeComments,
           [commentId]: nextComment,
         },
-      };
-
-      if (cloudEnabled) {
-        pendingPlaceCommentsRef.current = JSON.stringify(next);
-      }
-
-      return next;
-    });
-  };
-
-  const deletePlaceComment = (input: { placeId: string; commentId: string }) => {
-    setPlaceCommentsByPlace((previous) => {
-      const placeComments = previous[input.placeId];
-      if (!placeComments) {
-        return previous;
-      }
-
-      const targetComment = placeComments[input.commentId];
-      if (!targetComment || targetComment.authorProfileId !== profile.id) {
-        return previous;
-      }
-
-      const nextPlaceComments = { ...placeComments };
-      delete nextPlaceComments[input.commentId];
-
-      let next: PlaceCommentsByPlace;
-      next = {
-        ...previous,
-        [input.placeId]: nextPlaceComments,
       };
 
       if (cloudEnabled) {
@@ -8698,7 +8649,6 @@ export default function App() {
             familyProfiles={familyProfilesForComments}
             comments={placeCommentsForSelectedPlace}
             onUpsertComment={upsertPlaceComment}
-            onDeleteComment={deletePlaceComment}
             onBack={() => goToScreen("guide")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
           />
@@ -9000,7 +8950,6 @@ export default function App() {
             familyProfiles={familyProfilesForComments}
             comments={placeCommentsForSelectedPlace}
             onUpsertComment={upsertPlaceComment}
-            onDeleteComment={deletePlaceComment}
             onBack={() => goToScreen("guide")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
           />

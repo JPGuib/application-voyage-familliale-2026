@@ -50,7 +50,7 @@ export type CloudPlaceComment = {
   placeId: string;
   authorProfileId: string;
   authorSurnameSnapshot: string;
-  reaction: PlaceCommentReaction;
+  reaction: PlaceCommentReaction | null;
   text: string;
   createdAt: number;
   updatedAt: number;
