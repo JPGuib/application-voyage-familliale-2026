@@ -234,6 +234,99 @@ describe("cloudSyncProvider phase migration", () => {
   });
 });
 
+describe("place comments parsing and sync (story 21.2)", () => {
+  it("parses valid place comments and drops invalid ones", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {
+        "profile-a": { surname: "A", role: "proprietaire", createdAt: 1, lastSyncAt: 2 },
+      },
+      placeComments: {
+        "sainte-sophie": {
+          "profile-a": {
+            commentId: "profile-a",
+            placeId: "sainte-sophie",
+            authorProfileId: "profile-a",
+            authorSurnameSnapshot: "Maman",
+            reaction: "like",
+            text: "Magnifique lieu.",
+            createdAt: 10,
+            updatedAt: 12,
+          },
+          invalid: {
+            commentId: "invalid",
+            placeId: "sainte-sophie",
+            authorProfileId: "profile-b",
+            authorSurnameSnapshot: "",
+            reaction: "wow",
+            text: "x",
+            createdAt: 10,
+            updatedAt: 12,
+          },
+        },
+      },
+    });
+
+    expect(Object.keys(snapshot.placeComments)).toEqual(["sainte-sophie"]);
+    expect(snapshot.placeComments["sainte-sophie"]?.["profile-a"]?.reaction).toBe("like");
+    expect(snapshot.placeComments["sainte-sophie"]?.["invalid"]).toBeUndefined();
+  });
+
+  it("writes placeComments in cloud updates payload", async () => {
+    mockUpdate.mockClear();
+    const db = {} as import("firebase/database").Database;
+
+    await pushCloudSnapshot(db, "famille-test", {
+      actorUid: "uid-1",
+      canWriteFamilyState: false,
+      familyState: { version: 1, ownerProfileId: null, profiles: [] } as import("../app/owner-policy").SharedFamilyState,
+      ownerCodeHash: "",
+      ownerRecoveryHash: "",
+      ownerRecoveryConfiguredAt: undefined,
+      profileId: "profile-a",
+      surname: "Maman",
+      role: "utilisateur",
+      checklist: {},
+      profileCustomChecklistItems: [],
+      ownerGlobalChecklistAdditions: [],
+      ownerGlobalChecklistRemovals: {},
+      placeComments: {
+        "sainte-sophie": {
+          "profile-a": {
+            commentId: "profile-a",
+            placeId: "sainte-sophie",
+            authorProfileId: "profile-a",
+            authorSurnameSnapshot: "Maman",
+            reaction: "like",
+            text: "Super",
+            createdAt: 1,
+            updatedAt: 2,
+          },
+        },
+      },
+      gameResults: [],
+      gameProgress: null,
+      phase: "before",
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.placeComments).toEqual({
+      "sainte-sophie": {
+        "profile-a": {
+          commentId: "profile-a",
+          placeId: "sainte-sophie",
+          authorProfileId: "profile-a",
+          authorSurnameSnapshot: "Maman",
+          reaction: "like",
+          text: "Super",
+          createdAt: 1,
+          updatedAt: 2,
+        },
+      },
+    });
+  });
+});
+
 describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
   it("parses a valid in-progress gameProgress entry per profile", () => {
     const snapshot = parseCloudSnapshot({
@@ -333,6 +426,7 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
       profileCustomChecklistItems: [],
       ownerGlobalChecklistAdditions: [],
       ownerGlobalChecklistRemovals: {},
+      placeComments: {},
       gameResults: [],
       phase: "before" as const,
     };
@@ -514,6 +608,7 @@ describe("visiteur role round-trip (story 24.1/24.3)", () => {
     profileCustomChecklistItems: [],
     ownerGlobalChecklistAdditions: [],
     ownerGlobalChecklistRemovals: {},
+    placeComments: {},
     gameResults: [],
     gameProgress: null,
     phase: "before" as const,
@@ -614,6 +709,7 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     profileCustomChecklistItems: [],
     ownerGlobalChecklistAdditions: [],
     ownerGlobalChecklistRemovals: {},
+    placeComments: {},
     gameResults: [],
     gameProgress: null,
     phase: "before" as const,

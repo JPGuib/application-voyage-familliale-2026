@@ -43,6 +43,22 @@ export type CloudGameProgress = {
   riddleSolved: boolean;
 } | null;
 
+export type PlaceCommentReaction = "like" | "dislike";
+
+export type CloudPlaceComment = {
+  commentId: string;
+  placeId: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  reaction: PlaceCommentReaction;
+  text: string;
+  createdAt: number;
+  updatedAt: number;
+  authorUid?: string;
+};
+
+export type CloudPlaceCommentsByPlace = Record<string, Record<string, CloudPlaceComment>>;
+
 export type ProfileGender = "unspecified" | "male" | "female";
 export type ProfileHouseholdRole = "member" | "parent" | "child";
 
@@ -94,6 +110,7 @@ export type CloudSyncSnapshot = {
   tripStartDate: string | null;
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
+  placeComments: CloudPlaceCommentsByPlace;
   gameDayOverrides: Record<number, GameDayOverride>;
   profiles: Record<string, CloudProfileState>;
   updatedAt: number;
@@ -123,6 +140,7 @@ export type CloudSyncWritePayload = {
   profileCustomChecklistItems: ChecklistCustomItem[];
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
+  placeComments: CloudPlaceCommentsByPlace;
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
   phase: TravelPhase;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import {
   type LucideIcon,
   Check,
@@ -25,6 +25,10 @@ import {
   X,
   Eye,
   EyeOff,
+  ThumbsUp,
+  ThumbsDown,
+  MessageCircle,
+  Pencil,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
 import { TRIP } from "../content/trip";
@@ -283,6 +287,8 @@ const OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY = "jp-owner-global-checklist-addition
 const OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY = "jp-owner-global-checklist-removals";
 const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 const PROFILE_RECOVERY_ANSWER_STORAGE_KEY = "jp-profile-recovery-answers";
+const PLACE_COMMENTS_STORAGE_KEY = "jp-place-comments";
+const MAX_PLACE_COMMENT_LENGTH = 500;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -297,6 +303,22 @@ type Profile = {
   gender: Gender;
   householdRole: HouseholdRole;
 };
+
+type PlaceCommentReaction = "like" | "dislike";
+
+type PlaceComment = {
+  commentId: string;
+  placeId: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  reaction: PlaceCommentReaction;
+  text: string;
+  createdAt: number;
+  updatedAt: number;
+  authorUid?: string;
+};
+
+type PlaceCommentsByPlace = Record<string, Record<string, PlaceComment>>;
 
 type LoginCandidate = {
   id: string;
@@ -643,6 +665,85 @@ function areGameHistoriesEqual(
   }
 
   return true;
+}
+
+function parsePlaceComments(raw: unknown): PlaceCommentsByPlace {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  const next: PlaceCommentsByPlace = {};
+  for (const [placeId, placeValue] of Object.entries(raw as Record<string, unknown>)) {
+    if (!placeValue || typeof placeValue !== "object") {
+      continue;
+    }
+
+    const commentsForPlace: Record<string, PlaceComment> = {};
+    for (const [commentId, commentValue] of Object.entries(placeValue as Record<string, unknown>)) {
+      if (!commentValue || typeof commentValue !== "object") {
+        continue;
+      }
+      const candidate = commentValue as Record<string, unknown>;
+      const reaction = candidate.reaction;
+      if (reaction !== "like" && reaction !== "dislike") {
+        continue;
+      }
+
+      const authorProfileId = typeof candidate.authorProfileId === "string" ? candidate.authorProfileId.trim() : "";
+      const authorSurnameSnapshot =
+        typeof candidate.authorSurnameSnapshot === "string"
+          ? candidate.authorSurnameSnapshot.trim()
+          : "";
+      const text = typeof candidate.text === "string" ? candidate.text.trim() : "";
+      const createdAt = typeof candidate.createdAt === "number" ? candidate.createdAt : 0;
+      const updatedAt = typeof candidate.updatedAt === "number" ? candidate.updatedAt : createdAt;
+      const normalizedCommentId =
+        typeof candidate.commentId === "string" && candidate.commentId.trim().length > 0
+          ? candidate.commentId
+          : commentId;
+      const normalizedPlaceId =
+        typeof candidate.placeId === "string" && candidate.placeId.trim().length > 0
+          ? candidate.placeId
+          : placeId;
+
+      if (
+        !authorProfileId ||
+        !authorSurnameSnapshot ||
+        !normalizedCommentId ||
+        !normalizedPlaceId ||
+        text.length > MAX_PLACE_COMMENT_LENGTH ||
+        createdAt <= 0 ||
+        updatedAt <= 0
+      ) {
+        continue;
+      }
+
+      commentsForPlace[normalizedCommentId] = {
+        commentId: normalizedCommentId,
+        placeId: normalizedPlaceId,
+        authorProfileId,
+        authorSurnameSnapshot,
+        reaction,
+        text,
+        createdAt,
+        updatedAt,
+        authorUid:
+          typeof candidate.authorUid === "string" && candidate.authorUid.trim().length > 0
+            ? candidate.authorUid
+            : undefined,
+      };
+    }
+
+    if (Object.keys(commentsForPlace).length > 0) {
+      next[placeId] = commentsForPlace;
+    }
+  }
+
+  return next;
+}
+
+function arePlaceCommentsEqual(left: PlaceCommentsByPlace, right: PlaceCommentsByPlace): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function ActionCard({
@@ -2297,12 +2398,14 @@ function ContentDetailScreen({
   onOpenVisiteGuidee,
   visiteGuideeCtaText = "Voir le guide de visite complet",
   visiteGuideeCtaSubtext = "Histoire détaillée, salle par salle",
+  extraSection,
 }: {
   item: ContentTopic;
   onBack: () => void;
   onOpenVisiteGuidee?: (item: ContentTopic) => void;
   visiteGuideeCtaText?: string;
   visiteGuideeCtaSubtext?: string;
+  extraSection?: ReactNode;
 }) {
   const visiteGuidee = VISITES_GUIDEES[item.id];
   const photos = item.photos?.length ? item.photos : [item.image];
@@ -2571,6 +2674,8 @@ function ContentDetailScreen({
           </div>
         </div>
 
+        {extraSection}
+
         {/* Guide de visite complet (uniquement si un contenu a été fourni) */}
         {onOpenVisiteGuidee && visiteGuidee && (
           <div className="px-4 mb-6">
@@ -2600,16 +2705,207 @@ function ContentDetailScreen({
 
 // ─── PLACE DETAIL SCREEN ─────────────────────────────────────────────────────
 
+function PlaceCommentsSection({
+  placeId,
+  comments,
+  profile,
+  familyProfiles,
+  onUpsert,
+  onDelete,
+}: {
+  placeId: string;
+  comments: Record<string, PlaceComment>;
+  profile: Profile;
+  familyProfiles: Array<{ id: string; surname: string }>;
+  onUpsert: (input: { placeId: string; reaction: PlaceCommentReaction; text: string }) => void;
+  onDelete: (input: { placeId: string; commentId: string }) => void;
+}) {
+  const ownComment = comments[profile.id] ?? null;
+  const [reaction, setReaction] = useState<PlaceCommentReaction | null>(ownComment?.reaction ?? null);
+  const [text, setText] = useState(ownComment?.text ?? "");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setReaction(ownComment?.reaction ?? null);
+    setText(ownComment?.text ?? "");
+  }, [ownComment?.reaction, ownComment?.text]);
+
+  const sortedComments = Object.values(comments).sort((left, right) => left.createdAt - right.createdAt);
+
+  const resolveAuthorSurname = (comment: PlaceComment): string => {
+    const profileEntry = familyProfiles.find((entry) => entry.id === comment.authorProfileId);
+    if (!profileEntry) {
+      return "Profil supprime";
+    }
+    return profileEntry.surname || comment.authorSurnameSnapshot || "Profil supprime";
+  };
+
+  const handleSubmit = () => {
+    const trimmedText = text.trim();
+    if (!reaction) {
+      setError("Choisissez j'aime ou j'aime pas.");
+      return;
+    }
+    if (trimmedText.length > MAX_PLACE_COMMENT_LENGTH) {
+      setError(`Le commentaire doit rester sous ${MAX_PLACE_COMMENT_LENGTH} caracteres.`);
+      return;
+    }
+
+    setError(null);
+    onUpsert({
+      placeId,
+      reaction,
+      text: trimmedText,
+    });
+  };
+
+  return (
+    <div className="px-4 mb-6">
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <h2 className="flex items-center gap-2 text-base font-black text-foreground">
+          <MessageCircle size={18} />
+          Avis de la famille
+        </h2>
+
+        {sortedComments.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">Soyez le premier a donner votre avis.</p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {sortedComments.map((comment) => {
+              const isOwnComment = comment.authorProfileId === profile.id;
+              return (
+                <div key={comment.commentId} className="rounded-xl border border-border/80 bg-background p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-black text-foreground">{resolveAuthorSurname(comment)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(comment.updatedAt).toLocaleDateString("fr-FR")}
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold text-muted-foreground">
+                      {comment.reaction === "like" ? "J'aime" : "J'aime pas"}
+                    </span>
+                  </div>
+                  {comment.text ? (
+                    <p className="mt-2 text-sm text-foreground/85 break-words">{comment.text}</p>
+                  ) : (
+                    <p className="mt-2 text-sm italic text-muted-foreground">Reaction sans commentaire.</p>
+                  )}
+                  {isOwnComment && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        onClick={() => {
+                          setReaction(comment.reaction);
+                          setText(comment.text);
+                          setError(null);
+                        }}
+                        className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-bold text-foreground active:scale-95 transition-transform"
+                      >
+                        <Pencil size={14} /> Modifier
+                      </button>
+                      <button
+                        onClick={() => onDelete({ placeId, commentId: comment.commentId })}
+                        className="inline-flex items-center gap-1 rounded-lg border border-destructive/30 px-2.5 py-1.5 text-xs font-bold text-destructive active:scale-95 transition-transform"
+                      >
+                        <Trash2 size={14} /> Supprimer
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="mt-4 rounded-xl bg-muted/50 p-3">
+          <p className="text-sm font-black text-foreground">
+            {ownComment ? "Modifier mon avis" : "Donner mon avis"}
+          </p>
+          <div className="mt-2 flex gap-2">
+            <button
+              onClick={() => setReaction("like")}
+              className={`inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${
+                reaction === "like"
+                  ? "border-emerald-500 bg-emerald-500/15 text-emerald-700"
+                  : "border-border text-foreground"
+              }`}
+            >
+              <ThumbsUp size={16} /> J'aime
+            </button>
+            <button
+              onClick={() => setReaction("dislike")}
+              className={`inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${
+                reaction === "dislike"
+                  ? "border-rose-500 bg-rose-500/15 text-rose-700"
+                  : "border-border text-foreground"
+              }`}
+            >
+              <ThumbsDown size={16} /> J'aime pas
+            </button>
+          </div>
+          <textarea
+            value={text}
+            onChange={(event) => {
+              const next = event.target.value;
+              if (next.length <= MAX_PLACE_COMMENT_LENGTH) {
+                setText(next);
+                setError(null);
+              }
+            }}
+            placeholder="Votre commentaire (optionnel)"
+            rows={3}
+            className="mt-3 w-full rounded-xl border border-border bg-background p-3 text-sm text-foreground outline-none focus:border-primary"
+          />
+          <p className="mt-1 text-right text-xs text-muted-foreground">{text.length}/{MAX_PLACE_COMMENT_LENGTH}</p>
+          {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+          <button
+            onClick={handleSubmit}
+            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-black text-primary-foreground active:scale-95 transition-transform"
+          >
+            <Check size={16} /> {ownComment ? "Mettre a jour" : "Publier"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PlaceScreen({
   place,
+  profile,
+  familyProfiles,
+  comments,
+  onUpsertComment,
+  onDeleteComment,
   onBack,
   onOpenVisiteGuidee,
 }: {
   place: (typeof PLACES)[0];
+  profile: Profile;
+  familyProfiles: Array<{ id: string; surname: string }>;
+  comments: Record<string, PlaceComment>;
+  onUpsertComment: (input: { placeId: string; reaction: PlaceCommentReaction; text: string }) => void;
+  onDeleteComment: (input: { placeId: string; commentId: string }) => void;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
 }) {
-  return <ContentDetailScreen item={place} onBack={onBack} onOpenVisiteGuidee={onOpenVisiteGuidee} />;
+  return (
+    <ContentDetailScreen
+      item={place}
+      onBack={onBack}
+      onOpenVisiteGuidee={onOpenVisiteGuidee}
+      extraSection={
+        <PlaceCommentsSection
+          placeId={place.id}
+          comments={comments}
+          profile={profile}
+          familyProfiles={familyProfiles}
+          onUpsert={onUpsertComment}
+          onDelete={onDeleteComment}
+        />
+      }
+    />
+  );
 }
 
 // ─── HISTOIRE TOPIC DETAIL SCREEN ────────────────────────────────────────────
@@ -5131,6 +5427,18 @@ export default function App() {
       return {};
     }
   });
+  const [placeCommentsByPlace, setPlaceCommentsByPlace] = useState<PlaceCommentsByPlace>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(PLACE_COMMENTS_STORAGE_KEY) || "{}");
+      return parsePlaceComments(parsed);
+    } catch {
+      return {};
+    }
+  });
   const [newItemDrafts, setNewItemDrafts] = useState<Record<string, string>>({});
   const [gameState, setGameState] = useState<GameState>(() => {
     if (cloudEnabled) {
@@ -5665,6 +5973,10 @@ export default function App() {
             OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY,
             JSON.stringify(ownerGlobalChecklistRemovals)
           );
+          localStorage.setItem(
+            PLACE_COMMENTS_STORAGE_KEY,
+            JSON.stringify(placeCommentsByPlace)
+          );
         } catch (e) {
           if (IS_DEV) console.warn("localStorage quota exceeded or unavailable:", e);
         }
@@ -5700,6 +6012,7 @@ export default function App() {
     customChecklistItemsByProfile,
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
+    placeCommentsByPlace,
     unlockFailedAttempts,
     unlockLockedUntil,
     gameHistory,
@@ -5873,6 +6186,11 @@ export default function App() {
       areRemovalMapsEqual(previous, cloudSnapshot.ownerGlobalChecklistRemovals ?? {})
         ? previous
         : cloudSnapshot.ownerGlobalChecklistRemovals ?? {}
+    );
+    setPlaceCommentsByPlace((previous) =>
+      arePlaceCommentsEqual(previous, cloudSnapshot.placeComments ?? {})
+        ? previous
+        : cloudSnapshot.placeComments ?? {}
     );
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
@@ -6119,6 +6437,7 @@ export default function App() {
       profileCustomChecklistItems,
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
+      placeCommentsByPlace,
       phase,
       tripStartDate,
       gameHistory,
@@ -6153,6 +6472,7 @@ export default function App() {
       profileCustomChecklistItems,
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
+      placeComments: placeCommentsByPlace,
       gameResults: gameHistory,
       gameProgress: currentGameProgress,
       phase,
@@ -6187,6 +6507,7 @@ export default function App() {
     customChecklistItemsByProfile,
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
+    placeCommentsByPlace,
     phase,
     tripStartDate,
     hydratedProfileId,
@@ -6656,6 +6977,73 @@ export default function App() {
 
   const place = PLACES.find((p) => p.id === selectedPlaceId);
 
+  const upsertPlaceComment = (input: {
+    placeId: string;
+    reaction: PlaceCommentReaction;
+    text: string;
+  }) => {
+    if (!profile.role) {
+      return;
+    }
+
+    const now = Date.now();
+    const authorProfileId = profile.id;
+    const commentId = authorProfileId;
+    const authorSurnameSnapshot = profile.surname.trim() || "Profil";
+
+    setPlaceCommentsByPlace((previous) => {
+      const placeComments = previous[input.placeId] ?? {};
+      const existing = placeComments[commentId];
+      const nextComment: PlaceComment = {
+        commentId,
+        placeId: input.placeId,
+        authorProfileId,
+        authorSurnameSnapshot,
+        reaction: input.reaction,
+        text: input.text,
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now,
+        authorUid: cloudActorUid ?? undefined,
+      };
+
+      return {
+        ...previous,
+        [input.placeId]: {
+          ...placeComments,
+          [commentId]: nextComment,
+        },
+      };
+    });
+  };
+
+  const deletePlaceComment = (input: { placeId: string; commentId: string }) => {
+    setPlaceCommentsByPlace((previous) => {
+      const placeComments = previous[input.placeId];
+      if (!placeComments) {
+        return previous;
+      }
+
+      const targetComment = placeComments[input.commentId];
+      if (!targetComment || targetComment.authorProfileId !== profile.id) {
+        return previous;
+      }
+
+      const nextPlaceComments = { ...placeComments };
+      delete nextPlaceComments[input.commentId];
+
+      if (Object.keys(nextPlaceComments).length === 0) {
+        const next = { ...previous };
+        delete next[input.placeId];
+        return next;
+      }
+
+      return {
+        ...previous,
+        [input.placeId]: nextPlaceComments,
+      };
+    });
+  };
+
   const openVisiteGuidee = (item: ContentTopic, backScreen: Screen) => {
     if (!canAccessScreen(profile.role, phase, "visite-guidee")) {
       setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, "visite-guidee"));
@@ -6897,6 +7285,7 @@ export default function App() {
       profileCustomChecklistItems: customChecklistItemsByProfile[profile.id] ?? [],
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
+      placeComments: placeCommentsByPlace,
       gameResults: gameHistory,
       gameProgress: currentGameProgress,
       phase: nextPhase,
@@ -7406,6 +7795,7 @@ export default function App() {
           profileCustomChecklistItems: selected.customChecklistItems ?? [],
           ownerGlobalChecklistAdditions: cloudSnapshot.ownerGlobalChecklistAdditions,
           ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
+          placeComments: cloudSnapshot.placeComments ?? {},
           gameResults: selected.gameResults,
           gameProgress: selected.gameProgress,
           phase: selected.phase || cloudSnapshot.phase,
@@ -7456,6 +7846,19 @@ export default function App() {
           gameResults: gameHistory,
         },
       ];
+  const familyProfilesForComments = cloudSnapshot
+    ? Object.values(cloudSnapshot.profiles).map((item) => ({
+        id: item.profileId,
+        surname: item.surname,
+      }))
+    : familyState.profiles.map((item) => ({
+        id: item.id,
+        surname: item.id === profile.id ? profile.surname : item.id,
+      }));
+  const placeCommentsForSelectedPlace =
+    selectedPlaceId && placeCommentsByPlace[selectedPlaceId]
+      ? placeCommentsByPlace[selectedPlaceId]
+      : {};
   const effectiveScreen = canAccessScreen(profile.role, phase, screen)
     ? screen
     : getSafeScreen(profile.role, phase);
@@ -7648,6 +8051,7 @@ export default function App() {
                   profileCustomChecklistItems: selected.customChecklistItems ?? [],
                   ownerGlobalChecklistAdditions: cloudSnapshot.ownerGlobalChecklistAdditions,
                   ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
+                  placeComments: cloudSnapshot.placeComments ?? {},
                   gameResults: selected.gameResults,
                   gameProgress: selected.gameProgress,
                   phase: selected.phase || cloudSnapshot.phase,
@@ -8207,6 +8611,11 @@ export default function App() {
         return place ? (
           <PlaceScreen
             place={place}
+            profile={profile}
+            familyProfiles={familyProfilesForComments}
+            comments={placeCommentsForSelectedPlace}
+            onUpsertComment={upsertPlaceComment}
+            onDeleteComment={deletePlaceComment}
             onBack={() => goToScreen("guide")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
           />
@@ -8503,6 +8912,11 @@ export default function App() {
         return place ? (
           <PlaceScreen
             place={place}
+            profile={profile}
+            familyProfiles={familyProfilesForComments}
+            comments={placeCommentsForSelectedPlace}
+            onUpsertComment={upsertPlaceComment}
+            onDeleteComment={deletePlaceComment}
             onBack={() => goToScreen("guide")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
           />

@@ -174,8 +174,8 @@ development_status:
   epic-20-retrospective: optional
 
   epic-21: in-progress
-  21-1-carte-interactive-globale: review
-  21-2-avis-commentaires-lieux-visites: backlog
+  21-1-carte-interactive-globale: done
+  21-2-avis-commentaires-lieux-visites: review
   epic-21-retrospective: optional
 
   epic-22: backlog

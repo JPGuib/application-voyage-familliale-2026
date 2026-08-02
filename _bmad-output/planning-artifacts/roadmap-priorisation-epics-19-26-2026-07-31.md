@@ -20,7 +20,7 @@ Critères: impact architecture/design, effort de tests, risque de régression, d
    Additif, indépendant des epics précédents. 21.2 introduit un nouveau modèle de données family-wide (commentaires par profil/lieu) — vérifier l'allowlist des règles Firebase (`database.rules.*.json`) pour les nouveaux champs cloud (cf. `project_firebase_rules_field_allowlist.md`). Ce mécanisme de commentaire est réutilisé par 25.1, d'où l'intérêt de le poser avant l'epic 25. 21.1 (carte) n'a aucune dépendance et peut être avancé librement.
 
 5. **Epic 20 — Planning, Docs, Convertisseur**
-   Purement additif, lecture seule, aucune dépendance ni impact auth/sync. Risque de régression quasi nul. Bon candidat pour combler un sprint entre deux epics plus sensibles ; peut être avancé sans casser l'ordre logique.
+   Purement additif, lecture seule, aucune dépendance ni impact auth/sync. Risque de régression quasi nul. Bon candidat pour combler un sprint entre deux epics plus sensibles ; peut être avancé sans casser l'orre logique.
 
 6. **Epic 25 — Teaser / Sondage / FAQ**
    Dépend explicitement de 21.2 (réutilise le mécanisme de commentaire), et implicitement de 24 et 19 (exclusion propriétaire/visiteur du score du sondage). Séquence interne obligatoire : 25.1 → 25.2 → 25.3.

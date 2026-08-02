@@ -62,6 +62,7 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
       profileCustomChecklistItems: [],
       ownerGlobalChecklistAdditions: [],
       ownerGlobalChecklistRemovals: {},
+      placeComments: {},
       gameResults: [],
       gameProgress: null,
       phase: "before",

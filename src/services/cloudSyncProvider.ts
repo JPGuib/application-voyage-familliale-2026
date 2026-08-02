@@ -18,10 +18,13 @@ import type {
   ClaimRoleResult,
   CloudGameHistoryEntry,
   CloudGameProgress,
+  CloudPlaceComment,
+  CloudPlaceCommentsByPlace,
   CloudProfileRecord,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
   GameDayOverride,
+  PlaceCommentReaction,
   ProfileGender,
   ProfileHouseholdRole,
   TravelPhase,
@@ -179,6 +182,90 @@ function parseGameDayOverrides(value: unknown): Record<number, GameDayOverride> 
   return next;
 }
 
+function toPlaceCommentReaction(value: unknown): PlaceCommentReaction | null {
+  return value === "like" || value === "dislike" ? value : null;
+}
+
+function parsePlaceComment(
+  placeId: string,
+  commentId: string,
+  value: unknown
+): CloudPlaceComment | null {
+  const entry = asRecord(value);
+  const normalizedCommentId =
+    typeof entry.commentId === "string" && entry.commentId.trim().length > 0
+      ? entry.commentId
+      : commentId;
+  const normalizedPlaceId =
+    typeof entry.placeId === "string" && entry.placeId.trim().length > 0
+      ? entry.placeId
+      : placeId;
+  const reaction = toPlaceCommentReaction(entry.reaction);
+  const authorProfileId =
+    typeof entry.authorProfileId === "string" ? entry.authorProfileId.trim() : "";
+  const authorSurnameSnapshot =
+    typeof entry.authorSurnameSnapshot === "string"
+      ? entry.authorSurnameSnapshot.trim()
+      : "";
+  const text = typeof entry.text === "string" ? entry.text.trim() : "";
+  const createdAt = toFiniteNumber(entry.createdAt, 0);
+  const updatedAt = toFiniteNumber(entry.updatedAt, createdAt);
+
+  if (
+    !reaction ||
+    !authorProfileId ||
+    !authorSurnameSnapshot ||
+    !normalizedCommentId ||
+    !normalizedPlaceId ||
+    text.length > 500 ||
+    createdAt <= 0 ||
+    updatedAt <= 0
+  ) {
+    return null;
+  }
+
+  const authorUid =
+    typeof entry.authorUid === "string" && entry.authorUid.trim().length > 0
+      ? entry.authorUid
+      : undefined;
+
+  return {
+    commentId: normalizedCommentId,
+    placeId: normalizedPlaceId,
+    authorProfileId,
+    authorSurnameSnapshot,
+    reaction,
+    text,
+    createdAt,
+    updatedAt,
+    authorUid,
+  };
+}
+
+function parsePlaceComments(value: unknown): CloudPlaceCommentsByPlace {
+  const placeRecords = asRecord(value);
+  const next: CloudPlaceCommentsByPlace = {};
+
+  for (const [placeId, placeValue] of Object.entries(placeRecords)) {
+    const commentRecords = asRecord(placeValue);
+    const placeComments: Record<string, CloudPlaceComment> = {};
+
+    for (const [commentId, commentValue] of Object.entries(commentRecords)) {
+      const parsed = parsePlaceComment(placeId, commentId, commentValue);
+      if (!parsed) {
+        continue;
+      }
+      placeComments[parsed.commentId] = parsed;
+    }
+
+    if (Object.keys(placeComments).length > 0) {
+      next[placeId] = placeComments;
+    }
+  }
+
+  return next;
+}
+
 function toProfileGender(value: unknown): ProfileGender {
   if (value === "male" || value === "female") return value;
   return "unspecified";
@@ -235,6 +322,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const checklistRecords = asRecord(root.checklists);
   const ownerGlobalAdditionRecords = asRecord(root.checklistCatalogAdditions);
   const ownerGlobalRemovalRecords = asRecord(root.checklistCatalogRemovals);
+  const placeCommentRecords = asRecord(root.placeComments);
   const gameResultRecords = asRecord(root.gameResults);
   const gameProgressRecords = asRecord(root.gameProgress);
   const phaseRecords = asRecord(root.phase);
@@ -298,6 +386,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     tripStartDate: typeof root.tripStartDate === "string" ? root.tripStartDate : null,
     ownerGlobalChecklistAdditions: parseChecklistCustomItems(ownerGlobalAdditionRecords),
     ownerGlobalChecklistRemovals: parseChecklistRemovals(ownerGlobalRemovalRecords),
+    placeComments: parsePlaceComments(placeCommentRecords),
     gameDayOverrides: parseGameDayOverrides(root.gameDayOverrides),
     profiles,
     updatedAt: toFiniteNumber(root.updatedAt, 0),
@@ -390,6 +479,7 @@ export async function pushCloudSnapshot(
       return acc;
     }, {}),
     [`checklists/${payload.profileId}`]: payload.checklist,
+    placeComments: payload.placeComments,
     [`gameResults/${payload.profileId}`]: payload.gameResults,
     [`gameProgress/${payload.profileId}`]: payload.gameProgress,
   };

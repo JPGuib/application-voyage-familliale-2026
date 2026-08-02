@@ -12,8 +12,11 @@ const PROJECT_ID = "application-voyage-test";
 const FAMILY_ID = "famille-voyage-2026";
 const OWNER_UID = "owner-uid";
 const NON_OWNER_UID = "user-uid";
+const VISITOR_UID = "visitor-uid";
 const OWNER_PROFILE_ID = "profile-owner";
 const NON_OWNER_PROFILE_ID = "profile-user";
+const VISITOR_PROFILE_ID = "profile-visitor";
+const COMMENT_PLACE_ID = "sainte-sophie";
 
 const hasDatabaseEmulator = Boolean(process.env.FIREBASE_DATABASE_EMULATOR_HOST);
 
@@ -45,6 +48,7 @@ suite("firebase rtdb rules owner phase guard", () => {
       const db = context.database();
       await db.ref(`familyMembers/${FAMILY_ID}/${OWNER_UID}`).set(true);
       await db.ref(`familyMembers/${FAMILY_ID}/${NON_OWNER_UID}`).set(true);
+      await db.ref(`familyMembers/${FAMILY_ID}/${VISITOR_UID}`).set(true);
       await db.ref(`families/${FAMILY_ID}/ownerUid`).set(OWNER_UID);
       await db.ref(`families/${FAMILY_ID}/ownerProfileId`).set(OWNER_PROFILE_ID);
       await db.ref(`families/${FAMILY_ID}/phase`).set("before");
@@ -57,6 +61,12 @@ suite("firebase rtdb rules owner phase guard", () => {
       await db.ref(`families/${FAMILY_ID}/profiles/${NON_OWNER_PROFILE_ID}`).set({
         surname: "User",
         role: "utilisateur",
+        createdAt: 1,
+        lastSyncAt: 1,
+      });
+      await db.ref(`families/${FAMILY_ID}/profiles/${VISITOR_PROFILE_ID}`).set({
+        surname: "Visitor",
+        role: "visiteur",
         createdAt: 1,
         lastSyncAt: 1,
       });
@@ -190,6 +200,121 @@ suite("firebase rtdb rules owner phase guard", () => {
     const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
 
     await assertFails(ownerDb.ref(`families/${FAMILY_ID}/travelerCodePlain`).set("123"));
+  });
+
+  it("allows a family member to create their own place comment", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertSucceeds(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({
+        commentId: NON_OWNER_PROFILE_ID,
+        placeId: COMMENT_PLACE_ID,
+        authorProfileId: NON_OWNER_PROFILE_ID,
+        authorSurnameSnapshot: "User",
+        reaction: "like",
+        text: "Super visite",
+        createdAt: 10,
+        updatedAt: 10,
+        authorUid: NON_OWNER_UID,
+      })
+    );
+  });
+
+  it("allows visitor role to create comments like other members", async () => {
+    const visitorDb = testEnv.authenticatedContext(VISITOR_UID).database();
+
+    await assertSucceeds(
+      visitorDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${VISITOR_PROFILE_ID}`).set({
+        commentId: VISITOR_PROFILE_ID,
+        placeId: COMMENT_PLACE_ID,
+        authorProfileId: VISITOR_PROFILE_ID,
+        authorSurnameSnapshot: "Visitor",
+        reaction: "dislike",
+        text: "Trop de monde",
+        createdAt: 11,
+        updatedAt: 11,
+        authorUid: VISITOR_UID,
+      })
+    );
+  });
+
+  it("denies a non-author from updating someone else's comment", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+    await ownerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({
+      commentId: NON_OWNER_PROFILE_ID,
+      placeId: COMMENT_PLACE_ID,
+      authorProfileId: NON_OWNER_PROFILE_ID,
+      authorSurnameSnapshot: "User",
+      reaction: "like",
+      text: "Initial",
+      createdAt: 10,
+      updatedAt: 10,
+      authorUid: NON_OWNER_UID,
+    });
+
+    const visitorDb = testEnv.authenticatedContext(VISITOR_UID).database();
+    await assertFails(
+      visitorDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({
+        commentId: NON_OWNER_PROFILE_ID,
+        placeId: COMMENT_PLACE_ID,
+        authorProfileId: NON_OWNER_PROFILE_ID,
+        authorSurnameSnapshot: "User",
+        reaction: "dislike",
+        text: "Hijack",
+        createdAt: 10,
+        updatedAt: 12,
+        authorUid: VISITOR_UID,
+      })
+    );
+  });
+
+  it("allows author to delete own older comment even when newer ones exist", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+    await ownerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({
+      commentId: NON_OWNER_PROFILE_ID,
+      placeId: COMMENT_PLACE_ID,
+      authorProfileId: NON_OWNER_PROFILE_ID,
+      authorSurnameSnapshot: "User",
+      reaction: "like",
+      text: "Ancien",
+      createdAt: 10,
+      updatedAt: 10,
+      authorUid: NON_OWNER_UID,
+    });
+    await ownerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${VISITOR_PROFILE_ID}`).set({
+      commentId: VISITOR_PROFILE_ID,
+      placeId: COMMENT_PLACE_ID,
+      authorProfileId: VISITOR_PROFILE_ID,
+      authorSurnameSnapshot: "Visitor",
+      reaction: "dislike",
+      text: "Recent",
+      createdAt: 12,
+      updatedAt: 12,
+      authorUid: VISITOR_UID,
+    });
+
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+    await assertSucceeds(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set(null)
+    );
+  });
+
+  it("denies place comment text longer than 500 characters", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({
+        commentId: NON_OWNER_PROFILE_ID,
+        placeId: COMMENT_PLACE_ID,
+        authorProfileId: NON_OWNER_PROFILE_ID,
+        authorSurnameSnapshot: "User",
+        reaction: "like",
+        text: "a".repeat(501),
+        createdAt: 10,
+        updatedAt: 10,
+        authorUid: NON_OWNER_UID,
+      })
+    );
   });
 });
 
