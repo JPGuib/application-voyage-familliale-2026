@@ -1,12 +1,13 @@
 Nouvelles fonctionnalités
 ------------------------
-P3 - Story 12.3 (ex-2.3) — Création personnalisée de catégories de checklist
+Story 12.3 (ex-2.3) — Création personnalisée de catégories de checklist
 
  
 Backlog
 -------
 
-* Avoir des utilisateurs qui sont des visiteurs avec des droits plus restreints à définir (dans ce cas faut-il créer les utilisateurs famille avant ?)
+* Quand je créé la mire de connexion : soit je me connecte et je suis voyageur sinon visiteur je vois l'appli par défaut comme un visiteur. 
+Pour se connecter en tant que voyageur faut le code
 * rajouter des j'aime j'aime pas et possibilité de commenter les lieux visités ?	
 * Remplacer le orange par une photo, revoir le texte, faire comme sur wanderlog
 
