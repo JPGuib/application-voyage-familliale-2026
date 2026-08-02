@@ -2289,7 +2289,6 @@ function GuideScreen({
         )}
         {dayPlaces.map((item) => {
           const counts = getPlaceReactionCounts(commentsByPlace[item.id]);
-          const hasReactions = counts.likes + counts.dislikes > 0;
 
           return (
             <button
@@ -2325,13 +2324,11 @@ function GuideScreen({
                           {realDurations[item.id] ?? item.audioDuration ?? "Audio à venir"}
                         </span>
                       </div>
-                      {hasReactions && (
-                        <ReactionCountersBadge
-                          likes={counts.likes}
-                          dislikes={counts.dislikes}
-                          className="bg-transparent text-black px-0 py-0 rounded-none [&>span]:text-[10px] [&>span]:font-normal"
-                        />
-                      )}
+                      <ReactionCountersBadge
+                        likes={counts.likes}
+                        dislikes={counts.dislikes}
+                        className="bg-transparent text-black px-0 py-0 rounded-none [&>span]:text-[10px] [&>span]:font-normal"
+                      />
                     </div>
                   </div>
                   <ChevronRight
