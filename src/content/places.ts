@@ -114,6 +114,7 @@
     image: "/images/Jour 2/Sainte-Sophie.webp",
     photos: [
       "/images/Jour 2/Sainte-Sophie.webp",
+      "/images/Jour 2/plan sainte sophie.webp",
     ],
     audioTitle: "Sainte-Sophie, symbole d'Istanbul",
     audioDuration: "3 min 20 sec",
