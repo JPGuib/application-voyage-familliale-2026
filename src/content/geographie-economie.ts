@@ -39,7 +39,7 @@ export const GEOGRAPHIE_ECONOMIE_TOPICS = [
     ],
     audioTitle: "La Turquie, laboratoire géologique du monde",
     audioDuration: "4 min 10 sec",
-    audioSrc: "/audio/geographie/Geologie_Paysages_Turquie.mp3",
+    audioSrc: "/audio/geographie/Geologie_et_paysages.mp3",
     history: "La Turquie est l'un des pays les plus actifs sismiquement au monde, situé au cœur de la ceinture alpine où s'affrontent les plaques arabes, africaine, indienne et eurasienne. Ce ballet tectonique, amorcé il y a 65 millions d'années, a façonné des paysages d'une diversité exceptionnelle. Le sol turc renferme des affleurements de roches précambriennes datant de plus de 540 millions d'années. En Anatolie centrale, la province volcanique a engendré les célèbres cheminées de fées de Cappadoce : des colonnes de tuf volcanique coiffées de basalte, sculptées par l'érosion sur des millions d'années. À Pamukkale, des sources thermales ont déposé des terrasses de travertin blanc éblouissant. Le pays compte également des failles majeures comme la faille nord-anatolienne et la faille est-anatolienne, responsables de tremblements de terre dévastateurs, dont celui de Kahramanmaraş en février 2023. Les volcans éteints comme l'Erciyes Dağı (3 917 m) et le Hasandağ (3 268 m) dominent encore le paysage cappadocien.",
     anecdotes: [
       "Les cheminées de fées de Cappadoce se forment à un rythme de 2 à 3 cm par millénaire.",

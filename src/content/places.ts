@@ -1,5 +1,29 @@
 ﻿export const PLACES = [
 {
+    id: "Découverte de la Turquie",
+    jour: [1],
+    name: "La Turquie en résumé",
+    shortDesc: "La Turquie en résumé",
+    tag: "Découvrir",
+    image: "/images/Geographie/Drapeau image 1.webp",
+    photos: [
+      "/images/Geographie/Drapeau image 1.webp",
+    ],
+    historyLabel:"La Turquie en résumé", 
+    history:
+      "La Turquie est une destination avec toutes sortes de paysages pour le bonheur de tous. Ce pays est situé sur deux continents, principalement en Asie et 3% en Europe avec une population de plus de 83 millions d’habitants en 2020. Elle a des frontières avec la Grèce, la Bulgarie, la Géorgie, l’Arménie, l’Azerbaïdjan, l’Iran, l’Irak et la Syrie.\n"+
+      "**La République de Turquie a été fondée en 1923 par Mustafa Kemal Atatürk**. Ce jeune pays offre une richesse au niveau historique grâce aux anciens empires grec, perse, romain, byzantin et ottoman qui permet de voyager à travers le temps à travers ses terres chargée d’histoires.",
+    anecdotesLabel: "informations générales",
+    anecdotes: [
+      "Superficie : 783 562 km2",
+      "Nombre d’habitants : 84 millions",
+      "Point culminant : Mont Ararat (5165m)",
+      "Longueur de côtes : 7200km",
+      "Statut : République laïque",
+      "Capitale : Ankara",
+    ],
+  },
+  {
     id: "Nante-Paris",
     jour: [1],
     name: "Nantes - Paris",
