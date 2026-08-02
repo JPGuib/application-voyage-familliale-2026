@@ -6187,11 +6187,22 @@ export default function App() {
         ? previous
         : cloudSnapshot.ownerGlobalChecklistRemovals ?? {}
     );
-    setPlaceCommentsByPlace((previous) =>
-      arePlaceCommentsEqual(previous, cloudSnapshot.placeComments ?? {})
+    setPlaceCommentsByPlace((previous) => {
+      const nextFromCloud = cloudSnapshot.placeComments ?? {};
+      const pending = pendingPlaceCommentsRef.current;
+      if (pending !== "none") {
+        const serializedCloud = JSON.stringify(nextFromCloud);
+        if (serializedCloud !== pending) {
+          // Un push local est encore en transit: ne pas écraser l'état local.
+          return previous;
+        }
+        pendingPlaceCommentsRef.current = "none";
+      }
+
+      return arePlaceCommentsEqual(previous, nextFromCloud)
         ? previous
-        : cloudSnapshot.placeComments ?? {}
-    );
+        : nextFromCloud;
+    });
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
@@ -6340,6 +6351,9 @@ export default function App() {
   // propre push du rôle "visiteur" n'ait atteint Firebase, et l'effet
   // d'hydratation ci-dessous rétablirait "utilisateur" de façon définitive.
   const pendingProfileRoleRef = useRef<{ profileId: string; role: Role } | "none">("none");
+  // Évite qu'un snapshot cloud intermédiaire (encore ancien) n'écrase un
+  // commentaire local juste après création/édition/suppression.
+  const pendingPlaceCommentsRef = useRef<string | "none">("none");
   const ownerDeviceRegisteredRef = useRef(false);
   // Empêche le push automatique de re-créer un profil dans le cloud pendant
   // la fenêtre asynchrone entre la suppression cloud et le reset local de
@@ -7006,13 +7020,19 @@ export default function App() {
         authorUid: cloudActorUid ?? undefined,
       };
 
-      return {
+      const next: PlaceCommentsByPlace = {
         ...previous,
         [input.placeId]: {
           ...placeComments,
           [commentId]: nextComment,
         },
       };
+
+      if (cloudEnabled) {
+        pendingPlaceCommentsRef.current = JSON.stringify(next);
+      }
+
+      return next;
     });
   };
 
@@ -7031,16 +7051,22 @@ export default function App() {
       const nextPlaceComments = { ...placeComments };
       delete nextPlaceComments[input.commentId];
 
+      let next: PlaceCommentsByPlace;
       if (Object.keys(nextPlaceComments).length === 0) {
-        const next = { ...previous };
+        next = { ...previous };
         delete next[input.placeId];
-        return next;
+      } else {
+        next = {
+          ...previous,
+          [input.placeId]: nextPlaceComments,
+        };
       }
 
-      return {
-        ...previous,
-        [input.placeId]: nextPlaceComments,
-      };
+      if (cloudEnabled) {
+        pendingPlaceCommentsRef.current = JSON.stringify(next);
+      }
+
+      return next;
     });
   };
 
