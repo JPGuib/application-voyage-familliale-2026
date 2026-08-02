@@ -2287,58 +2287,62 @@ function GuideScreen({
             </p>
           </div>
         )}
-        {dayPlaces.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onPlaceSelect(item.id)}
-            className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
-          >
-            <div className="relative h-40 bg-muted overflow-hidden">
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-full h-full object-cover"
-              />
-              {(() => {
-                const counts = getPlaceReactionCounts(commentsByPlace[item.id]);
-                return counts.likes + counts.dislikes > 0 ? (
-                  <ReactionCountersBadge
-                    likes={counts.likes}
-                    dislikes={counts.dislikes}
-                    className="absolute bottom-2 right-2"
-                  />
-                ) : null;
-              })()}
-            </div>
-            <div className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <span className="text-xs font-extrabold text-accent uppercase tracking-widest">
-                    {item.tag}
-                  </span>
-                  <h3 className="font-black text-foreground mt-0.5">
-                    {item.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {item.shortDesc}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
-                    <span className="rounded-full bg-muted px-2.5 py-1">
-                      {item.photos?.length ?? 1} photos
-                    </span>
-                    <span className="rounded-full bg-muted px-2.5 py-1">
-                      {realDurations[item.id] ?? item.audioDuration ?? "Audio à venir"}
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight
-                  size={20}
-                  className="text-muted-foreground mt-1 flex-shrink-0"
+        {dayPlaces.map((item) => {
+          const counts = getPlaceReactionCounts(commentsByPlace[item.id]);
+          const hasReactions = counts.likes + counts.dislikes > 0;
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => onPlaceSelect(item.id)}
+              className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
+            >
+              <div className="relative h-40 bg-muted overflow-hidden">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover"
                 />
               </div>
-            </div>
-          </button>
-        ))}
+              <div className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <span className="text-xs font-extrabold text-accent uppercase tracking-widest">
+                      {item.tag}
+                    </span>
+                    <h3 className="font-black text-foreground mt-0.5">
+                      {item.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {item.shortDesc}
+                    </p>
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <div className="flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
+                        <span className="rounded-full bg-muted px-2.5 py-1">
+                          {item.photos?.length ?? 1} photos
+                        </span>
+                        <span className="rounded-full bg-muted px-2.5 py-1">
+                          {realDurations[item.id] ?? item.audioDuration ?? "Audio à venir"}
+                        </span>
+                      </div>
+                      {hasReactions && (
+                        <ReactionCountersBadge
+                          likes={counts.likes}
+                          dislikes={counts.dislikes}
+                          className="bg-muted text-muted-foreground"
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={20}
+                    className="text-muted-foreground mt-1 flex-shrink-0"
+                  />
+                </div>
+              </div>
+            </button>
+          );
+        })}
         <div className="h-2" />
       </div>
     </div>
