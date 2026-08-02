@@ -173,9 +173,9 @@ development_status:
   20-3-convertisseur-devises-eur-try: backlog
   epic-20-retrospective: optional
 
-  epic-21: in-progress
+  epic-21: done
   21-1-carte-interactive-globale: done
-  21-2-avis-commentaires-lieux-visites: review
+  21-2-avis-commentaires-lieux-visites: done
   epic-21-retrospective: optional
 
   epic-22: backlog
