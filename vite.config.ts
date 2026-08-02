@@ -69,7 +69,13 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: 'index.html',
-        globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp,woff2}'],
+        // Images exclues : elles sont servies par le CDN Vercel avec des
+        // en-têtes de cache HTTP appropriés. Les inclure ici gonflait le
+        // précache SW (plusieurs Mo) et créait une race condition lors des
+        // mises à jour : le SW prenait le contrôle avant que les nouveaux
+        // chunks JS soient servis, causant un écran blanc au refresh.
+        globPatterns: ['**/*.{js,css,html,woff2}'],
+        cleanupOutdatedCaches: true,
       },
     }),
   ],

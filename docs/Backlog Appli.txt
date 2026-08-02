@@ -11,3 +11,4 @@ Pour se connecter en tant que voyageur faut le code
 * rajouter des j'aime j'aime pas et possibilité de commenter les lieux visités ?	
 * Remplacer le orange par une photo, revoir le texte, faire comme sur wanderlog
 
+*  Rajoute les audios guides en ligne : https://audio.arvadmc.com/tour-detail?value=195
