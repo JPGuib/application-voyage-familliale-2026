@@ -102,6 +102,11 @@ export const TIPS = {
   ],
   payment: [
     {
+      icon: "₺",
+      title: "La monnaie en Turquie",
+      desc: "La monnaie officielle de la Turquie est la Lyre Turque (TRY)",
+    },
+    {
       icon: "💳",
       title: "Cartes bancaires",
       desc: "Très largement acceptées dans les villes, y compris pour de petits montants. Prévenez votre banque avant le départ.",
@@ -110,7 +115,7 @@ export const TIPS = {
       icon: "💵",
       title: "Espèces (Lires)",
       desc: "Utiles pour les marchés, dolmuş et petits commerces. Retirez plutôt aux distributeurs qu'au bureau de change.",
-    },
+   },
     {
       icon: "🙌",
       title: "Pourboire",

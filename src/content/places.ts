@@ -11,6 +11,8 @@
     ],
     historyLabel:"La Turquie en résumé", 
     history:
+      "Nous embarquons vers la Turquie. Quelques informations rapides ci-dessous. Pour en savoir plus, consulter le guide du voyage et les sections détaillées de l'application de vacances.\n"+
+      "\n"+
       "La Turquie est une destination avec toutes sortes de paysages pour le bonheur de tous. Ce pays est situé sur deux continents, principalement en Asie et 3% en Europe avec une population de plus de 83 millions d’habitants en 2020. Elle a des frontières avec la Grèce, la Bulgarie, la Géorgie, l’Arménie, l’Azerbaïdjan, l’Iran, l’Irak et la Syrie.\n"+
       "**La République de Turquie a été fondée en 1923 par Mustafa Kemal Atatürk**. Ce jeune pays offre une richesse au niveau historique grâce aux anciens empires grec, perse, romain, byzantin et ottoman qui permet de voyager à travers le temps à travers ses terres chargée d’histoires.",
     anecdotesLabel: "informations générales",
