@@ -202,7 +202,7 @@ describe("App place comments integration (story 21.2)", () => {
     expect(screen.getByText("Commentaire")).toBeInTheDocument();
   });
 
-  it("preserves previous reaction when republishing text without changing reaction", async () => {
+  it("lets a user with an existing comment add a new comment to the thread", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
     const placeId = PLACES[0].id;
@@ -263,15 +263,82 @@ describe("App place comments integration (story 21.2)", () => {
       expect(screen.getByText("Avis voisin")).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByPlaceholderText("Votre commentaire (optionnel)"), {
-      target: { value: "Texte mis a jour" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Republier" }));
+    // "Republier" should no longer be present
+    expect(screen.queryByRole("button", { name: "Republier" })).not.toBeInTheDocument();
 
-    expect(screen.getAllByText("Texte mis a jour").length).toBeGreaterThan(0);
+    // "Commenter" button should be present instead
+    expect(screen.getByRole("button", { name: "Commenter" })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText("Votre commentaire"), {
+      target: { value: "Nouveau commentaire dans le fil" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Commenter" }));
+
+    expect(screen.getAllByText("Nouveau commentaire dans le fil").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Mon avis initial").length).toBeGreaterThan(0);
     expect(screen.getByText("Avis voisin")).toBeInTheDocument();
-    expect(screen.getAllByText("J'aime").length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: /Supprimer/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Modifier/i })).not.toBeInTheDocument();
+  });
+
+  it("lets a user update their reaction without changing the comment text", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    const placeId = PLACES[0].id;
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-user",
+      cloudSnapshot: makeSnapshot(
+        {
+          [placeId]: {
+            p2: {
+              commentId: "p2",
+              placeId,
+              authorProfileId: "p2",
+              authorSurnameSnapshot: "Leo",
+              reaction: "like",
+              text: "Mon avis initial",
+              createdAt: 10,
+              updatedAt: 10,
+              authorUid: "actor-user",
+            },
+          },
+        },
+        "utilisateur"
+      ),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Séjour" }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(PLACES[0].name, "i") }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Mon avis initial").length).toBeGreaterThan(0);
+    });
+
+    // Clicking "J'aime pas" under "Ma réaction" should immediately update the reaction
+    const reactionSection = screen.getByText("Ma réaction");
+    expect(reactionSection).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /J'aime pas$/i }));
+
+    // The existing comment entry in the thread should now reflect "J'aime pas"
+    await waitFor(() => {
+      expect(screen.getAllByText("J'aime pas").length).toBeGreaterThan(0);
+    });
   });
 });

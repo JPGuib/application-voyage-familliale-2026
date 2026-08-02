@@ -2773,17 +2773,16 @@ function PlaceCommentsSection({
   comments: Record<string, PlaceComment>;
   profile: Profile;
   familyProfiles: Array<{ id: string; surname: string }>;
-  onUpsert: (input: { placeId: string; reaction: PlaceCommentReaction | null; text: string }) => void;
+  onUpsert: (input: { placeId: string; reaction: PlaceCommentReaction | null; text: string; isNew?: boolean }) => void;
 }) {
   const ownComment = comments[profile.id] ?? null;
   const [reaction, setReaction] = useState<PlaceCommentReaction | null>(ownComment?.reaction ?? null);
-  const [text, setText] = useState(ownComment?.text ?? "");
+  const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setReaction(ownComment?.reaction ?? null);
-    setText(ownComment?.text ?? "");
-  }, [ownComment?.reaction, ownComment?.text]);
+  }, [ownComment?.reaction]);
 
   const sortedComments = Object.values(comments).sort((left, right) => left.createdAt - right.createdAt);
 
@@ -2795,7 +2794,28 @@ function PlaceCommentsSection({
     return profileEntry.surname || comment.authorSurnameSnapshot || "Profil supprime";
   };
 
+  const handleReactionChange = (newReaction: PlaceCommentReaction) => {
+    setReaction(newReaction);
+    onUpsert({ placeId, reaction: newReaction, text: ownComment!.text });
+  };
+
   const handleSubmit = () => {
+    if (ownComment) {
+      const trimmedText = text.trim();
+      if (!trimmedText) {
+        setError("Ajoutez un commentaire.");
+        return;
+      }
+      if (trimmedText.length > MAX_PLACE_COMMENT_LENGTH) {
+        setError(`Le commentaire doit rester sous ${MAX_PLACE_COMMENT_LENGTH} caracteres.`);
+        return;
+      }
+      setError(null);
+      setText("");
+      onUpsert({ placeId, reaction: null, text: trimmedText, isNew: true });
+      return;
+    }
+
     const trimmedText = text.trim();
     if (trimmedText.length > MAX_PLACE_COMMENT_LENGTH) {
       setError(`Le commentaire doit rester sous ${MAX_PLACE_COMMENT_LENGTH} caracteres.`);
@@ -2807,14 +2827,8 @@ function PlaceCommentsSection({
       return;
     }
 
-    const effectiveReaction = reaction ?? ownComment?.reaction ?? null;
-
     setError(null);
-    onUpsert({
-      placeId,
-      reaction: effectiveReaction,
-      text: trimmedText,
-    });
+    onUpsert({ placeId, reaction, text: trimmedText });
   };
 
   return (
@@ -2859,52 +2873,102 @@ function PlaceCommentsSection({
         )}
 
         <div className="mt-4 rounded-xl bg-muted/50 p-3">
-          <p className="text-sm font-black text-foreground">
-            {ownComment ? "Modifier mon avis" : "Donner mon avis"}
-          </p>
-          <div className="mt-2 flex gap-2">
-            <button
-              onClick={() => setReaction("like")}
-              className={`inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${
-                reaction === "like"
-                  ? "border-emerald-500 bg-emerald-500/15 text-emerald-700"
-                  : "border-border text-foreground"
-              }`}
-            >
-              <ThumbsUp size={16} /> J'aime
-            </button>
-            <button
-              onClick={() => setReaction("dislike")}
-              className={`inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${
-                reaction === "dislike"
-                  ? "border-rose-500 bg-rose-500/15 text-rose-700"
-                  : "border-border text-foreground"
-              }`}
-            >
-              <ThumbsDown size={16} /> J'aime pas
-            </button>
-          </div>
-          <textarea
-            value={text}
-            onChange={(event) => {
-              const next = event.target.value;
-              if (next.length <= MAX_PLACE_COMMENT_LENGTH) {
-                setText(next);
-                setError(null);
-              }
-            }}
-            placeholder="Votre commentaire (optionnel)"
-            rows={3}
-            className="mt-3 w-full rounded-xl border border-border bg-background p-3 text-sm text-foreground outline-none focus:border-primary"
-          />
-          <p className="mt-1 text-right text-xs text-muted-foreground">{text.length}/{MAX_PLACE_COMMENT_LENGTH}</p>
-          {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
-          <button
-            onClick={handleSubmit}
-            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-black text-primary-foreground active:scale-95 transition-transform"
-          >
-            <Check size={16} /> {ownComment ? "Republier" : "Publier"}
-          </button>
+          {ownComment ? (
+            <>
+              <p className="text-sm font-black text-foreground">Ma réaction</p>
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={() => handleReactionChange("like")}
+                  className={`inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${
+                    reaction === "like"
+                      ? "border-emerald-500 bg-emerald-500/15 text-emerald-700"
+                      : "border-border text-foreground"
+                  }`}
+                >
+                  <ThumbsUp size={16} /> J'aime
+                </button>
+                <button
+                  onClick={() => handleReactionChange("dislike")}
+                  className={`inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${
+                    reaction === "dislike"
+                      ? "border-rose-500 bg-rose-500/15 text-rose-700"
+                      : "border-border text-foreground"
+                  }`}
+                >
+                  <ThumbsDown size={16} /> J'aime pas
+                </button>
+              </div>
+              <p className="mt-4 text-sm font-black text-foreground">Ajouter un commentaire</p>
+              <textarea
+                value={text}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  if (next.length <= MAX_PLACE_COMMENT_LENGTH) {
+                    setText(next);
+                    setError(null);
+                  }
+                }}
+                placeholder="Votre commentaire"
+                rows={3}
+                className="mt-2 w-full rounded-xl border border-border bg-background p-3 text-sm text-foreground outline-none focus:border-primary"
+              />
+              <p className="mt-1 text-right text-xs text-muted-foreground">{text.length}/{MAX_PLACE_COMMENT_LENGTH}</p>
+              {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+              <button
+                onClick={handleSubmit}
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-black text-primary-foreground active:scale-95 transition-transform"
+              >
+                <Check size={16} /> Commenter
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-black text-foreground">Donner mon avis</p>
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={() => setReaction("like")}
+                  className={`inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${
+                    reaction === "like"
+                      ? "border-emerald-500 bg-emerald-500/15 text-emerald-700"
+                      : "border-border text-foreground"
+                  }`}
+                >
+                  <ThumbsUp size={16} /> J'aime
+                </button>
+                <button
+                  onClick={() => setReaction("dislike")}
+                  className={`inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-bold transition-colors ${
+                    reaction === "dislike"
+                      ? "border-rose-500 bg-rose-500/15 text-rose-700"
+                      : "border-border text-foreground"
+                  }`}
+                >
+                  <ThumbsDown size={16} /> J'aime pas
+                </button>
+              </div>
+              <textarea
+                value={text}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  if (next.length <= MAX_PLACE_COMMENT_LENGTH) {
+                    setText(next);
+                    setError(null);
+                  }
+                }}
+                placeholder="Votre commentaire (optionnel)"
+                rows={3}
+                className="mt-3 w-full rounded-xl border border-border bg-background p-3 text-sm text-foreground outline-none focus:border-primary"
+              />
+              <p className="mt-1 text-right text-xs text-muted-foreground">{text.length}/{MAX_PLACE_COMMENT_LENGTH}</p>
+              {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+              <button
+                onClick={handleSubmit}
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-black text-primary-foreground active:scale-95 transition-transform"
+              >
+                <Check size={16} /> Publier
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -7036,6 +7100,7 @@ export default function App() {
     placeId: string;
     reaction: PlaceCommentReaction | null;
     text: string;
+    isNew?: boolean;
   }) => {
     if (!profile.role) {
       return;
@@ -7043,7 +7108,7 @@ export default function App() {
 
     const now = Date.now();
     const authorProfileId = profile.id;
-    const commentId = authorProfileId;
+    const commentId = input.isNew ? `${authorProfileId}-${now}` : authorProfileId;
     const authorSurnameSnapshot = profile.surname.trim() || "Profil";
 
     setPlaceCommentsByPlace((previous) => {
