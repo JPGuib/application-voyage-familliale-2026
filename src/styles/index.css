@@ -1,3 +1,14 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+/* Lecteur audio natif dans les guides de visite */
+.visite-guidee-content audio {
+  display: block;
+  width: 100%;
+  border-radius: 0.75rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  background: hsl(var(--muted));
+  accent-color: hsl(var(--primary));
+}
