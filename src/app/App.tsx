@@ -2329,7 +2329,7 @@ function GuideScreen({
                         <ReactionCountersBadge
                           likes={counts.likes}
                           dislikes={counts.dislikes}
-                          className="bg-muted text-muted-foreground [&>span]:text-[10px] [&>span]:font-bold"
+                          className="bg-muted text-black [&>span]:text-[10px] [&>span]:font-normal"
                         />
                       )}
                     </div>
