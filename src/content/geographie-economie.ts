@@ -28,39 +28,27 @@ export const GEOGRAPHIE_ECONOMIE_TOPICS = [
     ]
   },
   {
-    id: "geologie-paysage",
-    name: "Géologie et paysages de la Turquie",
+    id: "Geographie",
+    name: "Plateaux, chaînes montagneuses et détroits stratégiques",
     shortDesc: "Une terre modelée par les plaques tectoniques et les volcans",
-    tag: "Géologie",
+    tag: "Géographie et géologie",
     image: "/images/Geographie/Géologie 1.webp",
     photos: [
       "/images/Geographie/Géologie 1.webp",
-      "/images/Geographie/Géologie 2.webp"
+      "/images/Geographie/Géologie 2.webp",
+      "/images/Geographie/Relief.webp"
     ],
     audioTitle: "La Turquie, laboratoire géologique du monde",
     audioDuration: "4 min 10 sec",
-    audioSrc: "/audio/geographie/Geologie_et_paysages.mp3",
-    history: "La Turquie est l'un des pays les plus actifs sismiquement au monde, situé au cœur de la ceinture alpine où s'affrontent les plaques arabes, africaine, indienne et eurasienne. Ce ballet tectonique, amorcé il y a 65 millions d'années, a façonné des paysages d'une diversité exceptionnelle. Le sol turc renferme des affleurements de roches précambriennes datant de plus de 540 millions d'années. En Anatolie centrale, la province volcanique a engendré les célèbres cheminées de fées de Cappadoce : des colonnes de tuf volcanique coiffées de basalte, sculptées par l'érosion sur des millions d'années. À Pamukkale, des sources thermales ont déposé des terrasses de travertin blanc éblouissant. Le pays compte également des failles majeures comme la faille nord-anatolienne et la faille est-anatolienne, responsables de tremblements de terre dévastateurs, dont celui de Kahramanmaraş en février 2023. Les volcans éteints comme l'Erciyes Dağı (3 917 m) et le Hasandağ (3 268 m) dominent encore le paysage cappadocien.",
+    audioSrc: "/audio/geographie/Geographie.mp3",
+    historyLabel:"Présentation",
+    history: 
+      "Le relief turc est dominé par le vaste plateau anatolien, une surface élevée et ondulée qui occupe le centre du pays. Ce plateau est encadré par deux grandes barrières montagneuses : les chaînes du Pontique au nord, qui longent la mer Noire sur plus de 1 000 km et culminent à 3 937 m au Kaçkar Dağı, et les chaînes du Taurus au sud, s'étendant le long des côtes méditerranéennes avec des sommets dépassant 3 700 m. Le point culminant du pays est le mont Ararat (Ağrı Dağı), volcan éteint de 5 137 m situé à l'extrême est, réputé être le lieu d'échouage de l'Arche de Noé selon la Bible. Les détroits du Bosphore et des Dardanelles constituent des passages stratégiques entre l'Europe et l'Asie, reliant la mer Noire à la mer Égée. La mer de Marmara, entièrement située sur le territoire turc, relie ces deux détroits. Le pays possède plus de 8 300 km de littoral répartis entre quatre mers, offrant une variété de paysages côtiers allant des falaises escarpées aux plages de sable fin.\n"+
+      "La Turquie est l'un des pays les plus actifs sismiquement au monde, situé au cœur de la ceinture alpine où s'affrontent les plaques arabes, africaine, indienne et eurasienne. Ce ballet tectonique, amorcé il y a 65 millions d'années, a façonné des paysages d'une diversité exceptionnelle. Le sol turc renferme des affleurements de roches précambriennes datant de plus de 540 millions d'années. En Anatolie centrale, la province volcanique a engendré les célèbres cheminées de fées de Cappadoce : des colonnes de tuf volcanique coiffées de basalte, sculptées par l'érosion sur des millions d'années. À Pamukkale, des sources thermales ont déposé des terrasses de travertin blanc éblouissant. Le pays compte également des failles majeures comme la faille nord-anatolienne et la faille est-anatolienne, responsables de tremblements de terre dévastateurs, dont celui de Kahramanmaraş en février 2023. Les volcans éteints comme l'Erciyes Dağı (3 917 m) et le Hasandağ (3 268 m) dominent encore le paysage cappadocien.\n",
     anecdotes: [
       "Les cheminées de fées de Cappadoce se forment à un rythme de 2 à 3 cm par millénaire.",
       "Pamukkale signifie littéralement 'château de coton' en turc, en référence à sa couleur blanche immaculée.",
-      "Le tuf volcanique de Cappadocie est si tendre (dureté 2-4 sur l'échelle de Mohs) qu'on peut le sculpter à la main."
-    ]
-  },
-  {
-    id: "relief",
-    name: "Relief de la Turquie",
-    shortDesc: "Plateaux, chaînes montagneuses et détroits stratégiques",
-    tag: "Géographie",
-    image: "/images/Geographie/Relief.webp",
-    photos: [
-      "/images/Geographie/Relief.webp"
-    ],
-    audioTitle: "Les montagnes et les plaines de l'Anatolie",
-    audioDuration: "3 min 45 sec",
-    audioSrc: "/audio/geographie/Relief_de_la_Turquie.mp3",
-    history: "Le relief turc est dominé par le vaste plateau anatolien, une surface élevée et ondulée qui occupe le centre du pays. Ce plateau est encadré par deux grandes barrières montagneuses : les chaînes du Pontique au nord, qui longent la mer Noire sur plus de 1 000 km et culminent à 3 937 m au Kaçkar Dağı, et les chaînes du Taurus au sud, s'étendant le long des côtes méditerranéennes avec des sommets dépassant 3 700 m. Le point culminant du pays est le mont Ararat (Ağrı Dağı), volcan éteint de 5 137 m situé à l'extrême est, réputé être le lieu d'échouage de l'Arche de Noé selon la Bible. Les détroits du Bosphore et des Dardanelles constituent des passages stratégiques entre l'Europe et l'Asie, reliant la mer Noire à la mer Égée. La mer de Marmara, entièrement située sur le territoire turc, relie ces deux détroits. Le pays possède plus de 8 300 km de littoral répartis entre quatre mers, offrant une variété de paysages côtiers allant des falaises escarpées aux plages de sable fin.",
-    anecdotes: [
+      "Le tuf volcanique de Cappadoce est si tendre (dureté 2-4 sur l'échelle de Mohs) qu'on peut le sculpter à la main.",
       "Le mont Ararat est interdit d'ascension la plupart de l'année pour des raisons militaires, n'étant ouvert que quelques semaines en été.",
       "Le Bosphore sépare l'Europe de l'Asie sur seulement 700 m à son point le plus étroit.",
       "Les chaînes du Taurus abritent encore des populations nomades yörüks qui pratiquent la transhumance estivale."
