@@ -2618,7 +2618,7 @@ function HistoireTopicScreen({
       onBack={onBack}
       onOpenVisiteGuidee={onOpenVisiteGuidee}
       visiteGuideeCtaText="Pour en savoir plus"
-      visiteGuideeCtaSubtext={undefined}
+      visiteGuideeCtaSubtext=""
     />
   );
 }
@@ -2638,7 +2638,7 @@ function GeographieTopicScreen({
       onBack={onBack}
       onOpenVisiteGuidee={onOpenVisiteGuidee}
       visiteGuideeCtaText="Pour en savoir plus"
-      visiteGuideeCtaSubtext={undefined}
+      visiteGuideeCtaSubtext=""
     />
   );
 }
@@ -2658,7 +2658,7 @@ function CultureTopicScreen({
       onBack={onBack}
       onOpenVisiteGuidee={onOpenVisiteGuidee}
       visiteGuideeCtaText="Pour en savoir plus"
-      visiteGuideeCtaSubtext={undefined}
+      visiteGuideeCtaSubtext=""
     />
   );
 }
