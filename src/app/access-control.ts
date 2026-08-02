@@ -19,6 +19,7 @@ export type AppScreen =
   | "checklist"
   | "dashboard"
   | "guide"
+  | "map"
   | "place"
   | "histoire"
   | "histoire-topic"
@@ -76,7 +77,7 @@ const VISITOR_ALLOWED: ReadonlyArray<AccessSection> = [
 ];
 
 function screenToSection(screen: AppScreen): AccessSection {
-  if (screen === "place" || screen === "visite-guidee") {
+  if (screen === "map" || screen === "place" || screen === "visite-guidee") {
     return "guide";
   }
 

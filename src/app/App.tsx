@@ -5,6 +5,7 @@ import {
   ChevronRight,
   ChevronLeft,
   ChevronDown,
+  Map as MapIcon,
   MapPin,
   Lightbulb,
   ExternalLink,
@@ -25,6 +26,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { MapScreen } from "./MapScreen";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
 import { HISTOIRE_TOPICS } from "../content/histoire";
@@ -284,9 +286,9 @@ const PROFILE_RECOVERY_ANSWER_STORAGE_KEY = "jp-profile-recovery-answers";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
-const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
-type QuickScreen = "checklist" | "guide" | "histoire" | "geographie" | "culture" | "game" | "tips" | "results";
+type Screen = "checklist" | "dashboard" | "guide" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
+type QuickScreen = "checklist" | "guide" | "map" | "histoire" | "geographie" | "culture" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
   id: string;
@@ -330,6 +332,14 @@ const QUICK_ACTIONS: QuickAction[] = [
     subtitle: "Découvrir les lieux",
     colorBg: "bg-[#E8F5E9]",
     colorText: "text-[#2E7D32]",
+  },
+  {
+    id: "map",
+    emoji: "🗺️",
+    title: "Carte interactive",
+    subtitle: "Voir les lieux sur la carte",
+    colorBg: "bg-[#E8F0FE]",
+    colorText: "text-[#1A73E8]",
   },
   {
     id: "checklist",
@@ -402,6 +412,7 @@ const EXTERNAL_APP_LINKS: ExternalAppLink[] = [
 const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> = [
   { id: "dashboard", icon: Home, label: "Accueil" },
   { id: "guide", icon: BookOpen, label: "Séjour" },
+  { id: "map", icon: MapIcon, label: "Carte" },
   { id: "culture", icon: Theater, label: "Traditions" },
   { id: "tips", icon: Lightbulb, label: "Conseils" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
@@ -8179,6 +8190,19 @@ export default function App() {
         );
       }
 
+      if (effectiveScreen === "map") {
+        return (
+          <MapScreen
+            onBack={() => goToScreen("dashboard")}
+            currentDay={currentDay}
+            onNavigateToGuide={(day) => {
+              setGuideSelectedDay(day);
+              goToScreen("guide");
+            }}
+          />
+        );
+      }
+
       if (effectiveScreen === "place") {
         return place ? (
           <PlaceScreen
@@ -8462,6 +8486,17 @@ export default function App() {
             currentDay={currentDay}
             selectedDay={guideSelectedDay ?? currentDay}
             onSelectedDayChange={setGuideSelectedDay}
+          />
+        );
+      case "map":
+        return (
+          <MapScreen
+            onBack={() => goToScreen("dashboard")}
+            currentDay={currentDay}
+            onNavigateToGuide={(day) => {
+              setGuideSelectedDay(day);
+              goToScreen("guide");
+            }}
           />
         );
       case "place":
