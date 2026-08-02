@@ -2287,7 +2287,7 @@ function ContentDetailScreen({
 }: {
   item: ContentTopic;
   onBack: () => void;
-  onOpenVisiteGuidee?: (id: string) => void;
+  onOpenVisiteGuidee?: (item: ContentTopic) => void;
 }) {
   const visiteGuidee = VISITES_GUIDEES[item.id];
   const photos = item.photos?.length ? item.photos : [item.image];
@@ -2560,7 +2560,7 @@ function ContentDetailScreen({
         {onOpenVisiteGuidee && visiteGuidee && (
           <div className="px-4 mb-6">
             <button
-              onClick={() => onOpenVisiteGuidee(item.id)}
+              onClick={() => onOpenVisiteGuidee(item)}
               className="w-full flex items-center gap-3 bg-[#EFEBFF] rounded-2xl p-4 text-left active:scale-95 transition-transform"
             >
               <span className="text-2xl flex-shrink-0">📖</span>
@@ -2590,7 +2590,7 @@ function PlaceScreen({
 }: {
   place: (typeof PLACES)[0];
   onBack: () => void;
-  onOpenVisiteGuidee: (id: string) => void;
+  onOpenVisiteGuidee: (item: ContentTopic) => void;
 }) {
   return <ContentDetailScreen item={place} onBack={onBack} onOpenVisiteGuidee={onOpenVisiteGuidee} />;
 }
@@ -2610,11 +2610,13 @@ function HistoireTopicScreen({
 function GeographieTopicScreen({
   topic,
   onBack,
+  onOpenVisiteGuidee,
 }: {
   topic: (typeof GEOGRAPHIE_ECONOMIE_TOPICS)[0];
   onBack: () => void;
+  onOpenVisiteGuidee: (item: ContentTopic) => void;
 }) {
-  return <ContentDetailScreen item={topic} onBack={onBack} />;
+  return <ContentDetailScreen item={topic} onBack={onBack} onOpenVisiteGuidee={onOpenVisiteGuidee} />;
 }
 
 function CultureTopicScreen({
@@ -2630,13 +2632,15 @@ function CultureTopicScreen({
 // ─── GUIDE DE VISITE SCREEN (contenu Word converti, sections + sommaire) ────
 
 function VisiteGuideeScreen({
-  place,
+  guideId,
+  title,
   onBack,
 }: {
-  place: (typeof PLACES)[0];
+  guideId: string;
+  title: string;
   onBack: () => void;
 }) {
-  const content = VISITES_GUIDEES[place.id];
+  const content = VISITES_GUIDEES[guideId];
 
   const handleTocClick = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -2656,7 +2660,7 @@ function VisiteGuideeScreen({
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
             Guide de visite
           </p>
-          <p className="text-base font-black text-foreground truncate">{place.name}</p>
+          <p className="text-base font-black text-foreground truncate">{title}</p>
         </div>
       </div>
 
@@ -5002,6 +5006,9 @@ export default function App() {
   const [pendingScreen, setPendingScreen] = useState<Screen | null>(null);
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [selectedVisiteGuideeId, setSelectedVisiteGuideeId] = useState<string | null>(null);
+  const [selectedVisiteGuideeTitle, setSelectedVisiteGuideeTitle] = useState<string>("");
+  const [visiteGuideeBackScreen, setVisiteGuideeBackScreen] = useState<Screen>("place");
   const [guideSelectedDay, setGuideSelectedDay] = useState<number | null>(null);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [selectedGeographieTopicId, setSelectedGeographieTopicId] = useState<string | null>(null);
@@ -6604,7 +6611,7 @@ export default function App() {
 
   const place = PLACES.find((p) => p.id === selectedPlaceId);
 
-  const openVisiteGuidee = (id: string) => {
+  const openVisiteGuidee = (item: ContentTopic, backScreen: Screen) => {
     if (!canAccessScreen(profile.role, phase, "visite-guidee")) {
       setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, "visite-guidee"));
       setScreen(getSafeScreen(profile.role, phase));
@@ -6612,7 +6619,9 @@ export default function App() {
     }
 
     setAccessDeniedMessage(null);
-    setSelectedPlaceId(id);
+    setSelectedVisiteGuideeId(item.id);
+    setSelectedVisiteGuideeTitle(item.name);
+    setVisiteGuideeBackScreen(backScreen);
     setScreen("visite-guidee");
   };
 
@@ -6670,6 +6679,9 @@ export default function App() {
     setPhase("before");
     setScreen("checklist");
     setSelectedPlaceId(null);
+    setSelectedVisiteGuideeId(null);
+    setSelectedVisiteGuideeTitle("");
+    setVisiteGuideeBackScreen("place");
     setOpenCategories(new Set([CHECKLIST_CATEGORIES[0]?.id ?? "vetements-hommes"]));
     setChecked({});
     setGameHistory([]);
@@ -8138,16 +8150,17 @@ export default function App() {
           <PlaceScreen
             place={place}
             onBack={() => goToScreen("guide")}
-            onOpenVisiteGuidee={openVisiteGuidee}
+            onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
           />
         ) : null;
       }
 
       if (effectiveScreen === "visite-guidee") {
-        return place ? (
+        return selectedVisiteGuideeId ? (
           <VisiteGuideeScreen
-            place={place}
-            onBack={() => goToScreen("place")}
+            guideId={selectedVisiteGuideeId}
+            title={selectedVisiteGuideeTitle}
+            onBack={() => goToScreen(visiteGuideeBackScreen)}
           />
         ) : null;
       }
@@ -8184,6 +8197,7 @@ export default function App() {
           <GeographieTopicScreen
             topic={geographieTopic}
             onBack={() => goToScreen("geographie")}
+            onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "geographie-topic")}
           />
         ) : null;
       }
@@ -8419,14 +8433,15 @@ export default function App() {
           <PlaceScreen
             place={place}
             onBack={() => goToScreen("guide")}
-            onOpenVisiteGuidee={openVisiteGuidee}
+            onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
           />
         ) : null;
       case "visite-guidee":
-        return place ? (
+        return selectedVisiteGuideeId ? (
           <VisiteGuideeScreen
-            place={place}
-            onBack={() => goToScreen("place")}
+            guideId={selectedVisiteGuideeId}
+            title={selectedVisiteGuideeTitle}
+            onBack={() => goToScreen(visiteGuideeBackScreen)}
           />
         ) : null;
       case "histoire":
@@ -8455,6 +8470,7 @@ export default function App() {
           <GeographieTopicScreen
             topic={geographieTopic}
             onBack={() => goToScreen("geographie")}
+            onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "geographie-topic")}
           />
         ) : null;
       case "culture":
