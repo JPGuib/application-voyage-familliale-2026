@@ -19,6 +19,7 @@ Pour se connecter en tant que voyageur faut le code
 * BUG : un visiteur voit où on part quand c'est bloqué. A revoir.
 * Evolution de la 21.1 => voir sur un point les lieux de visite (pas uniquement la ville)
 * Bug : problème de refresh
+* A améliorer sur les commentaires : connaitre quand il y a un nouveau commentaire ? 
 
 liens intéressants : 
 ------------------
