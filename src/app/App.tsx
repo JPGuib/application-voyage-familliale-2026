@@ -7052,15 +7052,10 @@ export default function App() {
       delete nextPlaceComments[input.commentId];
 
       let next: PlaceCommentsByPlace;
-      if (Object.keys(nextPlaceComments).length === 0) {
-        next = { ...previous };
-        delete next[input.placeId];
-      } else {
-        next = {
-          ...previous,
-          [input.placeId]: nextPlaceComments,
-        };
-      }
+      next = {
+        ...previous,
+        [input.placeId]: nextPlaceComments,
+      };
 
       if (cloudEnabled) {
         pendingPlaceCommentsRef.current = JSON.stringify(next);

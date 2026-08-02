@@ -479,10 +479,17 @@ export async function pushCloudSnapshot(
       return acc;
     }, {}),
     [`checklists/${payload.profileId}`]: payload.checklist,
-    placeComments: payload.placeComments,
     [`gameResults/${payload.profileId}`]: payload.gameResults,
     [`gameProgress/${payload.profileId}`]: payload.gameProgress,
   };
+
+  // Commentaires: n'écrire que la branche auteur courant pour respecter la
+  // règle RTDB "author-only" et éviter les PERMISSION_DENIED sur les avis
+  // des autres membres de la famille.
+  for (const [placeId, commentsById] of Object.entries(payload.placeComments)) {
+    const ownComment = commentsById[payload.profileId];
+    updates[`placeComments/${placeId}/${payload.profileId}`] = ownComment ?? null;
+  }
 
   if (typeof payload.profilePasswordHash === "string") {
     const normalizedPasswordHash = payload.profilePasswordHash.trim();

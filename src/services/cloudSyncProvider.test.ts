@@ -310,19 +310,15 @@ describe("place comments parsing and sync (story 21.2)", () => {
     });
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
-    expect(updates.placeComments).toEqual({
-      "sainte-sophie": {
-        "profile-a": {
-          commentId: "profile-a",
-          placeId: "sainte-sophie",
-          authorProfileId: "profile-a",
-          authorSurnameSnapshot: "Maman",
-          reaction: "like",
-          text: "Super",
-          createdAt: 1,
-          updatedAt: 2,
-        },
-      },
+    expect(updates["placeComments/sainte-sophie/profile-a"]).toEqual({
+      commentId: "profile-a",
+      placeId: "sainte-sophie",
+      authorProfileId: "profile-a",
+      authorSurnameSnapshot: "Maman",
+      reaction: "like",
+      text: "Super",
+      createdAt: 1,
+      updatedAt: 2,
     });
   });
 });
