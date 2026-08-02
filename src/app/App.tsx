@@ -746,6 +746,43 @@ function arePlaceCommentsEqual(left: PlaceCommentsByPlace, right: PlaceCommentsB
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function getPlaceReactionCounts(comments: Record<string, PlaceComment> | undefined): {
+  likes: number;
+  dislikes: number;
+} {
+  let likes = 0;
+  let dislikes = 0;
+  for (const comment of Object.values(comments ?? {})) {
+    if (comment.reaction === "like") {
+      likes += 1;
+    } else if (comment.reaction === "dislike") {
+      dislikes += 1;
+    }
+  }
+  return { likes, dislikes };
+}
+
+function ReactionCountersBadge({
+  likes,
+  dislikes,
+  className,
+}: {
+  likes: number;
+  dislikes: number;
+  className?: string;
+}) {
+  return (
+    <div className={`inline-flex items-center gap-2 rounded-full bg-black/55 px-2.5 py-1 text-white ${className ?? ""}`}>
+      <span className="inline-flex items-center gap-1 text-xs font-black">
+        <ThumbsUp size={12} /> {likes}
+      </span>
+      <span className="inline-flex items-center gap-1 text-xs font-black">
+        <ThumbsDown size={12} /> {dislikes}
+      </span>
+    </div>
+  );
+}
+
 function ActionCard({
   emoji,
   title,
@@ -2147,12 +2184,14 @@ function GuideScreen({
   currentDay,
   selectedDay,
   onSelectedDayChange,
+  commentsByPlace,
 }: {
   onBack: () => void;
   onPlaceSelect: (id: string) => void;
   currentDay: number;
   selectedDay: number;
   onSelectedDayChange: (day: number) => void;
+  commentsByPlace: PlaceCommentsByPlace;
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
 
@@ -2255,12 +2294,22 @@ function GuideScreen({
             onClick={() => onPlaceSelect(item.id)}
             className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
           >
-            <div className="h-40 bg-muted overflow-hidden">
+            <div className="relative h-40 bg-muted overflow-hidden">
               <img
                 src={item.image}
                 alt={item.name}
                 className="w-full h-full object-cover"
               />
+              {(() => {
+                const counts = getPlaceReactionCounts(commentsByPlace[item.id]);
+                return counts.likes + counts.dislikes > 0 ? (
+                  <ReactionCountersBadge
+                    likes={counts.likes}
+                    dislikes={counts.dislikes}
+                    className="absolute right-2 top-2"
+                  />
+                ) : null;
+              })()}
             </div>
             <div className="p-4">
               <div className="flex items-start justify-between">
@@ -2399,6 +2448,7 @@ function ContentDetailScreen({
   visiteGuideeCtaText = "Voir le guide de visite complet",
   visiteGuideeCtaSubtext = "Histoire détaillée, salle par salle",
   extraSection,
+  heroReactionCounts,
 }: {
   item: ContentTopic;
   onBack: () => void;
@@ -2406,6 +2456,7 @@ function ContentDetailScreen({
   visiteGuideeCtaText?: string;
   visiteGuideeCtaSubtext?: string;
   extraSection?: ReactNode;
+  heroReactionCounts?: { likes: number; dislikes: number };
 }) {
   const visiteGuidee = VISITES_GUIDEES[item.id];
   const photos = item.photos?.length ? item.photos : [item.image];
@@ -2513,6 +2564,13 @@ function ContentDetailScreen({
         >
           <ChevronLeft size={20} />
         </button>
+        {heroReactionCounts && heroReactionCounts.likes + heroReactionCounts.dislikes > 0 && (
+          <ReactionCountersBadge
+            likes={heroReactionCounts.likes}
+            dislikes={heroReactionCounts.dislikes}
+            className="absolute right-4 top-12"
+          />
+        )}
         <div className="absolute bottom-4 left-4 right-4">
           <span className="text-xs font-extrabold text-secondary uppercase tracking-widest">
             {item.tag}
@@ -2674,8 +2732,6 @@ function ContentDetailScreen({
           </div>
         </div>
 
-        {extraSection}
-
         {/* Guide de visite complet (uniquement si un contenu a été fourni) */}
         {onOpenVisiteGuidee && visiteGuidee && (
           <div className="px-4 mb-6">
@@ -2698,6 +2754,8 @@ function ContentDetailScreen({
             </button>
           </div>
         )}
+
+        {extraSection}
       </div>
     </div>
   );
@@ -2889,11 +2947,14 @@ function PlaceScreen({
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
 }) {
+  const reactionCounts = getPlaceReactionCounts(comments);
+
   return (
     <ContentDetailScreen
       item={place}
       onBack={onBack}
       onOpenVisiteGuidee={onOpenVisiteGuidee}
+      heroReactionCounts={reactionCounts}
       extraSection={
         <PlaceCommentsSection
           placeId={place.id}
@@ -8611,6 +8672,7 @@ export default function App() {
             currentDay={currentDay}
             selectedDay={guideSelectedDay ?? currentDay}
             onSelectedDayChange={setGuideSelectedDay}
+            commentsByPlace={placeCommentsByPlace}
           />
         );
       }
@@ -8916,6 +8978,7 @@ export default function App() {
             currentDay={currentDay}
             selectedDay={guideSelectedDay ?? currentDay}
             onSelectedDayChange={setGuideSelectedDay}
+            commentsByPlace={placeCommentsByPlace}
           />
         );
       case "map":
