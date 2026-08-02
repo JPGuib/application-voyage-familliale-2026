@@ -164,5 +164,4 @@ export const GEOGRAPHIE_ECONOMIE_TOPICS = [
       "Le parc Gezi en 2013 a été le théâtre des plus grandes manifestations depuis des décennies, rassemblant des millions de personnes."
     ]
   }
-]
 ];
