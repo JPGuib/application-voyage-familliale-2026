@@ -38,7 +38,7 @@ export const GEOGRAPHIE_ECONOMIE_TOPICS = [
       "/images/Geographie/Géologie 2.webp",
       "/images/Geographie/Relief.webp"
     ],
-    audioTitle: "La Turquie, laboratoire géologique du monde",
+    audioTitle: "Relief et géologie de la Turquie",
     audioDuration: "4 min 10 sec",
     audioSrc: "/audio/geographie/Geographie.mp3",
     historyLabel:"Présentation",
