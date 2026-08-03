@@ -66,6 +66,14 @@ import {
   upsertGameHistory,
 } from "./game-results";
 import { computePodium, type PodiumProfileInput } from "./podium";
+import { buildScoreChartPoints } from "./score-progression";
+import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "./components/ui/chart";
 import {
   applyProfileRoleMutation,
   assignRoleOnProfileCreation,
@@ -3682,17 +3690,36 @@ function GameScreen({
 
 // ─── RESULTS SCREEN ──────────────────────────────────────────────────────────
 
+const SCORE_CHART_CONFIG: ChartConfig = {
+  cumulativeScore: { label: "Score cumulé", color: "#6B3DFF" },
+};
+
 function ResultsScreen({
   onBack,
   history,
   familyMembers,
   currentDay,
+  currentProfileId,
 }: {
   onBack: () => void;
   history: GameHistoryEntry[];
   familyMembers: PodiumProfileInput[];
   currentDay: number;
+  currentProfileId: string;
 }) {
+  const [chartProfileId, setChartProfileId] = useState(
+    () => familyMembers.some((m) => m.profileId === currentProfileId)
+      ? currentProfileId
+      : (familyMembers[0]?.profileId ?? currentProfileId)
+  );
+
+  const chartProfile = familyMembers.find((m) => m.profileId === chartProfileId)
+    ?? familyMembers.find((m) => m.profileId === currentProfileId)
+    ?? familyMembers[0];
+  const chartPoints = chartProfile
+    ? buildScoreChartPoints(chartProfile.gameResults)
+    : [];
+
   const latestEntry = history.length > 0 ? history[history.length - 1] : null;
   const badges = computeBadges(history, (day) => getQuestionsForDay(day).length);
   const dailyScores = history.map((entry) => ({
@@ -3901,6 +3928,70 @@ function ResultsScreen({
             ))}
           </div>
         </div>
+        {/* Score progression chart */}
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+            Progression des scores 📈
+          </p>
+
+          {/* Profile selector */}
+          {familyMembers.length > 1 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {familyMembers.map((member) => (
+                <button
+                  key={member.profileId}
+                  onClick={() => setChartProfileId(member.profileId)}
+                  className={`px-3 py-1 rounded-full text-xs font-black transition-colors ${
+                    chartProfileId === member.profileId
+                      ? "bg-[#6B3DFF] text-white"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {member.surname}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Chart or empty state */}
+          {chartPoints.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {chartProfile?.surname ?? "Ce profil"} n&apos;a pas encore de score enregistré.
+            </p>
+          ) : (
+            <ChartContainer config={SCORE_CHART_CONFIG} className="h-[180px] w-full">
+              <LineChart
+                data={chartPoints}
+                margin={{ top: 4, right: 8, bottom: 0, left: -20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 10 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line
+                  type="monotone"
+                  dataKey="cumulativeScore"
+                  name="Score cumulé"
+                  stroke="#6B3DFF"
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: "#6B3DFF" }}
+                  activeDot={{ r: 5 }}
+                  isAnimationActive={false}
+                />
+              </LineChart>
+            </ChartContainer>
+          )}
+        </div>
+
         <div className="h-2" />
       </div>
     </div>
@@ -9609,6 +9700,7 @@ export default function App() {
             history={gameHistory}
             familyMembers={familyMembersForPodium}
             currentDay={currentDay}
+            currentProfileId={profile.id}
           />
         );
       case "tips":
