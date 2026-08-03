@@ -67,4 +67,28 @@ describe("computePodium", () => {
 
     expect(podium.map((entry) => entry.profileId)).toEqual(["a"]);
   });
+
+  it("adds destination survey points to each eligible profile total", () => {
+    const podium = computePodium([
+      {
+        profileId: "a",
+        surname: "Ana",
+        role: "utilisateur",
+        gameResults: [{ totalScore: 10 }],
+        destinationSurveyPoints: 35,
+      },
+      {
+        profileId: "b",
+        surname: "Bo",
+        role: "utilisateur",
+        gameResults: [{ totalScore: 30 }],
+        destinationSurveyPoints: 0,
+      },
+    ]);
+
+    expect(podium).toEqual([
+      { profileId: "a", surname: "Ana", total: 45, rank: 1 },
+      { profileId: "b", surname: "Bo", total: 30, rank: 2 },
+    ]);
+  });
 });

@@ -22,7 +22,7 @@ describe("destination-survey", () => {
     expect(result.message).toMatch(/Maximum 3 propositions/i);
   });
 
-  it("computes ranking bonuses with tied timestamps and excludes non-user roles from shared score", () => {
+  it("awards destination points by proposal order and excludes non-user roles from score", () => {
     const results = computeDestinationSurveyResults({
       destination: "Istanbul",
       participants: [
@@ -33,9 +33,9 @@ describe("destination-survey", () => {
         { profileId: "v1", surname: "Guest", role: "visiteur" },
       ],
       votesByProfile: {
-        u1: { profileId: "u1", proposals: ["Istanbul"], updatedAt: 1000 },
-        u2: { profileId: "u2", proposals: ["ISTANBUL"], updatedAt: 1000 },
-        u3: { profileId: "u3", proposals: ["Istanbul"], updatedAt: 2000 },
+        u1: { profileId: "u1", proposals: ["Istanbul", "Ankara", "Izmir"], updatedAt: 1000 },
+        u2: { profileId: "u2", proposals: ["Ankara", "ISTANBUL", "Izmir"], updatedAt: 1000 },
+        u3: { profileId: "u3", proposals: ["Ankara", "Izmir", "Istanbul"], updatedAt: 2000 },
         o1: { profileId: "o1", proposals: ["Istanbul"], updatedAt: 900 },
         v1: { profileId: "v1", proposals: ["Istanbul"], updatedAt: 800 },
       },
@@ -43,10 +43,10 @@ describe("destination-survey", () => {
 
     const byId = Object.fromEntries(results.rows.map((row) => [row.profileId, row]));
 
-    expect(byId.u1.points).toBe(30);
+    expect(byId.u1.points).toBe(40);
     expect(byId.u1.rank).toBe(1);
-    expect(byId.u2.points).toBe(30);
-    expect(byId.u2.rank).toBe(1);
+    expect(byId.u2.points).toBe(35);
+    expect(byId.u2.rank).toBe(2);
     expect(byId.u3.points).toBe(20);
     expect(byId.u3.rank).toBe(3);
 

@@ -3857,10 +3857,8 @@ function ResultsScreen({
   const chartPoints = chartProfile
     ? buildScoreChartPoints(chartProfile.gameResults)
     : [];
-  const destinationSurveyTotalPoints = destinationSurveyResults.reduce(
-    (sum, row) => sum + row.points,
-    0
-  );
+  const currentProfileDestinationSurveyPoints =
+    destinationSurveyResults.find((row) => row.profileId === currentProfileId)?.points ?? 0;
 
   const latestEntry = history.length > 0 ? history[history.length - 1] : null;
   const badges = computeBadges(history, (day) => getQuestionsForDay(day).length);
@@ -3869,7 +3867,9 @@ function ResultsScreen({
     location: entry.location,
     score: entry.totalScore,
   }));
-  const total = dailyScores.reduce((sum, entry) => sum + entry.score, 0) + destinationSurveyTotalPoints;
+  const total =
+    dailyScores.reduce((sum, entry) => sum + entry.score, 0)
+    + currentProfileDestinationSurveyPoints;
   const podium = computePodium(familyMembers);
   const medalByRank: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
   const todayParticipants = familyMembers
@@ -8803,21 +8803,6 @@ export default function App() {
       message: !currentlyEnabled ? "Notification activee." : "Notification desactivee.",
     };
   };
-  const familyMembersForPodium: PodiumProfileInput[] = cloudSnapshot
-    ? Object.values(cloudSnapshot.profiles).map((item) => ({
-        profileId: item.profileId,
-        surname: item.surname,
-        role: item.role,
-        gameResults: item.gameResults,
-      }))
-    : [
-        {
-          profileId: profile.id,
-          surname: profile.surname,
-          role: profile.role ?? "utilisateur",
-          gameResults: gameHistory,
-        },
-      ];
   const destinationSurveyParticipants = cloudSnapshot
     ? Object.values(cloudSnapshot.profiles).map((item) => ({
         profileId: item.profileId,
@@ -8836,6 +8821,26 @@ export default function App() {
     participants: destinationSurveyParticipants,
     votesByProfile: destinationSurveyVotes,
   });
+  const destinationSurveyPointsByProfile = new Map(
+    destinationSurveyResults.rows.map((row) => [row.profileId, row.points] as const)
+  );
+  const familyMembersForPodium: PodiumProfileInput[] = cloudSnapshot
+    ? Object.values(cloudSnapshot.profiles).map((item) => ({
+        profileId: item.profileId,
+        surname: item.surname,
+        role: item.role,
+        gameResults: item.gameResults,
+        destinationSurveyPoints: destinationSurveyPointsByProfile.get(item.profileId) ?? 0,
+      }))
+    : [
+        {
+          profileId: profile.id,
+          surname: profile.surname,
+          role: profile.role ?? "utilisateur",
+          gameResults: gameHistory,
+          destinationSurveyPoints: destinationSurveyPointsByProfile.get(profile.id) ?? 0,
+        },
+      ];
   const familyProfilesForComments = cloudSnapshot
     ? Object.values(cloudSnapshot.profiles).map((item) => ({
         id: item.profileId,

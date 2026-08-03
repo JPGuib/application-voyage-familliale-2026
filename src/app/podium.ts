@@ -5,6 +5,7 @@ export type PodiumProfileInput = {
   surname: string;
   role: Role;
   gameResults: ReadonlyArray<{ day: number; totalScore: number }>;
+  destinationSurveyPoints?: number;
 };
 
 export type PodiumEntry = {
@@ -26,7 +27,9 @@ export function computePodium(profiles: ReadonlyArray<PodiumProfileInput>): Podi
     .map((profile) => ({
       profileId: profile.profileId,
       surname: profile.surname,
-      total: profile.gameResults.reduce((sum, entry) => sum + entry.totalScore, 0),
+      total:
+        profile.gameResults.reduce((sum, entry) => sum + entry.totalScore, 0)
+        + (profile.destinationSurveyPoints ?? 0),
     }))
     .sort((left, right) => right.total - left.total);
 

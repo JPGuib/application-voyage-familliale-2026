@@ -33,6 +33,12 @@ export type DestinationSurveyResults = {
   rows: DestinationSurveyResultRow[];
 };
 
+const DESTINATION_PROPOSAL_SCORING = [
+  { basePoints: 30, bonusPoints: 10 },
+  { basePoints: 30, bonusPoints: 5 },
+  { basePoints: 20, bonusPoints: 0 },
+] as const;
+
 export function normalizeDestinationText(value: string): string {
   return value.trim().normalize("NFC");
 }
@@ -115,34 +121,24 @@ export function computeDestinationSurveyResults(input: {
     };
   });
 
-  const rankedEligibleRows = rows
-    .filter((row) => row.isCorrect && row.eligibleForSharedScore && row.updatedAt !== null)
-    .sort((left, right) => {
-      if (left.updatedAt === right.updatedAt) {
-        return left.surname.localeCompare(right.surname, "fr", { sensitivity: "base" });
-      }
-      return (left.updatedAt ?? 0) - (right.updatedAt ?? 0);
-    });
+  for (const row of rows) {
+    if (!row.eligibleForSharedScore) {
+      continue;
+    }
 
-  let previousTimestamp: number | null = null;
-  let previousRank = 0;
+    const matchingProposalIndex = row.proposals.findIndex((proposal) =>
+      destinationEquals(proposal, destination)
+    );
 
-  for (let index = 0; index < rankedEligibleRows.length; index += 1) {
-    const row = rankedEligibleRows[index];
-    const currentTimestamp = row.updatedAt as number;
+    if (matchingProposalIndex < 0 || matchingProposalIndex >= DESTINATION_PROPOSAL_SCORING.length) {
+      continue;
+    }
 
-    const rank =
-      previousTimestamp !== null && currentTimestamp === previousTimestamp
-        ? previousRank
-        : index + 1;
-
-    previousTimestamp = currentTimestamp;
-    previousRank = rank;
-
-    row.rank = rank;
-    row.basePoints = 20;
-    row.bonusPoints = rank === 1 ? 10 : rank === 2 ? 5 : 0;
-    row.points = row.basePoints + row.bonusPoints;
+    const scoring = DESTINATION_PROPOSAL_SCORING[matchingProposalIndex];
+    row.rank = matchingProposalIndex + 1;
+    row.basePoints = scoring.basePoints;
+    row.bonusPoints = scoring.bonusPoints;
+    row.points = scoring.basePoints + scoring.bonusPoints;
   }
 
   return {

@@ -13,6 +13,7 @@ vi.mock("../content/trip", () => ({
     name: "Voyage Famille",
     currentDay: 1,
     totalDays: 10,
+    surveyDestination: "Istanbul",
     todayDestination: "Istanbul",
     todaySubtitle: "Jour de decouverte",
   },
@@ -175,5 +176,77 @@ describe("App destination survey integration", () => {
     expect(screen.getByText(/Challenge destination/i)).toBeInTheDocument();
     expect(screen.getByText(/Destination correcte:/i)).toBeInTheDocument();
     expect(screen.getAllByText(/pts/i).length).toBeGreaterThan(0);
+  });
+
+  it("applies destination points to current profile total and podium without summing all profiles", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+    localStorage.setItem(
+      "jp-destination-survey",
+      JSON.stringify({
+        p2: {
+          profileId: "p2",
+          proposals: ["Ankara", "Istanbul", "Izmir"],
+          updatedAt: 120,
+          authorUid: "user-uid",
+        },
+      })
+    );
+
+    const snapshot = makeSnapshot("during");
+    snapshot.destinationSurvey.p2 = {
+      profileId: "p2",
+      proposals: ["Ankara", "Istanbul", "Izmir"],
+      updatedAt: 120,
+      authorUid: "user-uid",
+    };
+    snapshot.destinationSurvey.p1 = {
+      profileId: "p1",
+      proposals: ["Istanbul", "Ankara", "Izmir"],
+      updatedAt: 100,
+      authorUid: "owner-uid",
+    };
+    snapshot.destinationSurvey.p3 = {
+      profileId: "p3",
+      proposals: ["Istanbul", "Ankara", "Izmir"],
+      updatedAt: 90,
+      authorUid: "visitor-uid",
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "user-uid",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      deleteProfile: vi.fn().mockResolvedValue(undefined),
+      setGameDayOverride: vi.fn().mockResolvedValue(undefined),
+      resetGameResults: vi.fn().mockResolvedValue(undefined),
+      resetGameProgress: vi.fn().mockResolvedValue(undefined),
+      registerAsOwnerDevice: vi.fn().mockResolvedValue(undefined),
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("button", { name: /Résultats/i }).length).toBeGreaterThan(0);
+    });
+
+    fireEvent.click(screen.getAllByRole("button", { name: /Résultats/i })[0]);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Tableau des scores/i })).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Les Explorateurs · 35 points au total/i)).toBeInTheDocument();
+    });
+
+    const podiumLabel = screen.getByText(/Podium/i);
+    const podiumCard = podiumLabel.parentElement;
+    expect(podiumCard?.textContent ?? "").toContain("Leo");
+    expect(podiumCard?.textContent ?? "").toContain("35 pts");
   });
 });
