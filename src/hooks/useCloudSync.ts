@@ -22,6 +22,7 @@ import type {
   ChecklistCustomItem,
   ChecklistRemovalState,
   ChecklistState,
+  CloudDestinationSurveyVote,
   CloudGameHistoryEntry,
   CloudGameProgress,
   CloudPlaceCommentsByPlace,
@@ -63,6 +64,7 @@ type PushSnapshotInput = {
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
+  profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
   phase: TravelPhase;
@@ -335,6 +337,7 @@ export function useCloudSync() {
         ownerGlobalChecklistAdditions: snapshot.ownerGlobalChecklistAdditions,
         ownerGlobalChecklistRemovals: snapshot.ownerGlobalChecklistRemovals,
         placeComments: snapshot.placeComments,
+        profileDestinationSurveyVote: snapshot.profileDestinationSurveyVote,
         gameResults: snapshot.gameResults,
         gameProgress: snapshot.gameProgress,
         phase: snapshot.phase,

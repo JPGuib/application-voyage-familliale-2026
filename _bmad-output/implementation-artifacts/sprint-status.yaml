@@ -196,7 +196,7 @@ development_status:
 
   epic-25: backlog
   25-1-ecran-teaser-pre-depart: backlog
-  25-2-sondage-destination: backlog
+  25-2-sondage-destination: review
   25-3-transformation-faq-sondage-consultable: backlog
   epic-25-retrospective: optional
 

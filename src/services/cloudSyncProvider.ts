@@ -20,6 +20,8 @@ import type {
   CloudGameProgress,
   CloudPlaceComment,
   CloudPlaceCommentsByPlace,
+  CloudDestinationSurveyByProfile,
+  CloudDestinationSurveyVote,
   CloudProfileRecord,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
@@ -268,6 +270,51 @@ function parsePlaceComments(value: unknown): CloudPlaceCommentsByPlace {
   return next;
 }
 
+function parseDestinationSurveyVote(
+  profileId: string,
+  value: unknown
+): CloudDestinationSurveyVote | null {
+  const entry = asRecord(value);
+  const proposals = Array.isArray(entry.proposals)
+    ? entry.proposals.filter((proposal): proposal is string => typeof proposal === "string")
+        .map((proposal) => proposal.trim())
+        .filter((proposal) => proposal.length > 0)
+        .slice(0, 3)
+    : [];
+
+  const updatedAt = toFiniteNumber(entry.updatedAt, 0);
+  if (proposals.length === 0 || updatedAt <= 0) {
+    return null;
+  }
+
+  const authorUid =
+    typeof entry.authorUid === "string" && entry.authorUid.trim().length > 0
+      ? entry.authorUid
+      : undefined;
+
+  return {
+    profileId,
+    proposals,
+    updatedAt,
+    authorUid,
+  };
+}
+
+function parseDestinationSurvey(value: unknown): CloudDestinationSurveyByProfile {
+  const records = asRecord(value);
+  const next: CloudDestinationSurveyByProfile = {};
+
+  for (const [profileId, candidate] of Object.entries(records)) {
+    const parsed = parseDestinationSurveyVote(profileId, candidate);
+    if (!parsed) {
+      continue;
+    }
+    next[profileId] = parsed;
+  }
+
+  return next;
+}
+
 function toProfileGender(value: unknown): ProfileGender {
   if (value === "male" || value === "female") return value;
   return "unspecified";
@@ -325,6 +372,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const ownerGlobalAdditionRecords = asRecord(root.checklistCatalogAdditions);
   const ownerGlobalRemovalRecords = asRecord(root.checklistCatalogRemovals);
   const placeCommentRecords = asRecord(root.placeComments);
+  const destinationSurveyRecords = parseDestinationSurvey(root.destinationSurvey);
   const gameResultRecords = asRecord(root.gameResults);
   const gameProgressRecords = asRecord(root.gameProgress);
   const phaseRecords = asRecord(root.phase);
@@ -367,6 +415,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
       customChecklistItems: parseChecklistCustomItems(asRecord(value).customChecklistItems),
       gameResults: parseGameResults(gameResultRecords[profileId]),
       gameProgress: parseGameProgress(gameProgressRecords[profileId]),
+      destinationSurveyVote: destinationSurveyRecords[profileId] ?? null,
       phase: toTravelPhase(phaseRecords[profileId]),
     };
   }
@@ -389,6 +438,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     ownerGlobalChecklistAdditions: parseChecklistCustomItems(ownerGlobalAdditionRecords),
     ownerGlobalChecklistRemovals: parseChecklistRemovals(ownerGlobalRemovalRecords),
     placeComments: parsePlaceComments(placeCommentRecords),
+    destinationSurvey: destinationSurveyRecords,
     gameDayOverrides: parseGameDayOverrides(root.gameDayOverrides),
     profiles,
     updatedAt: toFiniteNumber(root.updatedAt, 0),
@@ -495,6 +545,14 @@ export async function pushCloudSnapshot(
         updates[`placeComments/${placeId}/${commentId}`] = comment;
       }
     }
+  }
+
+  if (payload.profileDestinationSurveyVote && payload.phase === "before") {
+    updates[`destinationSurvey/${payload.profileId}`] = {
+      ...payload.profileDestinationSurveyVote,
+      profileId: payload.profileId,
+      authorUid: payload.actorUid,
+    };
   }
 
   if (typeof payload.profilePasswordHash === "string") {

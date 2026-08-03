@@ -333,6 +333,47 @@ suite("firebase rtdb rules owner phase guard", () => {
       })
     );
   });
+
+  it("allows a profile to write its own destinationSurvey vote before unlock", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertSucceeds(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/destinationSurvey/${NON_OWNER_PROFILE_ID}`).set({
+        profileId: NON_OWNER_PROFILE_ID,
+        proposals: ["Istanbul", "Ankara"],
+        updatedAt: 123,
+        authorUid: NON_OWNER_UID,
+      })
+    );
+  });
+
+  it("denies writing destinationSurvey for another profile", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/destinationSurvey/${OWNER_PROFILE_ID}`).set({
+        profileId: OWNER_PROFILE_ID,
+        proposals: ["Istanbul"],
+        updatedAt: 124,
+        authorUid: NON_OWNER_UID,
+      })
+    );
+  });
+
+  it("denies destinationSurvey writes once phase is during", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+    await ownerDb.ref(`families/${FAMILY_ID}/phase`).set("during");
+
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/destinationSurvey/${NON_OWNER_PROFILE_ID}`).set({
+        profileId: NON_OWNER_PROFILE_ID,
+        proposals: ["Istanbul"],
+        updatedAt: 125,
+        authorUid: NON_OWNER_UID,
+      })
+    );
+  });
 });
 
 if (!hasDatabaseEmulator) {

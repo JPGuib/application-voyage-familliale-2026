@@ -144,6 +144,13 @@ import {
   type HouseholdRole,
   type ProfileFilterInput,
 } from "./checklist-filter";
+import {
+  MAX_DESTINATION_PROPOSALS,
+  computeDestinationSurveyResults,
+  normalizeDestinationText,
+  validateDestinationProposals,
+  type DestinationSurveyVote,
+} from "./destination-survey";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -317,6 +324,7 @@ const OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY = "jp-owner-global-checklist-removals"
 const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 const PROFILE_RECOVERY_ANSWER_STORAGE_KEY = "jp-profile-recovery-answers";
 const PLACE_COMMENTS_STORAGE_KEY = "jp-place-comments";
+const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
 const MAX_PLACE_COMMENT_LENGTH = 500;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
@@ -771,6 +779,52 @@ function parsePlaceComments(raw: unknown): PlaceCommentsByPlace {
   }
 
   return next;
+}
+
+function parseDestinationSurveyVotes(raw: unknown): Record<string, DestinationSurveyVote> {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  const next: Record<string, DestinationSurveyVote> = {};
+  for (const [profileId, voteValue] of Object.entries(raw as Record<string, unknown>)) {
+    if (!voteValue || typeof voteValue !== "object") {
+      continue;
+    }
+
+    const candidate = voteValue as Record<string, unknown>;
+    const proposals = Array.isArray(candidate.proposals)
+      ? candidate.proposals
+          .filter((proposal): proposal is string => typeof proposal === "string")
+          .map((proposal) => normalizeDestinationText(proposal))
+          .filter((proposal) => proposal.length > 0)
+          .slice(0, MAX_DESTINATION_PROPOSALS)
+      : [];
+    const updatedAt = typeof candidate.updatedAt === "number" ? candidate.updatedAt : 0;
+
+    if (proposals.length === 0 || updatedAt <= 0) {
+      continue;
+    }
+
+    next[profileId] = {
+      profileId,
+      proposals,
+      updatedAt,
+      authorUid:
+        typeof candidate.authorUid === "string" && candidate.authorUid.trim().length > 0
+          ? candidate.authorUid
+          : undefined,
+    };
+  }
+
+  return next;
+}
+
+function areDestinationSurveyVotesEqual(
+  left: Record<string, DestinationSurveyVote>,
+  right: Record<string, DestinationSurveyVote>
+): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function arePlaceCommentsEqual(left: PlaceCommentsByPlace, right: PlaceCommentsByPlace): boolean {
@@ -1541,6 +1595,12 @@ function ChecklistScreen({
   onCancelRecoveryPrompt,
   daysUntilStart,
   todayFormatted,
+  destinationSurveyDestination,
+  destinationSurveyDrafts,
+  destinationSurveyError,
+  destinationSurveyResults,
+  onDestinationSurveyDraftChange,
+  onSaveDestinationSurvey,
 }: {
   categories: ChecklistCategory[];
   role: Role | null;
@@ -1579,6 +1639,12 @@ function ChecklistScreen({
   onCancelRecoveryPrompt: () => void;
   daysUntilStart: number | null;
   todayFormatted: string;
+  destinationSurveyDestination: string;
+  destinationSurveyDrafts: string[];
+  destinationSurveyError: string | null;
+  destinationSurveyResults: ReturnType<typeof computeDestinationSurveyResults>["rows"];
+  onDestinationSurveyDraftChange: (index: number, value: string) => void;
+  onSaveDestinationSurvey: () => void;
 }) {
   const [showStartCode, setShowStartCode] = useState(false);
   const [showRecoveryPhrase, setShowRecoveryPhrase] = useState(false);
@@ -1629,6 +1695,65 @@ function ChecklistScreen({
 
       {/* List */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <p className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+            Sondage destination
+          </p>
+          <h2 className="mt-1 text-lg font-black text-foreground">
+            Où allons-nous ?
+          </h2>
+          <p className="mt-1 text-sm font-semibold text-muted-foreground">
+            Tu peux proposer jusqu'a 3 destinations.
+          </p>
+          <p className="text-sm font-semibold text-muted-foreground">
+            Points: 20 si bonne réponse, +10 si premier, +5 si deuxième.
+          </p>
+          <p className="text-sm font-semibold text-muted-foreground">
+            Après déblocage, les réponses sont figées et les résultats apparaissent ici.
+          </p>
+
+          {unlockActionsEnabled ? (
+            <div className="mt-3 space-y-2">
+              {[0, 1, 2].map((index) => (
+                <input
+                  key={`destination-proposal-${index}`}
+                  type="text"
+                  value={destinationSurveyDrafts[index] ?? ""}
+                  onChange={(event) => onDestinationSurveyDraftChange(index, event.target.value)}
+                  placeholder={`Proposition ${index + 1}`}
+                  className="w-full rounded-xl bg-input-background px-3 py-2 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                />
+              ))}
+              {destinationSurveyError && (
+                <p className="text-xs font-bold text-destructive">{destinationSurveyError}</p>
+              )}
+              <button
+                onClick={onSaveDestinationSurvey}
+                className="w-full rounded-xl bg-primary px-3 py-2 text-sm font-black text-primary-foreground"
+              >
+                Enregistrer mes propositions
+              </button>
+            </div>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {destinationSurveyResults.map((row) => (
+                <div key={`destination-result-${row.profileId}`} className="rounded-xl border border-border bg-muted/30 px-3 py-2">
+                  <p className="text-sm font-black text-foreground">{row.surname}</p>
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    Propositions: {row.proposals.length > 0 ? row.proposals.join(", ") : "Aucune proposition"}
+                  </p>
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    Résultat: {row.isCorrect ? "Bonne réponse" : "Incorrect"} • Points: {row.points}
+                  </p>
+                </div>
+              ))}
+              <p className="text-xs font-bold text-muted-foreground">
+                Destination correcte: {destinationSurveyDestination}
+              </p>
+            </div>
+          )}
+        </section>
+
         {categories.map((cat) => {
           const catChecked = cat.items.filter((i) => checked[i.id]).length;
           const isOpen = openCategories.has(cat.id);
@@ -5955,6 +6080,20 @@ export default function App() {
       return {};
     }
   });
+  const [destinationSurveyVotes, setDestinationSurveyVotes] = useState<Record<string, DestinationSurveyVote>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(DESTINATION_SURVEY_STORAGE_KEY) || "{}");
+      return parseDestinationSurveyVotes(parsed);
+    } catch {
+      return {};
+    }
+  });
+  const [destinationSurveyDrafts, setDestinationSurveyDrafts] = useState<string[]>(["", "", ""]);
+  const [destinationSurveyError, setDestinationSurveyError] = useState<string | null>(null);
   const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences>(
     DEFAULT_NOTIFICATION_PREFS
   );
@@ -6440,6 +6579,7 @@ export default function App() {
         localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY);
+        localStorage.removeItem(DESTINATION_SURVEY_STORAGE_KEY);
       } else {
         localStorage.setItem("jp-profile", JSON.stringify(profile));
         localStorage.setItem(
@@ -6498,6 +6638,10 @@ export default function App() {
             PLACE_COMMENTS_STORAGE_KEY,
             JSON.stringify(placeCommentsByPlace)
           );
+          localStorage.setItem(
+            DESTINATION_SURVEY_STORAGE_KEY,
+            JSON.stringify(destinationSurveyVotes)
+          );
         } catch (e) {
           if (IS_DEV) console.warn("localStorage quota exceeded or unavailable:", e);
         }
@@ -6534,6 +6678,7 @@ export default function App() {
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
     placeCommentsByPlace,
+    destinationSurveyVotes,
     unlockFailedAttempts,
     unlockLockedUntil,
     gameHistory,
@@ -6724,6 +6869,11 @@ export default function App() {
         ? previous
         : nextFromCloud;
     });
+    setDestinationSurveyVotes((previous) =>
+      areDestinationSurveyVotesEqual(previous, cloudSnapshot.destinationSurvey ?? {})
+        ? previous
+        : cloudSnapshot.destinationSurvey ?? {}
+    );
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
@@ -6975,6 +7125,7 @@ export default function App() {
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
       placeCommentsByPlace,
+      destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       phase,
       tripStartDate,
       gameHistory,
@@ -7010,6 +7161,7 @@ export default function App() {
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
       placeComments: placeCommentsByPlace,
+      profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       gameResults: gameHistory,
       gameProgress: currentGameProgress,
       phase,
@@ -7045,6 +7197,7 @@ export default function App() {
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
     placeCommentsByPlace,
+    destinationSurveyVotes,
     phase,
     tripStartDate,
     hydratedProfileId,
@@ -7532,6 +7685,58 @@ export default function App() {
 
   const place = PLACES.find((p) => p.id === selectedPlaceId);
 
+  useEffect(() => {
+    const existingVote = destinationSurveyVotes[profile.id];
+    if (!existingVote) {
+      setDestinationSurveyDrafts(["", "", ""]);
+      return;
+    }
+
+    const nextDrafts = [
+      existingVote.proposals[0] ?? "",
+      existingVote.proposals[1] ?? "",
+      existingVote.proposals[2] ?? "",
+    ];
+    setDestinationSurveyDrafts(nextDrafts);
+  }, [destinationSurveyVotes, profile.id]);
+
+  const updateDestinationSurveyDraft = (index: number, value: string) => {
+    setDestinationSurveyDrafts((previous) => {
+      const next = [...previous];
+      next[index] = value;
+      return next;
+    });
+    if (destinationSurveyError) {
+      setDestinationSurveyError(null);
+    }
+  };
+
+  const saveDestinationSurvey = () => {
+    if (phase !== "before") {
+      setDestinationSurveyError("Le sondage est verrouille apres le deblocage.");
+      return;
+    }
+
+    const validation = validateDestinationProposals(destinationSurveyDrafts);
+    if (!validation.ok) {
+      setDestinationSurveyError(validation.message);
+      return;
+    }
+
+    const vote: DestinationSurveyVote = {
+      profileId: profile.id,
+      proposals: validation.proposals,
+      updatedAt: Date.now(),
+      authorUid: cloudActorUid ?? undefined,
+    };
+
+    setDestinationSurveyVotes((previous) => ({
+      ...previous,
+      [profile.id]: vote,
+    }));
+    setDestinationSurveyError(null);
+  };
+
   const upsertPlaceComment = (input: {
     placeId: string;
     reaction: PlaceCommentReaction | null;
@@ -7668,6 +7873,8 @@ export default function App() {
     setStartError(null);
     setShowRecoveryPrompt(false);
     resetRecoveryPromptState();
+    setDestinationSurveyDrafts(["", "", ""]);
+    setDestinationSurveyError(null);
     setUnlockFailedAttempts(0);
     setUnlockLockedUntil(0);
 
@@ -8490,6 +8697,24 @@ export default function App() {
           gameResults: gameHistory,
         },
       ];
+  const destinationSurveyParticipants = cloudSnapshot
+    ? Object.values(cloudSnapshot.profiles).map((item) => ({
+        profileId: item.profileId,
+        surname: item.surname,
+        role: item.role,
+      }))
+    : [
+        {
+          profileId: profile.id,
+          surname: profile.surname,
+          role: profile.role ?? "utilisateur",
+        },
+      ];
+  const destinationSurveyResults = computeDestinationSurveyResults({
+    destination: todayDestination,
+    participants: destinationSurveyParticipants,
+    votesByProfile: destinationSurveyVotes,
+  });
   const familyProfilesForComments = cloudSnapshot
     ? Object.values(cloudSnapshot.profiles).map((item) => ({
         id: item.profileId,
@@ -9471,6 +9696,12 @@ export default function App() {
           }}
           daysUntilStart={daysUntilStart}
           todayFormatted={todayFormatted}
+          destinationSurveyDestination={todayDestination}
+          destinationSurveyDrafts={destinationSurveyDrafts}
+          destinationSurveyError={destinationSurveyError}
+          destinationSurveyResults={destinationSurveyResults.rows}
+          onDestinationSurveyDraftChange={updateDestinationSurveyDraft}
+          onSaveDestinationSurvey={saveDestinationSurvey}
         />
       );
     }
@@ -9535,6 +9766,16 @@ export default function App() {
             }}
             daysUntilStart={daysUntilStart}
             todayFormatted={todayFormatted}
+            destinationSurveyDestination={todayDestination}
+            destinationSurveyDrafts={destinationSurveyDrafts}
+            destinationSurveyError={null}
+            destinationSurveyResults={destinationSurveyResults.rows}
+            onDestinationSurveyDraftChange={() => {
+              // No-op during travel phase.
+            }}
+            onSaveDestinationSurvey={() => {
+              // No-op during travel phase.
+            }}
           />
         );
       case "dashboard":

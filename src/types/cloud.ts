@@ -59,6 +59,15 @@ export type CloudPlaceComment = {
 
 export type CloudPlaceCommentsByPlace = Record<string, Record<string, CloudPlaceComment>>;
 
+export type CloudDestinationSurveyVote = {
+  profileId: string;
+  proposals: string[];
+  updatedAt: number;
+  authorUid?: string;
+};
+
+export type CloudDestinationSurveyByProfile = Record<string, CloudDestinationSurveyVote>;
+
 export type ProfileGender = "unspecified" | "male" | "female";
 export type ProfileHouseholdRole = "member" | "parent" | "child";
 
@@ -93,6 +102,7 @@ export type CloudProfileState = {
   customChecklistItems: ChecklistCustomItem[];
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
+  destinationSurveyVote: CloudDestinationSurveyVote | null;
   phase: TravelPhase;
 };
 
@@ -111,6 +121,7 @@ export type CloudSyncSnapshot = {
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
+  destinationSurvey: CloudDestinationSurveyByProfile;
   gameDayOverrides: Record<number, GameDayOverride>;
   profiles: Record<string, CloudProfileState>;
   updatedAt: number;
@@ -141,6 +152,7 @@ export type CloudSyncWritePayload = {
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
+  profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
   phase: TravelPhase;
