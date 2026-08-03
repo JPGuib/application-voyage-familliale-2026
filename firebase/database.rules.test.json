@@ -130,10 +130,10 @@
           "$profileId": {
             ".read": "auth != null",
             ".write": "auth != null && root.child('families').child($familyId).child('phase').val() === 'before' && ((newData.val() === null && (!data.exists() || data.child('authorUid').val() === auth.uid)) || (!data.exists() && newData.val() !== null && newData.child('authorUid').val() === auth.uid) || (data.exists() && newData.val() !== null && data.child('authorUid').val() === auth.uid && newData.child('authorUid').val() === auth.uid))",
-            ".validate": "newData.val() === null || (newData.hasChildren(['profileId','proposals','updatedAt','authorUid']) && newData.child('profileId').isString() && newData.child('profileId').val() === $profileId && newData.child('updatedAt').isNumber() && newData.child('authorUid').isString() && newData.child('authorUid').val() === auth.uid && newData.child('proposals').isList() && newData.child('proposals').childrenCount() >= 1 && newData.child('proposals').childrenCount() <= 3)",
+            ".validate": "newData.val() === null || (newData.hasChildren(['profileId','proposals','updatedAt','authorUid']) && newData.child('profileId').isString() && newData.child('profileId').val() === $profileId && newData.child('updatedAt').isNumber() && newData.child('authorUid').isString() && newData.child('authorUid').val() === auth.uid && newData.child('proposals/0').exists() && !newData.child('proposals/3').exists())",
             "proposals": {
               "$idx": {
-                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+                ".validate": "$idx.matches(/^[0-2]$/) && newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
               }
             },
             "$other": {
