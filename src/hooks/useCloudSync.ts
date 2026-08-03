@@ -366,6 +366,8 @@ export function useCloudSync() {
           console.error("[cloud-sync] permission-denied details", {
             familyId,
             actorUid: cloudUserUid,
+            projectId: (database.app.options as { projectId?: string })?.projectId,
+            databaseURL: (database.app.options as { databaseURL?: string })?.databaseURL,
             canWriteFamilyState: mutation.canWriteFamilyState,
             phase: mutation.phase,
             profileId: mutation.profileId,
@@ -390,6 +392,7 @@ export function useCloudSync() {
           mutation.profileDestinationSurveyVote
         ) {
           try {
+            await ensureFamilyMembership(database, familyId, cloudUserUid);
             await pushDestinationSurveyVoteOnly(database, familyId, {
               actorUid: mutation.actorUid,
               profileId: mutation.profileId,
