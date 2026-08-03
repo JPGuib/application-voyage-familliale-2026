@@ -1454,22 +1454,24 @@ function BottomNav({
       ? "culture"
       : current;
   return (
-    <nav className="flex-shrink-0 bg-card border-t border-border flex items-center justify-around px-2 py-2">
-      {items.map((item) => {
-        const active = activeId === item.id;
-        return (
-          <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
-            className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition-all ${
-              active ? "bg-primary/10 text-primary" : "text-muted-foreground"
-            }`}
-          >
-            <item.icon size={22} />
-            <span className="text-[10px] font-extrabold">{item.label}</span>
-          </button>
-        );
-      })}
+    <nav className="flex-shrink-0 bg-card border-t border-border overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center min-w-max px-2 gap-1">
+        {items.map((item) => {
+          const active = activeId === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onNavigate(item.id)}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition-all min-w-[60px] ${
+                active ? "bg-primary/10 text-primary" : "text-muted-foreground"
+              }`}
+            >
+              <item.icon size={22} />
+              <span className="text-[10px] font-extrabold">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 }
