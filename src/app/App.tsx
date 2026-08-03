@@ -49,6 +49,13 @@ import {
 import { TIPS } from "../content/tips";
 import { getScheduledCoordinates, getWeatherAdvice, useDeviceLocation, useWeather } from "./weather";
 import {
+  convertEurToTry,
+  convertTryToEur,
+  getEurTryRate,
+  normalizeNumericInput,
+  type ExchangeRateSnapshot,
+} from "./exchange-rate";
+import {
   computeBadges,
   parseGameHistory,
   parseGameProgress,
@@ -3766,6 +3773,61 @@ function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: nu
   const [tab, setTab] = useState<
     "transport" | "customs" | "dictionary" | "payment" | "emergency" | "food"
   >("transport");
+
+  const [rateSnapshot, setRateSnapshot] = useState<ExchangeRateSnapshot | null>(null);
+  const [eurInput, setEurInput] = useState("");
+  const [tryInput, setTryInput] = useState("");
+  const lastEdited = useRef<"eur" | "try" | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getEurTryRate().then((snapshot) => {
+      if (!cancelled) setRateSnapshot(snapshot);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function handleEurChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value;
+    setEurInput(val);
+    lastEdited.current = "eur";
+    const n = normalizeNumericInput(val);
+    if (n !== null && rateSnapshot) {
+      setTryInput(String(convertEurToTry(n, rateSnapshot.rate)));
+    } else {
+      setTryInput("");
+    }
+  }
+
+  function handleTryChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value;
+    setTryInput(val);
+    lastEdited.current = "try";
+    const n = normalizeNumericInput(val);
+    if (n !== null && rateSnapshot) {
+      setEurInput(String(convertTryToEur(n, rateSnapshot.rate)));
+    } else {
+      setEurInput("");
+    }
+  }
+
+  function formatFreshnessMessage(snapshot: ExchangeRateSnapshot): string {
+    if (snapshot.source === "live") {
+      const time = new Date(snapshot.fetchedAtIso).toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return `Taux en direct récupéré à ${time}`;
+    }
+    if (snapshot.source === "cache") {
+      const date = new Date(snapshot.fetchedAtIso).toLocaleDateString("fr-FR");
+      return `Dernier taux connu (${date})`;
+    }
+    return "Taux indicatif non mis à jour";
+  }
+
   const tabs = [
     { id: "transport" as const, label: "🚆 Transport" },
     { id: "customs" as const, label: "🙏 Coutumes" },
@@ -3856,21 +3918,41 @@ function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: nu
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {tab === "payment" && (
-          <div className="bg-[#E3F2FD] rounded-2xl p-4 mb-1">
-            <p className="text-xs font-black text-[#1565C0] uppercase tracking-wide mb-2">
-              💱 Taux de change du jour ({TIPS.exchangeRate.date})
+          <div className="bg-[#E3F2FD] rounded-2xl p-4 mb-1 space-y-3">
+            <p className="text-xs font-black text-[#1565C0] uppercase tracking-wide">
+              💱 Convertisseur EUR ↔ TRY
             </p>
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-foreground">
-                {TIPS.exchangeRate.tryToEur}
-              </p>
-              <p className="text-sm font-bold text-foreground">
-                {TIPS.exchangeRate.eurToTry}
-              </p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-[#1565C0] w-10 flex-shrink-0">EUR €</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={eurInput}
+                  onChange={handleEurChange}
+                  placeholder="0"
+                  aria-label="Montant en euros"
+                  className="flex-1 rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-[#1565C0] w-10 flex-shrink-0">TRY ₺</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={tryInput}
+                  onChange={handleTryChange}
+                  placeholder="0"
+                  aria-label="Montant en livres turques"
+                  className="flex-1 rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+                />
+              </div>
             </div>
-            <div className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
-              {renderFormattedText(TIPS.exchangeRate.note)}
-            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              {rateSnapshot
+                ? `${formatFreshnessMessage(rateSnapshot)} · Valeur approximative, frais bancaires non inclus.`
+                : "Récupération du taux de change…"}
+            </p>
           </div>
         )}
         {content[tab].map((item, i) => (

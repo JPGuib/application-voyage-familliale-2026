@@ -1,5 +1,5 @@
 # generated: 2026-07-05
-# last_updated: 2026-08-02
+# last_updated: 2026-08-03
 # project: application de voyage 2026
 # project_key: NOKEY
 # tracking_system: file-system
@@ -24,7 +24,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-07-05
-last_updated: 2026-08-02
+last_updated: 2026-08-03
 project_key: NOKEY
 tracking_system: file-system
 story_location: {project-root}/_bmad-output/implementation-artifacts
@@ -169,8 +169,8 @@ development_status:
 
   epic-20: backlog
   20-1-planning-complet-itineraire: backlog
-  20-2-documents-voyage-centralises: backlog
-  20-3-convertisseur-devises-eur-try: backlog
+  20-2-documents-voyage-centralises: canceled
+  20-3-convertisseur-devises-eur-try: review
   epic-20-retrospective: optional
 
   epic-21: done
@@ -188,10 +188,10 @@ development_status:
   23-1-reinitialisation-nouveau-voyage: backlog
   epic-23-retrospective: optional
 
-  epic-24: en-cours
-  24-1-choix-voyageur-visiteur-creation: en-cours
-  24-2-configuration-code-voyageur: en-cours
-  24-3-droits-acces-visiteur: en-cours
+  epic-24: done
+  24-1-choix-voyageur-visiteur-creation: done
+  24-2-configuration-code-voyageur: done
+  24-3-droits-acces-visiteur: done
   epic-24-retrospective: optional
 
   epic-25: backlog
