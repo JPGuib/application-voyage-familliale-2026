@@ -93,6 +93,12 @@
                 ".validate": "newData.hasChildren(['id','label','categoryId']) && newData.child('id').isString() && newData.child('label').isString() && newData.child('categoryId').isString() && (!newData.child('genderTargets').exists() || newData.child('genderTargets').val() === 'all' || newData.child('genderTargets').val() === 'male' || newData.child('genderTargets').val() === 'female') && (!newData.child('householdRoleTargets').exists() || newData.child('householdRoleTargets').val() === 'all' || newData.child('householdRoleTargets').val() === 'parent' || newData.child('householdRoleTargets').val() === 'child') && (!newData.child('ownerOnly').exists() || newData.child('ownerOnly').isBoolean()) && (!newData.child('visibleToProfileId').exists() || newData.child('visibleToProfileId').isString())"
               }
             },
+            "memberUids": {
+              "$uid": {
+                ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && auth.uid === $uid",
+                ".validate": "newData.isBoolean()"
+              }
+            },
             "$other": {
               ".validate": false
             }
@@ -129,8 +135,17 @@
         "destinationSurvey": {
           "$profileId": {
             ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
-            ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('families').child($familyId).child('phase').val() === 'before'",
-            ".validate": "newData.val() === null || (newData.hasChildren(['profileId','proposals','updatedAt','authorUid']) && newData.child('profileId').isString() && newData.child('profileId').val() === $profileId && newData.child('updatedAt').isNumber() && newData.child('authorUid').isString() && newData.child('authorUid').val().length > 0 && newData.child('proposals/0').exists() && !newData.child('proposals/3').exists())",
+            ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('families').child($familyId).child('phase').val() === 'before' && root.child('families').child($familyId).child('profiles').child($profileId).child('memberUids').child(auth.uid).val() === true",
+            ".validate": "newData.val() === null || (newData.hasChildren(['profileId','proposals','updatedAt','authorUid']) && newData.child('proposals/0').exists() && !newData.child('proposals/3').exists())",
+            "profileId": {
+              ".validate": "newData.isString() && newData.val() === $profileId"
+            },
+            "updatedAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "authorUid": {
+              ".validate": "newData.isString() && newData.val().length > 0 && auth != null && newData.val() === auth.uid"
+            },
             "proposals": {
               "$idx": {
                 ".validate": "$idx.matches(/^[0-2]$/) && newData.isString() && newData.val().length > 0 && newData.val().length <= 120"

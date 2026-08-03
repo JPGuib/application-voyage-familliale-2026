@@ -827,6 +827,28 @@ function areDestinationSurveyVotesEqual(
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function stableSerializeForCloudPush(value: unknown): string {
+  if (value === null || typeof value !== "object") {
+    return JSON.stringify(value);
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => stableSerializeForCloudPush(entry)).join(",")}]`;
+  }
+
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  const entries: string[] = [];
+  for (const key of keys) {
+    const candidate = record[key];
+    if (candidate === undefined) {
+      continue;
+    }
+    entries.push(`${JSON.stringify(key)}:${stableSerializeForCloudPush(candidate)}`);
+  }
+  return `{${entries.join(",")}}`;
+}
+
 function arePlaceCommentsEqual(left: PlaceCommentsByPlace, right: PlaceCommentsByPlace): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
@@ -7126,7 +7148,7 @@ export default function App() {
     const profileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";
     const profileRecoveryAnswer = profileRecoveryAnswers[profile.id] || "";
     const profileCustomChecklistItems = customChecklistItemsByProfile[profile.id] ?? [];
-    const payload = JSON.stringify({
+    const payload = stableSerializeForCloudPush({
       actorUid: cloudActorUid,
       canWriteFamilyState,
       familyState: normalized,
@@ -7178,7 +7200,10 @@ export default function App() {
       profileRecoveryHash,
       profileRecoveryQuestion,
       profileRecoveryAnswer,
-      profileRecoveryConfiguredAt: profileRecoveryHash ? Date.now() : undefined,
+      // Keep this stable in automatic sync to avoid timestamp churn loops.
+      profileRecoveryConfiguredAt: profileRecoveryHash
+        ? cloudSnapshot?.profiles[profile.id]?.recoveryConfiguredAt
+        : undefined,
       gender: profile.gender,
       householdRole: profile.householdRole,
       checklist: checked,

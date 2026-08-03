@@ -49,6 +49,7 @@ suite("firebase rtdb rules owner phase guard", () => {
       await db.ref(`familyMembers/${FAMILY_ID}/${OWNER_UID}`).set(true);
       await db.ref(`familyMembers/${FAMILY_ID}/${NON_OWNER_UID}`).set(true);
       await db.ref(`familyMembers/${FAMILY_ID}/${VISITOR_UID}`).set(true);
+      await db.ref(`ownerMembers/${FAMILY_ID}/${OWNER_UID}`).set(true);
       await db.ref(`families/${FAMILY_ID}/ownerUid`).set(OWNER_UID);
       await db.ref(`families/${FAMILY_ID}/ownerProfileId`).set(OWNER_PROFILE_ID);
       await db.ref(`families/${FAMILY_ID}/phase`).set("before");
@@ -57,18 +58,27 @@ suite("firebase rtdb rules owner phase guard", () => {
         role: "proprietaire",
         createdAt: 1,
         lastSyncAt: 1,
+        memberUids: {
+          [OWNER_UID]: true,
+        },
       });
       await db.ref(`families/${FAMILY_ID}/profiles/${NON_OWNER_PROFILE_ID}`).set({
         surname: "User",
         role: "utilisateur",
         createdAt: 1,
         lastSyncAt: 1,
+        memberUids: {
+          [NON_OWNER_UID]: true,
+        },
       });
       await db.ref(`families/${FAMILY_ID}/profiles/${VISITOR_PROFILE_ID}`).set({
         surname: "Visitor",
         role: "visiteur",
         createdAt: 1,
         lastSyncAt: 1,
+        memberUids: {
+          [VISITOR_UID]: true,
+        },
       });
     });
   });
@@ -256,17 +266,19 @@ suite("firebase rtdb rules owner phase guard", () => {
   });
 
   it("denies a non-author from updating someone else's comment", async () => {
-    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
-    await ownerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({
-      commentId: NON_OWNER_PROFILE_ID,
-      placeId: COMMENT_PLACE_ID,
-      authorProfileId: NON_OWNER_PROFILE_ID,
-      authorSurnameSnapshot: "User",
-      reaction: "like",
-      text: "Initial",
-      createdAt: 10,
-      updatedAt: 10,
-      authorUid: NON_OWNER_UID,
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.database();
+      await db.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({
+        commentId: NON_OWNER_PROFILE_ID,
+        placeId: COMMENT_PLACE_ID,
+        authorProfileId: NON_OWNER_PROFILE_ID,
+        authorSurnameSnapshot: "User",
+        reaction: "like",
+        text: "Initial",
+        createdAt: 10,
+        updatedAt: 10,
+        authorUid: NON_OWNER_UID,
+      });
     });
 
     const visitorDb = testEnv.authenticatedContext(VISITOR_UID).database();
@@ -286,28 +298,30 @@ suite("firebase rtdb rules owner phase guard", () => {
   });
 
   it("allows author to delete own older comment even when newer ones exist", async () => {
-    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
-    await ownerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({
-      commentId: NON_OWNER_PROFILE_ID,
-      placeId: COMMENT_PLACE_ID,
-      authorProfileId: NON_OWNER_PROFILE_ID,
-      authorSurnameSnapshot: "User",
-      reaction: "like",
-      text: "Ancien",
-      createdAt: 10,
-      updatedAt: 10,
-      authorUid: NON_OWNER_UID,
-    });
-    await ownerDb.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${VISITOR_PROFILE_ID}`).set({
-      commentId: VISITOR_PROFILE_ID,
-      placeId: COMMENT_PLACE_ID,
-      authorProfileId: VISITOR_PROFILE_ID,
-      authorSurnameSnapshot: "Visitor",
-      reaction: "dislike",
-      text: "Recent",
-      createdAt: 12,
-      updatedAt: 12,
-      authorUid: VISITOR_UID,
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.database();
+      await db.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${NON_OWNER_PROFILE_ID}`).set({
+        commentId: NON_OWNER_PROFILE_ID,
+        placeId: COMMENT_PLACE_ID,
+        authorProfileId: NON_OWNER_PROFILE_ID,
+        authorSurnameSnapshot: "User",
+        reaction: "like",
+        text: "Ancien",
+        createdAt: 10,
+        updatedAt: 10,
+        authorUid: NON_OWNER_UID,
+      });
+      await db.ref(`families/${FAMILY_ID}/placeComments/${COMMENT_PLACE_ID}/${VISITOR_PROFILE_ID}`).set({
+        commentId: VISITOR_PROFILE_ID,
+        placeId: COMMENT_PLACE_ID,
+        authorProfileId: VISITOR_PROFILE_ID,
+        authorSurnameSnapshot: "Visitor",
+        reaction: "dislike",
+        text: "Recent",
+        createdAt: 12,
+        updatedAt: 12,
+        authorUid: VISITOR_UID,
+      });
     });
 
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();

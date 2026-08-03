@@ -5,6 +5,7 @@ import {
   deleteProfileFromCloud,
   ensureFamilyMembership,
   ensureOwnerMembership,
+  ensureProfileMembership,
   observeFamilySnapshot,
   pushDestinationSurveyVoteOnly,
   pushCloudSnapshot,
@@ -351,6 +352,7 @@ export function useCloudSync() {
       }
 
       try {
+        await ensureProfileMembership(database, familyId, mutation.profileId, cloudUserUid);
         if (mutation.canWriteFamilyState) {
           // Owner-scoped writes depend on ownerMembers/{familyId}/{uid}.
           await ensureOwnerMembership(database, familyId, cloudUserUid);

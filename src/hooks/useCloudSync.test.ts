@@ -12,6 +12,7 @@ vi.mock("../services/cloudSyncProvider", async (importOriginal) => {
       pushCloudSnapshotMock(...args) as ReturnType<typeof actual.pushCloudSnapshot>,
     observeFamilySnapshot: () => () => {},
     ensureFamilyMembership: vi.fn().mockResolvedValue(undefined),
+    ensureProfileMembership: vi.fn().mockResolvedValue(undefined),
     ensureOwnerMembership: vi.fn().mockResolvedValue(undefined),
   };
 });

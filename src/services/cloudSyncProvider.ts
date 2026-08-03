@@ -463,6 +463,15 @@ export async function ensureFamilyMembership(
   await set(ref(database, `familyMembers/${familyId}/${uid}`), true);
 }
 
+export async function ensureProfileMembership(
+  database: Database,
+  familyId: string,
+  profileId: string,
+  uid: string
+): Promise<void> {
+  await set(ref(database, `families/${familyId}/profiles/${profileId}/memberUids/${uid}`), true);
+}
+
 /**
  * Déclare l'utilisateur courant comme un appareil propriétaire reconnu, dans
  * ownerMembers/{familyId}/{uid} = true. Permet à plusieurs appareils/navigateurs
@@ -681,6 +690,10 @@ export async function claimProfileRole(
         role: profile.role,
         createdAt: toFiniteNumber(previousProfile.createdAt, timestamp),
         lastSyncAt: timestamp,
+        memberUids: {
+          ...asRecord(previousProfile.memberUids),
+          [actorUid]: true,
+        },
       };
     }
 
