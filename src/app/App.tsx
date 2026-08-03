@@ -151,6 +151,7 @@ import {
   validateDestinationProposals,
   type DestinationSurveyVote,
 } from "./destination-survey";
+import { startTutorialFromProfile } from "./tutorials/driver-runtime";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -1555,7 +1556,10 @@ function BottomNav({
       ? "culture"
       : current;
   return (
-    <nav className="flex-shrink-0 bg-card border-t border-border overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <nav
+      data-tutorial-id="bottom-nav"
+      className="flex-shrink-0 bg-card border-t border-border overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       <div className="flex items-center min-w-max px-2 gap-1">
         {items.map((item) => {
           const active = activeId === item.id;
@@ -1563,6 +1567,7 @@ function BottomNav({
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
+              data-tutorial-id={`bottom-nav-${item.id}`}
               className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition-all min-w-[60px] ${
                 active ? "bg-primary/10 text-primary" : "text-muted-foreground"
               }`}
@@ -2051,6 +2056,7 @@ function ChecklistScreen({
 function DashboardScreen({
   quickActions,
   onNavigate,
+  onStartTutorial,
   currentDay,
   totalDays,
   todayDestination,
@@ -2061,6 +2067,7 @@ function DashboardScreen({
 }: {
   quickActions: QuickAction[];
   onNavigate: (s: Screen) => void;
+  onStartTutorial: () => void;
   currentDay: number;
   totalDays: number;
   todayDestination: string;
@@ -2082,6 +2089,7 @@ function DashboardScreen({
             </p>
             <button
               onClick={() => onNavigate("settings")}
+              data-tutorial-id="dashboard-settings"
               className="text-[10px] font-black uppercase tracking-widest bg-white/20 rounded-full px-3 py-1.5"
             >
               Paramètres
@@ -2123,6 +2131,7 @@ function DashboardScreen({
       <div className="px-4 -mt-4 relative z-10">
         <button
           onClick={() => onNavigate("guide")}
+          data-tutorial-id="dashboard-today-card"
           className="w-full text-left bg-card rounded-2xl shadow-md p-4 border border-border active:scale-95 transition-transform"
         >
           <div className="flex items-start gap-3">
@@ -2148,6 +2157,7 @@ function DashboardScreen({
       <div className="px-4 mt-4">
         <button
           onClick={() => onNavigate("planning")}
+          data-tutorial-id="dashboard-planning"
           className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 active:scale-95 transition-transform"
         >
           <div className="flex items-center gap-3">
@@ -2159,6 +2169,24 @@ function DashboardScreen({
               <p className="text-xs text-muted-foreground">
                 Voir tous les jours du séjour
               </p>
+            </div>
+          </div>
+          <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
+        </button>
+      </div>
+
+      {/* Tutoriel Accueil */}
+      <div className="px-4 mt-3">
+        <button
+          onClick={onStartTutorial}
+          data-tutorial-id="dashboard-start-tutorial"
+          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 active:scale-95 transition-transform"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🎯</span>
+            <div className="text-left">
+              <p className="font-black text-sm text-foreground">Tutoriel interactif</p>
+              <p className="text-xs text-muted-foreground">Découvrir l'écran Accueil pas à pas</p>
             </div>
           </div>
           <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
@@ -2191,7 +2219,11 @@ function DashboardScreen({
           Circuit du séjour
         </p>
         <div className="rounded-2xl overflow-hidden bg-muted relative">
-          <button onClick={() => setMapLightboxOpen(true)} className="block w-full active:scale-95 transition-transform">
+          <button
+            onClick={() => setMapLightboxOpen(true)}
+            data-tutorial-id="dashboard-map-preview"
+            className="block w-full active:scale-95 transition-transform"
+          >
             <img
               src="/images/Carte du voyage.png"
               alt="Carte du circuit du séjour en Turquie"
@@ -8885,6 +8917,10 @@ export default function App() {
     ? screen
     : getSafeScreen(profile.role, phase);
 
+  const startAccueilTutorial = () => {
+    void startTutorialFromProfile("decouverte");
+  };
+
   const renderScreen = () => {
     if (cloudEnabled && cloudAuthError) {
       return <CloudAccessErrorScreen reason={cloudAuthError} />;
@@ -9598,6 +9634,7 @@ export default function App() {
         return <DashboardScreen
             quickActions={visibleQuickActions}
             onNavigate={goToScreen}
+            onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
             totalDays={totalDays}
             todayDestination={todayDestination}
@@ -9938,6 +9975,7 @@ export default function App() {
         return <DashboardScreen
             quickActions={visibleQuickActions}
             onNavigate={goToScreen}
+            onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
             totalDays={totalDays}
             todayDestination={todayDestination}

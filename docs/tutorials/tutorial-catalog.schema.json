@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tutorial-catalog.schema.json",
+  "title": "Tutorial Catalog",
+  "type": "object",
+  "required": ["version", "scope", "generated_at", "generation_mode", "routes", "steps"],
+  "properties": {
+    "version": { "type": "string" },
+    "scope": { "type": "string", "const": "accueil-only" },
+    "generated_at": { "type": "string" },
+    "generation_mode": { "type": "string" },
+    "routes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "step_id",
+          "route",
+          "selector",
+          "title",
+          "description",
+          "category",
+          "priority",
+          "audience_level",
+          "fingerprint"
+        ],
+        "properties": {
+          "step_id": { "type": "string" },
+          "route": { "type": "string" },
+          "selector": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "category": { "type": "string" },
+          "priority": { "type": "integer", "minimum": 0 },
+          "audience_level": { "type": "string" },
+          "fingerprint": { "type": "string", "minLength": 8 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

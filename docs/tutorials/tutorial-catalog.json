@@ -1,0 +1,66 @@
+{
+  "version": "1.0",
+  "scope": "accueil-only",
+  "generated_at": "2026-08-03T17:35:28.755760+00:00",
+  "generation_mode": "deterministic-no-llm",
+  "routes": [
+    "dashboard"
+  ],
+  "steps": [
+    {
+      "step_id": "accueil-settings",
+      "route": "dashboard",
+      "selector": "[data-tutorial-id=\"dashboard-settings\"]",
+      "title": "Ouvrir les paramètres",
+      "description": "Accédez aux paramètres du profil et des préférences de l'application.",
+      "category": "configuration",
+      "priority": 100,
+      "audience_level": "decouverte",
+      "fingerprint": "97306759ca818d51"
+    },
+    {
+      "step_id": "accueil-destination",
+      "route": "dashboard",
+      "selector": "[data-tutorial-id=\"dashboard-today-card\"]",
+      "title": "Voir la destination du jour",
+      "description": "Consultez la destination en cours et ouvrez rapidement le guide du séjour.",
+      "category": "navigation",
+      "priority": 95,
+      "audience_level": "decouverte",
+      "fingerprint": "4190805de7c91aec"
+    },
+    {
+      "step_id": "accueil-planning",
+      "route": "dashboard",
+      "selector": "[data-tutorial-id=\"dashboard-planning\"]",
+      "title": "Ouvrir le planning complet",
+      "description": "Affichez tous les jours du séjour pour planifier les prochaines étapes.",
+      "category": "navigation",
+      "priority": 90,
+      "audience_level": "premiere-utilisation",
+      "fingerprint": "6bcc6759b1248f14"
+    },
+    {
+      "step_id": "accueil-map-preview",
+      "route": "dashboard",
+      "selector": "[data-tutorial-id=\"dashboard-map-preview\"]",
+      "title": "Agrandir la carte du séjour",
+      "description": "Ouvrez la carte en grand format pour visualiser le circuit global.",
+      "category": "exploration",
+      "priority": 80,
+      "audience_level": "decouverte",
+      "fingerprint": "8dc3838880512115"
+    },
+    {
+      "step_id": "accueil-bottom-nav",
+      "route": "dashboard",
+      "selector": "[data-tutorial-id=\"bottom-nav-dashboard\"]",
+      "title": "Revenir à l'accueil",
+      "description": "Utilisez la navigation basse pour revenir rapidement à l'écran Accueil.",
+      "category": "navigation",
+      "priority": 70,
+      "audience_level": "decouverte",
+      "fingerprint": "a238c2d80b5c0ee7"
+    }
+  ]
+}

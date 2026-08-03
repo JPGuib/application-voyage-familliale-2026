@@ -203,3 +203,7 @@ development_status:
   epic-26: backlog
   26-1-formulaire-connexion-classique: backlog
   epic-26-retrospective: optional
+
+  epic-27: in-progress
+  27-1-generateur-automatique-tutoriels-interactifs: ready-for-dev
+  epic-27-retrospective: optional

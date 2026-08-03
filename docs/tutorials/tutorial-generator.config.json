@@ -1,0 +1,9 @@
+{
+  "route": "dashboard",
+  "generation_mode": "deterministic-no-llm",
+  "output": {
+    "catalog": "docs/tutorials/tutorial-catalog.json",
+    "driver_ts": "src/app/tutorials/generated/driver-accueil.ts",
+    "report": "docs/tutorials/tutorial-diff-report.md"
+  }
+}
