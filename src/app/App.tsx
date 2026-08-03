@@ -28,6 +28,8 @@ import {
   ThumbsUp,
   ThumbsDown,
   MessageCircle,
+  Scroll,
+  Globe,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
 import { TRIP } from "../content/trip";
@@ -441,9 +443,11 @@ const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> =
   { id: "dashboard", icon: Home, label: "Accueil" },
   { id: "guide", icon: BookOpen, label: "Séjour" },
   { id: "map", icon: MapIcon, label: "Carte" },
-  { id: "culture", icon: Theater, label: "Traditions" },
-  { id: "tips", icon: Lightbulb, label: "Conseils" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
+  { id: "tips", icon: Lightbulb, label: "Conseils" },
+  { id: "histoire", icon: Scroll, label: "Histoire" },
+  { id: "geographie", icon: Globe, label: "Géographie" },
+  { id: "culture", icon: Theater, label: "Culture" },
   { id: "results", icon: Trophy, label: "Résultats" },
 ];
 
