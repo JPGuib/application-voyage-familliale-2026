@@ -360,6 +360,18 @@ export function useCloudSync() {
         const errorMessage = err instanceof Error ? err.message : String(err);
         const isPermissionDenied = errorMessage.includes("PERMISSION_DENIED");
 
+        if (isPermissionDenied) {
+          const hasSurveyVote = Boolean(mutation.profileDestinationSurveyVote);
+          console.error("[cloud-sync] permission-denied details", {
+            familyId,
+            actorUid: cloudUserUid,
+            canWriteFamilyState: mutation.canWriteFamilyState,
+            phase: mutation.phase,
+            profileId: mutation.profileId,
+            hasSurveyVote,
+          });
+        }
+
         if (mutation.canWriteFamilyState && isPermissionDenied) {
           try {
             await ensureOwnerMembership(database, familyId, cloudUserUid);
