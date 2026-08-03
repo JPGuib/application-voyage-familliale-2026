@@ -382,6 +382,7 @@ export function useCloudSync() {
             profileId: mutation.profileId,
             hasSurveyVote,
           });
+          setCloudAuthError("permission-denied");
         }
 
         if (mutation.canWriteFamilyState && isPermissionDenied) {
@@ -422,6 +423,13 @@ export function useCloudSync() {
           }
         }
 
+        if (isPermissionDenied) {
+          // PERMISSION_DENIED is generally a permanent condition until config/rules/auth
+          // are fixed; re-queueing would create endless retries and UI instability.
+          writePendingQueue(pendingQueueKey, []);
+          return;
+        }
+
         // Conservé volontairement (pas seulement en dev) : un échec d'écriture
         // silencieux ici est difficile à diagnostiquer sans ce log.
         console.error("[cloud-sync] pushCloudSnapshot a échoué :", err, mutation);
@@ -430,7 +438,7 @@ export function useCloudSync() {
         enqueuePendingMutation(mutation);
       }
     },
-    [cloudUserUid, database, enqueuePendingMutation, familyId, isEnabled]
+    [cloudUserUid, database, enqueuePendingMutation, familyId, isEnabled, pendingQueueKey]
   );
 
   const claimRoleForProfile = useCallback(
