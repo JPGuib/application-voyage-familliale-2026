@@ -178,10 +178,10 @@ development_status:
   21-2-avis-commentaires-lieux-visites: done
   epic-21-retrospective: optional
 
-  epic-22: in-progress
+  epic-22: done
   22-1-rappels-notifications: done
-  22-2-graphique-progression-scores: review
-  22-3-defi-collaboratif-familial: backlog
+  22-2-graphique-progression-scores: done
+  22-3-defi-collaboratif-familial: canceled
   epic-22-retrospective: optional
 
   epic-23: backlog
@@ -196,7 +196,7 @@ development_status:
 
   epic-25: backlog
   25-1-ecran-teaser-pre-depart: backlog
-  25-2-sondage-destination: backlog
+  25-2-sondage-destination: ready-for-dev
   25-3-transformation-faq-sondage-consultable: backlog
   epic-25-retrospective: optional
 

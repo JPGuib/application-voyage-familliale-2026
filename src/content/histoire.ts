@@ -11,8 +11,9 @@ export const HISTOIRE_TOPICS = [
     name: "De l'Anatolie à la Turquie moderne",
     shortDesc: "Des Hittites à la République, un voyage à travers 10 000 ans",
     tag: "Histoire",
-    image: "/images/Histoire/Anatolie-empire_romain-map.webp",
+    image: "/images/Histoire/Echelle de tps.webp",
     photos: [
+      "/images/Histoire/Echelle de tps.webp",
       "/images/Histoire/Anatolie-empire_romain-map.webp",
       "/images/Histoire/Entrée Saint Sophie Suluman.webp",
       "/images/Histoire/Histoire de la Turquie.webp",

@@ -25,7 +25,7 @@ Critères: impact architecture/design, effort de tests, risque de régression, d
 6. **Epic 25 — Teaser / Sondage / FAQ**
    Dépend explicitement de 21.2 (réutilise le mécanisme de commentaire), et implicitement de 24 et 19 (exclusion propriétaire/visiteur du score du sondage). Séquence interne obligatoire : 25.1 → 25.2 → 25.3.
 
-7. **Epic 22 — Rappels, graphique, défi collaboratif**
+7. **Epic 22 — Rappels, graphique, défi collaboratif** --> FAIT (pas de défit collectif)
    22.1 (notifications) porte un risque technique signalé par la story elle-même (limitations iOS Safari PWA) — à valider par un spike technique avant chiffrage. 22.2 est trivial une fois 19.2 en place. 22.3 est additif sur le jeu existant. Rien ici n'est bloquant pour les epics suivants.
 
 8. **Epic 23 — Réinitialisation nouveau voyage**
