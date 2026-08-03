@@ -3,14 +3,14 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "./App";
 
 const cloudSyncMock = vi.fn();
-const startTutorialFromProfileMock = vi.fn().mockResolvedValue(undefined);
+const startGlobalTutorialMock = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("../hooks/useCloudSync", () => ({
   useCloudSync: () => cloudSyncMock(),
 }));
 
 vi.mock("./tutorials/driver-runtime", () => ({
-  startTutorialFromProfile: (...args: unknown[]) => startTutorialFromProfileMock(...args),
+  startGlobalTutorial: (...args: unknown[]) => startGlobalTutorialMock(...args),
 }));
 
 vi.mock("../content/trip", () => ({
@@ -66,10 +66,10 @@ describe("App tutorial integration (Accueil)", () => {
   beforeEach(() => {
     localStorage.clear();
     cloudSyncMock.mockReset();
-    startTutorialFromProfileMock.mockClear();
+    startGlobalTutorialMock.mockClear();
   });
 
-  it("renders tutorial anchors on dashboard and triggers tutorial launch from selected profile", async () => {
+  it("renders tutorial anchors on dashboard and triggers global tutorial launch", async () => {
     localStorage.setItem("jp-active-profile-id", "p1");
 
     const snapshot = makeSnapshot("during");
@@ -95,22 +95,12 @@ describe("App tutorial integration (Accueil)", () => {
     expect(container.querySelector('[data-tutorial-id="dashboard-planning"]')).toBeTruthy();
     expect(container.querySelector('[data-tutorial-id="dashboard-map-preview"]')).toBeTruthy();
     expect(container.querySelector('[data-tutorial-id="bottom-nav-dashboard"]')).toBeTruthy();
+    expect(container.querySelector('[data-tutorial-id="dashboard-start-tutorial"]')).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: /Tutoriel interactif/i }));
 
     await waitFor(() => {
-      expect(container.querySelector('[data-tutorial-id="dashboard-tutorial-menu"]')).toBeTruthy();
-    });
-
-    expect(screen.getByRole("button", { name: /Découverte/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Première utilisation/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Avancé/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Administration/i })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /Avancé/i }));
-
-    await waitFor(() => {
-      expect(startTutorialFromProfileMock).toHaveBeenCalledWith("avance");
+      expect(startGlobalTutorialMock).toHaveBeenCalledTimes(1);
     });
   });
 });

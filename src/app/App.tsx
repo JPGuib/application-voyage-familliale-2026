@@ -151,8 +151,7 @@ import {
   validateDestinationProposals,
   type DestinationSurveyVote,
 } from "./destination-survey";
-import { startTutorialFromProfile } from "./tutorials/driver-runtime";
-import type { TutorialProfile } from "./tutorials/tutorial-loader";
+import { startGlobalTutorial } from "./tutorials/driver-runtime";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -2068,7 +2067,7 @@ function DashboardScreen({
 }: {
   quickActions: QuickAction[];
   onNavigate: (s: Screen) => void;
-  onStartTutorial: (profile: TutorialProfile) => void;
+  onStartTutorial: () => void;
   currentDay: number;
   totalDays: number;
   todayDestination: string;
@@ -2078,30 +2077,6 @@ function DashboardScreen({
   todayFormatted: string;
 }) {
   const [mapLightboxOpen, setMapLightboxOpen] = useState(false);
-  const [tutorialMenuOpen, setTutorialMenuOpen] = useState(false);
-
-  const tutorialProfiles: Array<{ id: TutorialProfile; label: string; subtitle: string }> = [
-    {
-      id: "decouverte",
-      label: "Découverte",
-      subtitle: "Prise en main rapide de l'accueil",
-    },
-    {
-      id: "premiere-utilisation",
-      label: "Première utilisation",
-      subtitle: "Parcours guidé pour démarrer",
-    },
-    {
-      id: "avance",
-      label: "Avancé",
-      subtitle: "Raccourcis et navigation experte",
-    },
-    {
-      id: "administration",
-      label: "Administration",
-      subtitle: "Paramètres et gouvernance profil",
-    },
-  ];
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       {/* Header */}
@@ -2203,7 +2178,7 @@ function DashboardScreen({
       {/* Tutoriel Accueil */}
       <div className="px-4 mt-3">
         <button
-          onClick={() => setTutorialMenuOpen(true)}
+          onClick={onStartTutorial}
           data-tutorial-id="dashboard-start-tutorial"
           className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 active:scale-95 transition-transform"
         >
@@ -2278,44 +2253,6 @@ function DashboardScreen({
               alt="Carte du circuit du séjour en Turquie"
               className="max-w-full max-h-full object-contain rounded-lg"
             />
-          </div>
-        </div>
-      )}
-
-      {tutorialMenuOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4"
-          data-tutorial-id="dashboard-tutorial-menu"
-        >
-          <div className="w-full max-w-sm rounded-2xl bg-card border border-border p-4 shadow-2xl">
-            <h2 className="text-base font-black text-foreground">Choisir un tutoriel</h2>
-            <p className="text-xs text-muted-foreground mt-1 mb-3">
-              Sélectionnez un niveau de parcours pour l'écran Accueil.
-            </p>
-
-            <div className="space-y-2">
-              {tutorialProfiles.map((profile) => (
-                <button
-                  key={profile.id}
-                  onClick={() => {
-                    onStartTutorial(profile.id);
-                    setTutorialMenuOpen(false);
-                  }}
-                  data-tutorial-id={`dashboard-tutorial-profile-${profile.id}`}
-                  className="w-full text-left rounded-xl border border-border px-3 py-2.5 active:scale-95 transition-transform"
-                >
-                  <p className="text-sm font-black text-foreground">{profile.label}</p>
-                  <p className="text-xs text-muted-foreground">{profile.subtitle}</p>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() => setTutorialMenuOpen(false)}
-              className="mt-3 w-full rounded-xl bg-muted py-2.5 text-sm font-black text-foreground active:scale-95 transition-transform"
-            >
-              Annuler
-            </button>
           </div>
         </div>
       )}
@@ -2493,11 +2430,12 @@ function PlanningScreen({
         <MemphisDecor />
         <button
           onClick={onBack}
+          data-tutorial-id="planning-back"
           className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
         >
           <ChevronLeft size={18} /> Accueil
         </button>
-        <h1 className="relative z-10 text-2xl font-black">Planning complet 📅</h1>
+        <h1 data-tutorial-id="planning-title" className="relative z-10 text-2xl font-black">Planning complet 📅</h1>
       </div>
 
       {/* Day cards */}
@@ -2597,15 +2535,17 @@ function GuideScreen({
         <MemphisDecor />
         <button
           onClick={onBack}
+          data-tutorial-id="guide-back"
           className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
         >
           <ChevronLeft size={18} /> Accueil
         </button>
-        <h1 className="relative z-10 text-2xl font-black">Guide du séjour 📖</h1>
+        <h1 data-tutorial-id="guide-title" className="relative z-10 text-2xl font-black">Guide du séjour 📖</h1>
 
         <div className="relative z-20 mt-3">
           <button
             onClick={() => setSelectorOpen((prev) => !prev)}
+            data-tutorial-id="guide-day-selector"
             className="w-full flex items-center justify-between bg-white/15 rounded-2xl px-4 py-3 backdrop-blur-sm"
           >
             <span className="text-left">
@@ -3985,11 +3925,12 @@ function ResultsScreen({
         <MemphisDecor />
         <button
           onClick={onBack}
+          data-tutorial-id="results-back"
           className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
         >
           <ChevronLeft size={18} /> Accueil
         </button>
-        <h1 className="relative z-10 text-2xl font-black">
+        <h1 data-tutorial-id="results-title" className="relative z-10 text-2xl font-black">
           Tableau des scores 🏆
         </h1>
         <p className="relative z-10 text-sm opacity-90 mt-1">
@@ -4364,11 +4305,12 @@ function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: nu
         <MemphisDecor />
         <button
           onClick={onBack}
+          data-tutorial-id="tips-back"
           className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
         >
           <ChevronLeft size={18} /> Accueil
         </button>
-        <h1 className="relative z-10 text-2xl font-black">
+        <h1 data-tutorial-id="tips-title" className="relative z-10 text-2xl font-black">
           Conseils de voyage 💡
         </h1>
         <p className="relative z-10 text-sm opacity-90 mt-1">
@@ -4713,11 +4655,12 @@ function SettingsScreen({
         <MemphisDecor />
         <button
           onClick={onBack}
+          data-tutorial-id="settings-back"
           className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
         >
           <ChevronLeft size={18} /> Accueil
         </button>
-        <h1 className="relative z-10 text-2xl font-black">
+        <h1 data-tutorial-id="settings-title" className="relative z-10 text-2xl font-black">
           Profil & paramètres ⚙️
         </h1>
         <p className="relative z-10 text-sm opacity-90 mt-1">
@@ -8980,8 +8923,8 @@ export default function App() {
     ? screen
     : getSafeScreen(profile.role, phase);
 
-  const startAccueilTutorial = (profile: TutorialProfile) => {
-    void startTutorialFromProfile(profile);
+  const startAccueilTutorial = () => {
+    void startGlobalTutorial();
   };
 
   const renderScreen = () => {
