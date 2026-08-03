@@ -152,6 +152,7 @@ import {
   type DestinationSurveyVote,
 } from "./destination-survey";
 import { startTutorialFromProfile } from "./tutorials/driver-runtime";
+import type { TutorialProfile } from "./tutorials/tutorial-loader";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -2067,7 +2068,7 @@ function DashboardScreen({
 }: {
   quickActions: QuickAction[];
   onNavigate: (s: Screen) => void;
-  onStartTutorial: () => void;
+  onStartTutorial: (profile: TutorialProfile) => void;
   currentDay: number;
   totalDays: number;
   todayDestination: string;
@@ -2077,6 +2078,30 @@ function DashboardScreen({
   todayFormatted: string;
 }) {
   const [mapLightboxOpen, setMapLightboxOpen] = useState(false);
+  const [tutorialMenuOpen, setTutorialMenuOpen] = useState(false);
+
+  const tutorialProfiles: Array<{ id: TutorialProfile; label: string; subtitle: string }> = [
+    {
+      id: "decouverte",
+      label: "Découverte",
+      subtitle: "Prise en main rapide de l'accueil",
+    },
+    {
+      id: "premiere-utilisation",
+      label: "Première utilisation",
+      subtitle: "Parcours guidé pour démarrer",
+    },
+    {
+      id: "avance",
+      label: "Avancé",
+      subtitle: "Raccourcis et navigation experte",
+    },
+    {
+      id: "administration",
+      label: "Administration",
+      subtitle: "Paramètres et gouvernance profil",
+    },
+  ];
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       {/* Header */}
@@ -2178,7 +2203,7 @@ function DashboardScreen({
       {/* Tutoriel Accueil */}
       <div className="px-4 mt-3">
         <button
-          onClick={onStartTutorial}
+          onClick={() => setTutorialMenuOpen(true)}
           data-tutorial-id="dashboard-start-tutorial"
           className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 active:scale-95 transition-transform"
         >
@@ -2253,6 +2278,44 @@ function DashboardScreen({
               alt="Carte du circuit du séjour en Turquie"
               className="max-w-full max-h-full object-contain rounded-lg"
             />
+          </div>
+        </div>
+      )}
+
+      {tutorialMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4"
+          data-tutorial-id="dashboard-tutorial-menu"
+        >
+          <div className="w-full max-w-sm rounded-2xl bg-card border border-border p-4 shadow-2xl">
+            <h2 className="text-base font-black text-foreground">Choisir un tutoriel</h2>
+            <p className="text-xs text-muted-foreground mt-1 mb-3">
+              Sélectionnez un niveau de parcours pour l'écran Accueil.
+            </p>
+
+            <div className="space-y-2">
+              {tutorialProfiles.map((profile) => (
+                <button
+                  key={profile.id}
+                  onClick={() => {
+                    onStartTutorial(profile.id);
+                    setTutorialMenuOpen(false);
+                  }}
+                  data-tutorial-id={`dashboard-tutorial-profile-${profile.id}`}
+                  className="w-full text-left rounded-xl border border-border px-3 py-2.5 active:scale-95 transition-transform"
+                >
+                  <p className="text-sm font-black text-foreground">{profile.label}</p>
+                  <p className="text-xs text-muted-foreground">{profile.subtitle}</p>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setTutorialMenuOpen(false)}
+              className="mt-3 w-full rounded-xl bg-muted py-2.5 text-sm font-black text-foreground active:scale-95 transition-transform"
+            >
+              Annuler
+            </button>
           </div>
         </div>
       )}
@@ -8917,8 +8980,8 @@ export default function App() {
     ? screen
     : getSafeScreen(profile.role, phase);
 
-  const startAccueilTutorial = () => {
-    void startTutorialFromProfile("decouverte");
+  const startAccueilTutorial = (profile: TutorialProfile) => {
+    void startTutorialFromProfile(profile);
   };
 
   const renderScreen = () => {

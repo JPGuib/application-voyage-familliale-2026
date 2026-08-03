@@ -69,7 +69,7 @@ describe("App tutorial integration (Accueil)", () => {
     startTutorialFromProfileMock.mockClear();
   });
 
-  it("renders tutorial anchors on dashboard and triggers tutorial launch", async () => {
+  it("renders tutorial anchors on dashboard and triggers tutorial launch from selected profile", async () => {
     localStorage.setItem("jp-active-profile-id", "p1");
 
     const snapshot = makeSnapshot("during");
@@ -99,7 +99,18 @@ describe("App tutorial integration (Accueil)", () => {
     fireEvent.click(screen.getByRole("button", { name: /Tutoriel interactif/i }));
 
     await waitFor(() => {
-      expect(startTutorialFromProfileMock).toHaveBeenCalledWith("decouverte");
+      expect(container.querySelector('[data-tutorial-id="dashboard-tutorial-menu"]')).toBeTruthy();
+    });
+
+    expect(screen.getByRole("button", { name: /Découverte/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Première utilisation/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Avancé/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Administration/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Avancé/i }));
+
+    await waitFor(() => {
+      expect(startTutorialFromProfileMock).toHaveBeenCalledWith("avance");
     });
   });
 });
