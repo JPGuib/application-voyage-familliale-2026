@@ -6458,16 +6458,39 @@ export default function App() {
 
     previousPhaseRef.current = phase;
 
-    if (phase === "during") {
-      setScreen("dashboard");
+    // Owners have unrestricted access across phase changes — don't redirect them.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (profile.role === "proprietaire") {
+      if (phase === "before") {
+        setDestinationSurveyVotes({});
+        setDestinationSurveyDrafts(["", "", ""]);
+        setDestinationSurveyError(null);
+      }
       return;
     }
 
+    if (phase === "during") {
+      // Stay on checklist (or any accessible screen) — only navigate to dashboard
+      // if the current screen is not accessible in the new phase.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      if (!canAccessScreen(profile.role, phase, screen)) {
+        setScreen("dashboard");
+      }
+      return;
+    }
+
+    // Phase → "before": reset survey state and redirect with denial message if needed.
     setDestinationSurveyVotes({});
     setDestinationSurveyDrafts(["", "", ""]);
     setDestinationSurveyError(null);
-    setScreen("checklist");
-  }, [phase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!canAccessScreen(profile.role, phase, screen)) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, screen));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      setScreen(getSafeScreen(profile.role, phase));
+    }
+  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persistance de l'écran affiché (préférence locale à cet appareil, pas une
   // donnée familiale) — volontairement indépendante du mode cloud/local, pour
@@ -8207,13 +8230,13 @@ export default function App() {
     setAccessDeniedMessage(null);
     setPhase(nextPhase);
 
+    // The owner stays on their current screen (settings) so they can see the
+    // updated lock badge immediately. The phase-change effect handles redirecting
+    // non-owners on inaccessible screens.
     if (nextPhase === "before") {
       setDestinationSurveyVotes({});
       setDestinationSurveyDrafts(["", "", ""]);
       setDestinationSurveyError(null);
-      setScreen("checklist");
-    } else {
-      setScreen("dashboard");
     }
 
     return {
