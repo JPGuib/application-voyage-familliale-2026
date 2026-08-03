@@ -622,6 +622,31 @@ export async function pushCloudSnapshot(
   await update(ref(database, familyPath(familyId)), updates);
 }
 
+export async function pushDestinationSurveyVoteOnly(
+  database: Database,
+  familyId: string,
+  payload: {
+    actorUid: string;
+    profileId: string;
+    vote: CloudDestinationSurveyVote;
+    phase: TravelPhase;
+  }
+): Promise<void> {
+  if (payload.phase !== "before") {
+    return;
+  }
+
+  const updates: Record<string, unknown> = {
+    [`destinationSurvey/${payload.profileId}`]: {
+      ...payload.vote,
+      profileId: payload.profileId,
+      authorUid: payload.actorUid,
+    },
+  };
+
+  await update(ref(database, familyPath(familyId)), updates);
+}
+
 export async function claimProfileRole(
   database: Database,
   familyId: string,

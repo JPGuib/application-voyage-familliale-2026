@@ -6,6 +6,7 @@ import {
   ensureFamilyMembership,
   ensureOwnerMembership,
   observeFamilySnapshot,
+  pushDestinationSurveyVoteOnly,
   pushCloudSnapshot,
   pushGameDayOverride,
   resetGameProgressInCloud,
@@ -380,6 +381,32 @@ export function useCloudSync() {
             return;
           } catch {
             // Fall through to queue + logging below.
+          }
+        }
+
+        if (
+          isPermissionDenied &&
+          mutation.phase === "before" &&
+          mutation.profileDestinationSurveyVote
+        ) {
+          try {
+            await pushDestinationSurveyVoteOnly(database, familyId, {
+              actorUid: mutation.actorUid,
+              profileId: mutation.profileId,
+              vote: mutation.profileDestinationSurveyVote,
+              phase: mutation.phase,
+            });
+            console.info("[cloud-sync] survey-only fallback write succeeded", {
+              familyId,
+              profileId: mutation.profileId,
+            });
+            setCloudAuthError(null);
+            return;
+          } catch (fallbackError) {
+            console.error("[cloud-sync] survey-only fallback write failed", fallbackError, {
+              familyId,
+              profileId: mutation.profileId,
+            });
           }
         }
 
