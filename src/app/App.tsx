@@ -6869,11 +6869,22 @@ export default function App() {
         ? previous
         : nextFromCloud;
     });
-    setDestinationSurveyVotes((previous) =>
-      areDestinationSurveyVotesEqual(previous, cloudSnapshot.destinationSurvey ?? {})
+    setDestinationSurveyVotes((previous) => {
+      const nextFromCloud = cloudSnapshot.destinationSurvey ?? {};
+      const pendingVote = pendingDestinationSurveyVoteRef.current;
+      if (pendingVote !== "none") {
+        const cloudVote = nextFromCloud[pendingVote.profileId] ?? null;
+        if (JSON.stringify(cloudVote) !== pendingVote.serializedVote) {
+          // Snapshot cloud probablement antérieur à notre dernière saisie locale.
+          return previous;
+        }
+        pendingDestinationSurveyVoteRef.current = "none";
+      }
+
+      return areDestinationSurveyVotesEqual(previous, nextFromCloud)
         ? previous
-        : cloudSnapshot.destinationSurvey ?? {}
-    );
+        : nextFromCloud;
+    });
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
@@ -7025,6 +7036,15 @@ export default function App() {
   // Évite qu'un snapshot cloud intermédiaire (encore ancien) n'écrase un
   // commentaire local juste après création/édition/suppression.
   const pendingPlaceCommentsRef = useRef<string | "none">("none");
+  // Évite qu'un snapshot cloud intermédiaire (encore ancien) n'écrase le
+  // dernier vote sondage local (sinon effet de clignotement à l'écran).
+  const pendingDestinationSurveyVoteRef = useRef<
+    | {
+        profileId: string;
+        serializedVote: string;
+      }
+    | "none"
+  >("none");
   const previousCommentsSnapshotRef = useRef<PlaceCommentsByPlace | null>(null);
   const lastChecklistReminderKeyRef = useRef<string | null>(null);
   const ownerDeviceRegisteredRef = useRef(false);
@@ -7735,6 +7755,13 @@ export default function App() {
       authorUid: cloudActorUid ?? undefined,
     };
 
+    if (cloudEnabled) {
+      pendingDestinationSurveyVoteRef.current = {
+        profileId: profile.id,
+        serializedVote: JSON.stringify(vote),
+      };
+    }
+
     setDestinationSurveyVotes((previous) => ({
       ...previous,
       [profile.id]: vote,
@@ -7880,6 +7907,7 @@ export default function App() {
     resetRecoveryPromptState();
     setDestinationSurveyDrafts(["", "", ""]);
     setDestinationSurveyError(null);
+    pendingDestinationSurveyVoteRef.current = "none";
     setUnlockFailedAttempts(0);
     setUnlockLockedUntil(0);
 

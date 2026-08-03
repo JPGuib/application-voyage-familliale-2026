@@ -16,6 +16,25 @@ type FirebaseEnv = {
   appId: string;
 };
 
+let hasLoggedFirebaseEnvMismatch = false;
+
+function databaseUrlMatchesProjectId(databaseURL: string, projectId: string): boolean {
+  try {
+    const hostname = new URL(databaseURL).hostname.toLowerCase();
+    const normalizedProjectId = projectId.toLowerCase();
+
+    // Legacy domain: <project-id>.firebaseio.com
+    if (hostname === `${normalizedProjectId}.firebaseio.com`) {
+      return true;
+    }
+
+    // New default RTDB naming: <project-id>-default-rtdb.<region>.firebasedatabase.app
+    return hostname.startsWith(`${normalizedProjectId}-`);
+  } catch {
+    return false;
+  }
+}
+
 function readFirebaseEnv(): FirebaseEnv | null {
   const apiKey = import.meta.env.VITE_FIREBASE_API_KEY as string | undefined;
   const authDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string | undefined;
@@ -24,6 +43,17 @@ function readFirebaseEnv(): FirebaseEnv | null {
   const appId = import.meta.env.VITE_FIREBASE_APP_ID as string | undefined;
 
   if (!apiKey || !authDomain || !databaseURL || !projectId || !appId) {
+    return null;
+  }
+
+  if (!databaseUrlMatchesProjectId(databaseURL, projectId)) {
+    if (!hasLoggedFirebaseEnvMismatch) {
+      hasLoggedFirebaseEnvMismatch = true;
+      console.error(
+        "[firebase-config] Invalid Firebase env: projectId and databaseURL target different backends.",
+        { projectId, databaseURL }
+      );
+    }
     return null;
   }
 
