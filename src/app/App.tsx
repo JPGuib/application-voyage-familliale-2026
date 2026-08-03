@@ -113,6 +113,19 @@ import {
   isTripFinished,
   isValidTripStartDate,
 } from "./trip-day";
+import {
+  type NotificationPermissionStatus,
+  type NotificationPreferences,
+  DEFAULT_NOTIFICATION_PREFS,
+  areNotificationsSupported,
+  getNotificationPermissionStatus,
+  readNotificationPreferences,
+  requestPermission,
+  shouldTriggerChecklistReminder,
+  shouldTriggerGameReminder,
+  showNotification,
+  updateNotificationPreferences,
+} from "./notifications";
 import { useCloudSync } from "../hooks/useCloudSync";
 import {
   filterCategoriesForProfile,
@@ -4144,6 +4157,10 @@ function SettingsScreen({
   lastDefinedDay,
   gameDayOverride,
   onSetGameDayOverride,
+  notificationPreferences,
+  notificationPermissionStatus,
+  notificationsSupported,
+  onToggleNotificationPreference,
   onResetScores,
   familyMembersForGameProgressReset,
   onResetGameProgress,
@@ -4190,6 +4207,12 @@ function SettingsScreen({
   onSetGameDayOverride: (
     code: string,
     value: "open" | "closed" | null
+  ) => Promise<{ ok: boolean; message: string }>;
+  notificationPreferences: NotificationPreferences;
+  notificationPermissionStatus: NotificationPermissionStatus;
+  notificationsSupported: boolean;
+  onToggleNotificationPreference: (
+    key: "notif_checklist" | "notif_game" | "notif_comments"
   ) => Promise<{ ok: boolean; message: string }>;
   onResetScores: (
     code: string,
@@ -4280,6 +4303,18 @@ function SettingsScreen({
   const [deleteProfileProofInput, setDeleteProfileProofInput] = useState("");
   const [showDeleteProfileProofInput, setShowDeleteProfileProofInput] = useState(false);
   const [deleteProfileConfirmError, setDeleteProfileConfirmError] = useState<string | null>(null);
+  const [notificationFeedback, setNotificationFeedback] = useState<string | null>(null);
+
+  const notificationStatusLabel =
+    notificationPermissionStatus === "granted"
+      ? "Accordee"
+      : notificationPermissionStatus === "denied"
+        ? "Refusee"
+        : notificationPermissionStatus === "default"
+          ? "Non demandee"
+          : "Non supportee";
+  const notificationTogglesDisabled =
+    !notificationsSupported || notificationPermissionStatus === "denied";
 
   useEffect(() => {
     if (!profileRecoveryConfigured && passwordProofMethod === "recovery") {
@@ -4420,6 +4455,74 @@ function SettingsScreen({
           <p className="text-xs text-muted-foreground mt-2">
             Le rôle est défini à la création du profil pour ce MVP.
           </p>
+        </div>
+
+        <div className="bg-card rounded-2xl border border-border p-4">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+            Notifications
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Etat de la permission navigateur: {notificationStatusLabel}
+          </p>
+          {notificationTogglesDisabled && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Autorisez les notifications dans les parametres de votre navigateur pour activer les rappels.
+            </p>
+          )}
+
+          <div className="mt-3 grid grid-cols-1 gap-2">
+            <button
+              type="button"
+              onClick={async () => {
+                const result = await onToggleNotificationPreference("notif_checklist");
+                setNotificationFeedback(result.message);
+              }}
+              disabled={notificationTogglesDisabled}
+              className={`w-full rounded-xl py-3 text-sm font-black border transition-colors ${
+                notificationPreferences.notif_checklist
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-foreground"
+              } disabled:opacity-40`}
+            >
+              Rappel checklist (J-3 et J-1 avant le depart)
+            </button>
+
+            <button
+              type="button"
+              onClick={async () => {
+                const result = await onToggleNotificationPreference("notif_game");
+                setNotificationFeedback(result.message);
+              }}
+              disabled={notificationTogglesDisabled}
+              className={`w-full rounded-xl py-3 text-sm font-black border transition-colors ${
+                notificationPreferences.notif_game
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-foreground"
+              } disabled:opacity-40`}
+            >
+              Rappel defi du jour
+            </button>
+
+            <button
+              type="button"
+              onClick={async () => {
+                const result = await onToggleNotificationPreference("notif_comments");
+                setNotificationFeedback(result.message);
+              }}
+              disabled={notificationTogglesDisabled}
+              className={`w-full rounded-xl py-3 text-sm font-black border transition-colors ${
+                notificationPreferences.notif_comments
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-foreground"
+              } disabled:opacity-40`}
+            >
+              Commentaires de la famille sur les lieux
+            </button>
+          </div>
+
+          {notificationFeedback && (
+            <p className="mt-2 text-xs font-bold text-muted-foreground">{notificationFeedback}</p>
+          )}
         </div>
 
         <div className="bg-card rounded-2xl border border-border p-4">
@@ -5761,6 +5864,11 @@ export default function App() {
       return {};
     }
   });
+  const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences>(
+    DEFAULT_NOTIFICATION_PREFS
+  );
+  const [notificationPermissionStatus, setNotificationPermissionStatus] =
+    useState<NotificationPermissionStatus>(() => getNotificationPermissionStatus());
   const [newItemDrafts, setNewItemDrafts] = useState<Record<string, string>>({});
   const [gameState, setGameState] = useState<GameState>(() => {
     if (cloudEnabled) {
@@ -6676,6 +6784,8 @@ export default function App() {
   // Évite qu'un snapshot cloud intermédiaire (encore ancien) n'écrase un
   // commentaire local juste après création/édition/suppression.
   const pendingPlaceCommentsRef = useRef<string | "none">("none");
+  const previousCommentsSnapshotRef = useRef<PlaceCommentsByPlace | null>(null);
+  const lastChecklistReminderKeyRef = useRef<string | null>(null);
   const ownerDeviceRegisteredRef = useRef(false);
   // Empêche le push automatique de re-créer un profil dans le cloud pendant
   // la fenêtre asynchrone entre la suppression cloud et le reset local de
@@ -6854,6 +6964,24 @@ export default function App() {
     profile.householdRole,
     pushSnapshot,
   ]);
+
+  useEffect(() => {
+    setNotificationPreferences(readNotificationPreferences(profile.id));
+    setNotificationPermissionStatus(getNotificationPermissionStatus());
+  }, [profile.id]);
+
+  useEffect(() => {
+    const syncPermission = () => {
+      setNotificationPermissionStatus(getNotificationPermissionStatus());
+    };
+
+    window.addEventListener("focus", syncPermission);
+    document.addEventListener("visibilitychange", syncPermission);
+    return () => {
+      window.removeEventListener("focus", syncPermission);
+      document.removeEventListener("visibilitychange", syncPermission);
+    };
+  }, []);
 
   useEffect(() => {
     const currentRole = profile.role;
@@ -8146,6 +8274,116 @@ export default function App() {
   const totalDays = lastDefinedDay ?? TRIP.totalDays;
   const alreadyPlayedToday = gameHistory.find((entry) => entry.day === currentDay) ?? null;
   const gameDayOverride = cloudSnapshot?.gameDayOverrides?.[currentDay] ?? null;
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+    if (!shouldTriggerChecklistReminder(daysUntilStart, pct, notificationPreferences)) {
+      return;
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const reminderKey = `${profile.id}:${today}:${daysUntilStart}`;
+    if (lastChecklistReminderKeyRef.current === reminderKey) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const shown = showNotification(
+        "Checklist avant le depart",
+        `Il reste ${daysUntilStart} jour(s) avant le depart - votre checklist n'est pas complete.`
+      );
+      if (shown) {
+        lastChecklistReminderKeyRef.current = reminderKey;
+      }
+    }, 250);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [daysUntilStart, isAuthenticated, notificationPreferences, pct, profile.id]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    if (!shouldTriggerGameReminder(currentDay, gameHistory, today, notificationPreferences)) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const shown = showNotification("Defi du jour", "Tu n'as pas encore joue aujourd'hui !");
+      if (!shown) {
+        return;
+      }
+
+      const updated = updateNotificationPreferences(profile.id, {
+        lastGameReminderDate: today,
+      });
+      setNotificationPreferences(updated);
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [currentDay, gameHistory, isAuthenticated, notificationPreferences, profile.id]);
+
+  useEffect(() => {
+    const previousComments = previousCommentsSnapshotRef.current;
+    previousCommentsSnapshotRef.current = placeCommentsByPlace;
+
+    if (!previousComments || !notificationPreferences.notif_comments) {
+      return;
+    }
+
+    for (const [placeId, placeComments] of Object.entries(placeCommentsByPlace)) {
+      const previousForPlace = previousComments[placeId] ?? {};
+      for (const [commentId, comment] of Object.entries(placeComments)) {
+        if (previousForPlace[commentId]) {
+          continue;
+        }
+        if (comment.authorProfileId === profile.id) {
+          continue;
+        }
+
+        const placeName = PLACES.find((place) => place.id === placeId)?.name ?? placeId;
+        showNotification(
+          "Nouveau commentaire",
+          `${comment.authorSurnameSnapshot} a commente ${placeName}`
+        );
+      }
+    }
+  }, [notificationPreferences.notif_comments, placeCommentsByPlace, profile.id]);
+
+  const toggleNotificationPreference = async (
+    key: "notif_checklist" | "notif_game" | "notif_comments"
+  ): Promise<{ ok: boolean; message: string }> => {
+    const currentlyEnabled = notificationPreferences[key];
+
+    if (!currentlyEnabled && notificationPermissionStatus !== "granted") {
+      const permission = await requestPermission();
+      setNotificationPermissionStatus(permission);
+      if (permission !== "granted") {
+        return {
+          ok: false,
+          message:
+            "Permission de notification refusee. L'application continue de fonctionner normalement.",
+        };
+      }
+    }
+
+    const updated = updateNotificationPreferences(profile.id, {
+      [key]: !currentlyEnabled,
+    });
+    setNotificationPreferences(updated);
+    return {
+      ok: true,
+      message: !currentlyEnabled ? "Notification activee." : "Notification desactivee.",
+    };
+  };
   const familyMembersForPodium: PodiumProfileInput[] = cloudSnapshot
     ? Object.values(cloudSnapshot.profiles).map((item) => ({
         profileId: item.profileId,
@@ -8873,6 +9111,10 @@ export default function App() {
             lastDefinedDay={lastDefinedDay}
             gameDayOverride={gameDayOverride}
             onSetGameDayOverride={confirmDayOverrideChange}
+            notificationPreferences={notificationPreferences}
+            notificationPermissionStatus={notificationPermissionStatus}
+            notificationsSupported={areNotificationsSupported()}
+            onToggleNotificationPreference={toggleNotificationPreference}
             onResetScores={confirmScoreReset}
             familyMembersForGameProgressReset={familyMembersForPodium.map((member) => ({
               profileId: member.profileId,
@@ -9525,6 +9767,10 @@ export default function App() {
             lastDefinedDay={lastDefinedDay}
             gameDayOverride={gameDayOverride}
             onSetGameDayOverride={confirmDayOverrideChange}
+            notificationPreferences={notificationPreferences}
+            notificationPermissionStatus={notificationPermissionStatus}
+            notificationsSupported={areNotificationsSupported()}
+            onToggleNotificationPreference={toggleNotificationPreference}
             onResetScores={confirmScoreReset}
             familyMembersForGameProgressReset={familyMembersForPodium.map((member) => ({
               profileId: member.profileId,
