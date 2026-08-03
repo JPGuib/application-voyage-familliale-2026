@@ -3017,10 +3017,10 @@ function ContentDetailScreen({
             {item.anecdotes.map((anecdote, i) => (
               <div
                 key={i}
-                className="flex gap-3 bg-[#FFF3E0] rounded-2xl p-3.5"
+                className="flex w-fit max-w-full items-center gap-3 rounded-2xl bg-[#FFF3E0] px-3.5 py-2.5"
               >
                 <span className="text-lg flex-shrink-0">💡</span>
-                <p className="text-sm text-foreground/80 leading-relaxed">
+                <p className="text-sm leading-snug text-foreground/80">
                   {anecdote}
                 </p>
               </div>
