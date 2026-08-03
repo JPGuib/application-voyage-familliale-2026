@@ -7093,8 +7093,13 @@ export default function App() {
       !ownerDeviceRegisteredRef.current &&
       typeof registerAsOwnerDevice === "function"
     ) {
-      ownerDeviceRegisteredRef.current = true;
-      void registerAsOwnerDevice();
+      void registerAsOwnerDevice()
+        .then(() => {
+          ownerDeviceRegisteredRef.current = true;
+        })
+        .catch(() => {
+          // Keep retrying on subsequent pushes until registration succeeds.
+        });
     }
     const profilePasswordHash = profilePasswordHashes[profile.id] || "";
     const profileRecoveryHash = profileRecoveryHashes[profile.id] || "";

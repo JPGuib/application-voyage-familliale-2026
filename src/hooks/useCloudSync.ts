@@ -350,9 +350,27 @@ export function useCloudSync() {
       }
 
       try {
+        if (mutation.canWriteFamilyState) {
+          // Owner-scoped writes depend on ownerMembers/{familyId}/{uid}.
+          await ensureOwnerMembership(database, familyId, cloudUserUid);
+        }
         await pushCloudSnapshot(database, familyId, mutation);
         setCloudAuthError(null);
       } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        const isPermissionDenied = errorMessage.includes("PERMISSION_DENIED");
+
+        if (mutation.canWriteFamilyState && isPermissionDenied) {
+          try {
+            await ensureOwnerMembership(database, familyId, cloudUserUid);
+            await pushCloudSnapshot(database, familyId, mutation);
+            setCloudAuthError(null);
+            return;
+          } catch {
+            // Fall through to queue + logging below.
+          }
+        }
+
         // Conservé volontairement (pas seulement en dev) : un échec d'écriture
         // silencieux ici est difficile à diagnostiquer sans ce log.
         console.error("[cloud-sync] pushCloudSnapshot a échoué :", err, mutation);
