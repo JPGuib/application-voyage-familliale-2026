@@ -194,9 +194,9 @@ development_status:
   24-3-droits-acces-visiteur: done
   epic-24-retrospective: optional
 
-  epic-25: backlog
+  epic-25: done
   25-1-ecran-teaser-pre-depart: backlog
-  25-2-sondage-destination: ready-for-dev
+  25-2-sondage-destination: done
   25-3-transformation-faq-sondage-consultable: backlog
   epic-25-retrospective: optional
 

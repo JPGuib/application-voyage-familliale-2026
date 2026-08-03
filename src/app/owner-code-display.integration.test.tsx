@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "./App";
 
@@ -62,7 +62,7 @@ async function renderSettingsAsOwner(ownerCodePlain: string) {
   render(<App />);
 
   await waitFor(() => {
-    expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
   });
 
   fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
@@ -118,7 +118,7 @@ describe("owner code display in settings (story 18.8)", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: "Accueil" })[0]);
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));

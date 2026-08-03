@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from "react";
+﻿import { useState, useEffect, useRef, type ReactNode } from "react";
 import {
   type LucideIcon,
   Check,
@@ -1692,7 +1692,7 @@ function ChecklistScreen({
             </button>
           </div>
           <h1 className="text-2xl font-black leading-tight mb-4">
-            Préparer nos bagages
+            Préparation des bagages
           </h1>
           <div className="bg-white/20 rounded-full h-3 mb-1.5">
             <div
@@ -1725,13 +1725,13 @@ function ChecklistScreen({
             Où allons-nous ?
           </h2>
           <p className="mt-1 text-sm font-semibold text-muted-foreground">
-            Tu peux proposer jusqu'a 3 destinations.
+            Tu peux proposer jusqu'à 3 pays.
           </p>
           <p className="text-sm font-semibold text-muted-foreground">
-            Points: 20 si bonne réponse, +10 si premier, +5 si deuxième.
+            Points: 20 si bonne réponse, +10 si premier choix, +5 si deuxième choix.
           </p>
           <p className="text-sm font-semibold text-muted-foreground">
-            Après déblocage, les réponses sont figées et les résultats apparaissent ici.
+            Une fois le voyage commencé, les réponses sont figées, les points acquis comptent dans le challenge global ... héhéhé.
           </p>
 
           {unlockActionsEnabled ? (
@@ -1775,6 +1775,10 @@ function ChecklistScreen({
             </div>
           )}
         </section>
+
+        <p className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground px-1 pt-1">
+          Checklist de préparation
+        </p>
 
         {categories.map((cat) => {
           const catChecked = cat.items.filter((i) => checked[i.id]).length;
@@ -8769,7 +8773,7 @@ export default function App() {
         },
       ];
   const destinationSurveyResults = computeDestinationSurveyResults({
-    destination: todayDestination,
+    destination: TRIP.surveyDestination,
     participants: destinationSurveyParticipants,
     votesByProfile: destinationSurveyVotes,
   });

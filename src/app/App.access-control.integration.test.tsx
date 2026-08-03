@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import App from "./App";
 import { hashOwnerCode } from "./owner-code";
@@ -84,7 +84,7 @@ describe("App access-control integration", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.getByRole("button", { name: "Accueil" })).toBeInTheDocument();
@@ -132,7 +132,7 @@ describe("App access-control integration", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.queryByRole("button", { name: "Accueil" })).not.toBeInTheDocument();
@@ -157,7 +157,7 @@ describe("App access-control integration", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.queryByRole("button", { name: "Accueil" })).not.toBeInTheDocument();
@@ -196,7 +196,7 @@ describe("App access-control integration", () => {
     view.rerender(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Acces refuse/i)).toBeInTheDocument();
@@ -226,7 +226,7 @@ describe("App access-control integration", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Checklist/i }));
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
@@ -574,14 +574,14 @@ describe("App access-control integration", () => {
     const view = render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     snapshot = makeSnapshot("during");
     view.rerender(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.queryByText(/Jour\s+1/i)).not.toBeInTheDocument();
@@ -611,7 +611,7 @@ describe("App access-control integration", () => {
     fireEvent.click(screen.getByRole("button", { name: /Checklist/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.queryByRole("button", { name: /On est partis/i })).not.toBeInTheDocument();
@@ -666,7 +666,7 @@ describe("App checklist filtering integration (story 10.4)", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Vêtements pour les hommes/i)).toBeInTheDocument();
@@ -691,7 +691,7 @@ describe("App checklist filtering integration (story 10.4)", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Vêtements pour les femmes/i)).toBeInTheDocument();
@@ -716,7 +716,7 @@ describe("App checklist filtering integration (story 10.4)", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Vêtements pour les hommes/i)).toBeInTheDocument();
@@ -742,7 +742,7 @@ describe("App checklist filtering integration (story 10.4)", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Vêtements pour les hommes/i)).toBeInTheDocument();

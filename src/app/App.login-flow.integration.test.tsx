@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "./App";
 import { hashOwnerRecoveryPhrase } from "./owner-recovery";
@@ -118,7 +118,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
   });
 
@@ -129,7 +129,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -180,7 +180,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("heading", { name: "Préparer nos bagages" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Préparation des bagages" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Checklist/i })).toBeInTheDocument();
   });
 
@@ -221,7 +221,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("heading", { name: "Préparer nos bagages" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Préparation des bagages" })).not.toBeInTheDocument();
   });
 
   it("keeps current session when switch profile confirmation is canceled", async () => {
@@ -231,7 +231,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -251,7 +251,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -262,7 +262,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("heading", { name: "Préparer nos bagages" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Préparation des bagages" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Paramètres" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Maman/i })).toBeInTheDocument();
   });
@@ -282,7 +282,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id");
@@ -406,7 +406,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id");
@@ -594,7 +594,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id");
@@ -745,7 +745,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id")!;
@@ -905,7 +905,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id");
@@ -980,7 +980,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
   });
 
@@ -1017,7 +1017,7 @@ describe("App cloud login flow", () => {
         screen.getByText("Authentification impossible. Vérifiez les informations saisies.")
       ).toBeInTheDocument();
     });
-    expect(screen.queryByRole("heading", { name: "Préparer nos bagages" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Préparation des bagages" })).not.toBeInTheDocument();
   });
 
   it("fails closed during remembered-profile bootstrap when hash is malformed", async () => {
@@ -1054,7 +1054,7 @@ describe("App cloud login flow", () => {
     });
 
     expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Préparer nos bagages" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Préparation des bagages" })).not.toBeInTheDocument();
   });
 
   it("does not show a button to remove a configured profile password", async () => {
@@ -1064,7 +1064,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1197,7 +1197,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Réinitialiser" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     expect(pushSnapshotMock).toHaveBeenCalled();
@@ -1261,7 +1261,7 @@ describe("App cloud login flow", () => {
     });
 
     expect(pushSnapshotMock).not.toHaveBeenCalled();
-    expect(screen.queryByRole("heading", { name: "Préparer nos bagages" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Préparation des bagages" })).not.toBeInTheDocument();
   });
 
   it("returns to password prompt when recovery is canceled", async () => {
@@ -1338,7 +1338,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1397,7 +1397,7 @@ describe("App cloud login flow", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
   });
 
@@ -1436,7 +1436,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1502,7 +1502,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1567,7 +1567,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1610,7 +1610,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1774,7 +1774,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1829,7 +1829,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1845,7 +1845,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1917,7 +1917,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1971,7 +1971,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -2027,7 +2027,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -2054,7 +2054,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -2105,7 +2105,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     // Ordinary session sync pushes happen while logged in, before any
@@ -2173,7 +2173,7 @@ describe("App profile metadata hydration (story 10.4)", () => {
 
     // After hydration the female user should NOT see mens clothing
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Vêtements pour les femmes/i)).toBeInTheDocument();
@@ -2209,7 +2209,7 @@ describe("App profile metadata hydration (story 10.4)", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparer nos bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     // Switch profile
@@ -2259,7 +2259,7 @@ describe("App profile recovery question settings (story 10.6)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -2287,7 +2287,7 @@ describe("App profile recovery question settings (story 10.6)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -2315,7 +2315,7 @@ describe("App profile recovery question settings (story 10.6)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparer nos bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));

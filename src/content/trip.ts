@@ -4,4 +4,5 @@ export const TRIP = {
   currentDay: 1,
   todayDestination: "Istanbul",
   todaySubtitle: "Sultanahmet & Bosphore",
+  surveyDestination: "Turquie",
 };
