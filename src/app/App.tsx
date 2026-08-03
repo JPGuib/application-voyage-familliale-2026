@@ -300,8 +300,8 @@ const MAX_PLACE_COMMENT_LENGTH = 500;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
-const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
+type Screen = "checklist" | "dashboard" | "guide" | "planning" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
 type QuickScreen = "checklist" | "guide" | "map" | "histoire" | "geographie" | "culture" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
@@ -1989,6 +1989,27 @@ function DashboardScreen({
         </button>
       </div>
 
+      {/* Planning complet button */}
+      <div className="px-4 mt-4">
+        <button
+          onClick={() => onNavigate("planning")}
+          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 active:scale-95 transition-transform"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">📅</span>
+            <div className="text-left">
+              <p className="font-black text-sm text-foreground">
+                Planning complet
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Voir tous les jours du séjour
+              </p>
+            </div>
+          </div>
+          <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
+        </button>
+      </div>
+
       {/* Quick actions */}
       <div className="px-4 mt-5">
         <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
@@ -2183,6 +2204,113 @@ function ContentListScreen({
           </button>
         ))}
         <div className="h-2" />
+      </div>
+    </div>
+  );
+}
+
+// ─── PLANNING SCREEN ─────────────────────────────────────────────────────────
+
+function PlanningScreen({
+  onBack,
+  onDaySelect,
+  currentDay,
+  tripFinished,
+}: {
+  onBack: () => void;
+  onDaySelect: (day: number) => void;
+  currentDay: number;
+  tripFinished: boolean;
+}) {
+  const dayPlaces = PLACES.reduce(
+    (acc, place) => {
+      const daysForPlace = (place as { jour?: number[] }).jour || [];
+      daysForPlace.forEach((day) => {
+        if (!acc[day]) {
+          acc[day] = [];
+        }
+        acc[day].push(place);
+      });
+      return acc;
+    },
+    {} as Record<number, typeof PLACES>
+  );
+
+  return (
+    <div className="flex flex-col h-full overflow-y-auto">
+      {/* Header */}
+      <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
+        <MemphisDecor />
+        <button
+          onClick={onBack}
+          className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
+        >
+          <ChevronLeft size={18} /> Accueil
+        </button>
+        <h1 className="relative z-10 text-2xl font-black">Planning complet 📅</h1>
+      </div>
+
+      {/* Day cards */}
+      <div className="px-4 pt-5 pb-6 space-y-3">
+        {JOURS_DESTINATIONS.map((dayEntry) => {
+          const places = dayPlaces[dayEntry.jour] || [];
+          const isCurrentDay = dayEntry.jour === currentDay && !tripFinished;
+
+          return (
+            <button
+              key={dayEntry.jour}
+              onClick={() => onDaySelect(dayEntry.jour)}
+              className={`w-full text-left rounded-2xl p-4 border transition-all active:scale-95 ${
+                isCurrentDay
+                  ? "bg-secondary text-secondary-foreground border-secondary shadow-md"
+                  : "bg-card border-border"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+                      Jour {dayEntry.jour}
+                    </span>
+                    {isCurrentDay && (
+                      <span className="text-[10px] font-black uppercase tracking-widest bg-primary text-primary-foreground rounded-full px-2 py-0.5">
+                        aujourd'hui
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-black text-lg mt-1">
+                    {dayEntry.destination}
+                  </h3>
+                  {places.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {places.slice(0, 3).map((place) => (
+                        <span
+                          key={place.id}
+                          className="text-xs font-semibold text-muted-foreground bg-muted rounded-full px-2.5 py-1"
+                        >
+                          {place.name}
+                        </span>
+                      ))}
+                      {places.length > 3 && (
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          +{places.length - 3} lieu{places.length - 4 >= 1 ? "x" : ""}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Pas de détail renseigné
+                    </p>
+                  )}
+                </div>
+                <ChevronRight
+                  size={20}
+                  className="text-muted-foreground mt-1 flex-shrink-0"
+                />
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -8782,6 +8910,20 @@ export default function App() {
         );
       }
 
+      if (effectiveScreen === "planning") {
+        return (
+          <PlanningScreen
+            onBack={() => goToScreen("dashboard")}
+            onDaySelect={(day) => {
+              setGuideSelectedDay(day);
+              goToScreen("guide");
+            }}
+            currentDay={currentDay}
+            tripFinished={tripFinished}
+          />
+        );
+      }
+
       if (effectiveScreen === "map") {
         return (
           <MapScreen
@@ -9083,6 +9225,18 @@ export default function App() {
             selectedDay={guideSelectedDay ?? currentDay}
             onSelectedDayChange={setGuideSelectedDay}
             commentsByPlace={placeCommentsByPlace}
+          />
+        );
+      case "planning":
+        return (
+          <PlanningScreen
+            onBack={() => goToScreen("dashboard")}
+            onDaySelect={(day) => {
+              setGuideSelectedDay(day);
+              goToScreen("guide");
+            }}
+            currentDay={currentDay}
+            tripFinished={tripFinished}
           />
         );
       case "map":

@@ -6,6 +6,7 @@ export type AccessSection =
   | "checklist"
   | "dashboard"
   | "guide"
+  | "planning"
   | "histoire"
   | "geographie"
   | "culture"
@@ -19,6 +20,7 @@ export type AppScreen =
   | "checklist"
   | "dashboard"
   | "guide"
+  | "planning"
   | "map"
   | "place"
   | "histoire"
@@ -37,6 +39,7 @@ const OWNER_ALLOWED: ReadonlyArray<AccessSection> = [
   "checklist",
   "dashboard",
   "guide",
+  "planning",
   "histoire",
   "geographie",
   "culture",
@@ -53,6 +56,7 @@ const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
   "checklist",
   "dashboard",
   "guide",
+  "planning",
   "histoire",
   "geographie",
   "culture",
@@ -69,6 +73,7 @@ const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
 const VISITOR_ALLOWED: ReadonlyArray<AccessSection> = [
   "dashboard",
   "guide",
+  "planning",
   "histoire",
   "geographie",
   "culture",

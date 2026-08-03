@@ -10,6 +10,7 @@ const ALL_SECTIONS: AccessSection[] = [
   "checklist",
   "dashboard",
   "guide",
+  "planning",
   "histoire",
   "geographie",
   "culture",
@@ -52,6 +53,7 @@ describe("access-control policy", () => {
       "checklist",
       "dashboard",
       "guide",
+      "planning",
       "histoire",
       "geographie",
       "culture",
@@ -75,6 +77,7 @@ describe("access-control policy", () => {
     expect(allowed).toEqual([
       "dashboard",
       "guide",
+      "planning",
       "histoire",
       "geographie",
       "culture",

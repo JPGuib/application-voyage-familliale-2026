@@ -1,5 +1,5 @@
 # generated: 2026-07-05
-# last_updated: 2026-07-19
+# last_updated: 2026-08-03
 # project: application de voyage 2026
 # project_key: NOKEY
 # tracking_system: file-system
@@ -24,7 +24,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-07-05
-last_updated: 2026-07-19
+last_updated: 2026-08-03
 project_key: NOKEY
 tracking_system: file-system
 story_location: {project-root}/_bmad-output/implementation-artifacts
@@ -110,10 +110,10 @@ development_status:
   11-8-recette-non-regression-multi-appareils: done
   epic-11-retrospective: optional
 
-  epic-12: done
+  epic-12: backlog
   12-1-redirection-changement-profil: done
   12-2-isolation-checklist-par-profil-resolue-par-1-4: done
-  12-3-categories-personnalisees: done
+  12-3-categories-personnalisees: backlog
   epic-12-retrospective: optional
 
   epic-13: done
@@ -161,8 +161,45 @@ development_status:
   18-11-nom-lieu-tronque: done
   epic-18-retrospective: optional
 
-  epic-19: backlog
-  19-1-verrouillage-defi-jour: backlog
-  19-2-podium-resultats: backlog
-  19-3-score-total-par-jour: backlog
+  epic-19: done
+  19-1-verrouillage-defi-jour: done
+  19-2-podium-resultats: done
+  19-3-score-total-par-jour: done
   epic-19-retrospective: optional
+
+  epic-20: in-progress
+  20-1-planning-complet-itineraire: review
+  20-2-documents-voyage-centralises: canceled
+  20-3-convertisseur-devises-eur-try: done
+  epic-20-retrospective: optional
+
+  epic-21: done
+  21-1-carte-interactive-globale: done
+  21-2-avis-commentaires-lieux-visites: done
+  epic-21-retrospective: optional
+
+  epic-22: backlog
+  22-1-rappels-notifications: backlog
+  22-2-graphique-progression-scores: backlog
+  22-3-defi-collaboratif-familial: backlog
+  epic-22-retrospective: optional
+
+  epic-23: backlog
+  23-1-reinitialisation-nouveau-voyage: backlog
+  epic-23-retrospective: optional
+
+  epic-24: done
+  24-1-choix-voyageur-visiteur-creation: done
+  24-2-configuration-code-voyageur: done
+  24-3-droits-acces-visiteur: done
+  epic-24-retrospective: optional
+
+  epic-25: backlog
+  25-1-ecran-teaser-pre-depart: backlog
+  25-2-sondage-destination: backlog
+  25-3-transformation-faq-sondage-consultable: backlog
+  epic-25-retrospective: optional
+
+  epic-26: backlog
+  26-1-formulaire-connexion-classique: backlog
+  epic-26-retrospective: optional

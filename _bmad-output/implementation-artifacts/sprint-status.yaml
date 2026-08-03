@@ -170,7 +170,7 @@ development_status:
   epic-20: backlog
   20-1-planning-complet-itineraire: backlog
   20-2-documents-voyage-centralises: canceled
-  20-3-convertisseur-devises-eur-try: review
+  20-3-convertisseur-devises-eur-try: done
   epic-20-retrospective: optional
 
   epic-21: done
