@@ -104,7 +104,12 @@ export const TIPS = {
     {
       icon: "₺",
       title: "La monnaie en Turquie",
-      desc: "La monnaie officielle de la Turquie est la Lyre Turque (TRY)",
+      desc: "La monnaie officielle de la Turquie est la Lyre Turque (TRY)\n"+
+        "**Le moyen pour convertir de tête les livres turques en euro :** \n"+
+        "Retirer 2 zéros (ou déplacer la virgule vers la gauche 2 fois) et multiplier par 2\n"+
+        "   Exemple : 500 livres > 5 > 10 euros\n"+
+        "   Autre exemple : 48 livres > 0,48 > 0,96 euros\n"+
+        "Le montant est approximatif mais l'ordre d'idée est le bon.\n",
     },
     {
       icon: "💳",
