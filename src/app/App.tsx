@@ -3845,15 +3845,19 @@ function ResultsScreen({
   destinationSurveyDestination: string;
   destinationSurveyResults: ReturnType<typeof computeDestinationSurveyResults>["rows"];
 }) {
+  const chartMembers = familyMembers.filter((member) => member.role !== "proprietaire");
+  const visibleDestinationSurveyResults = destinationSurveyResults.filter(
+    (row) => row.role !== "proprietaire"
+  );
   const [chartProfileId, setChartProfileId] = useState(
-    () => familyMembers.some((m) => m.profileId === currentProfileId)
+    () => chartMembers.some((m) => m.profileId === currentProfileId)
       ? currentProfileId
-      : (familyMembers[0]?.profileId ?? currentProfileId)
+      : (chartMembers[0]?.profileId ?? currentProfileId)
   );
 
-  const chartProfile = familyMembers.find((m) => m.profileId === chartProfileId)
-    ?? familyMembers.find((m) => m.profileId === currentProfileId)
-    ?? familyMembers[0];
+  const chartProfile = chartMembers.find((m) => m.profileId === chartProfileId)
+    ?? chartMembers.find((m) => m.profileId === currentProfileId)
+    ?? chartMembers[0];
   const chartPoints = chartProfile
     ? buildScoreChartPoints(chartProfile.gameResults)
     : [];
@@ -4077,9 +4081,9 @@ function ResultsScreen({
           </p>
 
           {/* Profile selector */}
-          {familyMembers.length > 1 && (
+          {chartMembers.length > 1 && (
             <div className="flex flex-wrap gap-2 mb-4">
-              {familyMembers.map((member) => (
+              {chartMembers.map((member) => (
                 <button
                   key={member.profileId}
                   onClick={() => setChartProfileId(member.profileId)}
@@ -4141,13 +4145,13 @@ function ResultsScreen({
           <p className="text-sm font-semibold text-muted-foreground mb-3">
             Destination correcte: {destinationSurveyDestination}
           </p>
-          {destinationSurveyResults.length === 0 ? (
+          {visibleDestinationSurveyResults.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Aucun résultat de challenge à afficher.
             </p>
           ) : (
             <div className="space-y-2">
-              {destinationSurveyResults.map((row) => (
+              {visibleDestinationSurveyResults.map((row) => (
                 <div
                   key={`destination-result-${row.profileId}`}
                   className="rounded-xl border border-border bg-muted/30 px-3 py-2"
@@ -4160,7 +4164,7 @@ function ResultsScreen({
                     Propositions: {row.proposals.length > 0 ? row.proposals.join(", ") : "Aucune proposition"}
                   </p>
                   <p className="text-xs font-semibold text-muted-foreground">
-                    Résultat: {row.isCorrect ? "Bonne réponse" : "Incorrect"}
+                    Résultat: {row.isCorrect ? `Bonne réponse. Choix ${row.rank ?? 1}` : "Incorrect"}
                   </p>
                 </div>
               ))}

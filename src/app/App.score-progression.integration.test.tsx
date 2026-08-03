@@ -112,9 +112,9 @@ describe("App results chart integration (story 22.2)", () => {
     await navigateToResults();
 
     expect(screen.getByText(/Progression des scores/i)).toBeInTheDocument();
-    // Leo is pre-selected — selector button for Leo should be visually highlighted
-    const leoButtons = screen.getAllByRole("button", { name: /Leo/i });
-    expect(leoButtons.length).toBeGreaterThan(0);
+    // Single non-owner profile: selector is hidden, and owner is never listed.
+    expect(screen.queryByRole("button", { name: /Leo/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Maman/i })).toBeNull();
   });
 
   it("switching selector changes displayed profile", async () => {
@@ -122,17 +122,18 @@ describe("App results chart integration (story 22.2)", () => {
     const snapshot = makeSnapshot({
       p1: makeProfile("p1", "Maman", "proprietaire"),
       p2: makeProfile("p2", "Leo", "utilisateur", [{ day: 1, totalScore: 20 }]),
+      p3: makeProfile("p3", "Nina", "utilisateur"),
     });
     setupCloud(snapshot);
     render(<App />);
 
     await navigateToResults();
 
-    // Click "Maman" selector button in chart profile selector
-    const mamanSelectorButtons = screen.getAllByRole("button", { name: /Maman/i });
-    fireEvent.click(mamanSelectorButtons[0]);
+    // Click another non-owner profile in chart profile selector
+    const ninaSelectorButtons = screen.getAllByRole("button", { name: /Nina/i });
+    fireEvent.click(ninaSelectorButtons[0]);
 
-    // Maman has no history, so empty state should appear
+    // Nina has no history, so empty state should appear
     await waitFor(() => {
       expect(
         screen.getByText(/n'a pas encore de score enregistré/i)
@@ -140,7 +141,7 @@ describe("App results chart integration (story 22.2)", () => {
     });
   });
 
-  it("owner profile can be selected in chart even though absent from podium", async () => {
+  it("owner profile is hidden from chart selector and podium", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
     const snapshot = makeSnapshot({
       p1: makeProfile("p1", "Maman", "proprietaire", [{ day: 1, totalScore: 55 }]),
@@ -162,19 +163,8 @@ describe("App results chart integration (story 22.2)", () => {
       expect(podiumText).toContain("Leo");
     }
 
-    // Chart selector should contain Maman (owner can be selected)
-    const mamanSelectorButtons = screen.getAllByRole("button", { name: /Maman/i });
-    expect(mamanSelectorButtons.length).toBeGreaterThan(0);
-
-    // Click Maman in chart selector
-    fireEvent.click(mamanSelectorButtons[0]);
-
-    // No empty-state message since Maman has history
-    await waitFor(() => {
-      expect(
-        screen.queryByText(/n'a pas encore de score enregistré/i)
-      ).toBeNull();
-    });
+    // Chart selector must not show owner anymore
+    expect(screen.queryByRole("button", { name: /Maman/i })).toBeNull();
   });
 
   it("shows explicit empty state for profile with no game history", async () => {

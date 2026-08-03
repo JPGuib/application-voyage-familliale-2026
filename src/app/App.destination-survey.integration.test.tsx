@@ -170,9 +170,9 @@ describe("App destination survey integration", () => {
       expect(screen.getByRole("heading", { name: /Tableau des scores/i })).toBeInTheDocument();
     });
 
-    expect(screen.getAllByText(/Maman/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Leo/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Guest/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Maman/i)).toBeNull();
     expect(screen.getByText(/Challenge destination/i)).toBeInTheDocument();
     expect(screen.getByText(/Destination correcte:/i)).toBeInTheDocument();
     expect(screen.getAllByText(/pts/i).length).toBeGreaterThan(0);
