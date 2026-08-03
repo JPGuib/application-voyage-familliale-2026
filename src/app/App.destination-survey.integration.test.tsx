@@ -131,7 +131,7 @@ describe("App destination survey integration", () => {
     });
   });
 
-  it("shows read-only survey results after unlock on the same checklist screen", async () => {
+  it("shows destination results on the results screen after unlock and not in the checklist", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
     cloudSyncMock.mockReturnValue({
@@ -162,11 +162,18 @@ describe("App destination survey integration", () => {
       expect(screen.getByText(/Voyage déjà débloqué/i)).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("button", { name: /Enregistrer mes propositions/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/Maman/i)).toBeInTheDocument();
-    expect(screen.getByText(/Leo/i)).toBeInTheDocument();
-    expect(screen.getByText(/Guest/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Sondage destination/i)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Résultats/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Tableau des scores/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText(/Maman/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Leo/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Guest/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Challenge destination/i)).toBeInTheDocument();
     expect(screen.getByText(/Destination correcte:/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Points:/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/pts/i).length).toBeGreaterThan(0);
   });
 });

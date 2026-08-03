@@ -556,7 +556,13 @@ export async function pushCloudSnapshot(
     }
   }
 
-  if (payload.profileDestinationSurveyVote && payload.phase === "before") {
+  if (payload.resetDestinationSurvey) {
+    for (const profile of normalizedFamilyState.profiles) {
+      updates[`destinationSurvey/${profile.id}`] = null;
+    }
+  }
+
+  if (payload.profileDestinationSurveyVote && payload.phase === "before" && !payload.resetDestinationSurvey) {
     updates[`destinationSurvey/${payload.profileId}`] = {
       ...payload.profileDestinationSurveyVote,
       profileId: payload.profileId,

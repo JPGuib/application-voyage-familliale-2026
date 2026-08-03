@@ -818,6 +818,32 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     expect(updates["profiles/profile-1/role"]).toBe("proprietaire");
   });
 
+  it("clears every destination survey vote when relocking with resetDestinationSurvey", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      canWriteFamilyState: true,
+      resetDestinationSurvey: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-1",
+        profiles: [
+          { id: "profile-1", role: "proprietaire" },
+          { id: "profile-2", role: "utilisateur" },
+        ],
+      },
+      role: "proprietaire",
+      phase: "before",
+    });
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["destinationSurvey/profile-1"]).toBeNull();
+    expect(updates["destinationSurvey/profile-2"]).toBeNull();
+    expect(updates.phase).toBe("before");
+  });
+
   it("does not let a non-owner overwrite the family-wide phase", async () => {
     mockUpdate.mockClear();
 

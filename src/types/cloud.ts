@@ -153,6 +153,7 @@ export type CloudSyncWritePayload = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
+  resetDestinationSurvey?: boolean;
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
   phase: TravelPhase;

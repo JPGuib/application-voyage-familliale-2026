@@ -1717,24 +1717,24 @@ function ChecklistScreen({
 
       {/* List */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-          <p className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
-            Sondage destination
-          </p>
-          <h2 className="mt-1 text-lg font-black text-foreground">
-            Où allons-nous ?
-          </h2>
-          <p className="mt-1 text-sm font-semibold text-muted-foreground">
-            Tu peux proposer jusqu'à 3 pays.
-          </p>
-          <p className="text-sm font-semibold text-muted-foreground">
-            Points: 20 si bonne réponse, +10 si premier choix, +5 si deuxième choix.
-          </p>
-          <p className="text-sm font-semibold text-muted-foreground">
-            Une fois le voyage commencé, les réponses sont figées, les points acquis comptent dans le challenge global ... héhéhé.
-          </p>
+        {unlockActionsEnabled && (
+          <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+              Sondage destination
+            </p>
+            <h2 className="mt-1 text-lg font-black text-foreground">
+              Où allons-nous ?
+            </h2>
+            <p className="mt-1 text-sm font-semibold text-muted-foreground">
+              Tu peux proposer jusqu'à 3 pays.
+            </p>
+            <p className="text-sm font-semibold text-muted-foreground">
+              Points: 20 si bonne réponse, +10 si premier choix, +5 si deuxième choix.
+            </p>
+            <p className="text-sm font-semibold text-muted-foreground">
+              Une fois le voyage commencé, les réponses sont figées, les points acquis comptent dans le challenge global ... héhéhé.
+            </p>
 
-          {unlockActionsEnabled ? (
             <div className="mt-3 space-y-2">
               {[0, 1, 2].map((index) => (
                 <input
@@ -1756,25 +1756,8 @@ function ChecklistScreen({
                 Enregistrer mes propositions
               </button>
             </div>
-          ) : (
-            <div className="mt-3 space-y-2">
-              {destinationSurveyResults.map((row) => (
-                <div key={`destination-result-${row.profileId}`} className="rounded-xl border border-border bg-muted/30 px-3 py-2">
-                  <p className="text-sm font-black text-foreground">{row.surname}</p>
-                  <p className="text-xs font-semibold text-muted-foreground">
-                    Propositions: {row.proposals.length > 0 ? row.proposals.join(", ") : "Aucune proposition"}
-                  </p>
-                  <p className="text-xs font-semibold text-muted-foreground">
-                    Résultat: {row.isCorrect ? "Bonne réponse" : "Incorrect"} • Points: {row.points}
-                  </p>
-                </div>
-              ))}
-              <p className="text-xs font-bold text-muted-foreground">
-                Destination correcte: {destinationSurveyDestination}
-              </p>
-            </div>
-          )}
-        </section>
+          </section>
+        )}
 
         <p className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground px-1 pt-1">
           Checklist de préparation
@@ -3851,12 +3834,16 @@ function ResultsScreen({
   familyMembers,
   currentDay,
   currentProfileId,
+  destinationSurveyDestination,
+  destinationSurveyResults,
 }: {
   onBack: () => void;
   history: GameHistoryEntry[];
   familyMembers: PodiumProfileInput[];
   currentDay: number;
   currentProfileId: string;
+  destinationSurveyDestination: string;
+  destinationSurveyResults: ReturnType<typeof computeDestinationSurveyResults>["rows"];
 }) {
   const [chartProfileId, setChartProfileId] = useState(
     () => familyMembers.some((m) => m.profileId === currentProfileId)
@@ -3870,6 +3857,10 @@ function ResultsScreen({
   const chartPoints = chartProfile
     ? buildScoreChartPoints(chartProfile.gameResults)
     : [];
+  const destinationSurveyTotalPoints = destinationSurveyResults.reduce(
+    (sum, row) => sum + row.points,
+    0
+  );
 
   const latestEntry = history.length > 0 ? history[history.length - 1] : null;
   const badges = computeBadges(history, (day) => getQuestionsForDay(day).length);
@@ -3878,7 +3869,7 @@ function ResultsScreen({
     location: entry.location,
     score: entry.totalScore,
   }));
-  const total = dailyScores.reduce((sum, entry) => sum + entry.score, 0);
+  const total = dailyScores.reduce((sum, entry) => sum + entry.score, 0) + destinationSurveyTotalPoints;
   const podium = computePodium(familyMembers);
   const medalByRank: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
   const todayParticipants = familyMembers
@@ -4140,6 +4131,40 @@ function ResultsScreen({
                 />
               </LineChart>
             </ChartContainer>
+          )}
+        </div>
+
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+            Challenge destination
+          </p>
+          <p className="text-sm font-semibold text-muted-foreground mb-3">
+            Destination correcte: {destinationSurveyDestination}
+          </p>
+          {destinationSurveyResults.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aucun résultat de challenge à afficher.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {destinationSurveyResults.map((row) => (
+                <div
+                  key={`destination-result-${row.profileId}`}
+                  className="rounded-xl border border-border bg-muted/30 px-3 py-2"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm font-black text-foreground">{row.surname}</p>
+                    <p className="text-sm font-black text-[#6B3DFF]">{row.points} pts</p>
+                  </div>
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    Propositions: {row.proposals.length > 0 ? row.proposals.join(", ") : "Aucune proposition"}
+                  </p>
+                  <p className="text-xs font-semibold text-muted-foreground">
+                    Résultat: {row.isCorrect ? "Bonne réponse" : "Incorrect"}
+                  </p>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
@@ -6412,6 +6437,7 @@ export default function App() {
   // l'effet — réduisait le risque mais ne l'éliminait pas en usage multi-profils).
   const previousGameProgressJsonRef = useRef<string>("null");
   const lastLocalGameProgressChangeAtRef = useRef<number>(0);
+  const previousPhaseRef = useRef<TravelPhase>(phase);
   const currentGameProgressJson = JSON.stringify(currentGameProgress);
   if (previousGameProgressJsonRef.current !== currentGameProgressJson) {
     previousGameProgressJsonRef.current = currentGameProgressJson;
@@ -6420,6 +6446,24 @@ export default function App() {
 
   const getPostAuthLandingScreen = (nextPhase: "before" | "during") =>
     nextPhase === "during" ? "dashboard" : "checklist";
+
+  useEffect(() => {
+    if (previousPhaseRef.current === phase) {
+      return;
+    }
+
+    previousPhaseRef.current = phase;
+
+    if (phase === "during") {
+      setScreen("dashboard");
+      return;
+    }
+
+    setDestinationSurveyVotes({});
+    setDestinationSurveyDrafts(["", "", ""]);
+    setDestinationSurveyError(null);
+    setScreen("checklist");
+  }, [phase]);
 
   // Persistance de l'écran affiché (préférence locale à cet appareil, pas une
   // donnée familiale) — volontairement indépendante du mode cloud/local, pour
@@ -8043,7 +8087,10 @@ export default function App() {
     return { ok: true, message: "" };
   };
 
-  const pushPhaseChange = async (nextPhase: "before" | "during") => {
+  const pushPhaseChange = async (
+    nextPhase: "before" | "during",
+    options?: { resetDestinationSurvey?: boolean }
+  ) => {
     if (!cloudEnabled) {
       return { ok: true as const, message: null };
     }
@@ -8092,6 +8139,7 @@ export default function App() {
       gameResults: gameHistory,
       gameProgress: currentGameProgress,
       phase: nextPhase,
+      resetDestinationSurvey: options?.resetDestinationSurvey,
       tripStartDate,
     });
 
@@ -8142,7 +8190,9 @@ export default function App() {
     }
 
     const nextPhase: "before" | "during" = phase === "during" ? "before" : "during";
-    const syncResult = await pushPhaseChange(nextPhase);
+    const syncResult = await pushPhaseChange(nextPhase, {
+      resetDestinationSurvey: nextPhase === "before",
+    });
     if (!syncResult.ok) {
       return syncResult;
     }
@@ -8152,6 +8202,15 @@ export default function App() {
     setNowTs(Date.now());
     setAccessDeniedMessage(null);
     setPhase(nextPhase);
+
+    if (nextPhase === "before") {
+      setDestinationSurveyVotes({});
+      setDestinationSurveyDrafts(["", "", ""]);
+      setDestinationSurveyError(null);
+      setScreen("checklist");
+    } else {
+      setScreen("dashboard");
+    }
 
     return {
       ok: true,
@@ -8773,7 +8832,7 @@ export default function App() {
         },
       ];
   const destinationSurveyResults = computeDestinationSurveyResults({
-    destination: TRIP.surveyDestination,
+    destination: TRIP.surveyDestination ?? todayDestination,
     participants: destinationSurveyParticipants,
     votesByProfile: destinationSurveyVotes,
   });
@@ -9692,6 +9751,9 @@ export default function App() {
             history={gameHistory}
             familyMembers={familyMembersForPodium}
             currentDay={currentDay}
+            currentProfileId={profile.id}
+            destinationSurveyDestination={todayDestination}
+            destinationSurveyResults={destinationSurveyResults.rows}
           />
         );
       }
@@ -10003,6 +10065,8 @@ export default function App() {
             history={gameHistory}
             familyMembers={familyMembersForPodium}
             currentDay={currentDay}
+            destinationSurveyDestination={todayDestination}
+            destinationSurveyResults={destinationSurveyResults.rows}
             currentProfileId={profile.id}
           />
         );
