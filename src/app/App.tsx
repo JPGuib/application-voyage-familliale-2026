@@ -3017,9 +3017,9 @@ function ContentDetailScreen({
             {item.anecdotes.map((anecdote, i) => (
               <div
                 key={i}
-                className="flex w-fit max-w-full items-center gap-3 rounded-2xl bg-[#FFF3E0] px-3.5 py-2.5"
+                className="flex gap-2.5 rounded-2xl bg-[#FFF3E0] px-3.5 py-2"
               >
-                <span className="text-lg flex-shrink-0">💡</span>
+                <span className="text-base leading-none flex-shrink-0 pt-0.5">💡</span>
                 <p className="text-sm leading-snug text-foreground/80">
                   {anecdote}
                 </p>
