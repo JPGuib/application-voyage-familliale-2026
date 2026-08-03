@@ -48,15 +48,48 @@ export function areNotificationsEnabled(): boolean {
   return areNotificationsSupported() && window.Notification.permission === "granted";
 }
 
+function canUseServiceWorkerNotifications(): boolean {
+  return typeof navigator !== "undefined" && "serviceWorker" in navigator;
+}
+
+function showNotificationWithServiceWorker(title: string, body: string): void {
+  if (!canUseServiceWorkerNotifications()) {
+    return;
+  }
+
+  void navigator.serviceWorker
+    .getRegistration()
+    .then((registration) => {
+      if (!registration || typeof registration.showNotification !== "function") {
+        return;
+      }
+      return registration.showNotification(title, {
+        body,
+        icon: "/icons/icon-192.png",
+      });
+    })
+    .catch(() => {
+      // Silent failure: notifications are optional and must never crash the app.
+    });
+}
+
 export function showNotification(title: string, body: string): boolean {
   if (!areNotificationsEnabled()) {
     return false;
   }
-  new window.Notification(title, {
-    body,
-    icon: "/icons/icon-192.png",
-  });
-  return true;
+
+  try {
+    new window.Notification(title, {
+      body,
+      icon: "/icons/icon-192.png",
+    });
+    return true;
+  } catch {
+    // Some Android/PWA contexts reject `new Notification(...)` and require
+    // ServiceWorkerRegistration.showNotification().
+    showNotificationWithServiceWorker(title, body);
+    return canUseServiceWorkerNotifications();
+  }
 }
 
 export function readNotificationPrefsByProfile(): NotificationPrefsByProfile {

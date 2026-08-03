@@ -42,6 +42,42 @@ describe("notifications", () => {
     expect(notificationSpy).not.toHaveBeenCalled();
   });
 
+  it("falls back to service worker notification when Notification constructor throws", async () => {
+    const showNotificationViaSw = vi.fn().mockResolvedValue(undefined);
+    const getRegistration = vi.fn().mockResolvedValue({
+      showNotification: showNotificationViaSw,
+    });
+
+    class ThrowingNotification {
+      static permission: NotificationPermission = "granted";
+      static requestPermission = vi.fn().mockResolvedValue("granted");
+
+      constructor() {
+        throw new TypeError("Illegal constructor");
+      }
+    }
+
+    vi.stubGlobal("Notification", ThrowingNotification);
+    Object.defineProperty(navigator, "serviceWorker", {
+      configurable: true,
+      value: {
+        getRegistration,
+      },
+    });
+
+    const shown = showNotification("Titre", "Corps");
+    expect(shown).toBe(true);
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(getRegistration).toHaveBeenCalled();
+    expect(showNotificationViaSw).toHaveBeenCalledWith("Titre", {
+      body: "Corps",
+      icon: "/icons/icon-192.png",
+    });
+  });
+
   it("returns default prefs when profile has no stored preferences", () => {
     expect(readNotificationPreferences("p1")).toEqual(DEFAULT_NOTIFICATION_PREFS);
   });
