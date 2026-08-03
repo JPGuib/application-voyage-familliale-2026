@@ -363,11 +363,20 @@ export function useCloudSync() {
 
         if (isPermissionDenied) {
           const hasSurveyVote = Boolean(mutation.profileDestinationSurveyVote);
+          const runtimeProjectId =
+            (database.app.options as { projectId?: string })?.projectId
+            ?? null;
+          const runtimeDatabaseUrl =
+            (database.app.options as { databaseURL?: string })?.databaseURL
+            ?? ((import.meta.env.VITE_FIREBASE_DATABASE_URL as string | undefined) ?? null);
+          console.error(
+            `[cloud-sync] permission-denied runtime projectId=${runtimeProjectId ?? "null"} databaseURL=${runtimeDatabaseUrl ?? "null"} familyId=${familyId} actorUid=${cloudUserUid} profileId=${mutation.profileId} phase=${mutation.phase} canWriteFamilyState=${String(mutation.canWriteFamilyState)} hasSurveyVote=${String(hasSurveyVote)}`
+          );
           console.error("[cloud-sync] permission-denied details", {
             familyId,
             actorUid: cloudUserUid,
-            projectId: (database.app.options as { projectId?: string })?.projectId,
-            databaseURL: (database.app.options as { databaseURL?: string })?.databaseURL,
+            projectId: runtimeProjectId,
+            databaseURL: runtimeDatabaseUrl,
             canWriteFamilyState: mutation.canWriteFamilyState,
             phase: mutation.phase,
             profileId: mutation.profileId,
