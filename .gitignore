@@ -23,3 +23,6 @@ dist/
 # BMAD planning docs generated for delivery workflow
 /docs/backlog-epics-stories.md
 /docs/story-1.0-diagnostic-continuite.md
+
+# je retirer les livres qui prennent du volume
+/docs/Livres/
