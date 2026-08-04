@@ -8605,6 +8605,7 @@ export default function App() {
     });
 
     if (pushed === false) {
+      pendingCloudPhaseRef.current = null;
       return {
         ok: false as const,
         message: "Synchronisation cloud refusee. Verifiez les regles Firebase et l'appartenance famille.",

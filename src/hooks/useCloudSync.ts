@@ -441,7 +441,21 @@ export function useCloudSync() {
             setCloudAuthError(null);
             return true;
           } catch {
-            // Fall through to queue + logging below.
+            if (mutation.resetDestinationSurvey) {
+              try {
+                // Firebase rules can deny destinationSurvey resets in the same
+                // owner phase-change write. Fall back to phase update only to
+                // prevent owner UI loops/flicker on lock/unlock toggles.
+                await pushCloudSnapshot(database, familyId, {
+                  ...mutation,
+                  resetDestinationSurvey: false,
+                });
+                setCloudAuthError(null);
+                return true;
+              } catch {
+                // Fall through to queue + logging below.
+              }
+            }
           }
         }
 
