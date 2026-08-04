@@ -290,19 +290,8 @@ export function loadGlobalTutorialSteps(): GlobalTutorialStep[] {
       element: '[data-tutorial-id="tips-title"]',
       popover: {
         title: "Écran Astuces",
-        description: "Cette page regroupe les informations pratiques pour se déplacer, payer et gérer le quotidien sur place.",
+        description: "Cette page regroupe les informations pratiques pour se déplacer, payer et gérer le quotidien sur place. L'onglet Paiement s'ouvre par défaut avec le convertisseur euro-livre turque.",
       },
-      waitForElement: 2000,
-    },
-    {
-      id: "tips-open-payment",
-      screen: "tips",
-      element: '[data-tutorial-id="tips-tab-payment"]',
-      popover: {
-        title: "Ouvrir le paiement",
-        description: "Cliquez sur l'onglet Paiement pour afficher le convertisseur euro-livre turque.",
-      },
-      interactive: true,
       waitForElement: 2000,
     },
     {

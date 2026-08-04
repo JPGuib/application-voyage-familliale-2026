@@ -4260,7 +4260,7 @@ function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: nu
   const { weather, loading: weatherLoading, error: weatherError } = useWeather(activeCoords);
   const [tab, setTab] = useState<
     "transport" | "customs" | "dictionary" | "payment" | "emergency" | "food"
-  >("transport");
+  >("payment");
 
   const [rateSnapshot, setRateSnapshot] = useState<ExchangeRateSnapshot | null>(null);
   const [eurInput, setEurInput] = useState("");

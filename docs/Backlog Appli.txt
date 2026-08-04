@@ -8,7 +8,6 @@ Backlog
 
 * Quand je créé la mire de connexion : soit je me connecte et je suis voyageur sinon visiteur je vois l'appli par défaut comme un visiteur. 
 Pour se connecter en tant que voyageur faut le code
-* Remplacer le orange par une photo, revoir le texte, faire comme sur wanderlog
 
 *  Rajoute les audios guides en ligne : https://audio.arvadmc.com/tour-detail?value=195
 * Trouver les sites pour chaque visite avec des liens
