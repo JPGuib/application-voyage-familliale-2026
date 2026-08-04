@@ -892,6 +892,7 @@ function ReactionCountersBadge({
 }
 
 function ActionCard({
+  tutorialId,
   emoji,
   title,
   subtitle,
@@ -899,6 +900,7 @@ function ActionCard({
   colorText,
   onClick,
 }: {
+  tutorialId?: string;
   emoji: string;
   title: string;
   subtitle: string;
@@ -909,6 +911,7 @@ function ActionCard({
   return (
     <button
       onClick={onClick}
+      data-tutorial-id={tutorialId}
       className={`${colorBg} rounded-2xl p-4 text-left active:scale-95 transition-transform w-full shadow-sm`}
     >
       <span className="text-3xl mb-2 block">{emoji}</span>
@@ -2202,6 +2205,7 @@ function DashboardScreen({
           {quickActions.map((item) => (
             <ActionCard
               key={item.id}
+              tutorialId={`dashboard-quick-${item.id}`}
               emoji={item.emoji}
               title={item.title}
               subtitle={item.subtitle}
@@ -2270,6 +2274,7 @@ function DashboardScreen({
               target="_blank"
               rel="noopener noreferrer"
               referrerPolicy="strict-origin-when-cross-origin"
+              data-tutorial-id={item.title === "Polarsteps" ? "dashboard-polarsteps-link" : undefined}
               className={`${item.colorBg} flex items-center justify-between px-4 py-3.5 rounded-2xl active:scale-95 transition-transform`}
             >
               <div className="flex items-center gap-3">
@@ -4364,6 +4369,7 @@ function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: nu
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
+            data-tutorial-id={t.id === "payment" ? "tips-tab-payment" : undefined}
             className={`px-2 py-2 rounded-xl text-[11px] font-extrabold text-center leading-tight transition-all ${
               tab === t.id
                 ? "bg-[#1565C0] text-white"
@@ -4379,7 +4385,7 @@ function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: nu
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {tab === "payment" && (
           <div className="bg-[#E3F2FD] rounded-2xl p-4 mb-1 space-y-3">
-            <p className="text-xs font-black text-[#1565C0] uppercase tracking-wide">
+            <p data-tutorial-id="tips-converter-title" className="text-xs font-black text-[#1565C0] uppercase tracking-wide">
               💱 Convertisseur EUR ↔ TRY
             </p>
             <div className="flex flex-col gap-2">

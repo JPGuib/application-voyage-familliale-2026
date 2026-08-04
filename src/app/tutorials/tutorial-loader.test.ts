@@ -12,7 +12,8 @@ describe("tutorial-loader global tutorial", () => {
     expect(steps.some((step) => step.screen === "guide")).toBe(true);
     expect(steps.some((step) => step.screen === "place")).toBe(true);
     expect(steps.some((step) => step.screen === "game")).toBe(true);
-    expect(steps.some((step) => step.screen === "results")).toBe(false);
+    expect(steps.some((step) => step.screen === "results")).toBe(true);
+    expect(steps.some((step) => step.screen === "tips")).toBe(true);
   });
 
   it("contains guided navigation clicks for screen transitions", () => {
@@ -28,6 +29,11 @@ describe("tutorial-loader global tutorial", () => {
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-place-sainte-sophie"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="bottom-nav-game"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="bottom-nav-dashboard"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-quick-results"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="results-back"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-quick-tips"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="tips-tab-payment"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="tips-back"]')).toBe(true);
   });
 
   it("anchors screen explanation steps on stable per-screen selectors", () => {
@@ -40,18 +46,31 @@ describe("tutorial-loader global tutorial", () => {
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-anecdotes-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-guided-tour-cta"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="game-title"]')).toBe(true);
-    expect(steps.some((step) => step.element === '[data-tutorial-id="results-title"]')).toBe(false);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="results-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="tips-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="tips-converter-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="dashboard-map-preview"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="dashboard-polarsteps-link"]')).toBe(true);
   });
 
-  it("returns to dashboard after the game explanation", () => {
+  it("continues from game to results, tips, then dashboard map and polarsteps", () => {
     const steps = loadGlobalTutorialSteps();
     const gameIndex = steps.findIndex((step) => step.id === "game-explain");
     const backHomeIndex = steps.findIndex((step) => step.id === "game-back-home");
-    const dashboardEndIndex = steps.findIndex((step) => step.id === "dashboard-end");
+    const resultsIndex = steps.findIndex((step) => step.id === "results-explain");
+    const tipsIndex = steps.findIndex((step) => step.id === "tips-explain");
+    const mapIndex = steps.findIndex((step) => step.id === "dashboard-map-preview");
+    const polarstepsIndex = steps.findIndex((step) => step.id === "dashboard-polarsteps");
     expect(gameIndex).toBeGreaterThan(-1);
     expect(backHomeIndex).toBeGreaterThan(-1);
-    expect(dashboardEndIndex).toBeGreaterThan(-1);
+    expect(resultsIndex).toBeGreaterThan(-1);
+    expect(tipsIndex).toBeGreaterThan(-1);
+    expect(mapIndex).toBeGreaterThan(-1);
+    expect(polarstepsIndex).toBeGreaterThan(-1);
     expect(gameIndex).toBeLessThan(backHomeIndex);
-    expect(backHomeIndex).toBeLessThan(dashboardEndIndex);
+    expect(backHomeIndex).toBeLessThan(resultsIndex);
+    expect(resultsIndex).toBeLessThan(tipsIndex);
+    expect(tipsIndex).toBeLessThan(mapIndex);
+    expect(mapIndex).toBeLessThan(polarstepsIndex);
   });
 });
