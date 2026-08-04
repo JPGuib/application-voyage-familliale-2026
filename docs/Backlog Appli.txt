@@ -19,6 +19,15 @@ Pour se connecter en tant que voyageur faut le code
 * Evolution de la 21.1 => voir sur un point les lieux de visite (pas uniquement la ville)
 * ajouter une liseuse de livre ? (pdg et epub) 
 
+
+Astuces : mettre devise en premier 
+Compléter le tutoriel
+réorganisation des écrans
+plan grand bazar?
+un plan des bateaux Istanbul?
+vidéo effet ouaou
+
+
 liens intéressants : 
 ------------------
 audios guides : https://audio.arvadmc.com/tour-detail?value=195

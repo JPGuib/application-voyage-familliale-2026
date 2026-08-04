@@ -2583,6 +2583,7 @@ function GuideScreen({
                       onSelectedDayChange(entry.jour);
                       setSelectorOpen(false);
                     }}
+                    data-tutorial-id={`guide-day-option-${entry.jour}`}
                     className={`w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted transition-colors border-b border-border/60 last:border-b-0 ${
                       entry.jour === selectedDay ? "bg-muted" : ""
                     }`}
@@ -2625,6 +2626,7 @@ function GuideScreen({
             <button
               key={item.id}
               onClick={() => onPlaceSelect(item.id)}
+              data-tutorial-id={`guide-place-${item.id}`}
               className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
             >
               <div className="relative h-40 bg-muted overflow-hidden">
@@ -2891,6 +2893,7 @@ function ContentDetailScreen({
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
         <button
           onClick={onBack}
+          data-tutorial-id="place-back"
           className="absolute top-12 left-4 bg-black/40 backdrop-blur-sm text-white rounded-full p-2.5"
         >
           <ChevronLeft size={20} />
@@ -2958,7 +2961,7 @@ function ContentDetailScreen({
 
         {/* Gallery */}
         <div className="px-4 mt-5">
-          <h2 className="text-base font-black text-foreground mb-3">
+          <h2 data-tutorial-id="place-gallery-title" className="text-base font-black text-foreground mb-3">
             📷 Galerie
           </h2>
           <div className="grid grid-cols-3 gap-2">
@@ -3035,7 +3038,7 @@ function ContentDetailScreen({
 
         {/* History */}
         <div className="px-4 mt-5">
-          <h2 className="text-base font-black text-foreground mb-2">
+          <h2 data-tutorial-id="place-history-title" className="text-base font-black text-foreground mb-2">
             📜 {item.historyLabel ?? "Histoire"}
           </h2>
           <div className="text-sm text-foreground/80 leading-relaxed">
@@ -3045,7 +3048,7 @@ function ContentDetailScreen({
 
         {/* Anecdotes */}
         <div className="px-4 mt-5 mb-6">
-          <h2 className="text-base font-black text-foreground mb-3">
+          <h2 data-tutorial-id="place-anecdotes-title" className="text-base font-black text-foreground mb-3">
             ✨ {item.anecdotesLabel ?? "Le savais-tu ?"}
           </h2>
           <div className="space-y-3">
@@ -3068,6 +3071,7 @@ function ContentDetailScreen({
           <div className="px-4 mb-6">
             <button
               onClick={() => onOpenVisiteGuidee(item)}
+              data-tutorial-id="place-guided-tour-cta"
               className="w-full flex items-center gap-3 bg-[#EFEBFF] rounded-2xl p-4 text-left active:scale-95 transition-transform"
             >
               <span className="text-2xl flex-shrink-0">📖</span>
@@ -3562,11 +3566,12 @@ function GameScreen({
           <MemphisDecor />
           <button
             onClick={onBack}
+            data-tutorial-id="game-back"
             className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
           >
             <ChevronLeft size={18} /> Accueil
           </button>
-          <h1 className="relative z-10 text-2xl font-black">
+          <h1 data-tutorial-id="game-title" className="relative z-10 text-2xl font-black">
             Jeu du jour 🎮
           </h1>
           <p className="relative z-10 text-sm opacity-90 mt-1">

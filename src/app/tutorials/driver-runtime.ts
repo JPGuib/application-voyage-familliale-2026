@@ -40,7 +40,9 @@ export async function startGlobalTutorial(): Promise<void> {
     showProgress: true,
     progressText: "{{current}} / {{total}}",
     allowClose: true,
-    overlayClickBehavior: "close",
+    overlayClickBehavior: () => {
+      // Intentionally no-op: avoid accidental tutorial interruption on backdrop click.
+    },
     disableActiveInteraction: true,
     overlayOpacity: 0.55,
     smoothScroll: true,

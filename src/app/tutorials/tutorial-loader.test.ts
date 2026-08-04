@@ -10,7 +10,8 @@ describe("tutorial-loader global tutorial", () => {
     expect(steps.some((step) => step.screen === "settings")).toBe(true);
     expect(steps.some((step) => step.screen === "planning")).toBe(true);
     expect(steps.some((step) => step.screen === "guide")).toBe(true);
-    expect(steps.some((step) => step.screen === "tips")).toBe(true);
+    expect(steps.some((step) => step.screen === "place")).toBe(true);
+    expect(steps.some((step) => step.screen === "game")).toBe(true);
     expect(steps.some((step) => step.screen === "results")).toBe(true);
   });
 
@@ -22,6 +23,9 @@ describe("tutorial-loader global tutorial", () => {
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-settings"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-planning"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-today-card"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-day-option-2"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-place-sainte-sophie"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="bottom-nav-game"]')).toBe(true);
   });
 
   it("anchors screen explanation steps on stable per-screen selectors", () => {
@@ -29,7 +33,20 @@ describe("tutorial-loader global tutorial", () => {
     expect(steps.some((step) => step.element === '[data-tutorial-id="settings-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="planning-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="guide-title"]')).toBe(true);
-    expect(steps.some((step) => step.element === '[data-tutorial-id="tips-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="place-gallery-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="place-history-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="place-anecdotes-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="place-guided-tour-cta"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="game-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="results-title"]')).toBe(true);
+  });
+
+  it("orders game step before results step", () => {
+    const steps = loadGlobalTutorialSteps();
+    const gameIndex = steps.findIndex((step) => step.id === "game-explain");
+    const resultsIndex = steps.findIndex((step) => step.id === "results-explain");
+    expect(gameIndex).toBeGreaterThan(-1);
+    expect(resultsIndex).toBeGreaterThan(-1);
+    expect(gameIndex).toBeLessThan(resultsIndex);
   });
 });

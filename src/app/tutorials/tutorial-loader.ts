@@ -1,6 +1,14 @@
 import { ACCUEIL_DRIVER_STEPS, type DriverStepConfig } from "./generated/driver-accueil";
 
-export type TutorialScreen = "dashboard" | "settings" | "planning" | "guide" | "tips" | "results";
+export type TutorialScreen =
+  | "dashboard"
+  | "settings"
+  | "planning"
+  | "guide"
+  | "place"
+  | "game"
+  | "tips"
+  | "results";
 
 export type GlobalTutorialStep = DriverStepConfig & {
   id: string;
@@ -129,29 +137,91 @@ export function loadGlobalTutorialSteps(): GlobalTutorialStep[] {
       waitForElement: 2000,
     },
     {
-      id: "guide-to-tips",
+      id: "guide-day2",
       screen: "guide",
-      element: '[data-tutorial-id="bottom-nav-tips"]',
+      element: '[data-tutorial-id="guide-day-option-2"]',
       popover: {
-        title: "Passer à Conseils",
-        description: "Cliquez dans la barre basse pour ouvrir l'écran Conseils.",
+        title: "Passer au Jour 2",
+        description: "Cliquez sur Jour 2 pour afficher les lieux d'Istanbul, dont Sainte-Sophie.",
+      },
+      interactive: true,
+      waitForElement: 2500,
+    },
+    {
+      id: "guide-open-sainte-sophie",
+      screen: "guide",
+      element: '[data-tutorial-id="guide-place-sainte-sophie"]',
+      popover: {
+        title: "Ouvrir Sainte-Sophie",
+        description: "Cliquez sur ce lieu pour découvrir sa fiche détaillée.",
+      },
+      interactive: true,
+      waitForElement: 2500,
+    },
+    {
+      id: "place-gallery",
+      screen: "place",
+      element: '[data-tutorial-id="place-gallery-title"]',
+      popover: {
+        title: "Galerie photo",
+        description: "Ici vous retrouvez les photos du lieu, consultables en grand format.",
+      },
+      waitForElement: 2500,
+    },
+    {
+      id: "place-history",
+      screen: "place",
+      element: '[data-tutorial-id="place-history-title"]',
+      popover: {
+        title: "Histoire",
+        description: "Cette section présente le contexte historique du lieu.",
+      },
+      waitForElement: 2500,
+    },
+    {
+      id: "place-anecdotes",
+      screen: "place",
+      element: '[data-tutorial-id="place-anecdotes-title"]',
+      popover: {
+        title: "Anecdotes",
+        description: "Vous trouverez ici des faits marquants et anecdotes sur le lieu.",
+      },
+      waitForElement: 2500,
+    },
+    {
+      id: "place-guided-tour",
+      screen: "place",
+      element: '[data-tutorial-id="place-guided-tour-cta"]',
+      popover: {
+        title: "Visite guidée",
+        description: "Quand disponible (comme pour Sainte-Sophie), ce bouton ouvre la visite guidée détaillée.",
+      },
+      waitForElement: 2500,
+    },
+    {
+      id: "place-to-game",
+      screen: "place",
+      element: '[data-tutorial-id="bottom-nav-game"]',
+      popover: {
+        title: "Passer au Jeu",
+        description: "Cliquez sur Jeu dans la barre basse pour découvrir l'écran de jeu.",
       },
       interactive: true,
       waitForElement: 2000,
     },
     {
-      id: "tips-explain",
-      screen: "tips",
-      element: '[data-tutorial-id="tips-title"]',
+      id: "game-explain",
+      screen: "game",
+      element: '[data-tutorial-id="game-title"]',
       popover: {
-        title: "Écran Conseils",
-        description: "Vous trouverez ici les infos pratiques transport, paiement, urgences et plus.",
+        title: "Écran Jeu",
+        description: "Le jeu du jour propose quiz, énigme et défi, avec un score cumulé.",
       },
       waitForElement: 2000,
     },
     {
-      id: "tips-to-results",
-      screen: "tips",
+      id: "game-to-results",
+      screen: "game",
       element: '[data-tutorial-id="bottom-nav-results"]',
       popover: {
         title: "Passer aux Résultats",
