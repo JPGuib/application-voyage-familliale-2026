@@ -3,6 +3,7 @@ import {
   getAuth,
   onAuthStateChanged,
   signInAnonymously,
+  signOut,
   type Auth,
   type User,
 } from "firebase/auth";
@@ -108,7 +109,18 @@ export async function ensureFirebaseAnonymousAuth(): Promise<User | null> {
   }
 
   if (auth.currentUser) {
-    return auth.currentUser;
+    try {
+      // Force token refresh so expired/invalid anonymous sessions are detected
+      // during bootstrap instead of failing later as opaque permission errors.
+      await auth.currentUser.getIdToken(true);
+      return auth.currentUser;
+    } catch {
+      try {
+        await signOut(auth);
+      } catch {
+        // Ignore sign-out errors and continue with a fresh sign-in attempt.
+      }
+    }
   }
 
   const credential = await signInAnonymously(auth);

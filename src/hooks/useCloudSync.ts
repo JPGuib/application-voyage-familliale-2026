@@ -189,6 +189,8 @@ export function useCloudSync() {
         return;
       }
 
+      setCloudUserUid(null);
+      setIsMembershipReady(false);
       setCloudAuthError("auth-unavailable");
       setIsReady(true);
     }).finally(() => {

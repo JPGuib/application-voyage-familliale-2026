@@ -307,6 +307,7 @@ describe("place comments parsing and sync (story 21.2)", () => {
             placeId: "sainte-sophie",
             authorProfileId: "profile-a",
             authorSurnameSnapshot: "Maman",
+            authorUid: "uid-2",
             reaction: null,
             text: "Nouveau commentaire dans le fil",
             createdAt: 9999,
@@ -336,22 +337,14 @@ describe("place comments parsing and sync (story 21.2)", () => {
       placeId: "sainte-sophie",
       authorProfileId: "profile-a",
       authorSurnameSnapshot: "Maman",
+      authorUid: "uid-1",
       reaction: "like",
       text: "Super",
       createdAt: 1,
       updatedAt: 2,
     });
-    // Doit aussi écrire les nouveaux commentaires de l'auteur courant (clé profileId-timestamp)
-    expect(updates["placeComments/sainte-sophie/profile-a-9999"]).toEqual({
-      commentId: "profile-a-9999",
-      placeId: "sainte-sophie",
-      authorProfileId: "profile-a",
-      authorSurnameSnapshot: "Maman",
-      reaction: null,
-      text: "Nouveau commentaire dans le fil",
-      createdAt: 9999,
-      updatedAt: 9999,
-    });
+    // Ne doit pas écrire un commentaire du même profil mais d'un autre uid Firebase
+    expect(updates["placeComments/sainte-sophie/profile-a-9999"]).toBeUndefined();
     // Ne doit pas écrire les commentaires des autres profils
     expect(updates["placeComments/sainte-sophie/profile-b"]).toBeUndefined();
   });

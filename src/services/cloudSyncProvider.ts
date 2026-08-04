@@ -574,8 +574,19 @@ export async function pushCloudSnapshot(
   // (clé profileId pour le premier avis, profileId-timestamp pour les suivants).
   for (const [placeId, commentsById] of Object.entries(payload.placeComments)) {
     for (const [commentId, comment] of Object.entries(commentsById)) {
-      if (comment.authorProfileId === payload.profileId) {
-        updates[`placeComments/${placeId}/${commentId}`] = comment;
+      const normalizedAuthorUid =
+        typeof comment.authorUid === "string" && comment.authorUid.trim().length > 0
+          ? comment.authorUid
+          : payload.actorUid;
+
+      if (
+        comment.authorProfileId === payload.profileId &&
+        normalizedAuthorUid === payload.actorUid
+      ) {
+        updates[`placeComments/${placeId}/${commentId}`] = {
+          ...comment,
+          authorUid: normalizedAuthorUid,
+        };
       }
     }
   }
