@@ -97,17 +97,14 @@ export function shouldForceLaunchGate(input: {
     Number.isFinite(launchGateCycle) && launchGateCycle > 0
       ? Math.floor(launchGateCycle)
       : 0;
-
-  // Backward compatibility: legacy snapshots without launch-gate state must
-  // not suddenly block non-owner profiles in phase "during".
-  if (normalizedCycle <= 0) {
-    return false;
-  }
+  // If cycle is missing in a "during" snapshot, force a one-time launch
+  // gate with a synthetic cycle so users still see the intermediary screen.
+  const expectedCycle = normalizedCycle > 0 ? normalizedCycle : 1;
 
   const completedCycleRaw = launchGateCompletedCycleByProfile[profileId];
   const completedCycle =
     Number.isFinite(completedCycleRaw) && typeof completedCycleRaw === "number"
       ? Math.floor(completedCycleRaw)
       : -1;
-  return completedCycle !== normalizedCycle;
+  return completedCycle !== expectedCycle;
 }

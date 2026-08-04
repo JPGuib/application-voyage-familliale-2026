@@ -9217,9 +9217,10 @@ export default function App() {
     if (profile.role === "proprietaire" || ownerReplayLaunchRequested) {
       return;
     }
+    const completionCycle = launchGateCycle > 0 ? launchGateCycle : 1;
     setLaunchGateCompletedCycleByProfile((previous) => ({
       ...previous,
-      [profile.id]: launchGateCycle,
+      [profile.id]: completionCycle,
     }));
   };
 
