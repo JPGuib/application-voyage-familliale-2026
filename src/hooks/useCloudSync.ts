@@ -271,14 +271,14 @@ export function useCloudSync() {
         setIsReady(true);
       },
       () => {
-        setCloudAuthError("permission-denied");
-
         if (permissionDeniedRetryCountRef.current >= 2 || !cloudUserUid) {
+          setCloudAuthError("permission-denied");
           setIsReady(true);
           return;
         }
 
         permissionDeniedRetryCountRef.current += 1;
+        setCloudAuthError(null);
         setIsReady(false);
 
         void ensureFamilyMembership(database, familyId, cloudUserUid)

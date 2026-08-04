@@ -9430,14 +9430,14 @@ export default function App() {
   };
 
   const renderScreen = () => {
+    if (isInitializing || (cloudEnabled && (!cloudReady || isAuthBootstrapPending || isProfileHydrationPending))) {
+      return <CloudLoadingScreen />;
+    }
+
     if (cloudEnabled && cloudAuthError) {
       return <CloudAccessErrorScreen reason={cloudAuthError} onRetry={() => {
         void retryCloudAccess();
       }} />;
-    }
-
-    if (isInitializing || (cloudEnabled && (!cloudReady || isAuthBootstrapPending || isProfileHydrationPending))) {
-      return <CloudLoadingScreen />;
     }
 
     if (cloudEnabled && !isAuthenticated) {
