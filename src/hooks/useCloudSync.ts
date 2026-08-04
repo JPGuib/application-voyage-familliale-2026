@@ -399,6 +399,9 @@ export function useCloudSync() {
       }
 
       try {
+        // Re-assert membership before any family write. If the anonymous uid
+        // changed or membership was removed, writes under /families/* fail.
+        await ensureFamilyMembership(database, familyId, cloudUserUid);
         await ensureProfileMembership(database, familyId, mutation.profileId, cloudUserUid);
         if (mutation.canWriteFamilyState) {
           // Owner-scoped writes depend on ownerMembers/{familyId}/{uid}.
@@ -436,6 +439,7 @@ export function useCloudSync() {
 
         if (mutation.canWriteFamilyState && isPermissionDenied) {
           try {
+            await ensureFamilyMembership(database, familyId, cloudUserUid);
             await ensureOwnerMembership(database, familyId, cloudUserUid);
             await pushCloudSnapshot(database, familyId, mutation);
             setCloudAuthError(null);

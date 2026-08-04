@@ -8681,6 +8681,7 @@ export default function App() {
     // The owner stays on their current screen (settings) so they can see the
     // updated lock badge immediately. The phase-change effect handles redirecting
     // non-owners on inaccessible screens.
+    setScreen("settings");
     if (nextPhase === "before") {
       setDestinationSurveyVotes({});
       setDestinationSurveyDrafts(["", "", ""]);
