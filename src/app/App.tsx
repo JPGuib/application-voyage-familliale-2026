@@ -8661,7 +8661,10 @@ export default function App() {
     const nextPhase: "before" | "during" = phase === "during" ? "before" : "during";
     const computedLaunchCycle = getNextLaunchGateCycle(launchGateCycle, phase, nextPhase);
     const syncResult = await pushPhaseChange(nextPhase, {
-      resetDestinationSurvey: nextPhase === "before",
+      // Destination survey reset currently conflicts with RTDB author/write rules
+      // across profiles and can make owner lock/unlock loop on permission-denied.
+      // Keep phase toggle reliable first; survey reset can be handled separately.
+      resetDestinationSurvey: false,
       launchGateCycle: computedLaunchCycle,
     });
     if (!syncResult.ok) {
