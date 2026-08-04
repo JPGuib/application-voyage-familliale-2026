@@ -22,6 +22,14 @@ vi.mock("../content/trip", () => ({
 type SnapshotPhase = "before" | "during";
 
 function makeSnapshot(phase: SnapshotPhase) {
+  const launchGateCycle = phase === "during" ? 1 : 0;
+  const launchGateCompletedCycleByProfile =
+    phase === "during"
+      ? {
+          p2: 1,
+        }
+      : {};
+
   return {
     familyState: {
       version: 1,
@@ -34,6 +42,8 @@ function makeSnapshot(phase: SnapshotPhase) {
     ownerCodeHash: "hash",
     ownerRecoveryHash: "",
     phase,
+    launchGateCycle,
+    launchGateCompletedCycleByProfile,
     profiles: {
       p1: {
         profileId: "p1",
@@ -114,7 +124,7 @@ describe("App access-control integration", () => {
     expect(screen.getByText(/Code propriétaire/i)).toBeInTheDocument();
   });
 
-  it("keeps a non-owner locked to checklist while the owner keeps full access (story 18.2)", async () => {
+  it("shows launch gate for non-owner while owner keeps full access", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
     const snapshot = makeSnapshot("before");
@@ -132,14 +142,15 @@ describe("App access-control integration", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
+    expect(screen.getByRole("button", { name: /Voir le lancement/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Accueil" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Séjour" })).not.toBeInTheDocument();
   });
 
-  it("keeps user locked to checklist and settings before unlock", async () => {
+  it("prevents launch playback before unlock and shows friendly message", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
     const snapshot = makeSnapshot("before");
@@ -157,18 +168,12 @@ describe("App access-control integration", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
     expect(screen.queryByRole("button", { name: "Accueil" })).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
-
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
-    });
-
-    expect(screen.getByText(/Seul un profil propriétaire peut configurer ce code\./i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Voir le lancement/i }));
+    expect(screen.getByText(/Le voyage n a pas commence/i)).toBeInTheDocument();
   });
 
   it("redirects blocked screen with explicit deny reason when unlock is revoked", async () => {
@@ -196,7 +201,7 @@ describe("App access-control integration", () => {
     view.rerender(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Acces refuse/i)).toBeInTheDocument();
@@ -556,7 +561,7 @@ describe("App access-control integration", () => {
     });
   });
 
-  it("keeps checklist accessible when phase switches from before to during", async () => {
+  it("keeps launch gate visible when phase switches from before to during until ritual completion", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
     let snapshot = makeSnapshot("before");
@@ -574,14 +579,15 @@ describe("App access-control integration", () => {
     const view = render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
     snapshot = makeSnapshot("during");
+    snapshot.launchGateCompletedCycleByProfile = {};
     view.rerender(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
     expect(screen.queryByText(/Jour\s+1/i)).not.toBeInTheDocument();
@@ -651,7 +657,7 @@ describe("App checklist filtering integration (story 10.4)", () => {
   it("male user sees mens clothing category but not womens clothing category", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
-    const snapshot = makeSnapshotWithMetadata("before", "p2", "male", "parent");
+    const snapshot = makeSnapshotWithMetadata("during", "p2", "male", "parent");
     cloudSyncMock.mockImplementation(() => ({
       cloudEnabled: true,
       cloudReady: true,
@@ -664,6 +670,12 @@ describe("App checklist filtering integration (story 10.4)", () => {
     }));
 
     render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Checklist/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
@@ -676,7 +688,7 @@ describe("App checklist filtering integration (story 10.4)", () => {
   it("female user sees womens clothing category but not mens clothing category", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
-    const snapshot = makeSnapshotWithMetadata("before", "p2", "female", "parent");
+    const snapshot = makeSnapshotWithMetadata("during", "p2", "female", "parent");
     cloudSyncMock.mockImplementation(() => ({
       cloudEnabled: true,
       cloudReady: true,
@@ -691,6 +703,12 @@ describe("App checklist filtering integration (story 10.4)", () => {
     render(<App />);
 
     await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Checklist/i }));
+
+    await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
@@ -701,7 +719,7 @@ describe("App checklist filtering integration (story 10.4)", () => {
   it("user with default metadata (unspecified/member) sees both gender categories", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
-    const snapshot = makeSnapshotWithMetadata("before", "p2", "unspecified", "member");
+    const snapshot = makeSnapshotWithMetadata("during", "p2", "unspecified", "member");
     cloudSyncMock.mockImplementation(() => ({
       cloudEnabled: true,
       cloudReady: true,
@@ -714,6 +732,12 @@ describe("App checklist filtering integration (story 10.4)", () => {
     }));
 
     render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Checklist/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();

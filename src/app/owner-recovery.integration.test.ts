@@ -78,12 +78,12 @@ describe("owner recovery phrase integration", () => {
 
     render(React.createElement(App));
 
-    fireEvent.click(screen.getByRole("button", { name: "On est partis ! 🎉" }));
-    fireEvent.click(screen.getByRole("button", { name: "Code oublié ?" }));
+    fireEvent.click(screen.getByRole("button", { name: "Voir le lancement" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Seul le profil propriétaire peut débloquer le voyage.")).toBeInTheDocument();
+      expect(screen.getByText("Le départ n'est pas encore débloqué.")).toBeInTheDocument();
     });
+    expect(screen.queryByRole("button", { name: "Code oublié ?" })).not.toBeInTheDocument();
     expect(screen.queryByText("Réinitialiser le code propriétaire")).not.toBeInTheDocument();
   });
 

@@ -67,6 +67,8 @@ type PushSnapshotInput = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
+  launchGateCycle?: number;
+  launchGateCompletedCycleForProfile?: number | null;
   resetDestinationSurvey?: boolean;
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;

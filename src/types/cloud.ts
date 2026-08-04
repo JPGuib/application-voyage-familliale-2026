@@ -103,6 +103,7 @@ export type CloudProfileState = {
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
   destinationSurveyVote: CloudDestinationSurveyVote | null;
+  launchGateCompletedCycle?: number;
   phase: TravelPhase;
 };
 
@@ -123,6 +124,8 @@ export type CloudSyncSnapshot = {
   placeComments: CloudPlaceCommentsByPlace;
   destinationSurvey: CloudDestinationSurveyByProfile;
   gameDayOverrides: Record<number, GameDayOverride>;
+  launchGateCycle: number;
+  launchGateCompletedCycleByProfile: Record<string, number>;
   profiles: Record<string, CloudProfileState>;
   updatedAt: number;
 };
@@ -153,6 +156,8 @@ export type CloudSyncWritePayload = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
+  launchGateCycle?: number;
+  launchGateCompletedCycleForProfile?: number | null;
   resetDestinationSurvey?: boolean;
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;

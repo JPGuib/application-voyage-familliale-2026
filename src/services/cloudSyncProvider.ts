@@ -40,6 +40,14 @@ function toFiniteNumber(value: unknown, fallback: number): number {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+function toNonNegativeInteger(value: unknown, fallback = 0): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return fallback;
+  }
+  const normalized = Math.floor(value);
+  return normalized >= 0 ? normalized : fallback;
+}
+
 function toTravelPhase(value: unknown): TravelPhase {
   return value === "during" ? "during" : "before";
 }
@@ -416,6 +424,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
       gameResults: parseGameResults(gameResultRecords[profileId]),
       gameProgress: parseGameProgress(gameProgressRecords[profileId]),
       destinationSurveyVote: destinationSurveyRecords[profileId] ?? null,
+      launchGateCompletedCycle: toNonNegativeInteger(asRecord(value).launchGateCompletedCycle),
       phase: toTravelPhase(phaseRecords[profileId]),
     };
   }
@@ -440,6 +449,13 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     placeComments: parsePlaceComments(placeCommentRecords),
     destinationSurvey: destinationSurveyRecords,
     gameDayOverrides: parseGameDayOverrides(root.gameDayOverrides),
+    launchGateCycle: toNonNegativeInteger(root.launchGateCycle),
+    launchGateCompletedCycleByProfile: Object.fromEntries(
+      Object.entries(profiles).map(([profileId, record]) => [
+        profileId,
+        toNonNegativeInteger(record.launchGateCompletedCycle),
+      ])
+    ),
     profiles,
     updatedAt: toFiniteNumber(root.updatedAt, 0),
   };
@@ -544,6 +560,14 @@ export async function pushCloudSnapshot(
     [`gameProgress/${payload.profileId}`]: payload.gameProgress,
   };
 
+  if (payload.launchGateCompletedCycleForProfile === null) {
+    updates[`profiles/${payload.profileId}/launchGateCompletedCycle`] = null;
+  } else if (typeof payload.launchGateCompletedCycleForProfile === "number") {
+    updates[`profiles/${payload.profileId}/launchGateCompletedCycle`] = toNonNegativeInteger(
+      payload.launchGateCompletedCycleForProfile
+    );
+  }
+
   // Commentaires: n'écrire que les branches auteur courant pour respecter la
   // règle RTDB "author-only" et éviter les PERMISSION_DENIED sur les avis
   // des autres membres de la famille. Un profil peut avoir plusieurs entrées
@@ -614,6 +638,9 @@ export async function pushCloudSnapshot(
       updates.travelerCodePlain = payload.travelerCodePlain?.trim() || null;
     }
     updates.phase = payload.phase;
+    if (typeof payload.launchGateCycle === "number") {
+      updates.launchGateCycle = toNonNegativeInteger(payload.launchGateCycle);
+    }
     // On n'écrit jamais explicitement null ici : tant qu'aucune fonctionnalité
     // "effacer la date" n'existe, une valeur locale vide/nulle ne doit jamais
     // écraser une date déjà enregistrée dans Firebase (voir bug corrigé :

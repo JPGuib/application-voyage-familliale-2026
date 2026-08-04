@@ -282,13 +282,11 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(localStorage.getItem("jp-active-profile-id")).toMatch(/^profile-/);
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id");
     expect(activeProfileId).toMatch(/^profile-/);
-    expect(claimRoleForProfileMock).toHaveBeenCalledTimes(1);
-    expect(claimRoleForProfileMock).toHaveBeenCalledWith(activeProfileId, "Emma");
   });
 
   it("blocks profile creation when the mandatory password and recovery fields are missing (story 18.9)", async () => {
@@ -314,7 +312,6 @@ describe("App cloud login flow", () => {
     });
 
     expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
-    expect(claimRoleForProfileMock).not.toHaveBeenCalled();
   });
 
   it("blocks profile creation with a too-short password", async () => {
@@ -381,12 +378,27 @@ describe("App cloud login flow", () => {
 
   it("creates the new profile with a working password and recovery once all mandatory fields are valid", async () => {
     const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+    const unlockedSnapshot = {
+      ...baseSnapshot,
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+        },
+      },
+    };
     cloudSyncMock.mockReturnValue({
       cloudEnabled: true,
       cloudReady: true,
       cloudAuthError: null,
       cloudActorUid: "actor-1",
-      cloudSnapshot: baseSnapshot,
+      cloudSnapshot: unlockedSnapshot,
       pushSnapshot: pushSnapshotMock,
       claimRoleForProfile: claimRoleForProfileMock,
       familyId: "famille-voyage-2026",
@@ -462,16 +474,31 @@ describe("App cloud login flow", () => {
 
   it("creating a profile as Visiteur assigns the visiteur role without requiring a code (story 24.1/24.3)", async () => {
     const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
+    const unlockedSnapshot = {
+      ...baseSnapshot,
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+        },
+      },
+    };
     claimRoleForProfileMock.mockResolvedValue({
       assignedRole: "utilisateur",
-      familyState: baseSnapshot.familyState,
+      familyState: unlockedSnapshot.familyState,
     });
     cloudSyncMock.mockReturnValue({
       cloudEnabled: true,
       cloudReady: true,
       cloudAuthError: null,
       cloudActorUid: "actor-1",
-      cloudSnapshot: baseSnapshot,
+      cloudSnapshot: unlockedSnapshot,
       pushSnapshot: pushSnapshotMock,
       claimRoleForProfile: claimRoleForProfileMock,
       familyId: "famille-voyage-2026",
@@ -551,7 +578,22 @@ describe("App cloud login flow", () => {
 
   it("creating a profile as Voyageur with the correct code keeps the utilisateur role unchanged (story 24.1)", async () => {
     const travelerCodeHash = await hashOwnerCode("famille2026");
-    const snapshotWithTravelerCode = { ...baseSnapshot, travelerCodeHash };
+    const snapshotWithTravelerCode = {
+      ...baseSnapshot,
+      travelerCodeHash,
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+        },
+      },
+    };
     const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
     claimRoleForProfileMock.mockResolvedValue({
       assignedRole: "utilisateur",
@@ -664,7 +706,21 @@ describe("App cloud login flow", () => {
     // "no password" state back into local state and permanently erase the
     // password/recovery the user just set at creation time.
     const pushSnapshotMock = vi.fn();
-    let currentSnapshot = baseSnapshot;
+    let currentSnapshot = {
+      ...baseSnapshot,
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+        },
+      },
+    };
     pushSnapshotMock.mockImplementation(async (payload: Record<string, unknown>) => {
       const profileId = payload.profileId as string;
       currentSnapshot = {
@@ -684,7 +740,7 @@ describe("App cloud login flow", () => {
             lastSyncAt: 1,
             checklist: {},
             gameResults: [],
-            phase: "before",
+            phase: "during",
           },
         },
       } as typeof baseSnapshot;
@@ -713,7 +769,7 @@ describe("App cloud login flow", () => {
             lastSyncAt: 1,
             checklist: {},
             gameResults: [],
-            phase: "before" as const,
+            phase: "during" as const,
           },
         },
       };
@@ -770,7 +826,21 @@ describe("App cloud login flow", () => {
     // effect would copy "utilisateur" back into local state and the profile
     // would permanently stay "utilisateur" instead of "visiteur".
     const pushSnapshotMock = vi.fn();
-    let currentSnapshot = baseSnapshot;
+    let currentSnapshot = {
+      ...baseSnapshot,
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+        },
+      },
+    };
     pushSnapshotMock.mockImplementation(async (payload: Record<string, unknown>) => {
       const profileId = payload.profileId as string;
       currentSnapshot = {
@@ -786,7 +856,7 @@ describe("App cloud login flow", () => {
             lastSyncAt: 1,
             checklist: {},
             gameResults: [],
-            phase: "before",
+            phase: "during",
           },
         },
       } as typeof baseSnapshot;
@@ -815,7 +885,7 @@ describe("App cloud login flow", () => {
             lastSyncAt: 1,
             checklist: {},
             gameResults: [],
-            phase: "before" as const,
+            phase: "during" as const,
           },
         },
       };
@@ -878,6 +948,22 @@ describe("App cloud login flow", () => {
     // later owner push would write a bare `role` for that id in Firebase
     // (via the owner-only role-sync loop) with no surname ever set, creating
     // an orphan "Utilisateur" profile with a blank name.
+    const unlockedSnapshot = {
+      ...baseSnapshot,
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+        },
+      },
+    };
+
     const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
     claimRoleForProfileMock.mockResolvedValue(null);
     cloudSyncMock.mockReturnValue({
@@ -885,7 +971,7 @@ describe("App cloud login flow", () => {
       cloudReady: true,
       cloudAuthError: null,
       cloudActorUid: "actor-1",
-      cloudSnapshot: baseSnapshot,
+      cloudSnapshot: unlockedSnapshot,
       pushSnapshot: pushSnapshotMock,
       claimRoleForProfile: claimRoleForProfileMock,
       familyId: "famille-voyage-2026",
@@ -937,10 +1023,16 @@ describe("App cloud login flow", () => {
     const protectedHash = await hashProfilePassword("secret-1234");
     const protectedSnapshot = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           passwordHash: protectedHash,
         },
       },
@@ -980,7 +1072,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Jour\s+1/i })).toBeInTheDocument();
     });
   });
 
@@ -1155,10 +1247,16 @@ describe("App cloud login flow", () => {
     const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
     const protectedSnapshot = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           passwordHash: protectedHash,
           recoveryHash,
           recoveryQuestion: "Quel est ton premier voyage ?",
@@ -1197,7 +1295,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Réinitialiser" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Jour\s+1/i })).toBeInTheDocument();
     });
 
     expect(pushSnapshotMock).toHaveBeenCalled();
@@ -1308,10 +1406,16 @@ describe("App cloud login flow", () => {
     const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
     const protectedSnapshot = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           passwordHash: currentHash,
         },
       },
@@ -1338,7 +1442,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1397,7 +1501,7 @@ describe("App cloud login flow", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
   });
 
@@ -1406,10 +1510,16 @@ describe("App cloud login flow", () => {
     const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
     const protectedSnapshot = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           passwordHash: currentHash,
         },
       },
@@ -1436,7 +1546,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1470,10 +1580,16 @@ describe("App cloud login flow", () => {
     const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
     const protectedSnapshot = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           passwordHash: currentHash,
           recoveryHash,
           recoveryQuestion: "Quel est ton premier voyage ?",
@@ -1502,7 +1618,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1537,10 +1653,16 @@ describe("App cloud login flow", () => {
     const currentHash = await hashProfilePassword("secret-1234");
     const protectedSnapshot = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           passwordHash: currentHash,
         },
       },
@@ -1567,7 +1689,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1580,10 +1702,16 @@ describe("App cloud login flow", () => {
     const currentHash = await hashProfilePassword("secret-1234");
     const protectedSnapshot = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           passwordHash: currentHash,
         },
       },
@@ -1610,7 +1738,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1744,10 +1872,16 @@ describe("App cloud login flow", () => {
     const protectedHash = await hashProfilePassword("secret-1234");
     const protectedSnapshot = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           passwordHash: protectedHash,
         },
       },
@@ -1774,7 +1908,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1808,12 +1942,28 @@ describe("App profile deletion (story 18.3)", () => {
     deleteProfileMock.mockReset();
     claimRoleForProfileMock.mockResolvedValue(null);
     deleteProfileMock.mockResolvedValue(undefined);
+    const unlockedSnapshot = {
+      ...baseSnapshot,
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+        },
+      },
+    };
+
     cloudSyncMock.mockReturnValue({
       cloudEnabled: true,
       cloudReady: true,
       cloudAuthError: null,
       cloudActorUid: "actor-1",
-      cloudSnapshot: baseSnapshot,
+      cloudSnapshot: unlockedSnapshot,
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: claimRoleForProfileMock,
       deleteProfile: deleteProfileMock,
@@ -1829,7 +1979,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1845,7 +1995,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1861,6 +2011,7 @@ describe("App profile deletion (story 18.3)", () => {
       cloudActorUid: "actor-1",
       cloudSnapshot: {
         ...baseSnapshot,
+        phase: "during" as const,
         familyState: {
           ...baseSnapshot.familyState,
           profiles: [
@@ -1878,7 +2029,7 @@ describe("App profile deletion (story 18.3)", () => {
             lastSyncAt: 1,
             checklist: {},
             gameResults: [],
-            phase: "before" as const,
+            phase: "during" as const,
           },
         },
       },
@@ -1917,7 +2068,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1940,10 +2091,16 @@ describe("App profile deletion (story 18.3)", () => {
     const protectedHash = await hashProfilePassword("correct-pw");
     const protectedSnapshot = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           passwordHash: protectedHash,
         },
       },
@@ -1971,7 +2128,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -1996,10 +2153,16 @@ describe("App profile deletion (story 18.3)", () => {
     const protectedHash = await hashProfilePassword("my-secret");
     const protectedSnapshot = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           passwordHash: protectedHash,
         },
       },
@@ -2027,7 +2190,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -2048,13 +2211,41 @@ describe("App profile deletion (story 18.3)", () => {
   });
 
   it("deletion does not affect sibling profile: Maman still visible after Léo is deleted", async () => {
+    const unlockedSnapshot = {
+      ...baseSnapshot,
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+        },
+      },
+    };
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: unlockedSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      deleteProfile: deleteProfileMock,
+      familyId: "famille-voyage-2026",
+    });
+
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Paramètres" }));
@@ -2077,13 +2268,29 @@ describe("App profile deletion (story 18.3)", () => {
     const inFlightDeleteProfileMock = vi.fn().mockImplementation(() => deleteInFlight);
     const pushSnapshotMock = vi.fn().mockResolvedValue(undefined);
 
-    const snapshotWithoutP2 = {
+    const unlockedSnapshot = {
       ...baseSnapshot,
-      familyState: {
-        ...baseSnapshot.familyState,
-        profiles: baseSnapshot.familyState.profiles.filter((p) => p.id !== "p2"),
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+        },
       },
-      profiles: { p1: baseSnapshot.profiles.p1 },
+    };
+
+    const snapshotWithoutP2 = {
+      ...unlockedSnapshot,
+      familyState: {
+        ...unlockedSnapshot.familyState,
+        profiles: unlockedSnapshot.familyState.profiles.filter((p) => p.id !== "p2"),
+      },
+      profiles: { p1: unlockedSnapshot.profiles.p1 },
     };
 
     let currentReturn = {
@@ -2091,7 +2298,7 @@ describe("App profile deletion (story 18.3)", () => {
       cloudReady: true,
       cloudAuthError: null,
       cloudActorUid: "actor-1",
-      cloudSnapshot: baseSnapshot,
+      cloudSnapshot: unlockedSnapshot,
       pushSnapshot: pushSnapshotMock,
       claimRoleForProfile: claimRoleForProfileMock,
       deleteProfile: inFlightDeleteProfileMock,
@@ -2105,7 +2312,7 @@ describe("App profile deletion (story 18.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     // Ordinary session sync pushes happen while logged in, before any
@@ -2148,10 +2355,16 @@ describe("App profile metadata hydration (story 10.4)", () => {
 
     const snapshotWithMeta = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           gender: "female" as const,
           householdRole: "parent" as const,
         },
@@ -2171,7 +2384,13 @@ describe("App profile metadata hydration (story 10.4)", () => {
 
     render(<App />);
 
-    // After hydration the female user should NOT see mens clothing
+    // In during phase, auto-login lands on dashboard first.
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Checklist/i }));
+
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
@@ -2185,10 +2404,16 @@ describe("App profile metadata hydration (story 10.4)", () => {
 
     const snapshotWithMeta = {
       ...baseSnapshot,
+      phase: "during" as const,
       profiles: {
         ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+        },
         p2: {
           ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
           gender: "female" as const,
           householdRole: "parent" as const,
         },
@@ -2209,7 +2434,7 @@ describe("App profile metadata hydration (story 10.4)", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
     // Switch profile

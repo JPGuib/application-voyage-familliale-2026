@@ -24,7 +24,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-07-05
-last_updated: 2026-08-03
+last_updated: 2026-08-04
 project_key: NOKEY
 tracking_system: file-system
 story_location: {project-root}/_bmad-output/implementation-artifacts
@@ -198,6 +198,7 @@ development_status:
   25-1-ecran-teaser-pre-depart: backlog
   25-2-sondage-destination: review
   25-3-transformation-faq-sondage-consultable: backlog
+  25-4-parcours-video-on-est-parti: review
   epic-25-retrospective: optional
 
   epic-26: backlog

@@ -152,6 +152,12 @@ import {
   type DestinationSurveyVote,
 } from "./destination-survey";
 import { startGlobalTutorial } from "./tutorials/driver-runtime";
+import {
+  LAUNCH_FALLBACK_STEPS,
+  LAUNCH_VIDEO_SRC,
+  getNextLaunchGateCycle,
+  shouldForceLaunchGate,
+} from "./launch-gate";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -326,6 +332,8 @@ const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 const PROFILE_RECOVERY_ANSWER_STORAGE_KEY = "jp-profile-recovery-answers";
 const PLACE_COMMENTS_STORAGE_KEY = "jp-place-comments";
 const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
+const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
+const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-by-profile";
 const MAX_PLACE_COMMENT_LENGTH = 500;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
@@ -4449,6 +4457,172 @@ function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: nu
   );
 }
 
+function LaunchGateScreen({
+  locked,
+  message,
+  mode,
+  fallbackStepIndex,
+  isOwnerReplay,
+  onStart,
+  onVideoEnded,
+  onVideoError,
+  onNextFallback,
+  onReplay,
+  onEnterApp,
+  onCloseOwnerReplay,
+}: {
+  locked: boolean;
+  message: string | null;
+  mode: "idle" | "video" | "fallback" | "completed";
+  fallbackStepIndex: number;
+  isOwnerReplay: boolean;
+  onStart: () => void;
+  onVideoEnded: () => void;
+  onVideoError: () => void;
+  onNextFallback: () => void;
+  onReplay: () => void;
+  onEnterApp: () => void;
+  onCloseOwnerReplay: () => void;
+}) {
+  const fallbackStep =
+    LAUNCH_FALLBACK_STEPS[Math.max(0, Math.min(fallbackStepIndex, LAUNCH_FALLBACK_STEPS.length - 1))];
+  const isLastFallbackStep = fallbackStepIndex >= LAUNCH_FALLBACK_STEPS.length - 1;
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden bg-[#0F172A] text-white">
+      <div className="relative px-6 pt-12 pb-6">
+        <MemphisDecor />
+        <div className="relative z-10">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-white/80">✈️ Rituel de départ</p>
+            {isOwnerReplay ? (
+              <button
+                onClick={onCloseOwnerReplay}
+                className="rounded-full bg-white/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest"
+              >
+                Fermer
+              </button>
+            ) : null}
+          </div>
+          <h1 className="text-3xl font-black">On est parti !</h1>
+          <p className="mt-2 text-sm text-white/85">
+            {locked
+              ? "Le départ n'est pas encore débloqué."
+              : "Lance la séquence de départ avant d'entrer dans l'application."}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex-1 px-4 pb-6">
+        <div className="h-full rounded-3xl border border-white/15 bg-white/5 p-4">
+          {mode === "idle" && (
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <p className="mb-5 text-sm font-semibold text-white/80">Un seul bouton. Un vrai départ.</p>
+              <button
+                onClick={onStart}
+                className="rounded-2xl bg-[#3B82F6] px-6 py-4 text-base font-black text-white shadow-lg transition-transform active:scale-95"
+              >
+                Voir le lancement
+              </button>
+            </div>
+          )}
+
+          {mode === "video" && (
+            <div className="flex h-full flex-col gap-3">
+              <video
+                className="h-full min-h-[260px] w-full rounded-2xl bg-black object-contain"
+                controls
+                autoPlay
+                onEnded={onVideoEnded}
+                onError={onVideoError}
+              >
+                <source src={LAUNCH_VIDEO_SRC} type="video/mp4" />
+              </video>
+              <p className="text-xs font-semibold text-white/70">
+                Si la vidéo ne peut pas être lue, la version pas-à-pas s'affiche automatiquement.
+              </p>
+            </div>
+          )}
+
+          {mode === "fallback" && (
+            <div
+              className={`flex h-full flex-col justify-between rounded-2xl p-5 ${
+                fallbackStep.theme === "blue"
+                  ? "bg-gradient-to-b from-[#1D4ED8] to-[#2563EB]"
+                  : "bg-gradient-to-b from-[#111827] to-[#1F2937]"
+              }`}
+            >
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-widest text-white/70">
+                  Étape {Math.min(fallbackStepIndex + 1, LAUNCH_FALLBACK_STEPS.length)} / {LAUNCH_FALLBACK_STEPS.length}
+                </p>
+                <h2 className="mt-2 text-2xl font-black">{fallbackStep.title}</h2>
+                <p className="mt-3 text-base leading-relaxed text-white/90">{fallbackStep.body}</p>
+                {fallbackStep.showPhotos && (
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    <div className="h-16 rounded-xl bg-white/20" />
+                    <div className="h-16 rounded-xl bg-white/30" />
+                    <div className="h-16 rounded-xl bg-white/20" />
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-5">
+                {!isLastFallbackStep ? (
+                  <button
+                    onClick={onNextFallback}
+                    className="w-full rounded-2xl bg-white text-[#0F172A] py-3 text-sm font-black"
+                  >
+                    Suivant
+                  </button>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={onReplay}
+                      className="rounded-2xl border border-white/30 py-3 text-sm font-black"
+                    >
+                      Revoir
+                    </button>
+                    <button
+                      onClick={onEnterApp}
+                      className="rounded-2xl bg-white py-3 text-sm font-black text-[#0F172A]"
+                    >
+                      Entrer
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {mode === "completed" && (
+            <div className="flex h-full flex-col items-center justify-center">
+              <p className="text-lg font-black">Prêt pour le voyage</p>
+              <p className="mt-2 text-sm text-white/80">Tu peux revoir le rituel, ou entrer dans l'application.</p>
+              <div className="mt-5 grid w-full grid-cols-2 gap-2">
+                <button
+                  onClick={onReplay}
+                  className="rounded-2xl border border-white/30 py-3 text-sm font-black"
+                >
+                  Revoir
+                </button>
+                <button
+                  onClick={onEnterApp}
+                  className="rounded-2xl bg-white py-3 text-sm font-black text-[#0F172A]"
+                >
+                  Entrer
+                </button>
+              </div>
+            </div>
+          )}
+
+          {message && <p className="mt-3 text-center text-sm font-bold text-amber-300">{message}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SettingsScreen({
   profile,
   ownerCodeConfigured,
@@ -4466,6 +4640,7 @@ function SettingsScreen({
   onSaveOwnerCode,
   onSaveTravelerCode,
   onToggleLock,
+  onOpenLaunchReplay,
   onSaveProfilePassword,
   onChangeProfilePasswordInSession,
   onRemoveProfilePassword,
@@ -4503,6 +4678,7 @@ function SettingsScreen({
   onSaveOwnerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
   onSaveTravelerCode: (code: string) => Promise<{ ok: boolean; message: string }>;
   onToggleLock: (code: string) => Promise<{ ok: boolean; message: string }>;
+  onOpenLaunchReplay: () => void;
   onSaveProfilePassword: (password: string) => Promise<{ ok: boolean; message: string }>;
   onChangeProfilePasswordInSession: (
     method: InSessionPasswordProofMethod,
@@ -5270,6 +5446,12 @@ function SettingsScreen({
                     className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
                   >
                     {appLocked ? "Débloquer l'application" : "Bloquer l'application"}
+                  </button>
+                  <button
+                    onClick={onOpenLaunchReplay}
+                    className="mt-2 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
+                  >
+                    Rejouer le rituel de départ
                   </button>
                 </div>
 
@@ -6067,6 +6249,40 @@ export default function App() {
       return "before";
     }
   });
+  const [launchGateCycle, setLaunchGateCycle] = useState<number>(() => {
+    if (cloudEnabled) {
+      return 0;
+    }
+    try {
+      const raw = localStorage.getItem(LAUNCH_GATE_CYCLE_STORAGE_KEY);
+      const parsed = raw ? Number(raw) : 0;
+      return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : 0;
+    } catch {
+      return 0;
+    }
+  });
+  const [launchGateCompletedCycleByProfile, setLaunchGateCompletedCycleByProfile] = useState<Record<string, number>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+    try {
+      const raw = JSON.parse(localStorage.getItem(LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY) || "{}");
+      if (!raw || typeof raw !== "object") {
+        return {};
+      }
+      return Object.fromEntries(
+        Object.entries(raw as Record<string, unknown>)
+          .filter(([, value]) => typeof value === "number" && Number.isFinite(value) && value >= 0)
+          .map(([key, value]) => [key, Math.floor(value as number)])
+      );
+    } catch {
+      return {};
+    }
+  });
+  const [launchGateMode, setLaunchGateMode] = useState<"idle" | "video" | "fallback" | "completed">("idle");
+  const [launchFallbackStepIndex, setLaunchFallbackStepIndex] = useState(0);
+  const [launchGateMessage, setLaunchGateMessage] = useState<string | null>(null);
+  const [ownerReplayLaunchRequested, setOwnerReplayLaunchRequested] = useState(false);
   const [tripStartDate, setTripStartDate] = useState<string | null>(() => {
     if (cloudEnabled) {
       return null;
@@ -6729,6 +6945,8 @@ export default function App() {
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY);
         localStorage.removeItem(DESTINATION_SURVEY_STORAGE_KEY);
+        localStorage.removeItem(LAUNCH_GATE_CYCLE_STORAGE_KEY);
+        localStorage.removeItem(LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY);
       } else {
         localStorage.setItem("jp-profile", JSON.stringify(profile));
         localStorage.setItem(
@@ -6791,6 +7009,14 @@ export default function App() {
             DESTINATION_SURVEY_STORAGE_KEY,
             JSON.stringify(destinationSurveyVotes)
           );
+          localStorage.setItem(
+            LAUNCH_GATE_CYCLE_STORAGE_KEY,
+            String(Math.max(0, Math.floor(launchGateCycle)))
+          );
+          localStorage.setItem(
+            LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY,
+            JSON.stringify(launchGateCompletedCycleByProfile)
+          );
         } catch (e) {
           if (IS_DEV) console.warn("localStorage quota exceeded or unavailable:", e);
         }
@@ -6828,6 +7054,8 @@ export default function App() {
     ownerGlobalChecklistRemovals,
     placeCommentsByPlace,
     destinationSurveyVotes,
+    launchGateCycle,
+    launchGateCompletedCycleByProfile,
     unlockFailedAttempts,
     unlockLockedUntil,
     gameHistory,
@@ -6854,6 +7082,26 @@ export default function App() {
 
     const normalized = enforceOwnerUniqueness(cloudSnapshot.familyState);
     setPhase((previous) => (previous === cloudSnapshot.phase ? previous : cloudSnapshot.phase));
+    const nextLaunchGateCycle =
+      typeof cloudSnapshot.launchGateCycle === "number" && Number.isFinite(cloudSnapshot.launchGateCycle)
+        ? Math.max(0, Math.floor(cloudSnapshot.launchGateCycle))
+        : 0;
+    setLaunchGateCycle((previous) =>
+      previous === nextLaunchGateCycle ? previous : nextLaunchGateCycle
+    );
+    setLaunchGateCompletedCycleByProfile((previous) => {
+      const raw =
+        cloudSnapshot.launchGateCompletedCycleByProfile &&
+        typeof cloudSnapshot.launchGateCompletedCycleByProfile === "object"
+          ? cloudSnapshot.launchGateCompletedCycleByProfile
+          : {};
+      const next = Object.fromEntries(
+        Object.entries(raw)
+          .filter(([, value]) => typeof value === "number" && Number.isFinite(value) && value >= 0)
+          .map(([key, value]) => [key, Math.floor(value)])
+      );
+      return JSON.stringify(previous) === JSON.stringify(next) ? previous : next;
+    });
     setTripStartDate((previous) => {
       const pending = pendingTripStartDateRef.current;
       if (pending !== "none") {
@@ -7300,6 +7548,8 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       placeCommentsByPlace,
       destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
+      launchGateCycle,
+      launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       phase,
       tripStartDate,
       gameHistory,
@@ -7339,6 +7589,8 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       placeComments: placeCommentsByPlace,
       profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
+      launchGateCycle,
+      launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       gameResults: gameHistory,
       gameProgress: currentGameProgress,
       phase,
@@ -7375,6 +7627,8 @@ export default function App() {
     ownerGlobalChecklistRemovals,
     placeCommentsByPlace,
     destinationSurveyVotes,
+    launchGateCycle,
+    launchGateCompletedCycleByProfile,
     phase,
     tripStartDate,
     hydratedProfileId,
@@ -7697,7 +7951,8 @@ export default function App() {
       return;
     }
 
-    const syncResult = await pushPhaseChange("during");
+    const nextLaunchCycle = getNextLaunchGateCycle(launchGateCycle, phase, "during");
+    const syncResult = await pushPhaseChange("during", { launchGateCycle: nextLaunchCycle });
     if (!syncResult.ok) {
       setStartError(syncResult.message);
       return;
@@ -7708,6 +7963,7 @@ export default function App() {
     setStartError(null);
     setShowStartPrompt(false);
     setStartCodeInput("");
+    setLaunchGateCycle(nextLaunchCycle);
     setPhase("during");
     setScreen("dashboard");
   };
@@ -7789,7 +8045,8 @@ export default function App() {
       }
 
       const nextHash = await hashOwnerCode(nextCode);
-      const syncResult = await pushPhaseChange("during");
+      const nextLaunchCycle = getNextLaunchGateCycle(launchGateCycle, phase, "during");
+      const syncResult = await pushPhaseChange("during", { launchGateCycle: nextLaunchCycle });
       if (!syncResult.ok) {
         setRecoveryError(syncResult.message);
         return;
@@ -7804,6 +8061,7 @@ export default function App() {
       setStartCodeInput("");
       setStartError(null);
       resetRecoveryPromptState();
+      setLaunchGateCycle(nextLaunchCycle);
       setPhase("during");
       setScreen("dashboard");
     } catch {
@@ -8059,6 +8317,10 @@ export default function App() {
     resetRecoveryPromptState();
     setDestinationSurveyDrafts(["", "", ""]);
     setDestinationSurveyError(null);
+    setLaunchGateMode("idle");
+    setLaunchFallbackStepIndex(0);
+    setLaunchGateMessage(null);
+    setOwnerReplayLaunchRequested(false);
     pendingDestinationSurveyVoteRef.current = "none";
     setUnlockFailedAttempts(0);
     setUnlockLockedUntil(0);
@@ -8168,7 +8430,7 @@ export default function App() {
 
   const pushPhaseChange = async (
     nextPhase: "before" | "during",
-    options?: { resetDestinationSurvey?: boolean }
+    options?: { resetDestinationSurvey?: boolean; launchGateCycle?: number }
   ) => {
     if (!cloudEnabled) {
       return { ok: true as const, message: null };
@@ -8215,6 +8477,8 @@ export default function App() {
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
       placeComments: placeCommentsByPlace,
+      launchGateCycle: options?.launchGateCycle,
+      launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       gameResults: gameHistory,
       gameProgress: currentGameProgress,
       phase: nextPhase,
@@ -8269,8 +8533,10 @@ export default function App() {
     }
 
     const nextPhase: "before" | "during" = phase === "during" ? "before" : "during";
+    const computedLaunchCycle = getNextLaunchGateCycle(launchGateCycle, phase, nextPhase);
     const syncResult = await pushPhaseChange(nextPhase, {
       resetDestinationSurvey: nextPhase === "before",
+      launchGateCycle: computedLaunchCycle,
     });
     if (!syncResult.ok) {
       return syncResult;
@@ -8280,6 +8546,7 @@ export default function App() {
     setUnlockLockedUntil(0);
     setNowTs(Date.now());
     setAccessDeniedMessage(null);
+    setLaunchGateCycle(computedLaunchCycle);
     setPhase(nextPhase);
 
     // The owner stays on their current screen (settings) so they can see the
@@ -8937,6 +9204,78 @@ export default function App() {
     ? screen
     : getSafeScreen(profile.role, phase);
 
+  const launchGateForced = shouldForceLaunchGate({
+    role: profile.role,
+    phase,
+    profileId: profile.id,
+    launchGateCycle,
+    launchGateCompletedCycleByProfile,
+    ownerReplayRequested: ownerReplayLaunchRequested,
+  });
+
+  const completeLaunchGateForCurrentProfile = () => {
+    if (profile.role === "proprietaire" || ownerReplayLaunchRequested) {
+      return;
+    }
+    setLaunchGateCompletedCycleByProfile((previous) => ({
+      ...previous,
+      [profile.id]: launchGateCycle,
+    }));
+  };
+
+  useEffect(() => {
+    setLaunchGateMode("idle");
+    setLaunchFallbackStepIndex(0);
+    setLaunchGateMessage(null);
+    if (profile.role !== "proprietaire") {
+      setOwnerReplayLaunchRequested(false);
+    }
+  }, [profile.id, phase, profile.role]);
+
+  const handleLaunchStart = () => {
+    if (!ownerReplayLaunchRequested && profile.role !== "proprietaire" && phase === "before") {
+      setLaunchGateMessage("Le voyage n a pas commence. Le proprietaire doit d abord debloquer l application.");
+      return;
+    }
+    setLaunchGateMessage(null);
+    setLaunchFallbackStepIndex(0);
+    setLaunchGateMode("video");
+  };
+
+  const handleLaunchVideoError = () => {
+    setLaunchGateMessage("Video indisponible. Passage automatique a la version pas a pas.");
+    setLaunchFallbackStepIndex(0);
+    setLaunchGateMode("fallback");
+  };
+
+  const handleLaunchVideoEnded = () => {
+    setLaunchGateMessage(null);
+    setLaunchGateMode("completed");
+  };
+
+  const handleLaunchNextFallback = () => {
+    if (launchFallbackStepIndex >= LAUNCH_FALLBACK_STEPS.length - 1) {
+      setLaunchGateMode("completed");
+      return;
+    }
+    setLaunchFallbackStepIndex((previous) => previous + 1);
+  };
+
+  const handleLaunchReplay = () => {
+    setLaunchGateMessage(null);
+    setLaunchFallbackStepIndex(0);
+    setLaunchGateMode("video");
+  };
+
+  const handleLaunchEnter = () => {
+    completeLaunchGateForCurrentProfile();
+    setOwnerReplayLaunchRequested(false);
+    setLaunchGateMode("idle");
+    setLaunchFallbackStepIndex(0);
+    setLaunchGateMessage(null);
+    setScreen("dashboard");
+  };
+
   const startAccueilTutorial = () => {
     void startGlobalTutorial();
   };
@@ -9481,6 +9820,31 @@ export default function App() {
       );
     }
 
+    if (launchGateForced) {
+      return (
+        <LaunchGateScreen
+          locked={phase === "before"}
+          message={launchGateMessage}
+          mode={launchGateMode}
+          fallbackStepIndex={launchFallbackStepIndex}
+          isOwnerReplay={ownerReplayLaunchRequested}
+          onStart={handleLaunchStart}
+          onVideoEnded={handleLaunchVideoEnded}
+          onVideoError={handleLaunchVideoError}
+          onNextFallback={handleLaunchNextFallback}
+          onReplay={handleLaunchReplay}
+          onEnterApp={handleLaunchEnter}
+          onCloseOwnerReplay={() => {
+            setOwnerReplayLaunchRequested(false);
+            setLaunchGateMode("idle");
+            setLaunchFallbackStepIndex(0);
+            setLaunchGateMessage(null);
+            setScreen("settings");
+          }}
+        />
+      );
+    }
+
     if (phase === "before") {
       if (screen === "settings") {
         return (
@@ -9547,6 +9911,14 @@ export default function App() {
               return { ok: true, message: "Code voyageur mis à jour." };
             }}
             onToggleLock={confirmOwnerLockToggle}
+            onOpenLaunchReplay={() => {
+              if (profile.role === "proprietaire") {
+                setOwnerReplayLaunchRequested(true);
+                setLaunchGateMode("idle");
+                setLaunchFallbackStepIndex(0);
+                setLaunchGateMessage(null);
+              }
+            }}
             onSaveProfilePassword={async (password) => {
               const normalized = password.trim();
               if (normalized.length < 4) {
@@ -10227,6 +10599,14 @@ export default function App() {
               return { ok: true, message: "Code voyageur mis à jour." };
             }}
             onToggleLock={confirmOwnerLockToggle}
+            onOpenLaunchReplay={() => {
+              if (profile.role === "proprietaire") {
+                setOwnerReplayLaunchRequested(true);
+                setLaunchGateMode("idle");
+                setLaunchFallbackStepIndex(0);
+                setLaunchGateMessage(null);
+              }
+            }}
             onSaveProfilePassword={async (password) => {
               const normalized = password.trim();
               if (normalized.length < 4) {
@@ -10358,7 +10738,7 @@ export default function App() {
           </div>
         )}
         {renderScreen()}
-        {visibleBottomNavItems.length > 0 && (effectiveScreen !== "checklist" || canAccessScreen(profile.role, phase, "dashboard")) && (
+        {!launchGateForced && visibleBottomNavItems.length > 0 && (effectiveScreen !== "checklist" || canAccessScreen(profile.role, phase, "dashboard")) && (
           <BottomNav current={effectiveScreen} items={visibleBottomNavItems} onNavigate={goToScreen} />
         )}
         {pendingScreen && (

@@ -98,13 +98,13 @@ describe("App destination survey integration", () => {
   });
 
   it("allows proposal editing and saving before unlock", async () => {
-    localStorage.setItem("jp-active-profile-id", "p2");
+    localStorage.setItem("jp-active-profile-id", "p1");
 
     cloudSyncMock.mockReturnValue({
       cloudEnabled: true,
       cloudReady: true,
       cloudAuthError: null,
-      cloudActorUid: "user-uid",
+      cloudActorUid: "owner-uid",
       cloudSnapshot: makeSnapshot("before"),
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: vi.fn().mockResolvedValue(null),

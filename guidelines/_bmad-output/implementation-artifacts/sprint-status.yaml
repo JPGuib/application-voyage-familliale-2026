@@ -24,7 +24,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-07-05
-last_updated: 2026-08-03
+last_updated: 2026-08-04
 project_key: NOKEY
 tracking_system: file-system
 story_location: {project-root}/_bmad-output/implementation-artifacts
@@ -195,15 +195,16 @@ development_status:
   epic-24-retrospective: optional
 
   epic-25: done
-  25-1-ecran-teaser-pre-depart: backlog
+  25-1-ecran-teaser-pre-depart: canceled
   25-2-sondage-destination: done
   25-3-transformation-faq-sondage-consultable: canceled
+  25-4-parcours-video-on-est-parti: review
   epic-25-retrospective: optional
 
   epic-26: backlog
   26-1-formulaire-connexion-classique: backlog
   epic-26-retrospective: optional
 
-  epic-27: in-progress
-  27-1-generateur-automatique-tutoriels-interactifs: ready-for-dev
+  epic-27: done
+  27-1-generateur-automatique-tutoriels-interactifs: done
   epic-27-retrospective: optional

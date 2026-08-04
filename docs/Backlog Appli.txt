@@ -19,13 +19,10 @@ Pour se connecter en tant que voyageur faut le code
 * Evolution de la 21.1 => voir sur un point les lieux de visite (pas uniquement la ville)
 * ajouter une liseuse de livre ? (pdg et epub) 
 
-
-Astuces : mettre devise en premier 
-Compléter le tutoriel
-réorganisation des écrans
+Astuces : mettre devise en premier : attention avec le tutoriel !
+réorganisation des écrans : attention avec le tutoriel !
 plan grand bazar?
 un plan des bateaux Istanbul?
-vidéo effet ouaou
 
 
 liens intéressants : 
