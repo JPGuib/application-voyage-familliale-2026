@@ -4533,13 +4533,15 @@ function LaunchGateScreen({
                 className="h-full min-h-[260px] w-full rounded-2xl bg-black object-contain"
                 controls
                 autoPlay
+                playsInline
+                preload="metadata"
                 onEnded={onVideoEnded}
                 onError={onVideoError}
               >
                 <source src={LAUNCH_VIDEO_SRC} type="video/mp4" />
               </video>
               <p className="text-xs font-semibold text-white/70">
-                Si la vidéo ne peut pas être lue, la version pas-à-pas s'affiche automatiquement.
+                Si la vidéo ne se lance pas, utilise Revoir pour relancer la lecture ou Entrer pour continuer.
               </p>
             </div>
           )}
@@ -9249,9 +9251,9 @@ export default function App() {
       setLaunchGateMode("idle");
       return;
     }
-    setLaunchGateMessage("Video indisponible. Passage automatique a la version pas a pas.");
+    setLaunchGateMessage("Video indisponible. La lecture video peut etre relancee avec Revoir.");
     setLaunchFallbackStepIndex(0);
-    setLaunchGateMode("fallback");
+    setLaunchGateMode("completed");
   };
 
   const handleLaunchVideoEnded = () => {

@@ -193,7 +193,7 @@ describe("App launch gate integration", () => {
     expect(screen.getByText(/Le voyage n a pas commence/i)).toBeInTheDocument();
   });
 
-  it("allows non-owner to enter app only after fallback sequence completes", async () => {
+  it("allows non-owner to enter app from the launch gate even when video playback fails", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
     const snapshot = makeSnapshot("during");
@@ -228,16 +228,10 @@ describe("App launch gate integration", () => {
     fireEvent.error(video as HTMLVideoElement);
 
     await waitFor(() => {
-      expect(screen.getByText(/Étape 1 \/ 6/i)).toBeInTheDocument();
-    });
-
-    for (let index = 0; index < 5; index += 1) {
-      fireEvent.click(screen.getByRole("button", { name: /Suivant/i }));
-    }
-
-    await waitFor(() => {
       expect(screen.getByRole("button", { name: /Entrer/i })).toBeInTheDocument();
     });
+
+    expect(screen.queryByText(/Étape 1 \/ 6/i)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Entrer/i }));
 
@@ -319,9 +313,9 @@ describe("App launch gate integration", () => {
     const video = document.querySelector("video");
     fireEvent.error(video as HTMLVideoElement);
 
-    for (let index = 0; index < 5; index += 1) {
-      fireEvent.click(screen.getByRole("button", { name: /Suivant/i }));
-    }
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Entrer/i })).toBeInTheDocument();
+    });
     fireEvent.click(screen.getByRole("button", { name: /Entrer/i }));
 
     await waitFor(() => {
@@ -408,7 +402,7 @@ describe("App launch gate integration", () => {
     expect(screen.queryByText(/Destination du jour/i)).not.toBeInTheDocument();
   });
 
-  it("keeps gate active after refresh during fallback progression and before final entry", async () => {
+  it("keeps gate active after refresh after video error and before final entry", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
     const snapshot = makeSnapshot("during");
@@ -440,12 +434,8 @@ describe("App launch gate integration", () => {
     fireEvent.error(document.querySelector("video") as HTMLVideoElement);
 
     await waitFor(() => {
-      expect(screen.getByText(/Étape 1 \/ 6/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Entrer/i })).toBeInTheDocument();
     });
-
-    fireEvent.click(screen.getByRole("button", { name: /Suivant/i }));
-    fireEvent.click(screen.getByRole("button", { name: /Suivant/i }));
-    expect(screen.queryByRole("button", { name: /Entrer/i })).not.toBeInTheDocument();
 
     view.rerender(<App />);
 
@@ -453,7 +443,7 @@ describe("App launch gate integration", () => {
       expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("button", { name: /Entrer/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Entrer/i })).toBeInTheDocument();
   });
 
   it("applies completion per profile and keeps gate for other family members", async () => {
@@ -520,9 +510,9 @@ describe("App launch gate integration", () => {
     fireEvent.click(screen.getByRole("button", { name: /Voir le lancement/i }));
     fireEvent.error(document.querySelector("video") as HTMLVideoElement);
 
-    for (let index = 0; index < 5; index += 1) {
-      fireEvent.click(screen.getByRole("button", { name: /Suivant/i }));
-    }
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Entrer/i })).toBeInTheDocument();
+    });
     fireEvent.click(screen.getByRole("button", { name: /Entrer/i }));
 
     await waitFor(() => {
