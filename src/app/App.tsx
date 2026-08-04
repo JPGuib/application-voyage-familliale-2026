@@ -4647,7 +4647,7 @@ function LaunchGateScreen({
           {mode === "completed" && (
             <div className="flex h-full flex-col items-center justify-center">
               <p className="text-lg font-black">Prêt pour le voyage</p>
-              <p className="mt-2 text-sm text-white/80">Tu peux revoir la vidéo, ou entre dans l'application.</p>
+              <p className="mt-2 text-sm text-white/80">Tu peux revoir la vidéo ou entrer dans l'application.</p>
               <div className="mt-5 grid w-full grid-cols-2 gap-2">
                 <button
                   onClick={onReplay}
@@ -6313,8 +6313,15 @@ export default function App() {
   const [launchGateCompletedCycleByProfile, setLaunchGateCompletedCycleByProfile] = useState<Record<string, number>>(() => {
     if (cloudEnabled) {
       try {
-        const raw = JSON.parse(localStorage.getItem(LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY) || "{}");
-        return parseLaunchGateCompletionMap(raw);
+        const persistedRaw = JSON.parse(localStorage.getItem(LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY) || "{}");
+        const pendingRaw = JSON.parse(localStorage.getItem(LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY) || "{}");
+        const persisted = parseLaunchGateCompletionMap(persistedRaw);
+        const pending = parseLaunchGateCompletionMap(pendingRaw);
+        const merged: Record<string, number> = { ...persisted };
+        for (const [profileId, cycle] of Object.entries(pending)) {
+          merged[profileId] = Math.max(merged[profileId] ?? -1, cycle);
+        }
+        return merged;
       } catch {
         return {};
       }
@@ -6992,9 +6999,6 @@ export default function App() {
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY);
         localStorage.removeItem(DESTINATION_SURVEY_STORAGE_KEY);
-        localStorage.removeItem(LAUNCH_GATE_CYCLE_STORAGE_KEY);
-        localStorage.removeItem(LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY);
-        localStorage.removeItem(LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY);
       } else {
         localStorage.setItem("jp-profile", JSON.stringify(profile));
         localStorage.setItem(
@@ -7071,6 +7075,17 @@ export default function App() {
         }
       }
 
+      // Keep launch-gate cache available in cloud mode so a hard refresh after
+      // "Entrer" does not temporarily re-open the gate while stale snapshots catch up.
+      localStorage.setItem(
+        LAUNCH_GATE_CYCLE_STORAGE_KEY,
+        String(Math.max(0, Math.floor(launchGateCycle)))
+      );
+      localStorage.setItem(
+        LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY,
+        JSON.stringify(launchGateCompletedCycleByProfile)
+      );
+
       localStorage.setItem(
         "jp-unlock-failed-attempts",
         String(unlockFailedAttempts)
@@ -7145,6 +7160,18 @@ export default function App() {
           ? cloudSnapshot.launchGateCompletedCycleByProfile
           : {};
       const next = parseLaunchGateCompletionMap(raw);
+
+      // Keep local completion cache until cloud snapshots catch up, so a hard
+      // refresh right after "Entrer" does not re-open the gate.
+      try {
+        const persistedRaw = JSON.parse(localStorage.getItem(LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY) || "{}");
+        const persisted = parseLaunchGateCompletionMap(persistedRaw);
+        for (const [profileId, cycle] of Object.entries(persisted)) {
+          next[profileId] = Math.max(next[profileId] ?? -1, cycle);
+        }
+      } catch {
+        // ignore storage errors
+      }
 
       const pendingCompletion = pendingLaunchGateCompletionRef.current;
       if (pendingCompletion && pendingCompletion.profileId === profile.id) {
@@ -9309,6 +9336,7 @@ export default function App() {
         [profile.id]: completionCycle,
       };
       localStorage.setItem(LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY, JSON.stringify(next));
+      localStorage.setItem(LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY, JSON.stringify(next));
     } catch {
       // ignore storage errors
     }

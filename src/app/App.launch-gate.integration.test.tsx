@@ -520,6 +520,56 @@ describe("App launch gate integration", () => {
     });
   });
 
+  it("keeps dashboard after hard refresh once non-owner entered, even before cloud completion echoes back", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    const snapshot = makeSnapshot("during");
+    snapshot.launchGateCycle = 1;
+    snapshot.launchGateCompletedCycleByProfile = {};
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "user-uid",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      deleteProfile: vi.fn().mockResolvedValue(undefined),
+      setGameDayOverride: vi.fn().mockResolvedValue(undefined),
+      resetGameResults: vi.fn().mockResolvedValue(undefined),
+      resetGameProgress: vi.fn().mockResolvedValue(undefined),
+      registerAsOwnerDevice: vi.fn().mockResolvedValue(undefined),
+      familyId: "famille-voyage-2026",
+    }));
+
+    const firstView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /On y va/i }));
+    fireEvent.error(document.querySelector("video") as HTMLVideoElement);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Entrer/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Entrer/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Destination du jour/i)).toBeInTheDocument();
+    });
+
+    firstView.unmount();
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Destination du jour/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("heading", { name: /On est parti/i })).not.toBeInTheDocument();
+  });
+
   it("traveler moves from checklist (before) to launch gate after unlock, and launch button starts video", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
