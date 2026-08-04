@@ -9243,12 +9243,22 @@ export default function App() {
   };
 
   const handleLaunchVideoError = () => {
+    if (ownerReplayLaunchRequested) {
+      setLaunchGateMessage("Video indisponible. Verifiez le fichier puis relancez la lecture.");
+      setLaunchGateMode("idle");
+      return;
+    }
     setLaunchGateMessage("Video indisponible. Passage automatique a la version pas a pas.");
     setLaunchFallbackStepIndex(0);
     setLaunchGateMode("fallback");
   };
 
   const handleLaunchVideoEnded = () => {
+    if (ownerReplayLaunchRequested) {
+      setLaunchGateMessage(null);
+      setLaunchGateMode("idle");
+      return;
+    }
     setLaunchGateMessage(null);
     setLaunchGateMode("completed");
   };
@@ -9914,7 +9924,7 @@ export default function App() {
             onOpenLaunchReplay={() => {
               if (profile.role === "proprietaire") {
                 setOwnerReplayLaunchRequested(true);
-                setLaunchGateMode("idle");
+                setLaunchGateMode("video");
                 setLaunchFallbackStepIndex(0);
                 setLaunchGateMessage(null);
               }
@@ -10602,7 +10612,7 @@ export default function App() {
             onOpenLaunchReplay={() => {
               if (profile.role === "proprietaire") {
                 setOwnerReplayLaunchRequested(true);
-                setLaunchGateMode("idle");
+                setLaunchGateMode("video");
                 setLaunchFallbackStepIndex(0);
                 setLaunchGateMessage(null);
               }

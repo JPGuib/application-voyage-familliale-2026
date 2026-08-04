@@ -88,7 +88,9 @@ export function shouldForceLaunchGate(input: {
   }
 
   if (phase === "before") {
-    return true;
+    // Story 25.4 scope: before unlock, only visiteurs are forced through the
+    // launch gate. Voyageurs keep the historical pre-unlock checklist flow.
+    return role === "visiteur";
   }
 
   const normalizedCycle =

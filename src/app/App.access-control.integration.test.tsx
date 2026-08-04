@@ -27,6 +27,7 @@ function makeSnapshot(phase: SnapshotPhase) {
     phase === "during"
       ? {
           p2: 1,
+          p3: 1,
         }
       : {};
 
@@ -37,6 +38,7 @@ function makeSnapshot(phase: SnapshotPhase) {
       profiles: [
         { id: "p1", role: "proprietaire" as const },
         { id: "p2", role: "utilisateur" as const },
+        { id: "p3", role: "visiteur" as const },
       ],
     },
     ownerCodeHash: "hash",
@@ -59,6 +61,16 @@ function makeSnapshot(phase: SnapshotPhase) {
         profileId: "p2",
         surname: "Leo",
         role: "utilisateur" as const,
+        createdAt: 1,
+        lastSyncAt: 1,
+        checklist: {},
+        gameResults: [],
+        phase,
+      },
+      p3: {
+        profileId: "p3",
+        surname: "Mia",
+        role: "visiteur" as const,
         createdAt: 1,
         lastSyncAt: 1,
         checklist: {},
@@ -124,7 +136,7 @@ describe("App access-control integration", () => {
     expect(screen.getByText(/Code propriétaire/i)).toBeInTheDocument();
   });
 
-  it("shows launch gate for non-owner while owner keeps full access", async () => {
+  it("keeps user on checklist flow before unlock while owner keeps full access", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
     const snapshot = makeSnapshot("before");
@@ -142,15 +154,16 @@ describe("App access-control integration", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("button", { name: /Voir le lancement/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /On est partis/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /On est parti/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Accueil" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Séjour" })).not.toBeInTheDocument();
   });
 
-  it("prevents launch playback before unlock and shows friendly message", async () => {
+  it("keeps owner-only unlock guard message when user triggers unlock before phase change", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
     const snapshot = makeSnapshot("before");
@@ -168,12 +181,13 @@ describe("App access-control integration", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.queryByRole("button", { name: "Accueil" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /Voir le lancement/i }));
-    expect(screen.getByText(/Le voyage n a pas commence/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /On est partis/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Valider/i }));
+    expect(screen.getByText(/Seul le profil propriétaire peut débloquer le voyage\./i)).toBeInTheDocument();
   });
 
   it("redirects blocked screen with explicit deny reason when unlock is revoked", async () => {
@@ -201,7 +215,7 @@ describe("App access-control integration", () => {
     view.rerender(<App />);
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Acces refuse/i)).toBeInTheDocument();
@@ -562,7 +576,7 @@ describe("App access-control integration", () => {
   });
 
   it("keeps launch gate visible when phase switches from before to during until ritual completion", async () => {
-    localStorage.setItem("jp-active-profile-id", "p2");
+    localStorage.setItem("jp-active-profile-id", "p3");
 
     let snapshot = makeSnapshot("before");
     cloudSyncMock.mockImplementation(() => ({

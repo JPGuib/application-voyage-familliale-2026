@@ -78,8 +78,8 @@ describe("App launch gate integration", () => {
     cloudSyncMock.mockReset();
   });
 
-  it("shows the dedicated launch gate screen for non-owner when phase is before", async () => {
-    localStorage.setItem("jp-active-profile-id", "p2");
+  it("shows the dedicated launch gate screen for visitor when phase is before", async () => {
+    localStorage.setItem("jp-active-profile-id", "p3");
 
     cloudSyncMock.mockReturnValue({
       cloudEnabled: true,
@@ -105,6 +105,34 @@ describe("App launch gate integration", () => {
 
     expect(screen.getByRole("button", { name: /Voir le lancement/i })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /Préparation des bagages/i })).not.toBeInTheDocument();
+  });
+
+  it("keeps traveler on checklist flow before unlock", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "user-uid",
+      cloudSnapshot: makeSnapshot("before"),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      deleteProfile: vi.fn().mockResolvedValue(undefined),
+      setGameDayOverride: vi.fn().mockResolvedValue(undefined),
+      resetGameResults: vi.fn().mockResolvedValue(undefined),
+      resetGameProgress: vi.fn().mockResolvedValue(undefined),
+      registerAsOwnerDevice: vi.fn().mockResolvedValue(undefined),
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("heading", { name: /On est parti/i })).not.toBeInTheDocument();
   });
 
   it("keeps owner on normal flow without forcing launch gate", async () => {
