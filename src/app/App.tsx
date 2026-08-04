@@ -8572,7 +8572,7 @@ export default function App() {
 
     pendingCloudPhaseRef.current = nextPhase;
 
-    await pushSnapshot({
+    const pushed = await pushSnapshot({
       actorUid: cloudActorUid,
       canWriteFamilyState,
       familyState: normalizedFamilyState,
@@ -8603,6 +8603,13 @@ export default function App() {
       resetDestinationSurvey: options?.resetDestinationSurvey,
       tripStartDate,
     });
+
+    if (pushed === false) {
+      return {
+        ok: false as const,
+        message: "Synchronisation cloud refusee. Verifiez les regles Firebase et l'appartenance famille.",
+      };
+    }
 
     return { ok: true as const, message: null };
   };
@@ -9098,36 +9105,35 @@ export default function App() {
         return { ok: false, message: genericError };
       }
 
-      try {
-        await pushSnapshot({
-          actorUid: cloudActorUid,
-          canWriteFamilyState: false,
-          familyState: cloudSnapshot.familyState,
-          ownerCodeHash: cloudSnapshot.ownerCodeHash,
-          ownerCodePlain: cloudSnapshot.ownerCodePlain,
-          ownerRecoveryHash: cloudSnapshot.ownerRecoveryHash,
-          ownerRecoveryConfiguredAt: cloudSnapshot.ownerRecoveryConfiguredAt,
-          profileId: selected.profileId,
-          surname: selected.surname,
-          role: selected.role,
-          profilePasswordHash: nextHash,
-          profileRecoveryHash: selected.recoveryHash,
-          profileRecoveryQuestion: selected.recoveryQuestion,
-          profileRecoveryAnswer: selected.recoveryAnswer,
-          profileRecoveryConfiguredAt: selected.recoveryConfiguredAt,
-          gender: selected.gender,
-          householdRole: selected.householdRole,
-          checklist: selected.checklist,
-          profileCustomChecklistItems: selected.customChecklistItems ?? [],
-          ownerGlobalChecklistAdditions: cloudSnapshot.ownerGlobalChecklistAdditions,
-          ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
-          placeComments: cloudSnapshot.placeComments ?? {},
-          gameResults: selected.gameResults,
-          gameProgress: selected.gameProgress,
-          phase: selected.phase || cloudSnapshot.phase,
-          tripStartDate: cloudSnapshot.tripStartDate,
-        });
-      } catch {
+      const pushed = await pushSnapshot({
+        actorUid: cloudActorUid,
+        canWriteFamilyState: false,
+        familyState: cloudSnapshot.familyState,
+        ownerCodeHash: cloudSnapshot.ownerCodeHash,
+        ownerCodePlain: cloudSnapshot.ownerCodePlain,
+        ownerRecoveryHash: cloudSnapshot.ownerRecoveryHash,
+        ownerRecoveryConfiguredAt: cloudSnapshot.ownerRecoveryConfiguredAt,
+        profileId: selected.profileId,
+        surname: selected.surname,
+        role: selected.role,
+        profilePasswordHash: nextHash,
+        profileRecoveryHash: selected.recoveryHash,
+        profileRecoveryQuestion: selected.recoveryQuestion,
+        profileRecoveryAnswer: selected.recoveryAnswer,
+        profileRecoveryConfiguredAt: selected.recoveryConfiguredAt,
+        gender: selected.gender,
+        householdRole: selected.householdRole,
+        checklist: selected.checklist,
+        profileCustomChecklistItems: selected.customChecklistItems ?? [],
+        ownerGlobalChecklistAdditions: cloudSnapshot.ownerGlobalChecklistAdditions,
+        ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
+        placeComments: cloudSnapshot.placeComments ?? {},
+        gameResults: selected.gameResults,
+        gameProgress: selected.gameProgress,
+        phase: selected.phase || cloudSnapshot.phase,
+        tripStartDate: cloudSnapshot.tripStartDate,
+      });
+      if (pushed === false) {
         setProfilePasswordHashes((previous) => ({
           ...previous,
           [profile.id]: previousPasswordHash,
@@ -9597,35 +9603,34 @@ export default function App() {
                 [targetProfileId]: newPasswordHash,
               }));
 
-              try {
-                await pushSnapshot({
-                  actorUid: cloudActorUid,
-                  canWriteFamilyState: false,
-                  familyState: cloudSnapshot.familyState,
-                  ownerCodeHash: cloudSnapshot.ownerCodeHash,
-                  ownerRecoveryHash: cloudSnapshot.ownerRecoveryHash,
-                  ownerRecoveryConfiguredAt: cloudSnapshot.ownerRecoveryConfiguredAt,
-                  profileId: selected.profileId,
-                  surname: selected.surname,
-                  role: selected.role,
-                  profilePasswordHash: newPasswordHash,
-                  profileRecoveryHash: selected.recoveryHash,
-                  profileRecoveryQuestion: selected.recoveryQuestion,
-                  profileRecoveryAnswer: selected.recoveryAnswer,
-                  profileRecoveryConfiguredAt: selected.recoveryConfiguredAt,
-                  gender: selected.gender,
-                  householdRole: selected.householdRole,
-                  checklist: selected.checklist,
-                  profileCustomChecklistItems: selected.customChecklistItems ?? [],
-                  ownerGlobalChecklistAdditions: cloudSnapshot.ownerGlobalChecklistAdditions,
-                  ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
-                  placeComments: cloudSnapshot.placeComments ?? {},
-                  gameResults: selected.gameResults,
-                  gameProgress: selected.gameProgress,
-                  phase: selected.phase || cloudSnapshot.phase,
-                  tripStartDate: cloudSnapshot.tripStartDate,
-                });
-              } catch {
+              const pushed = await pushSnapshot({
+                actorUid: cloudActorUid,
+                canWriteFamilyState: false,
+                familyState: cloudSnapshot.familyState,
+                ownerCodeHash: cloudSnapshot.ownerCodeHash,
+                ownerRecoveryHash: cloudSnapshot.ownerRecoveryHash,
+                ownerRecoveryConfiguredAt: cloudSnapshot.ownerRecoveryConfiguredAt,
+                profileId: selected.profileId,
+                surname: selected.surname,
+                role: selected.role,
+                profilePasswordHash: newPasswordHash,
+                profileRecoveryHash: selected.recoveryHash,
+                profileRecoveryQuestion: selected.recoveryQuestion,
+                profileRecoveryAnswer: selected.recoveryAnswer,
+                profileRecoveryConfiguredAt: selected.recoveryConfiguredAt,
+                gender: selected.gender,
+                householdRole: selected.householdRole,
+                checklist: selected.checklist,
+                profileCustomChecklistItems: selected.customChecklistItems ?? [],
+                ownerGlobalChecklistAdditions: cloudSnapshot.ownerGlobalChecklistAdditions,
+                ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
+                placeComments: cloudSnapshot.placeComments ?? {},
+                gameResults: selected.gameResults,
+                gameProgress: selected.gameProgress,
+                phase: selected.phase || cloudSnapshot.phase,
+                tripStartDate: cloudSnapshot.tripStartDate,
+              });
+              if (pushed === false) {
                 setProfilePasswordHashes((previous) => ({
                   ...previous,
                   [targetProfileId]: previousPasswordHash,

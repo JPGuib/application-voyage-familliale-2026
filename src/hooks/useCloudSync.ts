@@ -353,10 +353,10 @@ export function useCloudSync() {
   );
 
   const pushSnapshot = useCallback(
-    async (snapshot: PushSnapshotInput) => {
+    async (snapshot: PushSnapshotInput): Promise<boolean> => {
       if (!isEnabled || !database || !cloudUserUid) {
         setCloudAuthError("auth-required");
-        return;
+        return false;
       }
 
       const mutation: CloudSyncWritePayload = {
@@ -406,6 +406,7 @@ export function useCloudSync() {
         }
         await pushCloudSnapshot(database, familyId, mutation);
         setCloudAuthError(null);
+        return true;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);
         const isPermissionDenied = errorMessage.includes("PERMISSION_DENIED");
@@ -431,7 +432,6 @@ export function useCloudSync() {
             profileId: mutation.profileId,
             hasSurveyVote,
           });
-          setCloudAuthError("permission-denied");
         }
 
         if (mutation.canWriteFamilyState && isPermissionDenied) {
@@ -439,7 +439,7 @@ export function useCloudSync() {
             await ensureOwnerMembership(database, familyId, cloudUserUid);
             await pushCloudSnapshot(database, familyId, mutation);
             setCloudAuthError(null);
-            return;
+            return true;
           } catch {
             // Fall through to queue + logging below.
           }
@@ -463,7 +463,7 @@ export function useCloudSync() {
               profileId: mutation.profileId,
             });
             setCloudAuthError(null);
-            return;
+            return true;
           } catch (fallbackError) {
             console.error("[cloud-sync] survey-only fallback write failed", fallbackError, {
               familyId,
@@ -476,7 +476,7 @@ export function useCloudSync() {
           // PERMISSION_DENIED is generally a permanent condition until config/rules/auth
           // are fixed; re-queueing would create endless retries and UI instability.
           writePendingQueue(pendingQueueKey, []);
-          return;
+          return false;
         }
 
         // Conservé volontairement (pas seulement en dev) : un échec d'écriture
@@ -485,6 +485,7 @@ export function useCloudSync() {
         // Keep the app usable on transient write failures; read-subscription errors
         // still control the blocking cloud access state.
         enqueuePendingMutation(mutation);
+        return false;
       }
     },
     [cloudUserUid, database, enqueuePendingMutation, familyId, isEnabled, pendingQueueKey]
