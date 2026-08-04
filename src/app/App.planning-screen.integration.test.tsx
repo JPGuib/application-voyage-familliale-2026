@@ -19,6 +19,15 @@ vi.mock("../content/trip", () => ({
 }));
 
 function makeSnapshot(phase: "before" | "during") {
+  const launchGateCycle = phase === "during" ? 1 : 0;
+  const launchGateCompletedCycleByProfile =
+    phase === "during"
+      ? {
+          p1: 1,
+          p2: 1,
+        }
+      : {};
+
   return {
     familyState: {
       version: 1,
@@ -31,6 +40,8 @@ function makeSnapshot(phase: "before" | "during") {
     ownerCodeHash: "hash",
     ownerRecoveryHash: "",
     phase,
+    launchGateCycle,
+    launchGateCompletedCycleByProfile,
     profiles: {
       p1: {
         profileId: "p1",

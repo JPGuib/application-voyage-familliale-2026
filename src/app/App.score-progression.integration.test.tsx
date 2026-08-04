@@ -39,6 +39,10 @@ function makeSnapshot(
   profiles: Record<string, ReturnType<typeof makeProfile>>
 ) {
   const ids = Object.keys(profiles);
+  const launchGateCompletedCycleByProfile = Object.fromEntries(ids.map((id) => [id, 1])) as Record<
+    string,
+    number
+  >;
   return {
     familyState: {
       version: 1,
@@ -56,6 +60,8 @@ function makeSnapshot(
     gameDayOverrides: {},
     phase: "during" as const,
     tripStartDate: null,
+    launchGateCycle: 1,
+    launchGateCompletedCycleByProfile,
     profiles,
     updatedAt: 1,
   };

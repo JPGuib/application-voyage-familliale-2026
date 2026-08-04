@@ -53,6 +53,12 @@ function makeSnapshot(placeComments: Record<string, unknown>) {
     gameDayOverrides: {},
     phase: "during" as const,
     tripStartDate: null,
+    launchGateCycle: 1,
+    launchGateCompletedCycleByProfile: {
+      p1: 1,
+      p2: 1,
+      p3: 1,
+    },
     profiles: {
       p1: makeProfile("p1", "Maman", "proprietaire"),
       p2: makeProfile("p2", "Leo", "utilisateur"),
