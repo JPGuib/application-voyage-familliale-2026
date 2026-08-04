@@ -190,7 +190,7 @@ describe("App launch gate integration", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /On y va/i }));
 
-    expect(screen.getByText(/Le voyage n a pas commence/i)).toBeInTheDocument();
+    expect(screen.getByText(/Le voyage n'a pas encore commencé\. Revenez plus tard !/i)).toBeInTheDocument();
   });
 
   it("allows non-owner to enter app from the launch gate even when video playback fails", async () => {

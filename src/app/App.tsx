@@ -4554,12 +4554,7 @@ function LaunchGateScreen({
             ) : null}
           </div>
           <h1 className="text-3xl font-black">On est parti !</h1>
-          <p className="mt-2 text-sm text-white/85">
-            {locked
-              ? "Le départ n'est pas encore débloqué."
-              : "Lance la séquence de départ avant d'entrer dans l'application."}
-          </p>
-          {message && <p className="mt-3 text-sm font-bold text-amber-300">{message}</p>}
+          {locked ? <p className="mt-2 text-sm text-white/85">Le départ n'est pas encore débloqué.</p> : null}
         </div>
       </div>
 
@@ -4573,6 +4568,7 @@ function LaunchGateScreen({
               >
                 On y va :
               </button>
+              {message && <p className="mt-4 text-sm font-bold text-amber-300">{message}</p>}
             </div>
           )}
 
@@ -4651,7 +4647,7 @@ function LaunchGateScreen({
           {mode === "completed" && (
             <div className="flex h-full flex-col items-center justify-center">
               <p className="text-lg font-black">Prêt pour le voyage</p>
-              <p className="mt-2 text-sm text-white/80">Tu peux revoir le rituel, ou entrer dans l'application.</p>
+              <p className="mt-2 text-sm text-white/80">Tu peux revoir la vidéo, ou entre dans l'application.</p>
               <div className="mt-5 grid w-full grid-cols-2 gap-2">
                 <button
                   onClick={onReplay}
@@ -4668,6 +4664,8 @@ function LaunchGateScreen({
               </div>
             </div>
           )}
+
+          {mode !== "idle" && message && <p className="mt-3 text-center text-sm font-bold text-amber-300">{message}</p>}
         </div>
       </div>
     </div>
@@ -9327,7 +9325,7 @@ export default function App() {
 
   const handleLaunchStart = () => {
     if (!ownerReplayLaunchRequested && profile.role !== "proprietaire" && phase === "before") {
-      setLaunchGateMessage("Le voyage n a pas commence. Le proprietaire doit d abord debloquer l application.");
+      setLaunchGateMessage("Le voyage n'a pas encore commencé. Revenez plus tard !");
       return;
     }
     setLaunchGateMessage(null);
