@@ -700,6 +700,36 @@ export async function pushDestinationSurveyVoteOnly(
   await update(ref(database, familyPath(familyId)), updates);
 }
 
+export async function pushFamilyPhaseChange(
+  database: Database,
+  familyId: string,
+  payload: {
+    phase: TravelPhase;
+    launchGateCycle?: number;
+    resetDestinationSurvey?: boolean;
+    profileIdsForSurveyReset?: string[];
+  }
+): Promise<void> {
+  const updates: Record<string, unknown> = {
+    phase: payload.phase,
+    updatedAt: Date.now(),
+  };
+
+  if (typeof payload.launchGateCycle === "number") {
+    updates.launchGateCycle = toNonNegativeInteger(payload.launchGateCycle);
+  }
+
+  if (payload.resetDestinationSurvey && Array.isArray(payload.profileIdsForSurveyReset)) {
+    for (const profileId of payload.profileIdsForSurveyReset) {
+      if (typeof profileId === "string" && profileId.trim().length > 0) {
+        updates[`destinationSurvey/${profileId}`] = null;
+      }
+    }
+  }
+
+  await update(ref(database, familyPath(familyId)), updates);
+}
+
 export async function claimProfileRole(
   database: Database,
   familyId: string,

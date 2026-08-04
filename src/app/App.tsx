@@ -6240,6 +6240,7 @@ export default function App() {
     resetGameResults,
     resetGameProgress,
     registerAsOwnerDevice,
+    pushOwnerPhaseChange,
     retryCloudAccess,
   } = useCloudSync();
   const [isOnline, setIsOnline] = useState(() => {
@@ -8572,36 +8573,13 @@ export default function App() {
 
     pendingCloudPhaseRef.current = nextPhase;
 
-    const pushed = await pushSnapshot({
-      actorUid: cloudActorUid,
-      canWriteFamilyState,
-      familyState: normalizedFamilyState,
-      ownerCodeHash,
-      ownerCodePlain,
-      ownerRecoveryHash,
-      ownerRecoveryConfiguredAt: cloudSnapshot.ownerRecoveryConfiguredAt,
-      profileId: profile.id,
-      surname: profile.surname,
-      role: profile.role,
-      profilePasswordHash: profilePasswordHashes[profile.id] || "",
-      profileRecoveryHash: profileRecoveryHashes[profile.id] || "",
-      profileRecoveryQuestion: profileRecoveryQuestions[profile.id] || "",
-      profileRecoveryAnswer: profileRecoveryAnswers[profile.id] || "",
-      profileRecoveryConfiguredAt: cloudSnapshot.profiles[profile.id]?.recoveryConfiguredAt,
-      gender: profile.gender,
-      householdRole: profile.householdRole,
-      checklist: checked,
-      profileCustomChecklistItems: customChecklistItemsByProfile[profile.id] ?? [],
-      ownerGlobalChecklistAdditions,
-      ownerGlobalChecklistRemovals,
-      placeComments: placeCommentsByPlace,
-      launchGateCycle: options?.launchGateCycle,
-      launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
-      gameResults: gameHistory,
-      gameProgress: currentGameProgress,
+    const pushed = await pushOwnerPhaseChange({
       phase: nextPhase,
+      launchGateCycle: options?.launchGateCycle,
       resetDestinationSurvey: options?.resetDestinationSurvey,
-      tripStartDate,
+      profileIdsForSurveyReset: options?.resetDestinationSurvey
+        ? normalizedFamilyState.profiles.map((item) => item.id)
+        : undefined,
     });
 
     if (pushed === false) {

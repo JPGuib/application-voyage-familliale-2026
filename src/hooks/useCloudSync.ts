@@ -9,6 +9,7 @@ import {
   observeFamilySnapshot,
   pushDestinationSurveyVoteOnly,
   pushCloudSnapshot,
+  pushFamilyPhaseChange,
   pushGameDayOverride,
   resetGameProgressInCloud,
   resetGameResultsInCloud,
@@ -534,6 +535,53 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  const pushOwnerPhaseChange = useCallback(
+    async (payload: {
+      phase: TravelPhase;
+      launchGateCycle?: number;
+      resetDestinationSurvey?: boolean;
+      profileIdsForSurveyReset?: string[];
+    }): Promise<boolean> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        setCloudAuthError("auth-required");
+        return false;
+      }
+
+      try {
+        await ensureFamilyMembership(database, familyId, cloudUserUid);
+        await ensureOwnerMembership(database, familyId, cloudUserUid);
+        await pushFamilyPhaseChange(database, familyId, payload);
+        setCloudAuthError(null);
+        return true;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        const isPermissionDenied = errorMessage.includes("PERMISSION_DENIED");
+        if (isPermissionDenied) {
+          const runtimeProjectId =
+            (database.app.options as { projectId?: string })?.projectId ?? null;
+          const runtimeDatabaseUrl =
+            (database.app.options as { databaseURL?: string })?.databaseURL
+            ?? ((import.meta.env.VITE_FIREBASE_DATABASE_URL as string | undefined) ?? null);
+          console.error(
+            `[cloud-sync] owner-phase-change denied projectId=${runtimeProjectId ?? "null"} databaseURL=${runtimeDatabaseUrl ?? "null"} familyId=${familyId} actorUid=${cloudUserUid} phase=${payload.phase} launchGateCycle=${String(payload.launchGateCycle ?? "none")} resetDestinationSurvey=${String(Boolean(payload.resetDestinationSurvey))}`
+          );
+          console.error("[cloud-sync] owner-phase-change denied details", {
+            familyId,
+            actorUid: cloudUserUid,
+            projectId: runtimeProjectId,
+            databaseURL: runtimeDatabaseUrl,
+            phase: payload.phase,
+            launchGateCycle: payload.launchGateCycle,
+            resetDestinationSurvey: Boolean(payload.resetDestinationSurvey),
+            profileIdsForSurveyResetCount: payload.profileIdsForSurveyReset?.length ?? 0,
+          });
+        }
+        return false;
+      }
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   const deleteProfile = useCallback(
     async (profileIdToDelete: string): Promise<void> => {
       if (!isEnabled || !database || !cloudUserUid) {
@@ -618,6 +666,7 @@ export function useCloudSync() {
     resetGameResults,
     resetGameProgress,
     registerAsOwnerDevice,
+    pushOwnerPhaseChange,
     retryCloudAccess,
     familyId,
   };
