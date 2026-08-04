@@ -125,8 +125,10 @@ export function useCloudSync() {
   const [isMembershipReady, setIsMembershipReady] = useState<boolean>(
     () => !cloudRuntimeAvailable
   );
+  const [cloudReadRetryNonce, setCloudReadRetryNonce] = useState(0);
   const [cloudSnapshot, setCloudSnapshot] = useState<CloudSyncSnapshot | null>(null);
   const isFlushingQueueRef = useRef(false);
+  const permissionDeniedRetryCountRef = useRef(0);
 
   useEffect(() => {
     if (!cloudRuntimeAvailable) {
@@ -263,13 +265,30 @@ export function useCloudSync() {
       database,
       familyId,
       (snapshot) => {
+        permissionDeniedRetryCountRef.current = 0;
         setCloudAuthError(null);
         setCloudSnapshot(snapshot);
         setIsReady(true);
       },
       () => {
         setCloudAuthError("permission-denied");
-        setIsReady(true);
+
+        if (permissionDeniedRetryCountRef.current >= 2 || !cloudUserUid) {
+          setIsReady(true);
+          return;
+        }
+
+        permissionDeniedRetryCountRef.current += 1;
+        setIsReady(false);
+
+        void ensureFamilyMembership(database, familyId, cloudUserUid)
+          .catch(() => {
+            // Best effort retry only; persistent configuration/rules issues
+            // still surface as the cloud access blocked screen.
+          })
+          .finally(() => {
+            setCloudReadRetryNonce((previous) => previous + 1);
+          });
       }
     );
 
@@ -282,7 +301,28 @@ export function useCloudSync() {
     isAuthBootstrapping,
     isAuthReady,
     isMembershipReady,
+    cloudReadRetryNonce,
   ]);
+
+  const retryCloudAccess = useCallback(async (): Promise<void> => {
+    if (!cloudRuntimeAvailable) {
+      return;
+    }
+
+    permissionDeniedRetryCountRef.current = 0;
+    setCloudAuthError(null);
+    setIsReady(false);
+
+    if (database && cloudUserUid) {
+      try {
+        await ensureFamilyMembership(database, familyId, cloudUserUid);
+      } catch {
+        // Keep best effort behavior; the observer will still surface errors.
+      }
+    }
+
+    setCloudReadRetryNonce((previous) => previous + 1);
+  }, [cloudRuntimeAvailable, database, cloudUserUid, familyId]);
 
   useEffect(() => {
     if (!cloudRuntimeAvailable || !isAuthReady || !cloudUserUid) {
@@ -557,6 +597,7 @@ export function useCloudSync() {
     resetGameResults,
     resetGameProgress,
     registerAsOwnerDevice,
+    retryCloudAccess,
     familyId,
   };
 }

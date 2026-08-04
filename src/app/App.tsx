@@ -1528,7 +1528,13 @@ function CloudLoadingScreen() {
   );
 }
 
-function CloudAccessErrorScreen({ reason }: { reason: string }) {
+function CloudAccessErrorScreen({
+  reason,
+  onRetry,
+}: {
+  reason: string;
+  onRetry?: () => void;
+}) {
   const detailsByReason: Record<string, string> = {
     "auth-required": "Authentification cloud requise mais session non disponible.",
     "auth-unavailable": "Authentification cloud indisponible pour le moment.",
@@ -1552,6 +1558,14 @@ function CloudAccessErrorScreen({ reason }: { reason: string }) {
           <p className="text-sm font-semibold text-muted-foreground">
             {detailsByReason[reason] || "Erreur cloud non documentee."}
           </p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="mt-4 w-full rounded-xl bg-primary px-3 py-2.5 text-sm font-black text-primary-foreground"
+            >
+              Reessayer la synchronisation
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -6226,6 +6240,7 @@ export default function App() {
     resetGameResults,
     resetGameProgress,
     registerAsOwnerDevice,
+    retryCloudAccess,
   } = useCloudSync();
   const [isOnline, setIsOnline] = useState(() => {
     if (typeof navigator === "undefined") {
@@ -9416,7 +9431,9 @@ export default function App() {
 
   const renderScreen = () => {
     if (cloudEnabled && cloudAuthError) {
-      return <CloudAccessErrorScreen reason={cloudAuthError} />;
+      return <CloudAccessErrorScreen reason={cloudAuthError} onRetry={() => {
+        void retryCloudAccess();
+      }} />;
     }
 
     if (isInitializing || (cloudEnabled && (!cloudReady || isAuthBootstrapPending || isProfileHydrationPending))) {

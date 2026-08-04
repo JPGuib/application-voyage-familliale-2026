@@ -22,7 +22,7 @@ Critères: impact architecture/design, effort de tests, risque de régression, d
 5. **Epic 20 — Planning, Docs, Convertisseur** --> FAIT
    Purement additif, lecture seule, aucune dépendance ni impact auth/sync. Risque de régression quasi nul. Bon candidat pour combler un sprint entre deux epics plus sensibles ; peut être avancé sans casser l'orre logique.
 
-6. **Epic 25 — Teaser / Sondage / FAQ**
+6. **Epic 25 — Teaser / Sondage / FAQ** --> FAIT
    Dépend explicitement de 21.2 (réutilise le mécanisme de commentaire), et implicitement de 24 et 19 (exclusion propriétaire/visiteur du score du sondage). Séquence interne obligatoire : 25.1 → 25.2 → 25.3.
 
 7. **Epic 22 — Rappels, graphique, défi collaboratif** --> FAIT (pas de défit collectif)
