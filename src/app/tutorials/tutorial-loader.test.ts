@@ -23,6 +23,7 @@ describe("tutorial-loader global tutorial", () => {
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-settings"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-planning"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-today-card"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-day-selector"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-day-option-2"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-place-sainte-sophie"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="bottom-nav-game"]')).toBe(true);

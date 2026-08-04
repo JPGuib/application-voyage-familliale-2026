@@ -132,8 +132,9 @@ export function loadGlobalTutorialSteps(): GlobalTutorialStep[] {
       element: '[data-tutorial-id="guide-day-selector"]',
       popover: {
         title: "Changer de journée",
-        description: "Utilisez ce sélecteur pour afficher une autre journée du séjour.",
+        description: "Cliquez ici pour ouvrir la liste des jours, puis sélectionnez Jour 2.",
       },
+      interactive: true,
       waitForElement: 2000,
     },
     {
