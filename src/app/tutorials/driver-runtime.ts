@@ -14,14 +14,39 @@ export type DriverLikeStep = {
 const GUIDE_DAY_SELECTOR = '[data-tutorial-id="guide-day-selector"]';
 const GUIDE_DAY2_OPTION = '[data-tutorial-id="guide-day-option-2"]';
 const GUIDE_DAY2_STEP_TITLE = "Passer au Jour 2";
+const POPOVER_TITLE_SELECTOR = ".driver-popover-title";
+const NEXT_BUTTON_SELECTOR = ".driver-popover-next-btn";
 
-function setupGuideDay2AutoOpenGuard(): () => void {
+function normalizeInteractiveDescription(description: string): string {
+  const trimmed = description.trim();
+  if (/cliquez maintenant[.!?]?$/i.test(trimmed)) {
+    return trimmed;
+  }
+  return `${trimmed} Cliquez maintenant.`;
+}
+
+function setupInteractiveUxGuards(
+  rawSteps: ReturnType<typeof loadGlobalTutorialSteps>
+): () => void {
   let disposed = false;
+  const interactiveTitles = new Set(
+    rawSteps
+      .filter((step) => step.interactive)
+      .map((step) => step.popover.title.trim())
+  );
 
-  const ensureDay2OptionVisible = () => {
+  const applyGuards = () => {
     if (disposed) return;
 
-    const title = document.querySelector(".driver-popover-title")?.textContent?.trim() ?? "";
+    const title = document.querySelector(POPOVER_TITLE_SELECTOR)?.textContent?.trim() ?? "";
+
+    const nextButton = document.querySelector<HTMLElement>(NEXT_BUTTON_SELECTOR);
+    if (nextButton) {
+      const isInteractiveStep = interactiveTitles.has(title);
+      nextButton.style.display = isInteractiveStep ? "none" : "";
+      nextButton.setAttribute("aria-hidden", isInteractiveStep ? "true" : "false");
+    }
+
     if (title !== GUIDE_DAY2_STEP_TITLE) return;
 
     const day2Option = document.querySelector(GUIDE_DAY2_OPTION);
@@ -32,7 +57,7 @@ function setupGuideDay2AutoOpenGuard(): () => void {
   };
 
   const observer = new MutationObserver(() => {
-    ensureDay2OptionVisible();
+    applyGuards();
   });
 
   observer.observe(document.body, {
@@ -42,7 +67,7 @@ function setupGuideDay2AutoOpenGuard(): () => void {
     characterData: true,
   });
 
-  const intervalId = window.setInterval(ensureDay2OptionVisible, 150);
+  const intervalId = window.setInterval(applyGuards, 150);
   const timeoutId = window.setTimeout(() => {
     cleanup();
   }, 5 * 60 * 1000);
@@ -53,6 +78,11 @@ function setupGuideDay2AutoOpenGuard(): () => void {
     observer.disconnect();
     window.clearInterval(intervalId);
     window.clearTimeout(timeoutId);
+    const nextButton = document.querySelector<HTMLElement>(NEXT_BUTTON_SELECTOR);
+    if (nextButton) {
+      nextButton.style.display = "";
+      nextButton.setAttribute("aria-hidden", "false");
+    }
   }
 
   return cleanup;
@@ -64,7 +94,9 @@ export function toDriverSteps(steps: ReturnType<typeof loadGlobalTutorialSteps>)
     element: step.element,
     popover: {
       title: step.popover.title,
-      description: step.popover.description,
+      description: step.interactive
+        ? normalizeInteractiveDescription(step.popover.description)
+        : step.popover.description,
     },
     disableActiveInteraction: !step.interactive,
     advanceOnClick: Boolean(step.interactive),
@@ -77,28 +109,33 @@ export async function startGlobalTutorial(): Promise<void> {
   const steps = toDriverSteps(rawSteps);
   if (steps.length === 0) return;
 
-  const cleanupGuideDay2Guard = setupGuideDay2AutoOpenGuard();
+  const cleanupInteractiveUxGuards = setupInteractiveUxGuards(rawSteps);
 
-  const [{ driver }] = await Promise.all([
-    import("driver.js"),
-    import("driver.js/dist/driver.css"),
-  ]);
+  try {
+    const [{ driver }] = await Promise.all([
+      import("driver.js"),
+      import("driver.js/dist/driver.css"),
+    ]);
 
-  const driverObj = driver({
-    steps,
-    showProgress: true,
-    progressText: "{{current}} / {{total}}",
-    allowClose: true,
-    overlayClickBehavior: () => {
-      // Intentionally no-op: avoid accidental tutorial interruption on backdrop click.
-    },
-    onDestroyed: () => {
-      cleanupGuideDay2Guard();
-    },
-    disableActiveInteraction: true,
-    overlayOpacity: 0.55,
-    smoothScroll: true,
-  });
+    const driverObj = driver({
+      steps,
+      showProgress: true,
+      progressText: "{{current}} / {{total}}",
+      allowClose: true,
+      overlayClickBehavior: () => {
+        // Intentionally no-op: avoid accidental tutorial interruption on backdrop click.
+      },
+      onDestroyed: () => {
+        cleanupInteractiveUxGuards();
+      },
+      disableActiveInteraction: true,
+      overlayOpacity: 0.55,
+      smoothScroll: true,
+    });
 
-  driverObj.drive();
+    driverObj.drive();
+  } catch (error) {
+    cleanupInteractiveUxGuards();
+    throw error;
+  }
 }
