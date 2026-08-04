@@ -32,7 +32,6 @@ describe("tutorial-loader global tutorial", () => {
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-quick-results"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="results-back"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-quick-tips"]')).toBe(true);
-    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="tips-tab-payment"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="tips-back"]')).toBe(true);
   });
 

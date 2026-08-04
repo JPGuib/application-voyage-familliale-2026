@@ -343,6 +343,8 @@ export function useCloudSync() {
         ownerGlobalChecklistRemovals: snapshot.ownerGlobalChecklistRemovals,
         placeComments: snapshot.placeComments,
         profileDestinationSurveyVote: snapshot.profileDestinationSurveyVote,
+        launchGateCycle: snapshot.launchGateCycle,
+        launchGateCompletedCycleForProfile: snapshot.launchGateCompletedCycleForProfile,
         gameResults: snapshot.gameResults,
         gameProgress: snapshot.gameProgress,
         phase: snapshot.phase,

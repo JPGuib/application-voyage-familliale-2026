@@ -28,17 +28,15 @@ vi.mock("../services/firebaseConfig", () => ({
   },
 }));
 
-// Regression test (story 24.2 bug): pushSnapshot used to manually rebuild the
-// mutation object field-by-field and silently dropped travelerCodeHash /
-// travelerCodePlain (forgotten when the fields were added), so saving the
-// traveler code in Settings looked successful locally but never reached
-// Firebase — no error, no console log, just a silently incomplete write.
+// Regression guard: pushSnapshot manually rebuilds a mutation object. Whenever
+// a new field is added to PushSnapshotInput it can be silently dropped if not
+// forwarded here, which creates cross-device drift with no explicit error.
 describe("useCloudSync pushSnapshot forwards all payload fields", () => {
   beforeEach(() => {
     pushCloudSnapshotMock.mockClear();
   });
 
-  it("forwards travelerCodeHash/travelerCodePlain to pushCloudSnapshot", async () => {
+  it("forwards travelerCodeHash/travelerCodePlain and launch-gate cycle fields", async () => {
     const { result } = renderHook(() => useCloudSync());
 
     await waitFor(() => {
@@ -64,6 +62,8 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
       ownerGlobalChecklistAdditions: [],
       ownerGlobalChecklistRemovals: {},
       placeComments: {},
+      launchGateCycle: 3,
+      launchGateCompletedCycleForProfile: 2,
       gameResults: [],
       gameProgress: null,
       phase: "before",
@@ -73,8 +73,12 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
     const mutation = pushCloudSnapshotMock.mock.calls[0][2] as {
       travelerCodeHash?: string;
       travelerCodePlain?: string;
+      launchGateCycle?: number;
+      launchGateCompletedCycleForProfile?: number | null;
     };
     expect(mutation.travelerCodeHash).toBe(`sha256:${"b".repeat(64)}`);
     expect(mutation.travelerCodePlain).toBe("1234");
+    expect(mutation.launchGateCycle).toBe(3);
+    expect(mutation.launchGateCompletedCycleForProfile).toBe(2);
   });
 });
