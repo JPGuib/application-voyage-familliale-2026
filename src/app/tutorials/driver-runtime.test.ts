@@ -46,4 +46,29 @@ describe("driver-runtime", () => {
     expect(resolvedElement).not.toBeNull();
     expect(resolvedElement?.getAttribute("data-tutorial-id")).toBe("guide-day-option-2");
   });
+
+  it("scrolls regular tutorial targets into view before highlighting them", () => {
+    document.body.innerHTML = '<div data-tutorial-id="place-anecdotes-title"></div>';
+
+    const target = document.querySelector<HTMLElement>('[data-tutorial-id="place-anecdotes-title"]');
+    const scrollIntoViewSpy = vi.fn();
+    if (target) {
+      target.scrollIntoView = scrollIntoViewSpy;
+    }
+
+    const steps = toDriverSteps(loadGlobalTutorialSteps());
+    const anecdotesStep = steps.find((step) => step.popover.title === "Anecdotes");
+
+    expect(anecdotesStep).toBeDefined();
+    expect(typeof anecdotesStep?.element).toBe("function");
+
+    const resolvedElement = (anecdotesStep?.element as () => Element | null)();
+
+    expect(resolvedElement).toBe(target ?? null);
+    expect(scrollIntoViewSpy).toHaveBeenCalledWith({
+      block: "center",
+      inline: "center",
+      behavior: "auto",
+    });
+  });
 });

@@ -15,6 +15,17 @@ export type DriverLikeStep = {
 const GUIDE_DAY_SELECTOR = '[data-tutorial-id="guide-day-selector"]';
 const GUIDE_DAY2_OPTION = '[data-tutorial-id="guide-day-option-2"]';
 
+function centerTutorialElement(element: Element | null) {
+  if (!element || !(element instanceof HTMLElement)) return;
+  if (typeof element.scrollIntoView !== "function") return;
+
+  element.scrollIntoView({
+    block: "center",
+    inline: "center",
+    behavior: "auto",
+  });
+}
+
 function normalizeInteractiveDescription(description: string): string {
   const trimmed = description.trim();
   if (/cliquez maintenant[.!?]?$/i.test(trimmed)) {
@@ -24,22 +35,30 @@ function normalizeInteractiveDescription(description: string): string {
 }
 
 function resolveStepElement(step: ReturnType<typeof loadGlobalTutorialSteps>[number]) {
-  if (step.id !== "guide-day2") {
+  if (step.id === "guide-day2") {
+    return () => {
+      let day2Option = document.querySelector(GUIDE_DAY2_OPTION);
+      if (!day2Option) {
+        const daySelector = document.querySelector<HTMLButtonElement>(GUIDE_DAY_SELECTOR);
+        if (daySelector?.ariaExpanded !== "true") {
+          daySelector?.click();
+        }
+        day2Option = document.querySelector(GUIDE_DAY2_OPTION);
+      }
+
+      centerTutorialElement(day2Option);
+      return day2Option;
+    };
+  }
+
+  if (typeof step.element !== "string") {
     return step.element;
   }
 
   return () => {
-    const day2Option = document.querySelector(GUIDE_DAY2_OPTION);
-    if (day2Option) {
-      return day2Option;
-    }
-
-    const daySelector = document.querySelector<HTMLButtonElement>(GUIDE_DAY_SELECTOR);
-    if (daySelector?.ariaExpanded !== "true") {
-      daySelector?.click();
-    }
-
-    return document.querySelector(GUIDE_DAY2_OPTION);
+    const element = document.querySelector(step.element);
+    centerTutorialElement(element);
+    return element;
   };
 }
 

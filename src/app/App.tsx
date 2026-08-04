@@ -2923,7 +2923,10 @@ function ContentDetailScreen({
       <div className="flex-1 overflow-y-auto">
         {/* Audio player — n'apparaît que si audioTitle ET audioDuration sont renseignés */}
         {item.audioTitle && item.audioDuration && (
-          <div className="mx-4 mt-4 bg-primary/10 rounded-2xl p-4 flex items-center gap-4">
+          <div
+            data-tutorial-id="place-audio-player"
+            className="mx-4 mt-4 bg-primary/10 rounded-2xl p-4 flex items-center gap-4"
+          >
             <button
               onClick={handleTogglePlay}
               disabled={!canPlayAudio}

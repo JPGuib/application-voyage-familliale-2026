@@ -41,6 +41,7 @@ describe("tutorial-loader global tutorial", () => {
     expect(steps.some((step) => step.element === '[data-tutorial-id="settings-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="planning-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="guide-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="place-audio-player"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-gallery-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-history-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-anecdotes-title"]')).toBe(true);
@@ -55,18 +56,23 @@ describe("tutorial-loader global tutorial", () => {
 
   it("continues from game to results, tips, then dashboard map and polarsteps", () => {
     const steps = loadGlobalTutorialSteps();
+    const audioIndex = steps.findIndex((step) => step.id === "place-audio");
+    const galleryIndex = steps.findIndex((step) => step.id === "place-gallery");
     const gameIndex = steps.findIndex((step) => step.id === "game-explain");
     const backHomeIndex = steps.findIndex((step) => step.id === "game-back-home");
     const resultsIndex = steps.findIndex((step) => step.id === "results-explain");
     const tipsIndex = steps.findIndex((step) => step.id === "tips-explain");
     const mapIndex = steps.findIndex((step) => step.id === "dashboard-map-preview");
     const polarstepsIndex = steps.findIndex((step) => step.id === "dashboard-polarsteps");
+    expect(audioIndex).toBeGreaterThan(-1);
+    expect(galleryIndex).toBeGreaterThan(-1);
     expect(gameIndex).toBeGreaterThan(-1);
     expect(backHomeIndex).toBeGreaterThan(-1);
     expect(resultsIndex).toBeGreaterThan(-1);
     expect(tipsIndex).toBeGreaterThan(-1);
     expect(mapIndex).toBeGreaterThan(-1);
     expect(polarstepsIndex).toBeGreaterThan(-1);
+    expect(audioIndex).toBeLessThan(galleryIndex);
     expect(gameIndex).toBeLessThan(backHomeIndex);
     expect(backHomeIndex).toBeLessThan(resultsIndex);
     expect(resultsIndex).toBeLessThan(tipsIndex);

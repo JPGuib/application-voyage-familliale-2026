@@ -160,6 +160,16 @@ export function loadGlobalTutorialSteps(): GlobalTutorialStep[] {
       waitForElement: 2500,
     },
     {
+      id: "place-audio",
+      screen: "place",
+      element: '[data-tutorial-id="place-audio-player"]',
+      popover: {
+        title: "Audio du lieu",
+        description: "Cette capsule audio permet d'écouter une présentation de Sainte-Sophie pour rendre la découverte plus vivante.",
+      },
+      waitForElement: 2500,
+    },
+    {
       id: "place-gallery",
       screen: "place",
       element: '[data-tutorial-id="place-gallery-title"]',
@@ -195,7 +205,7 @@ export function loadGlobalTutorialSteps(): GlobalTutorialStep[] {
       element: '[data-tutorial-id="place-guided-tour-cta"]',
       popover: {
         title: "Visite guidée",
-        description: "Quand disponible (comme pour Sainte-Sophie), ce bouton ouvre la visite guidée détaillée.",
+        description: "Quand disponible, cette visite guidée propose des audios et des photos pour une immersion encore plus riche dans le lieu.",
       },
       waitForElement: 2500,
     },
