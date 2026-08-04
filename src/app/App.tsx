@@ -334,6 +334,7 @@ const PLACE_COMMENTS_STORAGE_KEY = "jp-place-comments";
 const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
 const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
 const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-by-profile";
+const LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY = "jp-launch-gate-pending-completion-by-profile";
 const MAX_PLACE_COMMENT_LENGTH = 500;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
@@ -827,6 +828,18 @@ function parseDestinationSurveyVotes(raw: unknown): Record<string, DestinationSu
   }
 
   return next;
+}
+
+function parseLaunchGateCompletionMap(raw: unknown): Record<string, number> {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(raw as Record<string, unknown>)
+      .filter(([, value]) => typeof value === "number" && Number.isFinite(value) && value >= 0)
+      .map(([key, value]) => [key, Math.floor(value as number)])
+  );
 }
 
 function areDestinationSurveyVotesEqual(
@@ -4524,7 +4537,7 @@ function LaunchGateScreen({
         <MemphisDecor />
         <div className="relative z-10">
           <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-xs font-extrabold uppercase tracking-widest text-white/80">✈️ Rituel de départ</p>
+            <p className="text-xs font-extrabold uppercase tracking-widest text-white/80">✈️ Voyage mystère</p>
             {showCloseButton ? (
               <button
                 onClick={() => {
@@ -4546,6 +4559,7 @@ function LaunchGateScreen({
               ? "Le départ n'est pas encore débloqué."
               : "Lance la séquence de départ avant d'entrer dans l'application."}
           </p>
+          {message && <p className="mt-3 text-sm font-bold text-amber-300">{message}</p>}
         </div>
       </div>
 
@@ -4553,12 +4567,11 @@ function LaunchGateScreen({
         <div className="h-full rounded-3xl border border-white/15 bg-white/5 p-4">
           {mode === "idle" && (
             <div className="flex h-full flex-col items-center justify-center text-center">
-              <p className="mb-5 text-sm font-semibold text-white/80">Un seul bouton. Un vrai départ.</p>
               <button
                 onClick={onStart}
                 className="rounded-2xl bg-[#3B82F6] px-6 py-4 text-base font-black text-white shadow-lg transition-transform active:scale-95"
               >
-                Voir le lancement
+                On y va :
               </button>
             </div>
           )}
@@ -4655,8 +4668,6 @@ function LaunchGateScreen({
               </div>
             </div>
           )}
-
-          {message && <p className="mt-3 text-center text-sm font-bold text-amber-300">{message}</p>}
         </div>
       </div>
     </div>
@@ -6303,18 +6314,16 @@ export default function App() {
   });
   const [launchGateCompletedCycleByProfile, setLaunchGateCompletedCycleByProfile] = useState<Record<string, number>>(() => {
     if (cloudEnabled) {
-      return {};
+      try {
+        const raw = JSON.parse(localStorage.getItem(LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY) || "{}");
+        return parseLaunchGateCompletionMap(raw);
+      } catch {
+        return {};
+      }
     }
     try {
       const raw = JSON.parse(localStorage.getItem(LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY) || "{}");
-      if (!raw || typeof raw !== "object") {
-        return {};
-      }
-      return Object.fromEntries(
-        Object.entries(raw as Record<string, unknown>)
-          .filter(([, value]) => typeof value === "number" && Number.isFinite(value) && value >= 0)
-          .map(([key, value]) => [key, Math.floor(value as number)])
-      );
+      return parseLaunchGateCompletionMap(raw);
     } catch {
       return {};
     }
@@ -6987,6 +6996,7 @@ export default function App() {
         localStorage.removeItem(DESTINATION_SURVEY_STORAGE_KEY);
         localStorage.removeItem(LAUNCH_GATE_CYCLE_STORAGE_KEY);
         localStorage.removeItem(LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY);
+        localStorage.removeItem(LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY);
       } else {
         localStorage.setItem("jp-profile", JSON.stringify(profile));
         localStorage.setItem(
@@ -7057,6 +7067,7 @@ export default function App() {
             LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY,
             JSON.stringify(launchGateCompletedCycleByProfile)
           );
+          localStorage.removeItem(LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY);
         } catch (e) {
           if (IS_DEV) console.warn("localStorage quota exceeded or unavailable:", e);
         }
@@ -7135,11 +7146,7 @@ export default function App() {
         typeof cloudSnapshot.launchGateCompletedCycleByProfile === "object"
           ? cloudSnapshot.launchGateCompletedCycleByProfile
           : {};
-      const next = Object.fromEntries(
-        Object.entries(raw)
-          .filter(([, value]) => typeof value === "number" && Number.isFinite(value) && value >= 0)
-          .map(([key, value]) => [key, Math.floor(value)])
-      );
+      const next = parseLaunchGateCompletionMap(raw);
 
       const pendingCompletion = pendingLaunchGateCompletionRef.current;
       if (pendingCompletion && pendingCompletion.profileId === profile.id) {
@@ -7151,9 +7158,23 @@ export default function App() {
 
         if (cloudCompletedCycle >= pendingCompletion.cycle) {
           pendingLaunchGateCompletionRef.current = null;
+          try {
+            localStorage.removeItem(LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY);
+          } catch {
+            // ignore storage errors
+          }
         } else {
           next[pendingCompletion.profileId] = pendingCompletion.cycle;
         }
+      }
+
+      try {
+        localStorage.setItem(
+          LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY,
+          JSON.stringify(next)
+        );
+      } catch {
+        // ignore storage errors
       }
 
       return JSON.stringify(previous) === JSON.stringify(next) ? previous : next;
@@ -9283,6 +9304,16 @@ export default function App() {
       ...previous,
       [profile.id]: completionCycle,
     }));
+    try {
+      const raw = JSON.parse(localStorage.getItem(LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY) || "{}");
+      const next = {
+        ...parseLaunchGateCompletionMap(raw),
+        [profile.id]: completionCycle,
+      };
+      localStorage.setItem(LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // ignore storage errors
+    }
   };
 
   useEffect(() => {
