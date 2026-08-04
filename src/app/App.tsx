@@ -4469,6 +4469,7 @@ function LaunchGateScreen({
   onNextFallback,
   onReplay,
   onEnterApp,
+  onClosePlayback,
   onCloseOwnerReplay,
 }: {
   locked: boolean;
@@ -4482,11 +4483,40 @@ function LaunchGateScreen({
   onNextFallback: () => void;
   onReplay: () => void;
   onEnterApp: () => void;
+  onClosePlayback: () => void;
   onCloseOwnerReplay: () => void;
 }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const fallbackStep =
     LAUNCH_FALLBACK_STEPS[Math.max(0, Math.min(fallbackStepIndex, LAUNCH_FALLBACK_STEPS.length - 1))];
   const isLastFallbackStep = fallbackStepIndex >= LAUNCH_FALLBACK_STEPS.length - 1;
+  const showCloseButton = isOwnerReplay || mode === "video";
+
+  const requestVideoFullscreen = () => {
+    const node = videoRef.current as (HTMLVideoElement & {
+      webkitEnterFullscreen?: () => void;
+      webkitRequestFullscreen?: () => Promise<void>;
+    }) | null;
+    if (!node) {
+      return;
+    }
+
+    try {
+      if (typeof node.requestFullscreen === "function") {
+        void node.requestFullscreen();
+        return;
+      }
+      if (typeof node.webkitRequestFullscreen === "function") {
+        void node.webkitRequestFullscreen();
+        return;
+      }
+      if (typeof node.webkitEnterFullscreen === "function") {
+        node.webkitEnterFullscreen();
+      }
+    } catch {
+      // Best effort only: keep inline playback when fullscreen isn't available.
+    }
+  };
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-[#0F172A] text-white">
@@ -4495,9 +4525,15 @@ function LaunchGateScreen({
         <div className="relative z-10">
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="text-xs font-extrabold uppercase tracking-widest text-white/80">✈️ Rituel de départ</p>
-            {isOwnerReplay ? (
+            {showCloseButton ? (
               <button
-                onClick={onCloseOwnerReplay}
+                onClick={() => {
+                  if (isOwnerReplay) {
+                    onCloseOwnerReplay();
+                    return;
+                  }
+                  onClosePlayback();
+                }}
                 className="rounded-full bg-white/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest"
               >
                 Fermer
@@ -4530,11 +4566,13 @@ function LaunchGateScreen({
           {mode === "video" && (
             <div className="flex h-full flex-col gap-3">
               <video
+                ref={videoRef}
                 className="h-full min-h-[260px] w-full rounded-2xl bg-black object-contain"
                 controls
                 autoPlay
                 playsInline
                 preload="metadata"
+                onLoadedMetadata={requestVideoFullscreen}
                 onEnded={onVideoEnded}
                 onError={onVideoError}
               >
@@ -7102,6 +7140,22 @@ export default function App() {
           .filter(([, value]) => typeof value === "number" && Number.isFinite(value) && value >= 0)
           .map(([key, value]) => [key, Math.floor(value)])
       );
+
+      const pendingCompletion = pendingLaunchGateCompletionRef.current;
+      if (pendingCompletion && pendingCompletion.profileId === profile.id) {
+        const cloudCompletedCycleRaw = next[pendingCompletion.profileId];
+        const cloudCompletedCycle =
+          typeof cloudCompletedCycleRaw === "number" && Number.isFinite(cloudCompletedCycleRaw)
+            ? Math.floor(cloudCompletedCycleRaw)
+            : -1;
+
+        if (cloudCompletedCycle >= pendingCompletion.cycle) {
+          pendingLaunchGateCompletionRef.current = null;
+        } else {
+          next[pendingCompletion.profileId] = pendingCompletion.cycle;
+        }
+      }
+
       return JSON.stringify(previous) === JSON.stringify(next) ? previous : next;
     });
     setTripStartDate((previous) => {
@@ -7445,6 +7499,7 @@ export default function App() {
     | "none"
   >("none");
   const previousCommentsSnapshotRef = useRef<PlaceCommentsByPlace | null>(null);
+  const pendingLaunchGateCompletionRef = useRef<{ profileId: string; cycle: number } | null>(null);
   const lastChecklistReminderKeyRef = useRef<string | null>(null);
   const ownerDeviceRegisteredRef = useRef(false);
   // Empêche le push automatique de re-créer un profil dans le cloud pendant
@@ -9220,6 +9275,10 @@ export default function App() {
       return;
     }
     const completionCycle = launchGateCycle > 0 ? launchGateCycle : 1;
+    pendingLaunchGateCompletionRef.current = {
+      profileId: profile.id,
+      cycle: completionCycle,
+    };
     setLaunchGateCompletedCycleByProfile((previous) => ({
       ...previous,
       [profile.id]: completionCycle,
@@ -9278,6 +9337,11 @@ export default function App() {
     setLaunchGateMessage(null);
     setLaunchFallbackStepIndex(0);
     setLaunchGateMode("video");
+  };
+
+  const handleLaunchClosePlayback = () => {
+    setLaunchGateMessage(null);
+    setLaunchGateMode("idle");
   };
 
   const handleLaunchEnter = () => {
@@ -9847,6 +9911,7 @@ export default function App() {
           onNextFallback={handleLaunchNextFallback}
           onReplay={handleLaunchReplay}
           onEnterApp={handleLaunchEnter}
+          onClosePlayback={handleLaunchClosePlayback}
           onCloseOwnerReplay={() => {
             setOwnerReplayLaunchRequested(false);
             setLaunchGateMode("idle");
