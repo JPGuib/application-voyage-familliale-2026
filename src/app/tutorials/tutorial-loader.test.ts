@@ -12,7 +12,7 @@ describe("tutorial-loader global tutorial", () => {
     expect(steps.some((step) => step.screen === "guide")).toBe(true);
     expect(steps.some((step) => step.screen === "place")).toBe(true);
     expect(steps.some((step) => step.screen === "game")).toBe(true);
-    expect(steps.some((step) => step.screen === "results")).toBe(true);
+    expect(steps.some((step) => step.screen === "results")).toBe(false);
   });
 
   it("contains guided navigation clicks for screen transitions", () => {
@@ -27,6 +27,7 @@ describe("tutorial-loader global tutorial", () => {
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-day-option-2"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-place-sainte-sophie"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="bottom-nav-game"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="bottom-nav-dashboard"]')).toBe(true);
   });
 
   it("anchors screen explanation steps on stable per-screen selectors", () => {
@@ -39,15 +40,18 @@ describe("tutorial-loader global tutorial", () => {
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-anecdotes-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-guided-tour-cta"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="game-title"]')).toBe(true);
-    expect(steps.some((step) => step.element === '[data-tutorial-id="results-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="results-title"]')).toBe(false);
   });
 
-  it("orders game step before results step", () => {
+  it("returns to dashboard after the game explanation", () => {
     const steps = loadGlobalTutorialSteps();
     const gameIndex = steps.findIndex((step) => step.id === "game-explain");
-    const resultsIndex = steps.findIndex((step) => step.id === "results-explain");
+    const backHomeIndex = steps.findIndex((step) => step.id === "game-back-home");
+    const dashboardEndIndex = steps.findIndex((step) => step.id === "dashboard-end");
     expect(gameIndex).toBeGreaterThan(-1);
-    expect(resultsIndex).toBeGreaterThan(-1);
-    expect(gameIndex).toBeLessThan(resultsIndex);
+    expect(backHomeIndex).toBeGreaterThan(-1);
+    expect(dashboardEndIndex).toBeGreaterThan(-1);
+    expect(gameIndex).toBeLessThan(backHomeIndex);
+    expect(backHomeIndex).toBeLessThan(dashboardEndIndex);
   });
 });

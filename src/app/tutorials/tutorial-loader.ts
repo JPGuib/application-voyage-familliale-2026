@@ -221,33 +221,12 @@ export function loadGlobalTutorialSteps(): GlobalTutorialStep[] {
       waitForElement: 2000,
     },
     {
-      id: "game-to-results",
+      id: "game-back-home",
       screen: "game",
-      element: '[data-tutorial-id="bottom-nav-results"]',
-      popover: {
-        title: "Passer aux Résultats",
-        description: "Cliquez ici pour ouvrir le tableau des scores.",
-      },
-      interactive: true,
-      waitForElement: 2000,
-    },
-    {
-      id: "results-explain",
-      screen: "results",
-      element: '[data-tutorial-id="results-title"]',
-      popover: {
-        title: "Écran Résultats",
-        description: "Le podium et les scores cumulés de la famille sont disponibles ici.",
-      },
-      waitForElement: 2000,
-    },
-    {
-      id: "results-back-home",
-      screen: "results",
       element: '[data-tutorial-id="bottom-nav-dashboard"]',
       popover: {
         title: "Retour Accueil",
-        description: "Cliquez pour revenir à l'accueil. Le tutoriel se termine ensuite.",
+        description: "Les autres touches rapides sont moins visibles ici. Revenez à l'accueil pour terminer le tutoriel.",
       },
       interactive: true,
       waitForElement: 2000,
