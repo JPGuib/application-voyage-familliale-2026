@@ -41,6 +41,16 @@ function makeProfile(
 }
 
 function makeSnapshot(phase: "before" | "during") {
+  const launchGateCycle = phase === "during" ? 1 : 0;
+  const launchGateCompletedCycleByProfile =
+    phase === "during"
+      ? {
+          p1: 1,
+          p2: 1,
+          p3: 1,
+        }
+      : {};
+
   return {
     familyState: {
       version: 1,
@@ -82,6 +92,8 @@ function makeSnapshot(phase: "before" | "during") {
     gameDayOverrides: {},
     phase,
     tripStartDate: "2026-08-16",
+    launchGateCycle,
+    launchGateCompletedCycleByProfile,
     profiles: {
       p1: makeProfile("p1", "Maman", "proprietaire", phase),
       p2: makeProfile("p2", "Leo", "utilisateur", phase),

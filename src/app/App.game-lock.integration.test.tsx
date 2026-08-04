@@ -44,6 +44,11 @@ function buildSnapshot(options: {
     },
     ownerCodeHash: "",
     phase: "during" as const,
+    launchGateCycle: 1,
+    launchGateCompletedCycleByProfile: {
+      p1: 1,
+      p2: 1,
+    },
     gameDayOverrides: options.gameDayOverrides ?? {},
     profiles: {
       p1: {

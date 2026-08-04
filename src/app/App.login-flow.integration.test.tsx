@@ -40,6 +40,11 @@ const baseSnapshot = {
   ownerCodeHash: "",
   travelerCodeHash: testTravelerCodeHash,
   phase: "before" as const,
+  launchGateCycle: 1,
+  launchGateCompletedCycleByProfile: {
+    p1: 1,
+    p2: 1,
+  },
   profiles: {
     p1: {
       profileId: "p1",
@@ -418,7 +423,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "On est parti !" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id");
@@ -526,11 +531,10 @@ describe("App cloud login flow", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
-    // Contrairement à l'utilisateur (qui atterrit sur la Checklist tant que
-    // la phase est "before"), un visiteur suit le voyage dès sa création et
-    // atterrit directement sur le Dashboard (story 24.3).
+    // En phase "during" (story 25.4), un visiteur nouvellement créé passe
+    // d'abord par l'écran de lancement avant d'entrer dans l'application.
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Jour\s+1/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "On est parti !" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id");
@@ -636,7 +640,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "On est parti !" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id");
@@ -725,6 +729,10 @@ describe("App cloud login flow", () => {
       const profileId = payload.profileId as string;
       currentSnapshot = {
         ...currentSnapshot,
+        launchGateCompletedCycleByProfile: {
+          ...(currentSnapshot.launchGateCompletedCycleByProfile as Record<string, number>),
+          [profileId]: 1,
+        },
         profiles: {
           ...currentSnapshot.profiles,
           [profileId]: {
@@ -758,6 +766,10 @@ describe("App cloud login flow", () => {
             ...currentSnapshot.familyState.profiles,
             { id: profileId, role: "utilisateur" as const },
           ],
+        },
+        launchGateCompletedCycleByProfile: {
+          ...(currentSnapshot.launchGateCompletedCycleByProfile as Record<string, number>),
+          [profileId]: 1,
         },
         profiles: {
           ...currentSnapshot.profiles,
@@ -801,7 +813,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "On est parti !" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id")!;
@@ -845,6 +857,10 @@ describe("App cloud login flow", () => {
       const profileId = payload.profileId as string;
       currentSnapshot = {
         ...currentSnapshot,
+        launchGateCompletedCycleByProfile: {
+          ...(currentSnapshot.launchGateCompletedCycleByProfile as Record<string, number>),
+          [profileId]: 1,
+        },
         profiles: {
           ...currentSnapshot.profiles,
           [profileId]: {
@@ -874,6 +890,10 @@ describe("App cloud login flow", () => {
             ...currentSnapshot.familyState.profiles,
             { id: profileId, role: "utilisateur" as const },
           ],
+        },
+        launchGateCompletedCycleByProfile: {
+          ...(currentSnapshot.launchGateCompletedCycleByProfile as Record<string, number>),
+          [profileId]: 1,
         },
         profiles: {
           ...currentSnapshot.profiles,
@@ -991,7 +1011,7 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "On est parti !" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id");
@@ -2012,6 +2032,10 @@ describe("App profile deletion (story 18.3)", () => {
       cloudSnapshot: {
         ...baseSnapshot,
         phase: "during" as const,
+        launchGateCompletedCycleByProfile: {
+          ...(baseSnapshot.launchGateCompletedCycleByProfile as Record<string, number>),
+          p3: 1,
+        },
         familyState: {
           ...baseSnapshot.familyState,
           profiles: [
