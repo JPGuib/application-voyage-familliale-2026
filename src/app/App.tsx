@@ -32,6 +32,7 @@ import {
   Globe,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
+import { EpubReaderScreen } from "./EpubReaderScreen";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
 import { HISTOIRE_TOPICS } from "../content/histoire";
@@ -339,9 +340,9 @@ const MAX_PLACE_COMMENT_LENGTH = 500;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "planning" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
-const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
-type QuickScreen = "checklist" | "guide" | "map" | "histoire" | "geographie" | "culture" | "game" | "tips" | "results";
+type Screen = "checklist" | "dashboard" | "guide" | "planning" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "epub" | "game" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "epub", "game", "results", "tips", "settings"];
+type QuickScreen = "checklist" | "guide" | "map" | "histoire" | "geographie" | "culture" | "epub" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
   id: string;
@@ -441,6 +442,14 @@ const QUICK_ACTIONS: QuickAction[] = [
     subtitle: "Gastronomie, arts et coutumes",
     colorBg: "bg-[#FFF8E1]",
     colorText: "text-[#F57F17]",
+  },
+  {
+    id: "epub",
+    emoji: "📚",
+    title: "Liseuse EPUB",
+    subtitle: "Lire les guides en mode livre",
+    colorBg: "bg-[#E8EAF6]",
+    colorText: "text-[#283593]",
   },
   {
     id: "tips",
@@ -10354,6 +10363,10 @@ export default function App() {
         ) : null;
       }
 
+      if (effectiveScreen === "epub") {
+        return <EpubReaderScreen profileId={profile.id} onBack={() => goToScreen("dashboard")} />;
+      }
+
       if (effectiveScreen === "game") {
         return (
           <GameScreen
@@ -10671,6 +10684,8 @@ export default function App() {
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
           />
         ) : null;
+      case "epub":
+        return <EpubReaderScreen profileId={profile.id} onBack={() => goToScreen("dashboard")} />;
       case "game":
         return (
           <GameScreen
