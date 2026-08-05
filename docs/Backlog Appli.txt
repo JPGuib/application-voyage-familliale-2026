@@ -17,7 +17,7 @@ Pour se connecter en tant que voyageur faut le code
 
 réorganisation des écrans : attention avec le tutoriel !
 un plan des bateaux Istanbul?
-
+Géolocalisation de chaque lieu ? On clique dessus et sa ouvre une map
 
 Avoir un minimum hors ligne possible ? 
 

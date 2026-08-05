@@ -31,6 +31,8 @@ import {
   MessageCircle,
   Scroll,
   Globe,
+  Target,
+  Settings,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
 import { EpubReaderScreen } from "./EpubReaderScreen";
@@ -2129,15 +2131,29 @@ function DashboardScreen({
             <p className="text-xs font-extrabold opacity-80 tracking-widest uppercase">
               {TRIP.name}
             </p>
-            <button
-              onClick={() => onNavigate("settings")}
-              data-tutorial-id="dashboard-settings"
-              className="text-[10px] font-black uppercase tracking-widest bg-white/20 rounded-full px-3 py-1.5"
-            >
-              Paramètres
-            </button>
+            <div className="flex flex-col items-end gap-1.5">
+              <button
+                onClick={() => onNavigate("settings")}
+                data-tutorial-id="dashboard-settings"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap text-[10px] font-black uppercase tracking-[0.14em] bg-white/25 border border-white/35 rounded-full px-3 py-1.5"
+              >
+                <Settings size={11} className="flex-shrink-0" aria-hidden="true" />
+                Paramètres
+              </button>
+              <button
+                onClick={onStartTutorial}
+                data-tutorial-id="dashboard-start-tutorial"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap text-[9px] font-black uppercase tracking-[0.12em] bg-white/20 border border-white/25 rounded-full px-2.5 py-1.5 active:scale-95 transition-transform"
+              >
+                <Target size={11} className="flex-shrink-0" aria-hidden="true" />
+                Tutoriel interactif
+              </button>
+              <p className="text-xs font-bold opacity-85 text-right pt-0.5 leading-none">
+                {todayFormatted}
+              </p>
+            </div>
           </div>
-          <div className="flex items-start justify-between gap-3 mt-1">
+          <div className="mt-1">
             <div>
               <h1 className="text-4xl font-black">
                 {daysUntilStart !== null
@@ -2150,9 +2166,6 @@ function DashboardScreen({
                 {daysUntilStart !== null ? "avant le départ" : `sur ${totalDays} jours`}
               </p>
             </div>
-            <p className="text-sm font-bold opacity-80 text-right pt-1">
-              {todayFormatted}
-            </p>
           </div>
           {daysUntilStart === null && (
             <div className="flex gap-1 mt-3 flex-wrap">
@@ -2211,24 +2224,6 @@ function DashboardScreen({
               <p className="text-xs text-muted-foreground">
                 Voir tous les jours du séjour
               </p>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
-        </button>
-      </div>
-
-      {/* Tutoriel Accueil */}
-      <div className="px-4 mt-3">
-        <button
-          onClick={onStartTutorial}
-          data-tutorial-id="dashboard-start-tutorial"
-          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 active:scale-95 transition-transform"
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🎯</span>
-            <div className="text-left">
-              <p className="font-black text-sm text-foreground">Tutoriel interactif</p>
-              <p className="text-xs text-muted-foreground">Découvrir l'écran Accueil pas à pas</p>
             </div>
           </div>
           <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
