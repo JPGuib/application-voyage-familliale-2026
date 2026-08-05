@@ -4,6 +4,7 @@ export type TutorialScreen =
   | "dashboard"
   | "settings"
   | "planning"
+  | "documents"
   | "guide"
   | "place"
   | "game"
@@ -101,6 +102,38 @@ export function loadGlobalTutorialSteps(): GlobalTutorialStep[] {
       popover: {
         title: "Retour Accueil",
         description: "Cliquez pour revenir à l'accueil et poursuivre le parcours.",
+      },
+      interactive: true,
+      waitForElement: 2000,
+    },
+    {
+      id: "dashboard-open-documents",
+      screen: "dashboard",
+      element: '[data-tutorial-id="dashboard-quick-documents"]',
+      popover: {
+        title: "Ouvrir Documents importants",
+        description: "Cliquez ici pour accéder aux documents classés par catégories.",
+      },
+      interactive: true,
+      waitForElement: 2000,
+    },
+    {
+      id: "documents-explain",
+      screen: "documents",
+      element: '[data-tutorial-id="documents-title"]',
+      popover: {
+        title: "Écran Documents importants",
+        description: "Cet écran regroupe vos vols, hébergements, transports, identité, restaurants et activités. Vous pouvez tout modifier.",
+      },
+      waitForElement: 2000,
+    },
+    {
+      id: "documents-back-home",
+      screen: "documents",
+      element: '[data-tutorial-id="documents-back"]',
+      popover: {
+        title: "Retour Accueil",
+        description: "Cliquez pour revenir à l'accueil et continuer le tutoriel.",
       },
       interactive: true,
       waitForElement: 2000,

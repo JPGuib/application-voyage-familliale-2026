@@ -1,37 +1,38 @@
 import { describe, expect, it } from "vitest";
 import { canAccessScreen } from "./access-control";
-import { PLACES } from "../content/places";
-import { DOCUMENTS } from "../content/documents";
-import { getVolPlaces, groupDocumentsByCategory } from "./documents-screen";
+import { DOCUMENTS, DOCUMENT_CATEGORIES } from "../content/documents";
+import { groupDocumentsByCategory, sortDocuments } from "./documents-screen";
 
 describe("documents screen data helpers", () => {
-  it("volPlaces: filters only tag=Vol from PLACES", () => {
-    const volPlaces = getVolPlaces(PLACES);
-
-    expect(volPlaces.length).toBeGreaterThan(0);
-    expect(volPlaces.every((place) => place.tag === "Vol")).toBe(true);
-  });
-
-  it("volPlaces: contains the three expected flights (AF7507, AF1390, TO3421)", () => {
-    const volPlaces = getVolPlaces(PLACES);
-    const flightDetails = volPlaces.map((place) => place.history).join(" ");
-
-    expect(flightDetails).toContain("AF7507");
-    expect(flightDetails).toContain("AF1390");
-    expect(flightDetails).toContain("TO3421");
-  });
-
-  it("grouped documents: each non-vol category key exists even when empty", () => {
+  it("grouped documents: every category key exists even when empty", () => {
     const grouped = groupDocumentsByCategory([]);
 
-    expect(grouped["Hébergement"]).toEqual([]);
-    expect(grouped["Assurance/Santé"]).toEqual([]);
-    expect(grouped["Réservations diverses"]).toEqual([]);
+    for (const category of DOCUMENT_CATEGORIES) {
+      expect(grouped[category]).toEqual([]);
+    }
 
     const withData = groupDocumentsByCategory(DOCUMENTS);
-    expect(withData["Hébergement"].length).toBeGreaterThan(0);
-    expect(withData["Assurance/Santé"].length).toBeGreaterThan(0);
-    expect(withData["Réservations diverses"].length).toBeGreaterThan(0);
+    expect(withData.VOLS.length).toBeGreaterThan(0);
+    expect(withData.HEBERGEMENT.length).toBeGreaterThan(0);
+    expect(withData.TRANSPORTS.length).toBeGreaterThan(0);
+    expect(withData.IDENTITE.length).toBeGreaterThan(0);
+  });
+
+  it("sortDocuments: day mode sorts by day then title", () => {
+    const grouped = groupDocumentsByCategory(DOCUMENTS);
+    const sorted = sortDocuments(grouped.VOLS, "day");
+
+    expect(sorted[0]?.day).toBe(1);
+    expect(sorted[1]?.day).toBe(1);
+    expect(sorted[2]?.day).toBe(10);
+  });
+
+  it("sortDocuments: name mode sorts alphabetically", () => {
+    const grouped = groupDocumentsByCategory(DOCUMENTS);
+    const sorted = sortDocuments(grouped.VOLS, "name");
+    const titles = sorted.map((item) => item.title);
+
+    expect(titles).toEqual([...titles].sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" })));
   });
 });
 

@@ -14,6 +14,7 @@ import {
   Pause,
   Home,
   BookOpen,
+  FileText,
   Gamepad2,
   Star,
   Plane,
@@ -35,7 +36,12 @@ import { MapScreen } from "./MapScreen";
 import { EpubReaderScreen } from "./EpubReaderScreen";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
-import { DOCUMENTS, type DocumentCategory, type TravelDocument } from "../content/documents";
+import {
+  DOCUMENT_CATEGORIES,
+  DOCUMENTS,
+  type DocumentCategory,
+  type TravelDocument,
+} from "../content/documents";
 import { HISTOIRE_TOPICS } from "../content/histoire";
 import { GEOGRAPHIE_ECONOMIE_TOPICS } from "../content/geographie-economie";
 import { CULTURE_TRADITION_TOPICS } from "../content/culture-tradition";
@@ -113,7 +119,11 @@ import {
   getAccessDeniedMessage,
   getSafeScreen,
 } from "./access-control";
-import { getVolPlaces, groupDocumentsByCategory } from "./documents-screen";
+import {
+  type DocumentSortMode,
+  groupDocumentsByCategory,
+  sortDocuments,
+} from "./documents-screen";
 import { findDuplicateProfileBySurname } from "./profile-login";
 import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
@@ -344,7 +354,7 @@ const MAX_PLACE_COMMENT_LENGTH = 500;
 
 type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "epub" | "game" | "results" | "tips" | "settings";
 const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "epub", "game", "results", "tips", "settings"];
-type QuickScreen = "checklist" | "guide" | "map" | "histoire" | "geographie" | "culture" | "epub" | "game" | "tips" | "results";
+type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
   id: string;
@@ -406,20 +416,12 @@ const QUICK_ACTIONS: QuickAction[] = [
     colorText: "text-[#2E7D32]",
   },
   {
-    id: "map",
-    emoji: "🗺️",
-    title: "Carte interactive",
-    subtitle: "Voir les lieux sur la carte",
+    id: "documents",
+    emoji: "📄",
+    title: "Documents importants",
+    subtitle: "Vols, papiers et réservations",
     colorBg: "bg-[#E8F0FE]",
     colorText: "text-[#1A73E8]",
-  },
-  {
-    id: "checklist",
-    emoji: "🧳",
-    title: "Checklist",
-    subtitle: "Préparatifs et suivi",
-    colorBg: "bg-[#FFF3E0]",
-    colorText: "text-[#E65100]",
   },
   {
     id: "histoire",
@@ -431,7 +433,7 @@ const QUICK_ACTIONS: QuickAction[] = [
   },
   {
     id: "geographie",
-    emoji: "🗺️",
+    emoji: "🌍",
     title: "Géographie et Économie",
     subtitle: "Relief, climat et économie",
     colorBg: "bg-[#E0F2F1]",
@@ -484,6 +486,7 @@ const EXTERNAL_APP_LINKS: ExternalAppLink[] = [
 const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> = [
   { id: "dashboard", icon: Home, label: "Accueil" },
   { id: "guide", icon: BookOpen, label: "Séjour" },
+  { id: "documents", icon: FileText, label: "Documents" },
   { id: "map", icon: MapIcon, label: "Carte" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
   { id: "tips", icon: Lightbulb, label: "Conseils" },
@@ -2216,28 +2219,6 @@ function DashboardScreen({
         </button>
       </div>
 
-      {/* Docs importants button */}
-      <div className="px-4 mt-3">
-        <button
-          onClick={() => onNavigate("documents")}
-          data-tutorial-id="dashboard-documents"
-          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 active:scale-95 transition-transform"
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">📄</span>
-            <div className="text-left">
-              <p className="font-black text-sm text-foreground">
-                Docs importants
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Vols, hébergement et réservations
-              </p>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
-        </button>
-      </div>
-
       {/* Tutoriel Accueil */}
       <div className="px-4 mt-3">
         <button
@@ -2578,98 +2559,367 @@ function DocumentsScreen({
 }: {
   onBack: () => void;
 }) {
-  const volPlaces = getVolPlaces(PLACES);
-  const grouped = groupDocumentsByCategory(DOCUMENTS);
-  const orderedCategories: Array<{
-    key: "vols" | DocumentCategory;
-    title: string;
-    items: Array<{ id: string; title: string; content: string; details?: string[] }>;
-  }> = [
-    {
-      key: "vols",
-      title: "Vols",
-      items: volPlaces.map((place) => ({
-        id: place.id,
-        title: place.name,
-        content: place.history,
-        details: place.anecdotes,
-      })),
-    },
-    {
-      key: "Hébergement",
-      title: "Hébergement",
-      items: grouped["Hébergement"].map((doc: TravelDocument) => ({
-        id: doc.id,
-        title: doc.title,
-        content: doc.content,
-        details: doc.details,
-      })),
-    },
-    {
-      key: "Assurance/Santé",
-      title: "Assurance/Santé",
-      items: grouped["Assurance/Santé"].map((doc: TravelDocument) => ({
-        id: doc.id,
-        title: doc.title,
-        content: doc.content,
-        details: doc.details,
-      })),
-    },
-    {
-      key: "Réservations diverses",
-      title: "Réservations diverses",
-      items: grouped["Réservations diverses"].map((doc: TravelDocument) => ({
-        id: doc.id,
-        title: doc.title,
-        content: doc.content,
-        details: doc.details,
-      })),
-    },
-  ];
+  const DOCUMENTS_STORAGE_KEY = "jp-documents-v2";
+
+  const [activeCategory, setActiveCategory] = useState<DocumentCategory>(
+    DOCUMENT_CATEGORIES[0]
+  );
+  const [sortMode, setSortMode] = useState<DocumentSortMode>("day");
+  const [allDocuments, setAllDocuments] = useState<TravelDocument[]>(DOCUMENTS);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const [draftCategory, setDraftCategory] = useState<DocumentCategory>(DOCUMENT_CATEGORIES[0]);
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftTag, setDraftTag] = useState("");
+  const [draftDay, setDraftDay] = useState("");
+  const [draftContent, setDraftContent] = useState("");
+  const [draftDetails, setDraftDetails] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DOCUMENTS_STORAGE_KEY);
+      if (!raw) {
+        setAllDocuments(DOCUMENTS);
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) {
+        setAllDocuments(DOCUMENTS);
+        return;
+      }
+
+      const sanitized: TravelDocument[] = [];
+      for (const item of parsed) {
+        if (!item || typeof item !== "object") continue;
+        const candidate = item as Record<string, unknown>;
+        const category = candidate.category;
+        if (
+          typeof candidate.id !== "string" ||
+          typeof candidate.title !== "string" ||
+          typeof candidate.content !== "string" ||
+          typeof category !== "string" ||
+          !DOCUMENT_CATEGORIES.includes(category as DocumentCategory)
+        ) {
+          continue;
+        }
+
+        const details = Array.isArray(candidate.details)
+          ? candidate.details.filter((line): line is string => typeof line === "string")
+          : undefined;
+
+        sanitized.push({
+          id: candidate.id,
+          title: candidate.title,
+          content: candidate.content,
+          category: category as DocumentCategory,
+          tag: typeof candidate.tag === "string" ? candidate.tag : undefined,
+          day:
+            typeof candidate.day === "number" && Number.isFinite(candidate.day)
+              ? candidate.day
+              : undefined,
+          details,
+        });
+      }
+
+      setAllDocuments(sanitized.length > 0 ? sanitized : DOCUMENTS);
+    } catch {
+      setAllDocuments(DOCUMENTS);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(allDocuments));
+  }, [allDocuments]);
+
+  const grouped = groupDocumentsByCategory(allDocuments);
+  const visibleItems = sortDocuments(grouped[activeCategory], sortMode);
+
+  function clearDraft(): void {
+    setDraftCategory(activeCategory);
+    setDraftTitle("");
+    setDraftTag("");
+    setDraftDay("");
+    setDraftContent("");
+    setDraftDetails("");
+  }
+
+  function openCreateForm(): void {
+    clearDraft();
+    setIsAdding(true);
+    setEditingId(null);
+  }
+
+  function startEdit(item: TravelDocument): void {
+    setDraftCategory(item.category);
+    setDraftTitle(item.title);
+    setDraftTag(item.tag ?? "");
+    setDraftDay(item.day ? String(item.day) : "");
+    setDraftContent(item.content);
+    setDraftDetails((item.details ?? []).join("\n"));
+    setEditingId(item.id);
+    setIsAdding(false);
+  }
+
+  function commitDraft(targetId?: string): void {
+    const normalizedTitle = draftTitle.trim();
+    const normalizedContent = draftContent.trim();
+    if (!normalizedTitle || !normalizedContent) {
+      return;
+    }
+
+    const parsedDay = Number.parseInt(draftDay.trim(), 10);
+    const details = draftDetails
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    const payload: TravelDocument = {
+      id: targetId ?? `doc-${Date.now()}`,
+      category: draftCategory,
+      title: normalizedTitle,
+      content: normalizedContent,
+      tag: draftTag.trim() || undefined,
+      day: Number.isFinite(parsedDay) && parsedDay > 0 ? parsedDay : undefined,
+      details: details.length > 0 ? details : undefined,
+    };
+
+    if (targetId) {
+      setAllDocuments((prev) => prev.map((doc) => (doc.id === targetId ? payload : doc)));
+      setEditingId(null);
+    } else {
+      setAllDocuments((prev) => [...prev, payload]);
+      setIsAdding(false);
+    }
+
+    clearDraft();
+    setActiveCategory(payload.category);
+  }
+
+  function removeDocument(id: string): void {
+    setAllDocuments((prev) => prev.filter((doc) => doc.id !== id));
+    if (editingId === id) {
+      setEditingId(null);
+      clearDraft();
+    }
+  }
+
+  function renderDocumentEditor(targetId?: string) {
+    const isEditMode = Boolean(targetId);
+    return (
+      <div className="rounded-2xl border border-[#BFDBFE] bg-[#EFF6FF] p-4 space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <select
+            value={draftCategory}
+            onChange={(event) => setDraftCategory(event.target.value as DocumentCategory)}
+            className="rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+            aria-label="Catégorie du document"
+          >
+            {DOCUMENT_CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            value={draftTitle}
+            onChange={(event) => setDraftTitle(event.target.value)}
+            placeholder="Titre du document"
+            aria-label="Titre du document"
+            className="rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <input
+            type="text"
+            value={draftTag}
+            onChange={(event) => setDraftTag(event.target.value)}
+            placeholder="Tag optionnel (ex: Jour 3, AF7507, Soir)"
+            aria-label="Tag du document"
+            className="rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+          />
+          <input
+            type="number"
+            min={1}
+            value={draftDay}
+            onChange={(event) => setDraftDay(event.target.value)}
+            placeholder="Jour optionnel"
+            aria-label="Jour du document"
+            className="rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+          />
+        </div>
+
+        <textarea
+          value={draftContent}
+          onChange={(event) => setDraftContent(event.target.value)}
+          placeholder="Contenu libre du document (gras avec **texte**)."
+          aria-label="Contenu du document"
+          rows={6}
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
+        />
+
+        <textarea
+          value={draftDetails}
+          onChange={(event) => setDraftDetails(event.target.value)}
+          placeholder="Détails optionnels, une ligne par élément"
+          aria-label="Détails du document"
+          rows={3}
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
+        />
+
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          Astuce formatage: écrivez une portion en gras avec **comme ceci**.
+        </p>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => commitDraft(targetId)}
+            className="inline-flex items-center gap-1 rounded-xl bg-[#1565C0] px-3 py-2 text-xs font-black uppercase tracking-widest text-white"
+          >
+            <Check size={14} />
+            {isEditMode ? "Enregistrer" : "Ajouter"}
+          </button>
+          <button
+            onClick={() => {
+              clearDraft();
+              setEditingId(null);
+              setIsAdding(false);
+            }}
+            className="inline-flex items-center gap-1 rounded-xl bg-muted px-3 py-2 text-xs font-black uppercase tracking-widest text-muted-foreground"
+          >
+            <X size={14} />
+            Annuler
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
-      <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="relative bg-[#1565C0] text-white px-6 pt-12 pb-6 flex-shrink-0">
         <MemphisDecor />
         <button
           onClick={onBack}
+          data-tutorial-id="documents-back"
           className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
         >
           <ChevronLeft size={18} /> Accueil
         </button>
-        <h1 className="relative z-10 text-2xl font-black">Docs importants 📄</h1>
+        <h1 data-tutorial-id="documents-title" className="relative z-10 text-2xl font-black">Documents importants 📄</h1>
+        <p className="relative z-10 text-sm opacity-90 mt-1">
+          Classez et éditez vos informations de voyage par catégorie
+        </p>
       </div>
 
-      <div className="px-4 pt-5 pb-6 space-y-5">
-        {orderedCategories.map((category) => (
-          <section key={category.key} className="space-y-2">
-            <h2 className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">
-              {category.title}
-            </h2>
-
-            {category.items.length === 0 ? (
-              <div className="rounded-2xl bg-card border border-border p-4">
-                <p className="text-sm text-muted-foreground italic">Aucun document renseigné</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {category.items.map((item) => (
-                  <article key={item.id} className="rounded-2xl bg-card border border-border p-4">
-                    <h3 className="font-black text-foreground">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground whitespace-pre-line mt-2">{item.content}</p>
-                    {item.details && item.details.length > 0 && (
-                      <ul className="mt-3 space-y-1 list-disc pl-5 text-sm text-muted-foreground">
-                        {item.details.map((detail, detailIndex) => (
-                          <li key={`${item.id}-${detailIndex}`}>{detail}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
+      <div className="px-4 mt-4 grid grid-cols-3 gap-2 flex-shrink-0">
+        {DOCUMENT_CATEGORIES.map((category) => (
+          <button
+            key={category}
+            onClick={() => {
+              setActiveCategory(category);
+              if (!isAdding && !editingId) {
+                setDraftCategory(category);
+              }
+            }}
+            data-tutorial-id={category === "VOLS" ? "documents-tab-vols" : undefined}
+            className={`px-2 py-2 rounded-xl text-[11px] font-extrabold text-center leading-tight transition-all ${
+              activeCategory === category
+                ? "bg-[#1565C0] text-white"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {category}
+          </button>
         ))}
+      </div>
+
+      <div className="px-4 mt-3 flex flex-wrap gap-2 flex-shrink-0">
+        <button
+          onClick={() => setSortMode("day")}
+          className={`px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-colors ${
+            sortMode === "day" ? "bg-[#1565C0] text-white" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          Tri jour
+        </button>
+        <button
+          onClick={() => setSortMode("name")}
+          className={`px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-colors ${
+            sortMode === "name" ? "bg-[#1565C0] text-white" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          Tri nom
+        </button>
+        <button
+          onClick={openCreateForm}
+          className="ml-auto inline-flex items-center gap-1 rounded-xl bg-[#E3F2FD] px-3 py-2 text-xs font-black uppercase tracking-widest text-[#1565C0]"
+        >
+          <Plus size={14} /> Nouveau
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {isAdding && renderDocumentEditor()}
+
+        {visibleItems.length === 0 ? (
+          <div className="rounded-2xl bg-card border border-border p-4">
+            <p className="text-sm text-muted-foreground italic">Aucun document renseigné pour cette catégorie</p>
+          </div>
+        ) : (
+          visibleItems.map((item) => (
+            <article key={item.id} className="rounded-2xl bg-card border border-border p-4">
+              {editingId === item.id ? (
+                renderDocumentEditor(item.id)
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex-1 min-w-[180px]">
+                      <h3 className="font-black text-foreground">{item.title}</h3>
+                      <div className="mt-1 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest">
+                        {item.day ? (
+                          <span className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[#1565C0]">Jour {item.day}</span>
+                        ) : null}
+                        {item.tag ? (
+                          <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{item.tag}</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => startEdit(item)}
+                        className="rounded-lg bg-muted px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-muted-foreground"
+                      >
+                        Modifier
+                      </button>
+                      <button
+                        onClick={() => removeDocument(item.id)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#FDE7E9] px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-[#AD1457]"
+                      >
+                        <Trash2 size={12} /> Supprimer
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="text-sm text-muted-foreground mt-3 leading-relaxed">
+                    {renderFormattedText(item.content)}
+                  </div>
+
+                  {item.details && item.details.length > 0 && (
+                    <ul className="mt-3 space-y-1 list-disc pl-5 text-sm text-muted-foreground">
+                      {item.details.map((detail, detailIndex) => (
+                        <li key={`${item.id}-${detailIndex}`}>{detail}</li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              )}
+            </article>
+          ))
+        )}
+        <div className="h-2" />
       </div>
     </div>
   );

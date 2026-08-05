@@ -9,6 +9,7 @@ describe("tutorial-loader global tutorial", () => {
     expect(steps.some((step) => step.screen === "dashboard")).toBe(true);
     expect(steps.some((step) => step.screen === "settings")).toBe(true);
     expect(steps.some((step) => step.screen === "planning")).toBe(true);
+    expect(steps.some((step) => step.screen === "documents")).toBe(true);
     expect(steps.some((step) => step.screen === "guide")).toBe(true);
     expect(steps.some((step) => step.screen === "place")).toBe(true);
     expect(steps.some((step) => step.screen === "game")).toBe(true);
@@ -23,6 +24,7 @@ describe("tutorial-loader global tutorial", () => {
     expect(interactiveSteps.length).toBeGreaterThan(0);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-settings"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-planning"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-quick-documents"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-today-card"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-day-selector"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-day-option-2"]')).toBe(true);
@@ -39,6 +41,7 @@ describe("tutorial-loader global tutorial", () => {
     const steps = loadGlobalTutorialSteps();
     expect(steps.some((step) => step.element === '[data-tutorial-id="settings-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="planning-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="documents-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="guide-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-audio-player"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-gallery-title"]')).toBe(true);
@@ -53,8 +56,11 @@ describe("tutorial-loader global tutorial", () => {
     expect(steps.some((step) => step.element === '[data-tutorial-id="dashboard-polarsteps-link"]')).toBe(true);
   });
 
-  it("continues from game to results, tips, then dashboard map and polarsteps", () => {
+  it("continues from documents to guide, then game, results, tips, map and polarsteps", () => {
     const steps = loadGlobalTutorialSteps();
+    const documentsIndex = steps.findIndex((step) => step.id === "documents-explain");
+    const documentsBackIndex = steps.findIndex((step) => step.id === "documents-back-home");
+    const guideIndex = steps.findIndex((step) => step.id === "guide-explain");
     const audioIndex = steps.findIndex((step) => step.id === "place-audio");
     const galleryIndex = steps.findIndex((step) => step.id === "place-gallery");
     const gameIndex = steps.findIndex((step) => step.id === "game-explain");
@@ -63,6 +69,9 @@ describe("tutorial-loader global tutorial", () => {
     const tipsIndex = steps.findIndex((step) => step.id === "tips-explain");
     const mapIndex = steps.findIndex((step) => step.id === "dashboard-map-preview");
     const polarstepsIndex = steps.findIndex((step) => step.id === "dashboard-polarsteps");
+    expect(documentsIndex).toBeGreaterThan(-1);
+    expect(documentsBackIndex).toBeGreaterThan(-1);
+    expect(guideIndex).toBeGreaterThan(-1);
     expect(audioIndex).toBeGreaterThan(-1);
     expect(galleryIndex).toBeGreaterThan(-1);
     expect(gameIndex).toBeGreaterThan(-1);
@@ -71,6 +80,9 @@ describe("tutorial-loader global tutorial", () => {
     expect(tipsIndex).toBeGreaterThan(-1);
     expect(mapIndex).toBeGreaterThan(-1);
     expect(polarstepsIndex).toBeGreaterThan(-1);
+    expect(documentsIndex).toBeLessThan(documentsBackIndex);
+    expect(documentsBackIndex).toBeLessThan(guideIndex);
+    expect(guideIndex).toBeLessThan(audioIndex);
     expect(audioIndex).toBeLessThan(galleryIndex);
     expect(gameIndex).toBeLessThan(backHomeIndex);
     expect(backHomeIndex).toBeLessThan(resultsIndex);
