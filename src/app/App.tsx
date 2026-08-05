@@ -31,7 +31,6 @@ import {
   MessageCircle,
   Scroll,
   Globe,
-  Target,
   Settings,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
@@ -2135,18 +2134,18 @@ function DashboardScreen({
               <button
                 onClick={() => onNavigate("settings")}
                 data-tutorial-id="dashboard-settings"
-                className="inline-flex items-center gap-1.5 whitespace-nowrap text-[10px] font-black uppercase tracking-[0.14em] bg-white/25 border border-white/35 rounded-full px-3 py-1.5"
+                className="inline-flex w-44 items-center justify-center gap-1.5 whitespace-nowrap text-[10px] font-black uppercase tracking-[0.12em] bg-white/25 border border-white/35 rounded-full px-3 py-1.5"
               >
-                <Settings size={11} className="flex-shrink-0" aria-hidden="true" />
+                <Settings size={11} className="flex-shrink-0 text-zinc-300" aria-hidden="true" />
                 Paramètres
               </button>
               <button
                 onClick={onStartTutorial}
                 data-tutorial-id="dashboard-start-tutorial"
-                className="inline-flex items-center gap-1.5 whitespace-nowrap text-[9px] font-black uppercase tracking-[0.12em] bg-white/20 border border-white/25 rounded-full px-2.5 py-1.5 active:scale-95 transition-transform"
+                className="inline-flex w-44 items-center justify-center gap-1.5 whitespace-nowrap text-[10px] font-black uppercase tracking-[0.12em] bg-white/20 border border-white/25 rounded-full px-3 py-1.5 active:scale-95 transition-transform"
               >
-                <Target size={11} className="flex-shrink-0" aria-hidden="true" />
-                Tutoriel interactif
+                <span className="text-[12px] leading-none" aria-hidden="true">🎯</span>
+                Tutoriel
               </button>
               <p className="text-xs font-bold opacity-85 text-right pt-0.5 leading-none">
                 {todayFormatted}

@@ -97,7 +97,7 @@ describe("App tutorial integration (Accueil)", () => {
     expect(container.querySelector('[data-tutorial-id="bottom-nav-dashboard"]')).toBeTruthy();
     expect(container.querySelector('[data-tutorial-id="dashboard-start-tutorial"]')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: /Tutoriel interactif/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Tutoriel/i }));
 
     await waitFor(() => {
       expect(startGlobalTutorialMock).toHaveBeenCalledTimes(1);
