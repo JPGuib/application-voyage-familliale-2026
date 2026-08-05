@@ -2332,6 +2332,7 @@ function DashboardScreen({
           <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
         </button>
       </div>
+
     </div>
   );
 }

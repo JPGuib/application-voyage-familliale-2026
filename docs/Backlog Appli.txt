@@ -1,7 +1,6 @@
 Nouvelles fonctionnalités
 ------------------------
 Story 12.3 (ex-2.3) — Création personnalisée de catégories de checklist
-
  
 Backlog
 -----------
