@@ -14,6 +14,21 @@ type ReaderSource = {
   source: string | ArrayBuffer;
 };
 
+function getEpubBookOptions(source: ReaderSource) {
+  const isUploadedArchive = source.source instanceof ArrayBuffer;
+  const isArchivedUrl = typeof source.source === "string" && /\.epub(?:$|[?#])/i.test(source.source);
+
+  if (!isUploadedArchive && !isArchivedUrl) {
+    return undefined;
+  }
+
+  return {
+    encoding: "binary" as const,
+    openAs: "epub" as const,
+    replacements: "blobUrl" as const,
+  };
+}
+
 type SavedBookLocation = {
   cfi: string;
   updatedAt: number;
@@ -130,7 +145,7 @@ export function EpubReaderScreen({ profileId, onBack }: EpubReaderScreenProps) {
 
     const init = async () => {
       try {
-        const book = ePub(activeSource.source);
+        const book = ePub(activeSource.source, getEpubBookOptions(activeSource));
         const rendition = book.renderTo(viewerRef.current as HTMLDivElement, {
           width: "100%",
           height: "100%",
@@ -207,6 +222,7 @@ export function EpubReaderScreen({ profileId, onBack }: EpubReaderScreenProps) {
   }, [activeSource, preferences.darkMode, preferences.fontScale]);
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -223,7 +239,7 @@ export function EpubReaderScreen({ profileId, onBack }: EpubReaderScreenProps) {
     } catch {
       setError("Le fichier selectionne n'a pas pu etre charge.");
     } finally {
-      event.currentTarget.value = "";
+      input.value = "";
     }
   };
 
