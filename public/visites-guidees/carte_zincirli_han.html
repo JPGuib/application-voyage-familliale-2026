@@ -44,6 +44,54 @@
                 }
             </style>
 
+            <style>
+                .geo-ui {
+                    position: absolute;
+                    top: 12px;
+                    right: 12px;
+                    z-index: 1000;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    gap: 8px;
+                    max-width: min(90vw, 320px);
+                }
+
+                .geo-locate-btn {
+                    border: 0;
+                    border-radius: 999px;
+                    padding: 10px 14px;
+                    background: #1d4ed8;
+                    color: #ffffff;
+                    font-size: 0.9rem;
+                    font-weight: 700;
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+                    cursor: pointer;
+                }
+
+                .geo-locate-btn:hover {
+                    background: #1e40af;
+                }
+
+                .geo-status {
+                    margin: 0;
+                    border-radius: 12px;
+                    padding: 8px 10px;
+                    background: rgba(15, 23, 42, 0.88);
+                    color: #f8fafc;
+                    font-size: 0.78rem;
+                    line-height: 1.25;
+                }
+
+                .geo-status.is-error {
+                    background: rgba(127, 29, 29, 0.92);
+                }
+
+                .geo-status.is-success {
+                    background: rgba(21, 128, 61, 0.9);
+                }
+            </style>
+
             <script>
                 L_NO_TOUCH = false;
                 L_DISABLE_3D = false;
@@ -55,6 +103,10 @@
     
     
             <div class="folium-map" id="map_6d6d6aa5c1bac21ae27cc26f447bca46" ></div>
+            <div class="geo-ui">
+                <button id="geo-locate-btn" class="geo-locate-btn" type="button">Me localiser</button>
+                <p id="geo-status" class="geo-status" aria-live="polite">GPS inactif</p>
+            </div>
         
 </body>
 <script>
@@ -118,6 +170,129 @@
 
         marker_8e0bc3b692dd3d843e027903453b537d.bindPopup(popup_af673e7484c64a75124ddc01d16233b3)
         ;
+
+        var geolocationWatchId = null;
+        var userMarker = null;
+        var userAccuracyCircle = null;
+        var shouldCenterOnNextFix = true;
+        var geoStatusElement = document.getElementById("geo-status");
+        var geoLocateButton = document.getElementById("geo-locate-btn");
+
+        function setGeoStatus(message, tone) {
+            if (!geoStatusElement) {
+                return;
+            }
+
+            geoStatusElement.textContent = message;
+            geoStatusElement.classList.remove("is-error", "is-success");
+
+            if (tone === "error") {
+                geoStatusElement.classList.add("is-error");
+            }
+
+            if (tone === "success") {
+                geoStatusElement.classList.add("is-success");
+            }
+        }
+
+        function updateUserPosition(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            var accuracy = position.coords.accuracy || 0;
+            var userLatLng = [latitude, longitude];
+
+            if (!userMarker) {
+                userMarker = L.circleMarker(userLatLng, {
+                    radius: 8,
+                    color: "#2563eb",
+                    fillColor: "#3b82f6",
+                    fillOpacity: 0.95,
+                    weight: 2,
+                }).addTo(map_6d6d6aa5c1bac21ae27cc26f447bca46);
+                userMarker.bindPopup("Vous êtes ici");
+            } else {
+                userMarker.setLatLng(userLatLng);
+            }
+
+            if (!userAccuracyCircle) {
+                userAccuracyCircle = L.circle(userLatLng, {
+                    radius: accuracy,
+                    color: "#3b82f6",
+                    fillColor: "#93c5fd",
+                    fillOpacity: 0.2,
+                    weight: 1,
+                }).addTo(map_6d6d6aa5c1bac21ae27cc26f447bca46);
+            } else {
+                userAccuracyCircle.setLatLng(userLatLng);
+                userAccuracyCircle.setRadius(accuracy);
+            }
+
+            if (shouldCenterOnNextFix) {
+                map_6d6d6aa5c1bac21ae27cc26f447bca46.setView(userLatLng, 18);
+                shouldCenterOnNextFix = false;
+            }
+
+            setGeoStatus("Position GPS active (precision ~" + Math.round(accuracy) + " m)", "success");
+        }
+
+        function handleGeolocationError(error) {
+            console.info("Geolocalisation indisponible:", error && error.message ? error.message : error);
+
+            if (!error || typeof error.code !== "number") {
+                setGeoStatus("GPS indisponible pour le moment", "error");
+                return;
+            }
+
+            if (error.code === error.PERMISSION_DENIED) {
+                setGeoStatus("GPS refuse. Autorisez la localisation dans le navigateur.", "error");
+                return;
+            }
+
+            if (error.code === error.POSITION_UNAVAILABLE) {
+                setGeoStatus("Position introuvable. Verifiez le signal GPS.", "error");
+                return;
+            }
+
+            if (error.code === error.TIMEOUT) {
+                setGeoStatus("GPS trop lent. Reessayez avec Me localiser.", "error");
+                return;
+            }
+
+            setGeoStatus("GPS indisponible pour le moment", "error");
+        }
+
+        function startGeolocation() {
+            if (!("geolocation" in navigator)) {
+                setGeoStatus("Geolocalisation non supportee par cet appareil", "error");
+                return;
+            }
+
+            setGeoStatus("Recherche de votre position GPS...", null);
+
+            if (geolocationWatchId === null) {
+                geolocationWatchId = navigator.geolocation.watchPosition(updateUserPosition, handleGeolocationError, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 5000,
+                });
+            }
+        }
+
+        if (geoLocateButton) {
+            geoLocateButton.addEventListener("click", function () {
+                shouldCenterOnNextFix = true;
+
+                if (userMarker) {
+                    map_6d6d6aa5c1bac21ae27cc26f447bca46.setView(userMarker.getLatLng(), 18);
+                    setGeoStatus("Recentre sur votre position", "success");
+                    return;
+                }
+
+                startGeolocation();
+            });
+        }
+
+        startGeolocation();
 
         
     
