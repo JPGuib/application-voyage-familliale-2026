@@ -2596,6 +2596,8 @@ function DocumentsScreen({
         return;
       }
 
+      const defaultDocumentsById = new Map(DOCUMENTS.map((doc) => [doc.id, doc]));
+
       const sanitized: TravelDocument[] = [];
       for (const item of parsed) {
         if (!item || typeof item !== "object") continue;
@@ -2617,6 +2619,12 @@ function DocumentsScreen({
         const scans = Array.isArray(candidate.scans)
           ? candidate.scans.filter((line): line is string => typeof line === "string")
           : undefined;
+        const defaultScans = defaultDocumentsById.get(candidate.id)?.scans;
+        const resolvedScans = scans && scans.length > 0
+          ? scans
+          : defaultScans && defaultScans.length > 0
+            ? defaultScans
+            : undefined;
 
         sanitized.push({
           id: candidate.id,
@@ -2629,7 +2637,7 @@ function DocumentsScreen({
               ? candidate.day
               : undefined,
           details,
-          scans,
+          scans: resolvedScans,
         });
       }
 
@@ -3013,8 +3021,7 @@ function DocumentsScreen({
                         {item.tag ? (
                           <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{item.tag}</span>
                         ) : null}
-                        {(item.scans?.length ?? 0) > 0 ? (
-                          canConsultScans ? (
+                        {(item.scans?.length ?? 0) > 0 && canConsultScans ? (
                             <button
                               type="button"
                               onClick={() => openScans(item)}
@@ -3024,9 +3031,6 @@ function DocumentsScreen({
                             >
                               {item.scans?.length} scan(s)
                             </button>
-                          ) : (
-                            <span className="rounded-full bg-[#E8F5E9] px-2.5 py-1 text-[#2E7D32]">{item.scans?.length} scan(s)</span>
-                          )
                         ) : null}
                       </div>
                     </div>
