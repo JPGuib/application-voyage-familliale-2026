@@ -35,6 +35,7 @@ import { MapScreen } from "./MapScreen";
 import { EpubReaderScreen } from "./EpubReaderScreen";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
+import { DOCUMENTS, type DocumentCategory, type TravelDocument } from "../content/documents";
 import { HISTOIRE_TOPICS } from "../content/histoire";
 import { GEOGRAPHIE_ECONOMIE_TOPICS } from "../content/geographie-economie";
 import { CULTURE_TRADITION_TOPICS } from "../content/culture-tradition";
@@ -112,6 +113,7 @@ import {
   getAccessDeniedMessage,
   getSafeScreen,
 } from "./access-control";
+import { getVolPlaces, groupDocumentsByCategory } from "./documents-screen";
 import { findDuplicateProfileBySurname } from "./profile-login";
 import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
@@ -340,8 +342,8 @@ const MAX_PLACE_COMMENT_LENGTH = 500;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "planning" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "epub" | "game" | "results" | "tips" | "settings";
-const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "epub", "game", "results", "tips", "settings"];
+type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "epub" | "game" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "epub", "game", "results", "tips", "settings"];
 type QuickScreen = "checklist" | "guide" | "map" | "histoire" | "geographie" | "culture" | "epub" | "game" | "tips" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
@@ -2214,6 +2216,28 @@ function DashboardScreen({
         </button>
       </div>
 
+      {/* Docs importants button */}
+      <div className="px-4 mt-3">
+        <button
+          onClick={() => onNavigate("documents")}
+          data-tutorial-id="dashboard-documents"
+          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 active:scale-95 transition-transform"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">📄</span>
+            <div className="text-left">
+              <p className="font-black text-sm text-foreground">
+                Docs importants
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Vols, hébergement et réservations
+              </p>
+            </div>
+          </div>
+          <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
+        </button>
+      </div>
+
       {/* Tutoriel Accueil */}
       <div className="px-4 mt-3">
         <button
@@ -2544,6 +2568,108 @@ function PlanningScreen({
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function DocumentsScreen({
+  onBack,
+}: {
+  onBack: () => void;
+}) {
+  const volPlaces = getVolPlaces(PLACES);
+  const grouped = groupDocumentsByCategory(DOCUMENTS);
+  const orderedCategories: Array<{
+    key: "vols" | DocumentCategory;
+    title: string;
+    items: Array<{ id: string; title: string; content: string; details?: string[] }>;
+  }> = [
+    {
+      key: "vols",
+      title: "Vols",
+      items: volPlaces.map((place) => ({
+        id: place.id,
+        title: place.name,
+        content: place.history,
+        details: place.anecdotes,
+      })),
+    },
+    {
+      key: "Hébergement",
+      title: "Hébergement",
+      items: grouped["Hébergement"].map((doc: TravelDocument) => ({
+        id: doc.id,
+        title: doc.title,
+        content: doc.content,
+        details: doc.details,
+      })),
+    },
+    {
+      key: "Assurance/Santé",
+      title: "Assurance/Santé",
+      items: grouped["Assurance/Santé"].map((doc: TravelDocument) => ({
+        id: doc.id,
+        title: doc.title,
+        content: doc.content,
+        details: doc.details,
+      })),
+    },
+    {
+      key: "Réservations diverses",
+      title: "Réservations diverses",
+      items: grouped["Réservations diverses"].map((doc: TravelDocument) => ({
+        id: doc.id,
+        title: doc.title,
+        content: doc.content,
+        details: doc.details,
+      })),
+    },
+  ];
+
+  return (
+    <div className="flex flex-col h-full overflow-y-auto">
+      <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
+        <MemphisDecor />
+        <button
+          onClick={onBack}
+          className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
+        >
+          <ChevronLeft size={18} /> Accueil
+        </button>
+        <h1 className="relative z-10 text-2xl font-black">Docs importants 📄</h1>
+      </div>
+
+      <div className="px-4 pt-5 pb-6 space-y-5">
+        {orderedCategories.map((category) => (
+          <section key={category.key} className="space-y-2">
+            <h2 className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">
+              {category.title}
+            </h2>
+
+            {category.items.length === 0 ? (
+              <div className="rounded-2xl bg-card border border-border p-4">
+                <p className="text-sm text-muted-foreground italic">Aucun document renseigné</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {category.items.map((item) => (
+                  <article key={item.id} className="rounded-2xl bg-card border border-border p-4">
+                    <h3 className="font-black text-foreground">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground whitespace-pre-line mt-2">{item.content}</p>
+                    {item.details && item.details.length > 0 && (
+                      <ul className="mt-3 space-y-1 list-disc pl-5 text-sm text-muted-foreground">
+                        {item.details.map((detail, detailIndex) => (
+                          <li key={`${item.id}-${detailIndex}`}>{detail}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        ))}
       </div>
     </div>
   );
@@ -10261,6 +10387,14 @@ export default function App() {
         );
       }
 
+      if (effectiveScreen === "documents") {
+        return (
+          <DocumentsScreen
+            onBack={() => goToScreen("dashboard")}
+          />
+        );
+      }
+
       if (effectiveScreen === "map") {
         return (
           <MapScreen
@@ -10598,6 +10732,12 @@ export default function App() {
             }}
             currentDay={currentDay}
             tripFinished={tripFinished}
+          />
+        );
+      case "documents":
+        return (
+          <DocumentsScreen
+            onBack={() => goToScreen("dashboard")}
           />
         );
       case "map":

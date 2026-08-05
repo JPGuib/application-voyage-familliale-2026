@@ -12,6 +12,7 @@ const ALL_SECTIONS: AccessSection[] = [
   "dashboard",
   "guide",
   "planning",
+  "documents",
   "histoire",
   "geographie",
   "culture",
@@ -41,11 +42,12 @@ describe("access-control policy", () => {
     expect(allowed).toEqual(ALL_SECTIONS);
   });
 
-  it("restricts user before unlock to checklist and settings", () => {
+  it("restricts user before unlock to checklist, documents and settings", () => {
     const allowed = getAllowedSections("utilisateur", "before");
 
-    expect(allowed).toEqual(["checklist", "settings"]);
+    expect(allowed).toEqual(["checklist", "documents", "settings"]);
     expect(canAccessSection("utilisateur", "before", "dashboard")).toBe(false);
+    expect(canAccessSection("utilisateur", "before", "documents")).toBe(true);
     expect(canAccessScreen("utilisateur", "before", "epub")).toBe(false);
   });
 
@@ -57,6 +59,7 @@ describe("access-control policy", () => {
       "dashboard",
       "guide",
       "planning",
+      "documents",
       "histoire",
       "geographie",
       "culture",
@@ -71,7 +74,7 @@ describe("access-control policy", () => {
   it("keeps null role restricted even during phase", () => {
     const allowed = getAllowedSections(null, "during");
 
-    expect(allowed).toEqual(["checklist", "settings"]);
+    expect(allowed).toEqual(["checklist", "documents", "settings"]);
   });
 
   it("grants visitor access only to read-only content and their own settings (story 24.3, restreint le 2026-08-01)", () => {
@@ -81,6 +84,7 @@ describe("access-control policy", () => {
       "dashboard",
       "guide",
       "planning",
+      "documents",
       "histoire",
       "geographie",
       "culture",
