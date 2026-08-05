@@ -223,12 +223,20 @@ export function useCloudSync() {
     isFlushingQueueRef.current = true;
     try {
       const queue = readPendingQueue(pendingQueueKey);
-      if (queue.length === 0) {
+      // Owner-scoped writes (phase, launchGateCycle, owner settings) must not
+      // be replayed from stale offline queues: they can revert a freshly
+      // confirmed owner action and create before/during flicker loops.
+      const replayableQueue = queue.filter((mutation) => !mutation.canWriteFamilyState);
+      if (replayableQueue.length !== queue.length) {
+        writePendingQueue(pendingQueueKey, replayableQueue);
+      }
+
+      if (replayableQueue.length === 0) {
         return;
       }
 
       const remaining: CloudSyncWritePayload[] = [];
-      for (const mutation of queue) {
+      for (const mutation of replayableQueue) {
         try {
           await pushCloudSnapshot(database, familyId, mutation);
         } catch {
@@ -395,7 +403,10 @@ export function useCloudSync() {
       };
 
       if (typeof navigator !== "undefined" && !navigator.onLine) {
-        enqueuePendingMutation(mutation);
+        enqueuePendingMutation({
+          ...mutation,
+          canWriteFamilyState: false,
+        });
         return;
       }
 
@@ -518,8 +529,12 @@ export function useCloudSync() {
         // silencieux ici est difficile à diagnostiquer sans ce log.
         console.error("[cloud-sync] pushCloudSnapshot a échoué :", err, mutation);
         // Keep the app usable on transient write failures; read-subscription errors
-        // still control the blocking cloud access state.
-        enqueuePendingMutation(mutation);
+        // still control the blocking cloud access state. Never queue owner-scoped
+        // family writes, otherwise stale replay can revert phase transitions.
+        enqueuePendingMutation({
+          ...mutation,
+          canWriteFamilyState: false,
+        });
         return false;
       }
     },
