@@ -342,6 +342,7 @@ describe("App access-control integration", () => {
 
     const ownerCodeHash = await hashOwnerCode("1234");
     const pushSnapshot = vi.fn().mockResolvedValue(undefined);
+    const pushOwnerPhaseChange = vi.fn().mockResolvedValue(true);
     const snapshot = {
       ...makeSnapshot("during"),
       ownerCodeHash,
@@ -354,6 +355,7 @@ describe("App access-control integration", () => {
       cloudActorUid: "actor-1",
       cloudSnapshot: snapshot,
       pushSnapshot,
+      pushOwnerPhaseChange,
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
       familyId: "famille-voyage-2026",
     }));
@@ -383,9 +385,8 @@ describe("App access-control integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Valider" }));
 
     await waitFor(() => {
-      expect(pushSnapshot).toHaveBeenCalledWith(
+      expect(pushOwnerPhaseChange).toHaveBeenCalledWith(
         expect.objectContaining({
-          profileId: "p1",
           phase: "before",
         })
       );
@@ -407,7 +408,8 @@ describe("App access-control integration", () => {
       ...makeSnapshot("during"),
       ownerCodeHash,
     };
-    const pushSnapshot = vi.fn().mockImplementation(async (payload: { phase: SnapshotPhase }) => {
+    const pushSnapshot = vi.fn().mockResolvedValue(undefined);
+    const pushOwnerPhaseChange = vi.fn().mockImplementation(async (payload: { phase: SnapshotPhase }) => {
       snapshot = {
         ...snapshot,
         phase: payload.phase,
@@ -426,6 +428,7 @@ describe("App access-control integration", () => {
       cloudActorUid: "actor-1",
       cloudSnapshot: snapshot,
       pushSnapshot,
+      pushOwnerPhaseChange,
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
       familyId: "famille-voyage-2026",
     }));
@@ -452,7 +455,7 @@ describe("App access-control integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Valider" }));
 
     await waitFor(() => {
-      expect(pushSnapshot).toHaveBeenCalledWith(expect.objectContaining({ phase: "before" }));
+      expect(pushOwnerPhaseChange).toHaveBeenCalledWith(expect.objectContaining({ phase: "before" }));
     });
 
     view.rerender(<App />);
@@ -472,7 +475,7 @@ describe("App access-control integration", () => {
     fireEvent.click(screen.getByRole("button", { name: "Valider" }));
 
     await waitFor(() => {
-      expect(pushSnapshot).toHaveBeenCalledWith(expect.objectContaining({ phase: "during" }));
+      expect(pushOwnerPhaseChange).toHaveBeenCalledWith(expect.objectContaining({ phase: "during" }));
     });
 
     view.rerender(<App />);
@@ -488,6 +491,7 @@ describe("App access-control integration", () => {
 
     const ownerCodeHash = await hashOwnerCode("1234");
     const pushSnapshot = vi.fn().mockResolvedValue(undefined);
+    const pushOwnerPhaseChange = vi.fn().mockResolvedValue(true);
     const snapshot = {
       ...makeSnapshot("during"),
       ownerCodeHash,
@@ -500,6 +504,7 @@ describe("App access-control integration", () => {
       cloudActorUid: "actor-1",
       cloudSnapshot: snapshot,
       pushSnapshot,
+      pushOwnerPhaseChange,
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
       familyId: "famille-voyage-2026",
     }));
