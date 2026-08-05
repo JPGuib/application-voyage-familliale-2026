@@ -169,7 +169,7 @@ development_status:
 
   epic-20: done
   20-1-planning-complet-itineraire: done
-  20-2-documents-voyage-centralises: review
+  20-2-documents-voyage-centralises: done
   20-3-convertisseur-devises-eur-try: done
   epic-20-retrospective: optional
 
@@ -195,7 +195,7 @@ development_status:
   epic-24-retrospective: optional
 
   epic-25: done
-  25-1-ecran-teaser-pre-depart: canceled
+  25-1-ecran-teaser-pre-depart: done
   25-2-sondage-destination: done
   25-3-transformation-faq-sondage-consultable: canceled
   25-4-parcours-video-on-est-parti: done

@@ -1,4 +1,5 @@
 import { loadGlobalTutorialSteps } from "./tutorial-loader";
+import type { Role } from "../owner-policy";
 
 export type DriverLikeStep = {
   element: string | (() => Element | null);
@@ -79,8 +80,8 @@ export function toDriverSteps(steps: ReturnType<typeof loadGlobalTutorialSteps>)
   }));
 }
 
-export async function startGlobalTutorial(): Promise<void> {
-  const rawSteps = loadGlobalTutorialSteps();
+export async function startGlobalTutorial(role: Role | null = "utilisateur"): Promise<void> {
+  const rawSteps = loadGlobalTutorialSteps(role);
   const steps = toDriverSteps(rawSteps);
   if (steps.length === 0) return;
 

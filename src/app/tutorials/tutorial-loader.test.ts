@@ -41,6 +41,20 @@ describe("tutorial-loader global tutorial", () => {
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="tips-back"]')).toBe(true);
   });
 
+  it("skips scan-specific tutorial steps for visitor profiles", () => {
+    const steps = loadGlobalTutorialSteps("visiteur");
+    const interactiveSteps = steps.filter((step) => step.interactive);
+
+    expect(steps.some((step) => step.id === "documents-open-scans")).toBe(false);
+    expect(steps.some((step) => step.id === "documents-scans-explain")).toBe(false);
+    expect(steps.some((step) => step.id === "documents-scan-open-lightbox")).toBe(false);
+    expect(steps.some((step) => step.id === "documents-scan-lightbox-explain")).toBe(false);
+    expect(steps.some((step) => step.id === "documents-scan-close-lightbox")).toBe(false);
+    expect(steps.some((step) => step.id === "documents-scans-back-to-documents")).toBe(false);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="documents-open-scans"]')).toBe(false);
+    expect(steps.some((step) => step.id === "documents-back-home")).toBe(true);
+  });
+
   it("anchors screen explanation steps on stable per-screen selectors", () => {
     const steps = loadGlobalTutorialSteps();
     expect(steps.some((step) => step.element === '[data-tutorial-id="settings-title"]')).toBe(true);

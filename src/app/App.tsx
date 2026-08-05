@@ -2562,6 +2562,7 @@ function DocumentsScreen({
   const DOCUMENTS_STORAGE_KEY = "jp-documents-v3";
   const LEGACY_DOCUMENTS_STORAGE_KEY = "jp-documents-v2";
   const isOwner = role === "proprietaire";
+  const canConsultScans = role !== "visiteur";
 
   const [activeCategory, setActiveCategory] = useState<DocumentCategory>(
     DOCUMENT_CATEGORIES[0]
@@ -2747,6 +2748,9 @@ function DocumentsScreen({
   }
 
   function openScans(item: TravelDocument): void {
+    if (!canConsultScans) {
+      return;
+    }
     if (!item.scans || item.scans.length === 0) {
       return;
     }
@@ -2974,20 +2978,16 @@ function DocumentsScreen({
         ))}
       </div>
 
-      <div className="px-4 mt-3 flex flex-wrap gap-2 flex-shrink-0">
-        {isOwner ? (
+      {isOwner && (
+        <div className="px-4 mt-3 flex flex-wrap gap-2 flex-shrink-0">
           <button
             onClick={openCreateForm}
             className="ml-auto inline-flex items-center gap-1 rounded-xl bg-[#E3F2FD] px-3 py-2 text-xs font-black uppercase tracking-widest text-[#1565C0]"
           >
             <Plus size={14} /> Nouveau
           </button>
-        ) : (
-          <p className="ml-auto text-xs font-black uppercase tracking-widest text-muted-foreground">
-            Consultation uniquement
-          </p>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {isAdding && renderDocumentEditor()}
@@ -3014,7 +3014,19 @@ function DocumentsScreen({
                           <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{item.tag}</span>
                         ) : null}
                         {(item.scans?.length ?? 0) > 0 ? (
-                          <span className="rounded-full bg-[#E8F5E9] px-2.5 py-1 text-[#2E7D32]">{item.scans?.length} scan(s)</span>
+                          canConsultScans ? (
+                            <button
+                              type="button"
+                              onClick={() => openScans(item)}
+                              data-tutorial-id={item.id === "vol-nantes-paris-af7507" ? "documents-open-scans" : undefined}
+                              className="rounded-full bg-[#E8F5E9] px-2.5 py-1 text-[#2E7D32] transition-transform active:scale-95"
+                              aria-label={`Ouvrir les scans de ${item.title}`}
+                            >
+                              {item.scans?.length} scan(s)
+                            </button>
+                          ) : (
+                            <span className="rounded-full bg-[#E8F5E9] px-2.5 py-1 text-[#2E7D32]">{item.scans?.length} scan(s)</span>
+                          )
                         ) : null}
                       </div>
                     </div>
@@ -3039,17 +3051,6 @@ function DocumentsScreen({
                   <div className="text-sm text-muted-foreground mt-3 leading-relaxed">
                     {renderFormattedText(item.content)}
                   </div>
-
-                  {(item.scans?.length ?? 0) > 0 && (
-                    <button
-                      onClick={() => openScans(item)}
-                      data-tutorial-id={item.id === "vol-nantes-paris-af7507" ? "documents-open-scans" : undefined}
-                      className="mt-3 rounded-xl bg-[#E3F2FD] px-3 py-2 text-xs font-black uppercase tracking-widest text-[#1565C0]"
-                    >
-                      Ouvrir scans
-                    </button>
-                  )}
-
                   {item.details && item.details.length > 0 && (
                     <ul className="mt-3 space-y-1 list-disc pl-5 text-sm text-muted-foreground">
                       {item.details.map((detail, detailIndex) => (
@@ -9991,7 +9992,7 @@ export default function App() {
   };
 
   const startAccueilTutorial = () => {
-    void startGlobalTutorial();
+    void startGlobalTutorial(profile.role);
   };
 
   const renderScreen = () => {
