@@ -7323,7 +7323,12 @@ export default function App() {
     }
 
     setProfile((previous) => {
-      const nextRole = isRolePendingForThisProfile && !rolePendingConfirmed ? previous.role : cloudProfile.role;
+      const nextRole =
+        normalized.ownerProfileId === profile.id
+          ? "proprietaire"
+          : isRolePendingForThisProfile && !rolePendingConfirmed
+            ? previous.role
+            : cloudProfile.role;
       const nextSurname = cloudProfile.surname || previous.surname;
       const nextGender: Gender = cloudProfile.gender ?? "unspecified";
       const nextHouseholdRole: HouseholdRole = cloudProfile.householdRole ?? "member";

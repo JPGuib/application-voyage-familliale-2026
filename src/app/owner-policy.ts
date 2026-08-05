@@ -192,7 +192,7 @@ export function enforceOwnerUniqueness(state: SharedFamilyState): SharedFamilySt
       return { ...profile, role: "visiteur" as const };
     }
     return { ...profile, role: "utilisateur" as const };
-  });
+  }).sort((left, right) => left.id.localeCompare(right.id));
 
   return {
     version: SHARED_FAMILY_STATE_VERSION,
