@@ -811,6 +811,50 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     expect(updates["profiles/profile-1/role"]).toBe("proprietaire");
   });
 
+  it("does not write ownerCodeHash when it is empty during an owner family-wide push", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      canWriteFamilyState: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-1",
+        profiles: [{ id: "profile-1", role: "proprietaire" }],
+      },
+      role: "proprietaire",
+      ownerCodeHash: "",
+      phase: "during",
+    });
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.ownerCodeHash).toBeUndefined();
+    expect(updates.phase).toBe("during");
+  });
+
+  it("does not write travelerCodeHash when it is not a valid sha256 hash", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, familyId, {
+      ...basePayload,
+      canWriteFamilyState: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-1",
+        profiles: [{ id: "profile-1", role: "proprietaire" }],
+      },
+      role: "proprietaire",
+      ownerCodeHash: "sha256:" + "c".repeat(64),
+      travelerCodeHash: "abc",
+      phase: "during",
+    });
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.travelerCodeHash).toBeUndefined();
+  });
+
   it("clears every destination survey vote when relocking with resetDestinationSurvey", async () => {
     mockUpdate.mockClear();
 

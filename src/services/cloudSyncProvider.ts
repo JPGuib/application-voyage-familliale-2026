@@ -61,6 +61,10 @@ function toOptionalNonEmptyString(value: unknown): string | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
+function isSha256Hash(value: string): boolean {
+  return /^sha256:[0-9a-f]{64}$/.test(value);
+}
+
 function parseChecklist(value: unknown): ChecklistState {
   const raw = asRecord(value);
   const next: ChecklistState = {};
@@ -642,10 +646,16 @@ export async function pushCloudSnapshot(
     // / registerAsOwnerDevice — ne pas dupliquer ici, et surtout pas sur un
     // chemin différent (ownerUids) qui n'a pas de règle Firebase définie et
     // ferait échouer tout l'envoi groupé.
-    updates.ownerCodeHash = payload.ownerCodeHash;
+    const normalizedOwnerCodeHash = payload.ownerCodeHash.trim();
+    if (isSha256Hash(normalizedOwnerCodeHash)) {
+      updates.ownerCodeHash = normalizedOwnerCodeHash;
+    }
     updates.ownerCodePlain = payload.ownerCodePlain?.trim() || null;
-    if (typeof payload.travelerCodeHash === "string" && payload.travelerCodeHash.trim().length > 0) {
-      updates.travelerCodeHash = payload.travelerCodeHash;
+    if (
+      typeof payload.travelerCodeHash === "string" &&
+      isSha256Hash(payload.travelerCodeHash.trim())
+    ) {
+      updates.travelerCodeHash = payload.travelerCodeHash.trim();
       updates.travelerCodePlain = payload.travelerCodePlain?.trim() || null;
     }
     updates.phase = payload.phase;

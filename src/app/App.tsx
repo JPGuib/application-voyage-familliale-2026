@@ -4901,6 +4901,7 @@ function SettingsScreen({
       : profile.role === "visiteur"
         ? "Visiteur"
         : "Voyageur";
+  const ownerLockActionsEnabled = ownerCodeConfigured;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -5501,15 +5502,25 @@ function SettingsScreen({
                   </span>
                   <button
                     onClick={() => {
+                      if (!ownerLockActionsEnabled) {
+                        setLockToggleFeedback("Configurez d'abord un code propriétaire pour verrouiller/déverrouiller l'application.");
+                        return;
+                      }
                       setLockToggleCodeInput("");
                       setLockToggleFeedback(null);
                       setShowLockToggleCodeInput(false);
                       setShowLockTogglePrompt(true);
                     }}
-                    className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
+                    disabled={!ownerLockActionsEnabled}
+                    className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {appLocked ? "Débloquer l'application" : "Bloquer l'application"}
                   </button>
+                  {!ownerLockActionsEnabled && (
+                    <p className="mt-2 text-xs font-bold text-muted-foreground">
+                      Définissez d'abord un code propriétaire pour activer cette action.
+                    </p>
+                  )}
                   <button
                     onClick={onOpenLaunchReplay}
                     className="mt-2 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
@@ -7635,7 +7646,8 @@ export default function App() {
     }
 
     const normalized = enforceOwnerUniqueness(familyState);
-    const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
+    const canWriteFamilyState =
+      canUpdateOwnerCode(normalized, profile.id) && isOwnerCodeHash(ownerCodeHash.trim());
     if (
       canWriteFamilyState &&
       !ownerDeviceRegisteredRef.current &&
