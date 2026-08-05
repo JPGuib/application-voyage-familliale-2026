@@ -3026,7 +3026,7 @@ function DocumentsScreen({
                               type="button"
                               onClick={() => openScans(item)}
                               data-tutorial-id={item.id === "vol-nantes-paris-af7507" ? "documents-open-scans" : undefined}
-                              className="rounded-full bg-[#E8F5E9] px-2.5 py-1 text-[#2E7D32] transition-transform active:scale-95"
+                              className="inline-flex items-center justify-center whitespace-nowrap rounded-full border-0 bg-[#E8F5E9] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest leading-none text-[#2E7D32] transition-transform active:scale-95"
                               aria-label={`Ouvrir les scans de ${item.title}`}
                             >
                               {item.scans?.length} scan(s)
