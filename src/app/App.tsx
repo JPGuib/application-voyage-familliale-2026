@@ -2220,7 +2220,7 @@ function DashboardScreen({
       {/* Quick actions */}
       <div className="px-4 mt-5">
         <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
-          Accès rapides
+          MENU
         </p>
         <div className="grid grid-cols-2 gap-3">
           {quickActions.map((item) => (

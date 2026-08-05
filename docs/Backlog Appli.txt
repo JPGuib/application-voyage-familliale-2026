@@ -1,27 +1,26 @@
 Nouvelles fonctionnalités
 ------------------------
 Story 12.3 (ex-2.3) — Création personnalisée de catégories de checklist
- 
+Vérifier s'il faut rajouter une checklist "DIVERS" plutôt ?
+
 Backlog
 -----------
-
+Evolutions : 
 * Quand je créé la mire de connexion : soit je me connecte et je suis voyageur sinon visiteur je vois l'appli par défaut comme un visiteur. 
 Pour se connecter en tant que voyageur faut le code
+* Evolution de la 21.1 => voir sur un point les lieux de visite (pas uniquement la ville)
+* Géolocalisation de chaque lieu ? On clique dessus et sa ouvre une map
+* possible de découvrir jour après jour ou tout avoir => à paramétrer
+* Et si le réseau ne passe pas ??? Offline  via disque dur ??
 
+
+COntenu : 
 *  Rajoute les audios guides en ligne : https://audio.arvadmc.com/tour-detail?value=195
 * Trouver les sites pour chaque visite avec des liens
-
 * Revoir tous les quizz ! avec les quides et faire un gros challenge en fin de séjour ?
-* Evolution de la 21.1 => voir sur un point les lieux de visite (pas uniquement la ville)
+* un plan des bateaux Istanbul?
+* audios guides : https://audio.arvadmc.com/tour-detail?value=195
+* https://books.apple.com/us/book/church-of-chora/id1178728769
 
-un plan des bateaux Istanbul?
 
-Géolocalisation de chaque lieu ? On clique dessus et sa ouvre une map
-possible de découvrir jour après jour ou tout avoir => à paramétrer
 
-Et si le réseau ne passe pas ??? Offline  via disque dur ??
-
-liens intéressants : 
-------------------
-audios guides : https://audio.arvadmc.com/tour-detail?value=195
-https://books.apple.com/us/book/church-of-chora/id1178728769
