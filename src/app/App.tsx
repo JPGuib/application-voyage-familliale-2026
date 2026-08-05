@@ -8044,9 +8044,10 @@ export default function App() {
 
   const lockRemainingMs = Math.max(0, unlockLockedUntil - nowTs);
   const lockRemainingSec = Math.ceil(lockRemainingMs / 1000);
+  const canControlAppLock = profile.role === "proprietaire" || canUpdateOwnerCode(familyState, profile.id);
 
   const confirmStartJourney = async () => {
-    if (!canUpdateOwnerCode(familyState, profile.id)) {
+    if (!canControlAppLock) {
       setStartError("Seul le profil propriétaire peut débloquer le voyage.");
       return;
     }
@@ -8568,7 +8569,7 @@ export default function App() {
     }
 
     const normalizedFamilyState = enforceOwnerUniqueness(familyState);
-    const canWriteFamilyState = canUpdateOwnerCode(normalizedFamilyState, profile.id);
+    const canWriteFamilyState = profile.role === "proprietaire" || canUpdateOwnerCode(normalizedFamilyState, profile.id);
     if (!canWriteFamilyState) {
       return {
         ok: false as const,
@@ -8599,7 +8600,7 @@ export default function App() {
   };
 
   const confirmOwnerLockToggle = async (code: string) => {
-    if (!canUpdateOwnerCode(familyState, profile.id)) {
+    if (!canControlAppLock) {
       return {
         ok: false,
         message: "Seul le profil propriétaire peut modifier le verrouillage de l'application.",
