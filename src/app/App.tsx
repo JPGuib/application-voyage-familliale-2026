@@ -444,14 +444,6 @@ const QUICK_ACTIONS: QuickAction[] = [
     colorText: "text-[#F57F17]",
   },
   {
-    id: "epub",
-    emoji: "📚",
-    title: "Liseuse EPUB",
-    subtitle: "Lire les guides en mode livre",
-    colorBg: "bg-[#E8EAF6]",
-    colorText: "text-[#283593]",
-  },
-  {
     id: "tips",
     emoji: "💡",
     title: "Conseils",
