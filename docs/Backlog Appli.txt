@@ -19,6 +19,7 @@ un plan des bateaux Istanbul?
 Géolocalisation de chaque lieu ? On clique dessus et sa ouvre une map
 possible de découvrir jour après jour ou tout avoir => à paramétrer
 
+Et si le réseau ne passe pas ??? Offline  via disque dur ??
 
 liens intéressants : 
 ------------------

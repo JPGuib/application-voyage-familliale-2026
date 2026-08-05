@@ -2236,6 +2236,26 @@ function DashboardScreen({
             />
           ))}
         </div>
+        <div className="grid grid-cols-2 gap-3 mt-3">
+          <ActionCard
+            tutorialId="dashboard-quick-checklist"
+            emoji="✅"
+            title="Checklist"
+            subtitle="Préparer le départ"
+            colorBg="bg-[#E8F5E9]"
+            colorText="text-[#2E7D32]"
+            onClick={() => onNavigate("checklist")}
+          />
+          <ActionCard
+            tutorialId="dashboard-start-tutorial"
+            emoji="🎯"
+            title="Tutoriel interactif"
+            subtitle="Découvrir l'accueil pas à pas"
+            colorBg="bg-[#FFE0B2]"
+            colorText="text-[#BF360C]"
+            onClick={onStartTutorial}
+          />
+        </div>
       </div>
 
       {/* Circuit du séjour */}
@@ -2315,23 +2335,6 @@ function DashboardScreen({
         </div>
       </div>
 
-      {/* Tutoriel Accueil */}
-      <div className="px-4 mb-6">
-        <button
-          onClick={onStartTutorial}
-          data-tutorial-id="dashboard-start-tutorial"
-          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 active:scale-95 transition-transform"
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🎯</span>
-            <div className="text-left">
-              <p className="font-black text-sm text-foreground">Tutoriel interactif</p>
-              <p className="text-xs text-muted-foreground">Découvrir l'écran Accueil pas à pas</p>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
-        </button>
-      </div>
 
     </div>
   );
