@@ -103,7 +103,7 @@ describe("App launch gate integration", () => {
       expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("button", { name: /On y va/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Let's go/i })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /Préparation des bagages/i })).not.toBeInTheDocument();
   });
 
@@ -188,7 +188,7 @@ describe("App launch gate integration", () => {
       expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /On y va/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Let's go/i }));
 
     expect(screen.getByText(/Le voyage n'a pas encore commencé\. Revenez plus tard !/i)).toBeInTheDocument();
   });
@@ -221,7 +221,7 @@ describe("App launch gate integration", () => {
       expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /On y va/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Let's go/i }));
 
     const video = document.querySelector("video");
     expect(video).not.toBeNull();
@@ -309,7 +309,7 @@ describe("App launch gate integration", () => {
       expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /On y va/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Let's go/i }));
     const video = document.querySelector("video");
     fireEvent.error(video as HTMLVideoElement);
 
@@ -390,7 +390,7 @@ describe("App launch gate integration", () => {
       expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /On y va/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Let's go/i }));
     expect(document.querySelector("video")).not.toBeNull();
 
     view.rerender(<App />);
@@ -430,7 +430,7 @@ describe("App launch gate integration", () => {
       expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /On y va/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Let's go/i }));
     fireEvent.error(document.querySelector("video") as HTMLVideoElement);
 
     await waitFor(() => {
@@ -507,7 +507,7 @@ describe("App launch gate integration", () => {
       expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /On y va/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Let's go/i }));
     fireEvent.error(document.querySelector("video") as HTMLVideoElement);
 
     await waitFor(() => {
@@ -549,7 +549,7 @@ describe("App launch gate integration", () => {
       expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /On y va/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Let's go/i }));
     fireEvent.error(document.querySelector("video") as HTMLVideoElement);
 
     await waitFor(() => {
@@ -605,7 +605,7 @@ describe("App launch gate integration", () => {
       expect(screen.getByRole("heading", { name: /On est parti/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /On y va/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Let's go/i }));
 
     expect(document.querySelector("video")).not.toBeNull();
   });
