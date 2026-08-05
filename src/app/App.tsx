@@ -7627,6 +7627,13 @@ export default function App() {
       return;
     }
 
+    if (pendingCloudPhaseRef.current !== null) {
+      if (IS_DEV) {
+        console.info("[cloud-sync] Push skipped: owner phase change still pending confirmation.");
+      }
+      return;
+    }
+
     const normalized = enforceOwnerUniqueness(familyState);
     const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
     if (
