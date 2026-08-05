@@ -408,7 +408,12 @@ export function useCloudSync() {
           // Owner-scoped writes depend on ownerMembers/{familyId}/{uid}.
           await ensureOwnerMembership(database, familyId, cloudUserUid);
         }
-        await pushCloudSnapshot(database, familyId, mutation);
+        const normalizedMutationForPush = {
+          ...mutation,
+          profileDestinationSurveyVote:
+            mutation.phase === "before" ? mutation.profileDestinationSurveyVote : null,
+        };
+        await pushCloudSnapshot(database, familyId, normalizedMutationForPush);
         setCloudAuthError(null);
         return true;
       } catch (err) {
@@ -442,7 +447,11 @@ export function useCloudSync() {
           try {
             await ensureFamilyMembership(database, familyId, cloudUserUid);
             await ensureOwnerMembership(database, familyId, cloudUserUid);
-            await pushCloudSnapshot(database, familyId, mutation);
+            await pushCloudSnapshot(database, familyId, {
+              ...mutation,
+              profileDestinationSurveyVote:
+                mutation.phase === "before" ? mutation.profileDestinationSurveyVote : null,
+            });
             setCloudAuthError(null);
             return true;
           } catch {
