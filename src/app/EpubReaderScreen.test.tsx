@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => {
   const displayMock = vi.fn(async () => undefined);
   const prevMock = vi.fn(async () => undefined);
   const nextMock = vi.fn(async () => undefined);
+  const openMock = vi.fn(async () => undefined);
   const themesDefaultMock = vi.fn();
   const themesFontSizeMock = vi.fn();
   const themesOverrideMock = vi.fn();
@@ -25,6 +26,7 @@ const mocks = vi.hoisted(() => {
   }));
   const bookDestroyMock = vi.fn();
   const ePubMock = vi.fn(() => ({
+    open: openMock,
     renderTo: renderToMock,
     ready: Promise.resolve(),
     loaded: {
@@ -38,6 +40,7 @@ const mocks = vi.hoisted(() => {
     displayMock,
     ePubMock,
     nextMock,
+    openMock,
     prevMock,
     renderToMock,
     renditionDestroyMock,
@@ -70,11 +73,14 @@ describe("EpubReaderScreen", () => {
 
     await waitFor(() => expect(mocks.ePubMock).toHaveBeenCalledTimes(2));
 
-    const [, options] = mocks.ePubMock.mock.calls[1] ?? [];
+    const [options] = mocks.ePubMock.mock.calls[1] ?? [];
     expect(options).toEqual({
       encoding: "binary",
-      openAs: "epub",
       replacements: "blobUrl",
     });
+
+    const [binaryInput, mode] = mocks.openMock.mock.calls[0] ?? [];
+    expect(binaryInput).toBeInstanceOf(ArrayBuffer);
+    expect(mode).toBe("binary");
   });
 });

@@ -15,11 +15,18 @@ type ReaderSource = {
 };
 
 function getEpubBookOptions(source: ReaderSource) {
-  const isUploadedArchive = source.source instanceof ArrayBuffer;
+  const isUploadedArchive = typeof source.source !== "string";
   const isArchivedUrl = typeof source.source === "string" && /\.epub(?:$|[?#])/i.test(source.source);
 
   if (!isUploadedArchive && !isArchivedUrl) {
     return undefined;
+  }
+
+  if (isUploadedArchive) {
+    return {
+      encoding: "binary" as const,
+      replacements: "blobUrl" as const,
+    };
   }
 
   return {
@@ -145,7 +152,15 @@ export function EpubReaderScreen({ profileId, onBack }: EpubReaderScreenProps) {
 
     const init = async () => {
       try {
-        const book = ePub(activeSource.source, getEpubBookOptions(activeSource));
+        const isUploadedArchive = typeof activeSource.source !== "string";
+        const book = isUploadedArchive
+          ? ePub(getEpubBookOptions(activeSource))
+          : ePub(activeSource.source, getEpubBookOptions(activeSource));
+
+        if (isUploadedArchive) {
+          await book.open(activeSource.source, "binary");
+        }
+
         const rendition = book.renderTo(viewerRef.current as HTMLDivElement, {
           width: "100%",
           height: "100%",
