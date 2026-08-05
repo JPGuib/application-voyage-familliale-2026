@@ -17,6 +17,7 @@ export type TravelDocument = {
   tag?: string;
   day?: number;
   details?: string[];
+  scans?: string[];
 };
 
 export const DOCUMENTS: TravelDocument[] = [
@@ -37,6 +38,10 @@ export const DOCUMENTS: TravelDocument[] = [
       "Bagages à main : 12 kg max",
       "Bagages soute : 23 kg max",
     ],
+    scans: [
+      "/images/Vol/Nantes Paris.webp",
+      "/images/Vol/Avion aller JPG.webp",
+    ],
   },
   {
     id: "vol-paris-istanbul-af1390",
@@ -54,6 +59,10 @@ export const DOCUMENTS: TravelDocument[] = [
       "Valise cabine : 55 x 25 x 35 cm",
       "Bagages à main : 12 kg max",
       "Bagages soute : 23 kg max",
+    ],
+    scans: [
+      "/images/Vol/Paris Istanbul.webp",
+      "/images/Vol/Avion aller Thomas.webp",
     ],
   },
   {
@@ -73,6 +82,9 @@ export const DOCUMENTS: TravelDocument[] = [
       "Valise cabine : 55 x 25 x 40 cm",
       "Bagages à main : 12 kg max",
       "Bagages soute : 30 kg max",
+    ],
+    scans: [
+      "/images/Vol/Istanbul Nantes.webp",
     ],
   },
   {

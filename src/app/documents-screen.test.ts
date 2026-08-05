@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { canAccessScreen } from "./access-control";
 import { DOCUMENTS, DOCUMENT_CATEGORIES } from "../content/documents";
-import { groupDocumentsByCategory, sortDocuments } from "./documents-screen";
+import { groupDocumentsByCategory } from "./documents-screen";
 
 describe("documents screen data helpers", () => {
   it("grouped documents: every category key exists even when empty", () => {
@@ -18,21 +18,10 @@ describe("documents screen data helpers", () => {
     expect(withData.IDENTITE.length).toBeGreaterThan(0);
   });
 
-  it("sortDocuments: day mode sorts by day then title", () => {
-    const grouped = groupDocumentsByCategory(DOCUMENTS);
-    const sorted = sortDocuments(grouped.VOLS, "day");
-
-    expect(sorted[0]?.day).toBe(1);
-    expect(sorted[1]?.day).toBe(1);
-    expect(sorted[2]?.day).toBe(10);
-  });
-
-  it("sortDocuments: name mode sorts alphabetically", () => {
-    const grouped = groupDocumentsByCategory(DOCUMENTS);
-    const sorted = sortDocuments(grouped.VOLS, "name");
-    const titles = sorted.map((item) => item.title);
-
-    expect(titles).toEqual([...titles].sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" })));
+  it("documents include optional scans for gallery mode", () => {
+    const volWithScans = DOCUMENTS.find((doc) => doc.id === "vol-nantes-paris-af7507");
+    expect(volWithScans).toBeTruthy();
+    expect((volWithScans?.scans?.length ?? 0)).toBeGreaterThan(0);
   });
 });
 

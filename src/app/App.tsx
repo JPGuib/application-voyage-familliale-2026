@@ -120,9 +120,7 @@ import {
   getSafeScreen,
 } from "./access-control";
 import {
-  type DocumentSortMode,
   groupDocumentsByCategory,
-  sortDocuments,
 } from "./documents-screen";
 import { findDuplicateProfileBySurname } from "./profile-login";
 import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
@@ -2556,18 +2554,23 @@ function PlanningScreen({
 
 function DocumentsScreen({
   onBack,
+  role,
 }: {
   onBack: () => void;
+  role: Role | null;
 }) {
-  const DOCUMENTS_STORAGE_KEY = "jp-documents-v2";
+  const DOCUMENTS_STORAGE_KEY = "jp-documents-v3";
+  const LEGACY_DOCUMENTS_STORAGE_KEY = "jp-documents-v2";
+  const isOwner = role === "proprietaire";
 
   const [activeCategory, setActiveCategory] = useState<DocumentCategory>(
     DOCUMENT_CATEGORIES[0]
   );
-  const [sortMode, setSortMode] = useState<DocumentSortMode>("day");
   const [allDocuments, setAllDocuments] = useState<TravelDocument[]>(DOCUMENTS);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const [scansDocumentId, setScansDocumentId] = useState<string | null>(null);
+  const [scanLightboxIndex, setScanLightboxIndex] = useState<number | null>(null);
 
   const [draftCategory, setDraftCategory] = useState<DocumentCategory>(DOCUMENT_CATEGORIES[0]);
   const [draftTitle, setDraftTitle] = useState("");
@@ -2575,10 +2578,13 @@ function DocumentsScreen({
   const [draftDay, setDraftDay] = useState("");
   const [draftContent, setDraftContent] = useState("");
   const [draftDetails, setDraftDetails] = useState("");
+  const [draftScans, setDraftScans] = useState("");
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(DOCUMENTS_STORAGE_KEY);
+      const raw =
+        localStorage.getItem(DOCUMENTS_STORAGE_KEY) ??
+        localStorage.getItem(LEGACY_DOCUMENTS_STORAGE_KEY);
       if (!raw) {
         setAllDocuments(DOCUMENTS);
         return;
@@ -2607,6 +2613,9 @@ function DocumentsScreen({
         const details = Array.isArray(candidate.details)
           ? candidate.details.filter((line): line is string => typeof line === "string")
           : undefined;
+        const scans = Array.isArray(candidate.scans)
+          ? candidate.scans.filter((line): line is string => typeof line === "string")
+          : undefined;
 
         sanitized.push({
           id: candidate.id,
@@ -2619,6 +2628,7 @@ function DocumentsScreen({
               ? candidate.day
               : undefined,
           details,
+          scans,
         });
       }
 
@@ -2632,8 +2642,18 @@ function DocumentsScreen({
     localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(allDocuments));
   }, [allDocuments]);
 
+  useEffect(() => {
+    if (!isOwner) {
+      setEditingId(null);
+      setIsAdding(false);
+    }
+  }, [isOwner]);
+
   const grouped = groupDocumentsByCategory(allDocuments);
-  const visibleItems = sortDocuments(grouped[activeCategory], sortMode);
+  const visibleItems = grouped[activeCategory];
+  const scansDocument = scansDocumentId
+    ? allDocuments.find((doc) => doc.id === scansDocumentId) ?? null
+    : null;
 
   function clearDraft(): void {
     setDraftCategory(activeCategory);
@@ -2642,26 +2662,31 @@ function DocumentsScreen({
     setDraftDay("");
     setDraftContent("");
     setDraftDetails("");
+    setDraftScans("");
   }
 
   function openCreateForm(): void {
+    if (!isOwner) return;
     clearDraft();
     setIsAdding(true);
     setEditingId(null);
   }
 
   function startEdit(item: TravelDocument): void {
+    if (!isOwner) return;
     setDraftCategory(item.category);
     setDraftTitle(item.title);
     setDraftTag(item.tag ?? "");
     setDraftDay(item.day ? String(item.day) : "");
     setDraftContent(item.content);
     setDraftDetails((item.details ?? []).join("\n"));
+    setDraftScans((item.scans ?? []).join("\n"));
     setEditingId(item.id);
     setIsAdding(false);
   }
 
   function commitDraft(targetId?: string): void {
+    if (!isOwner) return;
     const normalizedTitle = draftTitle.trim();
     const normalizedContent = draftContent.trim();
     if (!normalizedTitle || !normalizedContent) {
@@ -2673,6 +2698,14 @@ function DocumentsScreen({
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
+    const scans = draftScans
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    if (targetId && !window.confirm("Confirmer la modification de ce document ?")) {
+      return;
+    }
 
     const payload: TravelDocument = {
       id: targetId ?? `doc-${Date.now()}`,
@@ -2682,6 +2715,7 @@ function DocumentsScreen({
       tag: draftTag.trim() || undefined,
       day: Number.isFinite(parsedDay) && parsedDay > 0 ? parsedDay : undefined,
       details: details.length > 0 ? details : undefined,
+      scans: scans.length > 0 ? scans : undefined,
     };
 
     if (targetId) {
@@ -2697,11 +2731,27 @@ function DocumentsScreen({
   }
 
   function removeDocument(id: string): void {
+    if (!isOwner) return;
+    if (!window.confirm("Confirmer la suppression de ce document ?")) {
+      return;
+    }
     setAllDocuments((prev) => prev.filter((doc) => doc.id !== id));
     if (editingId === id) {
       setEditingId(null);
       clearDraft();
     }
+    if (scansDocumentId === id) {
+      setScansDocumentId(null);
+      setScanLightboxIndex(null);
+    }
+  }
+
+  function openScans(item: TravelDocument): void {
+    if (!item.scans || item.scans.length === 0) {
+      return;
+    }
+    setScansDocumentId(item.id);
+    setScanLightboxIndex(null);
   }
 
   function renderDocumentEditor(targetId?: string) {
@@ -2769,6 +2819,15 @@ function DocumentsScreen({
           className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
         />
 
+        <textarea
+          value={draftScans}
+          onChange={(event) => setDraftScans(event.target.value)}
+          placeholder="Chemins scans/images (un par ligne, ex: /images/Vol/Nantes Paris.webp)"
+          aria-label="Scans du document"
+          rows={3}
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
+        />
+
         <p className="text-[11px] text-muted-foreground leading-relaxed">
           Astuce formatage: écrivez une portion en gras avec **comme ceci**.
         </p>
@@ -2793,6 +2852,85 @@ function DocumentsScreen({
             Annuler
           </button>
         </div>
+      </div>
+    );
+  }
+
+  if (scansDocument) {
+    const scans = scansDocument.scans ?? [];
+    return (
+      <div className="flex flex-col h-full overflow-hidden">
+        <div className="relative bg-[#1565C0] text-white px-6 pt-12 pb-6 flex-shrink-0">
+          <MemphisDecor />
+          <button
+            onClick={() => {
+              setScansDocumentId(null);
+              setScanLightboxIndex(null);
+            }}
+            data-tutorial-id="documents-scans-back"
+            className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
+          >
+            <ChevronLeft size={18} /> Documents
+          </button>
+          <h1 data-tutorial-id="documents-scans-title" className="relative z-10 text-2xl font-black">Scans · {scansDocument.title}</h1>
+          <p className="relative z-10 text-sm opacity-90 mt-1">
+            Touchez une image pour l'agrandir
+          </p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          {scans.length === 0 ? (
+            <div className="rounded-2xl bg-card border border-border p-4">
+              <p className="text-sm text-muted-foreground italic">Aucun scan disponible pour ce document</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {scans.map((src, index) => (
+                <button
+                  key={`${scansDocument.id}-scan-${index}`}
+                  onClick={() => setScanLightboxIndex(index)}
+                  data-tutorial-id={index === 0 ? "documents-scan-image-0" : undefined}
+                  className="rounded-2xl overflow-hidden border border-border bg-card active:scale-95 transition-transform"
+                >
+                  <img
+                    src={src}
+                    alt={`${scansDocument.title} scan ${index + 1}`}
+                    className="w-full h-36 object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="h-2" />
+        </div>
+
+        {scanLightboxIndex !== null && scans.length > 0 && (
+          <div
+            className="fixed inset-0 z-50 bg-black/90 flex flex-col"
+            onClick={() => setScanLightboxIndex(null)}
+          >
+            <div className="flex items-center justify-between px-4 pt-12 pb-3 flex-shrink-0 text-white">
+              <span className="text-xs font-black tracking-widest uppercase">
+                {scanLightboxIndex + 1} / {scans.length}
+              </span>
+              <button
+                onClick={() => setScanLightboxIndex(null)}
+                data-tutorial-id="documents-scan-lightbox-close"
+                className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex-1 flex items-center justify-center px-2 min-h-0" onClick={(e) => e.stopPropagation()}>
+              <img
+                src={scans[scanLightboxIndex]}
+                alt={`${scansDocument.title} scan agrandi ${scanLightboxIndex + 1}`}
+                data-tutorial-id="documents-scan-lightbox"
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -2837,28 +2975,18 @@ function DocumentsScreen({
       </div>
 
       <div className="px-4 mt-3 flex flex-wrap gap-2 flex-shrink-0">
-        <button
-          onClick={() => setSortMode("day")}
-          className={`px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-colors ${
-            sortMode === "day" ? "bg-[#1565C0] text-white" : "bg-muted text-muted-foreground"
-          }`}
-        >
-          Tri jour
-        </button>
-        <button
-          onClick={() => setSortMode("name")}
-          className={`px-3 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-colors ${
-            sortMode === "name" ? "bg-[#1565C0] text-white" : "bg-muted text-muted-foreground"
-          }`}
-        >
-          Tri nom
-        </button>
-        <button
-          onClick={openCreateForm}
-          className="ml-auto inline-flex items-center gap-1 rounded-xl bg-[#E3F2FD] px-3 py-2 text-xs font-black uppercase tracking-widest text-[#1565C0]"
-        >
-          <Plus size={14} /> Nouveau
-        </button>
+        {isOwner ? (
+          <button
+            onClick={openCreateForm}
+            className="ml-auto inline-flex items-center gap-1 rounded-xl bg-[#E3F2FD] px-3 py-2 text-xs font-black uppercase tracking-widest text-[#1565C0]"
+          >
+            <Plus size={14} /> Nouveau
+          </button>
+        ) : (
+          <p className="ml-auto text-xs font-black uppercase tracking-widest text-muted-foreground">
+            Consultation uniquement
+          </p>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
@@ -2885,27 +3013,42 @@ function DocumentsScreen({
                         {item.tag ? (
                           <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{item.tag}</span>
                         ) : null}
+                        {(item.scans?.length ?? 0) > 0 ? (
+                          <span className="rounded-full bg-[#E8F5E9] px-2.5 py-1 text-[#2E7D32]">{item.scans?.length} scan(s)</span>
+                        ) : null}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => startEdit(item)}
-                        className="rounded-lg bg-muted px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-muted-foreground"
-                      >
-                        Modifier
-                      </button>
-                      <button
-                        onClick={() => removeDocument(item.id)}
-                        className="inline-flex items-center gap-1 rounded-lg bg-[#FDE7E9] px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-[#AD1457]"
-                      >
-                        <Trash2 size={12} /> Supprimer
-                      </button>
-                    </div>
+                    {isOwner && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => startEdit(item)}
+                          className="rounded-lg bg-muted px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-muted-foreground"
+                        >
+                          Modifier
+                        </button>
+                        <button
+                          onClick={() => removeDocument(item.id)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#FDE7E9] px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-[#AD1457]"
+                        >
+                          <Trash2 size={12} /> Supprimer
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-sm text-muted-foreground mt-3 leading-relaxed">
                     {renderFormattedText(item.content)}
                   </div>
+
+                  {(item.scans?.length ?? 0) > 0 && (
+                    <button
+                      onClick={() => openScans(item)}
+                      data-tutorial-id={item.id === "vol-nantes-paris-af7507" ? "documents-open-scans" : undefined}
+                      className="mt-3 rounded-xl bg-[#E3F2FD] px-3 py-2 text-xs font-black uppercase tracking-widest text-[#1565C0]"
+                    >
+                      Ouvrir scans
+                    </button>
+                  )}
 
                   {item.details && item.details.length > 0 && (
                     <ul className="mt-3 space-y-1 list-disc pl-5 text-sm text-muted-foreground">
@@ -10641,6 +10784,7 @@ export default function App() {
         return (
           <DocumentsScreen
             onBack={() => goToScreen("dashboard")}
+            role={profile.role}
           />
         );
       }
@@ -10988,6 +11132,7 @@ export default function App() {
         return (
           <DocumentsScreen
             onBack={() => goToScreen("dashboard")}
+            role={profile.role}
           />
         );
       case "map":

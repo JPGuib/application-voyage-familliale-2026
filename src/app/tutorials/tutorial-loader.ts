@@ -123,8 +123,72 @@ export function loadGlobalTutorialSteps(): GlobalTutorialStep[] {
       element: '[data-tutorial-id="documents-title"]',
       popover: {
         title: "Écran Documents importants",
-        description: "Cet écran regroupe vos vols, hébergements, transports, identité, restaurants et activités. Vous pouvez tout modifier.",
+        description: "Cet écran regroupe vos vols, hébergements, transports, identité, restaurants et activités.",
       },
+      waitForElement: 2000,
+    },
+    {
+      id: "documents-open-scans",
+      screen: "documents",
+      element: '[data-tutorial-id="documents-open-scans"]',
+      popover: {
+        title: "Ouvrir les scans",
+        description: "Cliquez ici pour ouvrir les scans/images liés à ce document.",
+      },
+      interactive: true,
+      waitForElement: 2000,
+    },
+    {
+      id: "documents-scans-explain",
+      screen: "documents",
+      element: '[data-tutorial-id="documents-scans-title"]',
+      popover: {
+        title: "Écran des scans",
+        description: "Cet écran affiche les images du document. Vous pouvez agrandir chaque scan.",
+      },
+      waitForElement: 2000,
+    },
+    {
+      id: "documents-scan-open-lightbox",
+      screen: "documents",
+      element: '[data-tutorial-id="documents-scan-image-0"]',
+      popover: {
+        title: "Agrandir un scan",
+        description: "Cliquez sur la première image pour l'ouvrir en grand format.",
+      },
+      interactive: true,
+      waitForElement: 2000,
+    },
+    {
+      id: "documents-scan-lightbox-explain",
+      screen: "documents",
+      element: '[data-tutorial-id="documents-scan-lightbox"]',
+      popover: {
+        title: "Image agrandie",
+        description: "Le scan est affiché en grand pour faciliter la lecture.",
+      },
+      waitForElement: 2000,
+    },
+    {
+      id: "documents-scan-close-lightbox",
+      screen: "documents",
+      element: '[data-tutorial-id="documents-scan-lightbox-close"]',
+      popover: {
+        title: "Fermer l'image",
+        description: "Cliquez ici pour revenir à la galerie des scans.",
+      },
+      interactive: true,
+      waitForElement: 2000,
+    },
+    {
+      id: "documents-scans-back-to-documents",
+      screen: "documents",
+      element: '[data-tutorial-id="documents-scans-back"]',
+      popover: {
+        title: "Retour aux documents",
+        description: "Cliquez ici pour revenir à la fiche des documents.",
+      },
+      interactive: true,
       waitForElement: 2000,
     },
     {

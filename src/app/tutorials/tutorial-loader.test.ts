@@ -25,6 +25,10 @@ describe("tutorial-loader global tutorial", () => {
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-settings"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-planning"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-quick-documents"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="documents-open-scans"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="documents-scan-image-0"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="documents-scan-lightbox-close"]')).toBe(true);
+    expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="documents-scans-back"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-today-card"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-day-selector"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="guide-day-option-2"]')).toBe(true);
@@ -42,6 +46,8 @@ describe("tutorial-loader global tutorial", () => {
     expect(steps.some((step) => step.element === '[data-tutorial-id="settings-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="planning-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="documents-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="documents-scans-title"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="documents-scan-lightbox"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="guide-title"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-audio-player"]')).toBe(true);
     expect(steps.some((step) => step.element === '[data-tutorial-id="place-gallery-title"]')).toBe(true);
@@ -59,6 +65,12 @@ describe("tutorial-loader global tutorial", () => {
   it("continues from documents to guide, then game, results, tips, map and polarsteps", () => {
     const steps = loadGlobalTutorialSteps();
     const documentsIndex = steps.findIndex((step) => step.id === "documents-explain");
+    const documentsOpenScansIndex = steps.findIndex((step) => step.id === "documents-open-scans");
+    const documentsScansExplainIndex = steps.findIndex((step) => step.id === "documents-scans-explain");
+    const documentsScanOpenLightboxIndex = steps.findIndex((step) => step.id === "documents-scan-open-lightbox");
+    const documentsScanLightboxIndex = steps.findIndex((step) => step.id === "documents-scan-lightbox-explain");
+    const documentsScanCloseLightboxIndex = steps.findIndex((step) => step.id === "documents-scan-close-lightbox");
+    const documentsScansBackIndex = steps.findIndex((step) => step.id === "documents-scans-back-to-documents");
     const documentsBackIndex = steps.findIndex((step) => step.id === "documents-back-home");
     const guideIndex = steps.findIndex((step) => step.id === "guide-explain");
     const audioIndex = steps.findIndex((step) => step.id === "place-audio");
@@ -70,6 +82,12 @@ describe("tutorial-loader global tutorial", () => {
     const mapIndex = steps.findIndex((step) => step.id === "dashboard-map-preview");
     const polarstepsIndex = steps.findIndex((step) => step.id === "dashboard-polarsteps");
     expect(documentsIndex).toBeGreaterThan(-1);
+    expect(documentsOpenScansIndex).toBeGreaterThan(-1);
+    expect(documentsScansExplainIndex).toBeGreaterThan(-1);
+    expect(documentsScanOpenLightboxIndex).toBeGreaterThan(-1);
+    expect(documentsScanLightboxIndex).toBeGreaterThan(-1);
+    expect(documentsScanCloseLightboxIndex).toBeGreaterThan(-1);
+    expect(documentsScansBackIndex).toBeGreaterThan(-1);
     expect(documentsBackIndex).toBeGreaterThan(-1);
     expect(guideIndex).toBeGreaterThan(-1);
     expect(audioIndex).toBeGreaterThan(-1);
@@ -80,6 +98,13 @@ describe("tutorial-loader global tutorial", () => {
     expect(tipsIndex).toBeGreaterThan(-1);
     expect(mapIndex).toBeGreaterThan(-1);
     expect(polarstepsIndex).toBeGreaterThan(-1);
+    expect(documentsIndex).toBeLessThan(documentsOpenScansIndex);
+    expect(documentsOpenScansIndex).toBeLessThan(documentsScansExplainIndex);
+    expect(documentsScansExplainIndex).toBeLessThan(documentsScanOpenLightboxIndex);
+    expect(documentsScanOpenLightboxIndex).toBeLessThan(documentsScanLightboxIndex);
+    expect(documentsScanLightboxIndex).toBeLessThan(documentsScanCloseLightboxIndex);
+    expect(documentsScanCloseLightboxIndex).toBeLessThan(documentsScansBackIndex);
+    expect(documentsScansBackIndex).toBeLessThan(documentsBackIndex);
     expect(documentsIndex).toBeLessThan(documentsBackIndex);
     expect(documentsBackIndex).toBeLessThan(guideIndex);
     expect(guideIndex).toBeLessThan(audioIndex);
