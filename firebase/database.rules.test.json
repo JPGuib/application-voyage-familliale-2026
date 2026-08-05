@@ -88,6 +88,9 @@
             "householdRole": {
               ".validate": "newData.val() === 'member' || newData.val() === 'parent' || newData.val() === 'child'"
             },
+            "launchGateCompletedCycle": {
+              ".validate": "newData.val() === null || (newData.isNumber() && newData.val() >= 0)"
+            },
             "customChecklistItems": {
               "$itemId": {
                 ".validate": "newData.hasChildren(['id','label','categoryId']) && newData.child('id').isString() && newData.child('label').isString() && newData.child('categoryId').isString() && (!newData.child('genderTargets').exists() || newData.child('genderTargets').val() === 'all' || newData.child('genderTargets').val() === 'male' || newData.child('genderTargets').val() === 'female') && (!newData.child('householdRoleTargets').exists() || newData.child('householdRoleTargets').val() === 'all' || newData.child('householdRoleTargets').val() === 'parent' || newData.child('householdRoleTargets').val() === 'child') && (!newData.child('ownerOnly').exists() || newData.child('ownerOnly').isBoolean()) && (!newData.child('visibleToProfileId').exists() || newData.child('visibleToProfileId').isString())"
@@ -173,6 +176,10 @@
         "phase": {
           ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           ".validate": "newData.val() === 'before' || newData.val() === 'during'"
+        },
+        "launchGateCycle": {
+          ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          ".validate": "newData.isNumber() && newData.val() >= 0"
         },
         "gameDayOverrides": {
           "$day": {

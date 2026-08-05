@@ -95,6 +95,38 @@ suite("firebase rtdb rules owner phase guard", () => {
     await assertFails(nonOwnerDb.ref(`families/${FAMILY_ID}/phase`).set("during"));
   });
 
+  it("allows owner to write family-wide launchGateCycle", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(ownerDb.ref(`families/${FAMILY_ID}/launchGateCycle`).set(2));
+  });
+
+  it("denies non-owner from writing family-wide launchGateCycle", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(nonOwnerDb.ref(`families/${FAMILY_ID}/launchGateCycle`).set(2));
+  });
+
+  it("allows a family member to write own launchGateCompletedCycle", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb
+        .ref(`families/${FAMILY_ID}/profiles/${OWNER_PROFILE_ID}/launchGateCompletedCycle`)
+        .set(1)
+    );
+  });
+
+  it("denies negative launchGateCompletedCycle", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb
+        .ref(`families/${FAMILY_ID}/profiles/${OWNER_PROFILE_ID}/launchGateCompletedCycle`)
+        .set(-1)
+    );
+  });
+
   it("allows owner to write family-wide tripStartDate", async () => {
     const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
 
