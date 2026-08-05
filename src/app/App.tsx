@@ -7172,14 +7172,21 @@ export default function App() {
     }
 
     const normalized = enforceOwnerUniqueness(cloudSnapshot.familyState);
-    setPhase((previous) => (previous === cloudSnapshot.phase ? previous : cloudSnapshot.phase));
+    const pendingPhase = pendingCloudPhaseRef.current;
+    const shouldDeferPendingPhaseHydration =
+      pendingPhase !== null && cloudSnapshot.phase !== pendingPhase;
+    if (!shouldDeferPendingPhaseHydration) {
+      setPhase((previous) => (previous === cloudSnapshot.phase ? previous : cloudSnapshot.phase));
+    }
     const nextLaunchGateCycle =
       typeof cloudSnapshot.launchGateCycle === "number" && Number.isFinite(cloudSnapshot.launchGateCycle)
         ? Math.max(0, Math.floor(cloudSnapshot.launchGateCycle))
         : 0;
-    setLaunchGateCycle((previous) =>
-      previous === nextLaunchGateCycle ? previous : nextLaunchGateCycle
-    );
+    if (!shouldDeferPendingPhaseHydration) {
+      setLaunchGateCycle((previous) =>
+        previous === nextLaunchGateCycle ? previous : nextLaunchGateCycle
+      );
+    }
     setLaunchGateCompletedCycleByProfile((previous) => {
       const raw =
         cloudSnapshot.launchGateCompletedCycleByProfile &&
