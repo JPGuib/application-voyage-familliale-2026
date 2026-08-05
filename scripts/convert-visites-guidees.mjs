@@ -34,6 +34,7 @@ const ROOT = path.resolve(__dirname, "..");
 const SOURCE_DIR = path.join(ROOT, "docs", "visites-guidees");
 const IMAGES_ROOT = path.join(ROOT, "public", "images", "places");
 const AUDIO_ROOT = path.join(ROOT, "public", "audio", "visites-guidees");
+const PUBLIC_GUIDES_ROOT = path.join(ROOT, "public", "visites-guidees");
 const OUTPUT_FILE = path.join(ROOT, "src", "content", "generated", "visites-guidees.ts");
 
 const TTS_VOICE = "fr-FR-HenriNeural";
@@ -66,6 +67,82 @@ function extractSections(html) {
     return `<h2 id="${id}">${title}</h2>`;
   });
   return { html: withIds, toc };
+}
+
+function isExternalHref(href) {
+  return /^(?:[a-z]+:)?\/\//i.test(href) || href.startsWith("/") || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:");
+}
+
+function extractFileName(href) {
+  const withoutQuery = href.split(/[?#]/)[0] ?? href;
+  const segments = withoutQuery.split("/").filter(Boolean);
+  return segments[segments.length - 1] ?? withoutQuery;
+}
+
+function toGuideHref(href) {
+  return `/visites-guidees/${href.replace(/^\.\//, "")}`;
+}
+
+function humanizeFileStem(stem) {
+  return stem
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getGuideLinkLabel(href) {
+  const fileName = extractFileName(href);
+  const stem = fileName.replace(/\.html$/i, "");
+  const lowerStem = stem.toLowerCase();
+
+  if (lowerStem.includes("carte") || lowerStem.includes("map")) {
+    return "Ouvrir la carte interactive";
+  }
+
+  const humanized = humanizeFileStem(stem);
+  return humanized ? `Ouvrir ${humanized}` : "Ouvrir le document";
+}
+
+function shouldReplaceAnchorText(anchorText, href) {
+  const normalizedText = anchorText.replace(/\s+/g, " ").trim().toLowerCase();
+  if (!normalizedText) return true;
+
+  const fileName = extractFileName(href).toLowerCase();
+  const normalizedHref = href.replace(/^\.\//, "").toLowerCase();
+  return normalizedText === fileName || normalizedText === normalizedHref;
+}
+
+function rewriteGuideLinks(html) {
+  const linkedAnchors = html.replace(/<a\b([^>]*?)href="([^"]+)"([^>]*)>(.*?)<\/a>/gis, (match, beforeHref, href, afterHref, content) => {
+    if (isExternalHref(href)) return match;
+
+    let nextContent = content;
+    if (!/<[^>]+>/.test(content) && shouldReplaceAnchorText(content, href)) {
+      nextContent = getGuideLinkLabel(href);
+    }
+
+    return `<a${beforeHref}href="${toGuideHref(href)}"${afterHref}>${nextContent}</a>`;
+  });
+
+  return linkedAnchors.replace(/>([^<>]*)</g, (_match, textContent) => {
+    const linkedText = textContent.replace(/\b(?:\.\/)?[A-Za-z0-9_./-]+\.html\b/g, (filename) => {
+      return `<a href="${toGuideHref(filename)}">${getGuideLinkLabel(filename)}</a>`;
+    });
+
+    return `>${linkedText}<`;
+  });
+}
+
+function syncPublicHtmlAssets() {
+  fs.mkdirSync(PUBLIC_GUIDES_ROOT, { recursive: true });
+
+  const htmlFiles = fs
+    .readdirSync(SOURCE_DIR)
+    .filter((file) => file.toLowerCase().endsWith(".html"));
+
+  for (const file of htmlFiles) {
+    fs.copyFileSync(path.join(SOURCE_DIR, file), path.join(PUBLIC_GUIDES_ROOT, file));
+  }
 }
 
 // Injecte des classes Tailwind pour que le HTML converti s'intègre visuellement
@@ -171,7 +248,8 @@ async function convertOne(placeId, docxPath) {
   }
 
   const { html, toc } = extractSections(result.value);
-  const styledHtml = applyStyling(html);
+  const linkedHtml = rewriteGuideLinks(html);
+  const styledHtml = applyStyling(linkedHtml);
   const { html: finalHtml, audioCount } = await processTtsBlocks(styledHtml, placeId);
 
   if (toc.length === 0) {
@@ -192,6 +270,8 @@ async function main() {
     fs.writeFileSync(OUTPUT_FILE, emptyOutput());
     return;
   }
+
+  syncPublicHtmlAssets();
 
   const files = fs
     .readdirSync(SOURCE_DIR)

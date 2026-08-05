@@ -492,16 +492,29 @@
       "/images/Jour 4/Grand_bazar 1.webp",
       "/images/Jour 4/Grand_bazar 2.webp",
       "/images/Jour 4/Grand_bazar 3.webp",
+      "/images/Jour 4/Grand Bazar Istanbul petit cours.webp",
+      "/images/Jour 4/Grand Bazar Istanbul.webp",
+      "/images/Jour 4/Grand Bazar Istanbul 2.webp",
+      "/images/Jour 4/Grand Bazar Istanbul 3.webp",
+      "/images/Jour 4/Grand Bazar Istanbul 4.webp",
+      "/images/Jour 4/Grand Bazar Istanbul 5.webp"
     ],
     audioTitle: "Le Grand Bazar, un labyrinthe de trésors",
     audioDuration: "3 min 45 sec",
     audioSrc: "/audio/places/Grand_Bazar.mp3",
     history:
       "Fondé peu après la conquête de Constantinople par le sultan Mehmed II en 1455, le Grand Bazar est l'un des plus anciens et des plus vastes marchés couverts du monde. Au fil des siècles, il est devenu un véritable centre du commerce reliant l'Europe et l'Asie. Aujourd'hui, ses 61 rues couvertes abritent plus de 4 000 boutiques proposant tapis, bijoux, céramiques, épices, cuir, lampes, textiles et souvenirs. Malgré les incendies et les séismes qu'il a traversés au cours de son histoire, le Grand Bazar a conservé son atmosphère unique, où se mêlent patrimoine, artisanat et animation permanente.",
+    links: [
+      {
+        label: "Ouvrir la carte interactive de Zincirli Han",
+        url: "/visites-guidees/carte_zincirli_han.html",
+      },
+    ],
     anecdotes: [
       "Le Grand Bazar accueille entre 250 000 et 400 000 visiteurs chaque jour, ce qui en fait l'un des marchés les plus fréquentés au monde.",
       "Avec plus de 4 000 boutiques réparties sur 61 rues couvertes, il ressemble à une véritable ville dans la ville.",
       "La tradition de la négociation est toujours bien vivante : marchander fait partie intégrante de l'expérience d'achat.",
+      "Dans Skyfall, James Bond fait une course-poursuite à moto sur les toits du grand bazar d’Istanbul.",
     ],
   },
   {

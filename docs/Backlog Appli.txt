@@ -12,15 +12,13 @@ Pour se connecter en tant que voyageur faut le code
 *  Rajoute les audios guides en ligne : https://audio.arvadmc.com/tour-detail?value=195
 * Trouver les sites pour chaque visite avec des liens
 * pouvoir mettre un audio de visite guidée en fin 
-
-* Revoir tous les quizz ! avec les quides et faire un gros challenge en fin de séjour ?
-* BUG : un visiteur voit où on part quand c'est bloqué. A revoir.
-* Evolution de la 21.1 => voir sur un point les lieux de visite (pas uniquement la ville)
 * ajouter une liseuse de livre ? (pdg et epub) 
 
-Astuces : mettre devise en premier : attention avec le tutoriel !
+
+* Revoir tous les quizz ! avec les quides et faire un gros challenge en fin de séjour ?
+* Evolution de la 21.1 => voir sur un point les lieux de visite (pas uniquement la ville)
+
 réorganisation des écrans : attention avec le tutoriel !
-plan grand bazar?
 un plan des bateaux Istanbul?
 
 

@@ -2348,6 +2348,10 @@ type ContentTopic = {
   historyLabel?: string;
   anecdotes: string[];
   anecdotesLabel?: string;
+  links?: Array<{
+    label: string;
+    url: string;
+  }>;
 };
 
 // ─── CONTENT LIST SCREEN (used by Guide and Histoire) ──────────────────────
@@ -3108,6 +3112,26 @@ function ContentDetailScreen({
             ))}
           </div>
         </div>
+
+        {item.links?.length ? (
+          <div className="px-4 mb-6">
+            <h2 className="text-base font-black text-foreground mb-3">🌐 Liens utiles</h2>
+            <div className="space-y-2">
+              {item.links.map((link, index) => (
+                <a
+                  key={`${item.id}-link-${index}`}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 active:scale-95 transition-transform"
+                >
+                  <span className="text-sm font-semibold text-foreground/90">{link.label}</span>
+                  <ExternalLink size={16} className="text-muted-foreground flex-shrink-0" />
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {/* Guide de visite complet (uniquement si un contenu a été fourni) */}
         {onOpenVisiteGuidee && visiteGuidee && (
@@ -4580,7 +4604,7 @@ function LaunchGateScreen({
                 onClick={onStart}
                 className="rounded-2xl bg-[#3B82F6] px-6 py-4 text-base font-black text-white shadow-lg transition-transform active:scale-95"
               >
-                On y va :
+                  Let's go !
               </button>
               {message && <p className="mt-4 text-sm font-bold text-amber-300">{message}</p>}
             </div>
