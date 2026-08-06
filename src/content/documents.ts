@@ -49,6 +49,12 @@ export const DOCUMENTS: TravelDocument[] = [
       "/images/Vol/Nantes Paris.webp",
       "/images/Vol/Avion aller JPG.webp",
     ],
+    links: [
+      {
+        label: "Site Air France",
+        url: "https://wwws.airfrance.fr",
+      },
+    ],
   },
   {
     id: "vol-paris-istanbul-af1390",

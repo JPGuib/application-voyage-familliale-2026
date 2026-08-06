@@ -46,6 +46,7 @@
       "L'arrivée à Charles de Gaulle se fait à l'aéroport 2F\n"+
       "**Réservation** : ZT59SQ",
     anecdotesLabel: "Informations bagages",
+    gps: "47.1532,-1.6107",
     anecdotes: [
       "Petit sac à ranger devant soi : 40 x 30 x 15 cm",
       "Valise cabine à ranger dans le compartiment supérieur : 55 x 25 x 35 cm",
@@ -74,6 +75,7 @@
       "Le départ se fait de l'aéroport Charles de Gaulle 2E\n"+
       "**Réservation** : ZT59SQ",
     anecdotesLabel: "Informations bagages",
+    gps: "49.0097,2.5479",
     anecdotes: [
             "Petit sac à ranger devant soi : 40 x 30 x 15 cm",
       "Valise cabine à ranger dans le compartiment supérieur : 55 x 25 x 35 cm",
@@ -97,6 +99,7 @@
     audioTitle: "Istanbul, entre deux mondes",
     audioDuration: "3 min 40 sec",
     audioSrc: "/audio/places/Istanbul.mp3",
+    gps: "41.0082,28.9784",
     history:
       "Istanbul est la plus grande ville de Turquie et un point de rencontre entre deux continents. Son histoire s'étend sur des siècles, entre héritage byzantin, ottoman et vie urbaine contemporaine. C'est le meilleur point de départ pour comprendre le voyage en Turquie.",
     anecdotes: [
@@ -142,6 +145,7 @@
     audioTitle: "Les secrets de la Citerne Basilique",
     audioDuration: "2 min 50 sec",
     audioSrc: "/audio/places/Citerne_basilique.mp3",
+    gps: "41.0084,28.9779",
     history:
       "Construite au VIe siècle sous l'empereur Justinien, la Citerne Basilique est un immense réservoir souterrain qui servait à stocker l'eau de la ville. Ses 336 colonnes et son atmosphère feutrée en font un lieu unique.",
     anecdotes: [
@@ -164,6 +168,7 @@
     audioTitle: "Kadıköy, l'âme asiatique d'Istanbul",
     audioDuration: "3 min 10 sec",
     audioSrc: "/audio/places/kadikoy.mp3",
+    gps: "40.9909,29.0276",
     history:
       "Kadıköy est l'un des quartiers les plus vivants de la rive asiatique d'Istanbul. Son marché (çarşı) regorge de produits frais, d'épices, de poissons et de boutiques locales. C'est un lieu de rencontre authentique, loin du tourisme de masse.",
     anecdotes: [
@@ -186,6 +191,7 @@
     audioTitle: "La Süleymaniye, chef-d'œuvre de Sinan",
     audioDuration: "3 min 30 sec",
     audioSrc: "/audio/places/Suleymaniye.mp3",
+    gps: "41.0162,28.9637",
     history:
       "Construite entre 1550 et 1557 par l'architecte impérial Sinan pour le sultan Soliman le Magnifique, la Süleymaniye est la plus grande mosquée d'Istanbul. Elle domine la ville du haut de sa colline et offre une vue panoramique exceptionnelle.",
     anecdotes: [
@@ -229,6 +235,7 @@
     audioTitle: "Dolmabahçe, fastes du XIXe siècle",
     audioDuration: "3 min 15 sec",
     audioSrc: "/audio/places/Dolmabahce.mp3",
+    gps: "41.0392,29.0007",
     history:
       "Construit au milieu du XIXe siècle, le palais de Dolmabahçe fut la résidence principale des sultans ottomans jusqu'à la chute de l'Empire. Mêlant styles baroque, rococo et néoclassique, il impressionne par son luxe et sa monumentalité. On passe devant le stade de football à proximité.",
     anecdotes: [
@@ -252,6 +259,7 @@
     audioTitle: "Chora, la beauté cachée",
     audioDuration: "3 min 00 sec",
     audioSrc: "/audio/places/Sainte-Sauveur-Chora.mp3",
+    gps: "41.0317,28.9497",
     history:
       "L'église Saint-Sauveur in Chora, aujourd'hui musée (Kariye), est célèbre pour ses mosaïques et fresques byzantines parmi les plus belles qui subsistent. Datant du XIVe siècle, ces œuvres illustrent des scènes de la vie du Christ et de la Vierge avec une finesse exceptionnelle.",
     anecdotes: [
@@ -274,6 +282,7 @@
     audioTitle: "Ortaköy, la mosquée du Bosphore",
     audioDuration: "2 min 40 sec",
     audioSrc: "/audio/places/Mosquee_Ortakoy.mp3",
+    gps: "41.0473,29.0260",
     history:
       "Située au bord du Bosphore, juste sous le pont suspendu, la Mosquée Büyük Mecidiye d'Ortaköy est l'un des symboles les plus photographiés d'Istanbul. Construite au XIXe siècle dans un style néo-baroque, elle offre un contraste saisissant avec le pont moderne qui la surplombe.",
     anecdotes: [
@@ -342,6 +351,7 @@
     audioTitle: "Découvrez le Palais de Topkapi",
     audioDuration: "4 min 20 sec",
     audioSrc: "/audio/places/Le_palais_de_Topkapi.mp3",
+    gps: "41.0115,28.9834",
     history:
       "Construit à partir de 1459 sur les ordres du sultan Mehmed II, peu après la conquête de Constantinople, le Palais de Topkapi fut la résidence officielle des sultans ottomans et le centre administratif de l'Empire pendant près de quatre siècles. Véritable ville dans la ville, il abritait les appartements impériaux, le harem, les cuisines, le trésor et les salles où étaient prises les décisions qui influençaient une grande partie du monde méditerranéen et du Moyen-Orient.",
     anecdotes: [
@@ -367,6 +377,7 @@
     audioTitle: "La Mosquée Bleue, merveille ottomane",
     audioDuration: "3 min 30 sec",
     audioSrc: "/audio/places/Mosquee_Bleue.mp3",
+    gps: "41.0055,28.9768",
     history:
       "Construite au XVIIe siècle sous le sultan Ahmet Ier, la Mosquée Bleue (Sultanahmet Camii) est l'un des monuments les plus célèbres d'Istanbul. Elle doit son surnom aux 21 403 faïences bleues d'Iznik qui ornent son intérieur. Ses six minarets en font une mosquée unique à l'époque de sa construction.",
     anecdotes: [
@@ -388,6 +399,7 @@
     audioTitle: "L'Hippodrome, théâtre de l'Empire",
     audioDuration: "3 min 00 sec",
     audioSrc: "/audio/places/Hippodrome_Byzantin.mp3",
+    gps: "41.0065,28.9770",
     history:
       "L'Hippodrome de Constantinople était le centre de la vie publique de la ville byzantine. C'est ici que se déroulaient les courses de chars et les cérémonies impériales. Aujourd'hui, la place conserve trois obélisques antiques qui témoignent de son prestigieux passé.",
     anecdotes: [
@@ -410,6 +422,7 @@
     audioTitle: "Taksim, carrefour de la vie stambouliote",
     audioDuration: "2 min 50 sec",
     audioSrc: "/audio/places/Place_Taksim.mp3",
+    gps: "41.0369,28.9850",
     history:
       "La place de Taksim est le centre névralgique de l'Istanbul moderne. Entourée de commerces, d'hôtels et de restaurants, elle est le point de départ de l'avenue Istiklal et un lieu de rassemblement pour les Stambouliotes.",
     anecdotes: [
@@ -453,6 +466,7 @@
     audioTitle: "La Tour de Galata, sentinelle d'Istanbul",
     audioDuration: "3 min 30 sec",
     audioSrc: "/audio/places/Tour_Galata.mp3",
+    gps: "41.0256,28.9741",
     history:
       "Construite en 1348 par les Génois installés dans le quartier de Galata, la Tour de Galata est l'un des monuments les plus emblématiques d'Istanbul. Haute de près de 67 mètres, elle servait autrefois de tour de défense et de surveillance sur les remparts de la colonie génoise. Transformée au fil des siècles en prison, observatoire puis point de départ des premières expériences aériennes d'Hezarfen Ahmed Çelebi, elle offre aujourd'hui l'un des plus beaux panoramas sur le Bosphore, la Corne d'Or, la vieille ville et les collines d'Istanbul.",
     anecdotes: [
@@ -503,6 +517,7 @@
     audioTitle: "Le Grand Bazar, un labyrinthe de trésors",
     audioDuration: "3 min 45 sec",
     audioSrc: "/audio/places/Grand_Bazar.mp3",
+    gps: "41.0107,28.9680",
     history:
       "Fondé peu après la conquête de Constantinople par le sultan Mehmed II en 1455, le Grand Bazar est l'un des plus anciens et des plus vastes marchés couverts du monde. Au fil des siècles, il est devenu un véritable centre du commerce reliant l'Europe et l'Asie. Aujourd'hui, ses 61 rues couvertes abritent plus de 4 000 boutiques proposant tapis, bijoux, céramiques, épices, cuir, lampes, textiles et souvenirs. Malgré les incendies et les séismes qu'il a traversés au cours de son histoire, le Grand Bazar a conservé son atmosphère unique, où se mêlent patrimoine, artisanat et animation permanente.",
     links: [
@@ -534,6 +549,7 @@
     audioTitle: "Ankara, le cœur politique de la Turquie",
     audioDuration: "3 min 40 sec",
     audioSrc: "/audio/places/Ankara.mp3",
+    gps: "39.9208,32.8541",
     history:
       "Située au cœur du plateau anatolien, Ankara est la capitale de la République de Turquie depuis 1923. Si son histoire remonte à l'Antiquité, avec les Hittites, les Phrygiens, les Romains et les Byzantins, c'est sous l'impulsion de Mustafa Kemal Atatürk qu'elle prend une dimension nationale. Choisie pour sa position centrale et stratégique, Ankara remplace Istanbul comme capitale afin de symboliser la naissance d'une Turquie moderne, tournée vers l'avenir. Aujourd'hui, elle est le centre politique et administratif du pays, abritant le Parlement, les ministères, les ambassades et le mausolée d'Atatürk, tout en conservant un riche patrimoine historique dominé par sa citadelle et les vestiges des civilisations qui s'y sont succédé.",
     anecdotes: [
@@ -560,6 +576,7 @@
     audioTitle: "Le lac salé de Turquie",
     audioDuration: "2 min 30 sec",
     audioSrc: "/audio/places/lac_sale.mp3",
+    gps: "38.7626,33.3649",
     history: "Le lac Tuz est l'un des plus grands lacs salés de Turquie. Situé au cœur de l'Anatolie centrale, il s'étend sur plus de 1 600 km². Ses eaux peu profondes reflètent le ciel comme un miroir, créant un paysage surréaliste particulièrement spectaculaire en saison sèche lorsque le sel cristallise à la surface.",
     anecdotes: [
       "Le lac Tuz fournit près de 70 % du sel consommé en Turquie.",
@@ -633,6 +650,7 @@
     audioTitle: "Cappadoce, terre des fées",
     audioDuration: "4 min 10 sec",
     audioSrc: "/audio/places/CAPPADOCE et Goreme.mp3",
+    gps: "38.6431,34.8287",
     history: "Cappadoce est une région unique au monde, façonnée par des millions d'années d'érosion volcanique. Berceau de la chrétienté primitive, elle abrita les premières communautés chrétiennes qui creusèrent églises et monastères dans la roche. Son paysage lunaire, parsemé de cheminées de fées coiffées de basalte, en fait l'un des sites naturels les plus spectaculaires de la planète.",
     anecdotes: [
       "Le mot 'Cappadoce' viendrait du vieux perse et signifierait 'le pays des beaux chevaux'.",
@@ -656,6 +674,7 @@
     audioTitle: "Cappadoce vue du ciel",
     audioDuration: "2 min 50 sec",
     audioSrc: "/audio/places/vol_en_montgolfiere.mp3",
+    gps: "38.6431,34.8287",
     history: "Le vol en montgolfière au-dessus de Cappadoce est considéré comme l'une des plus belles expériences aériennes au monde. Chaque année, des centaines de ballons s'élèvent à l'aube pour offrir une vue panoramique sur les vallées, vignobles et cheminées de fées. Cette tradition a commencé dans les années 1990 et attire désormais des visiteurs du monde entier.",
     anecdotes: [
       "Les vols ont lieu très tôt le matin pour profiter des vents les plus calmes.",
@@ -682,6 +701,7 @@
     audioTitle: "Göreme, trésor de l'UNESCO",
     audioDuration: "3 min 45 sec",
     audioSrc: "/audio/places/Musee_en_pleine_air_de_Goreme.mp3",
+    gps: "38.6413,34.8466",
     history: "Le musée en plein air de Göreme est un site classé au patrimoine mondial de l'UNESCO depuis 1985. Il regroupe plusieurs églises rupestres datant des IXème au XIème siècles, ornées de fresques byzantines remarquablement conservées. Ces sanctuaires taillés dans la roche témoignent de la richesse spirituelle et artistique des premières communautés chrétiennes d'Anatolie.",
     anecdotes: [
       "L'église de la Pomme (Elmali Kilise) doit son nom à une pomme peinte près de l'autel.",
@@ -730,6 +750,7 @@
     audioTitle: "Konya, carrefour des civilisations",
     audioDuration: "3 min 30 sec",
     audioSrc: "/audio/places/Konya_route_soie.mp3",
+    gps: "37.8746,32.4932",
     history: "Konya est l'une des plus anciennes villes d'Anatolie et une étape majeure de la Route de la Soie. Fief des Seldjoukides puis centre spirituel des derviches tourneurs, elle fut un carrefour commercial et culturel où les caravanes venaient échanger soie, épices et marchandises précieuses entre l'Orient et l'Occident.",
     anecdotes: [
       "Konya abrite le mausolée de Rûmi, fondateur de l'ordre des derviches tourneurs.",
@@ -755,6 +776,7 @@
     audioTitle: "Les caravansérails, auberges du désert",
     audioDuration: "2 min 45 sec",
     audioSrc: "/audio/places/Caravanserail.mp3",
+    gps: "38.2353,33.5493",
     history: "Les caravansérails seldjoukides étaient des relais fortifiés construits le long de la Route de la Soie pour abriter les caravanes, leurs chameaux et leurs marchandises. Ces impressionnantes structures en pierre offraient refuge, nourriture et sécurité aux voyageurs. Le Sultanhan près de Konya est l'un des plus beaux exemples conservés en Turquie.",
     anecdotes: [
       "Le Sultanhan pouvait accueillir jusqu'à 400 chameaux dans ses écuries.",
@@ -778,6 +800,7 @@
     audioTitle: "Pamukkale, la forteresse de coton",
     audioDuration: "3 min 20 sec",
     audioSrc: "/audio/places/Pamukkale.mp3",
+    gps: "37.9137,29.1187",
     history: "Pamukkale, 'Château de Coton' en turc, est un site naturel unique formé par le dépôt de carbonate de calcium provenant de sources thermales sur une falaise de 200 mètres. Inscrit au patrimoine mondial de l'UNESCO avec les ruines d'Hierapolis, ce paysage blanc éblouissant attire des visiteurs depuis l'Antiquité, y compris Cléopâtre qui y aurait pris ses bains.",
     anecdotes: [
       "L'eau des sources thermales se maintient à environ 36 degrés Celsius toute l'année.",
@@ -824,6 +847,7 @@
     audioTitle: "Ephèse, cité de la déesse Artémis",
     audioDuration: "4 min 15 sec",
     audioSrc: "/audio/places/Ephese.mp3",
+    gps: "37.9390,27.3410",
     history: "Ephèse est le site archéologique le plus célèbre de Turquie. Fondée par les Grecs puis prospérant sous l'Empire romain, elle abritait le temple d'Artémis, l'une des Sept Merveilles du monde antique. La bibliothèque de Celsius, le grand théâtre et la rue des Courètes témoignent encore aujourd'hui de la splendeur de cette cité qui comptait jusqu'à 250 000 habitants.",
     anecdotes: [
       "La bibliothèque de Celsius abritait jusqu'à 12 000 rouleaux de parchemin.",
@@ -847,6 +871,7 @@
     audioTitle: "Bursa, berceau de l'Empire ottoman",
     audioDuration: "3 min 50 sec",
     audioSrc: "/audio/places/Bursa.mp3",
+    gps: "40.1950,29.0600",
     history: "Bursa fut la prmière capitale de l'Empire ottoman, conquise par Orhan Gazi en 1326. Nichée au pied du Mont Uludağ (l'antique Olympe de Mysie), elle conserve un riche patrimoine ottoman avec ses mosquées, ses mausolées et ses bains traditionnels. La ville est également réputée pour ses soies, ses kebabs et ses fruits confits.",
     anecdotes: [
       "La Mosquée Verte (Yeşil Camii) doit son nom aux carreaux de faïence vert émeraude qui la décorent.",
@@ -869,6 +894,7 @@
     audioTitle: "Osmangazi, un pont entre deux rives",
     audioDuration: "3 min 30 sec",
     audioSrc: "/audio/places/Le_pont_d_Osmangazi.mp3",
+    gps: "40.4027,28.5353",
     history: "Le pont d'Osmangazi (Osman Gazi Köprüsü) est un pont suspendu spectaculaire qui enjambe le golfe d'Izmit, à environ 50 km au sud d'Istanbul. Inauguré le 1er juillet 2016, il porte le nom d'Osman Gazi, fondateur de l'Empire ottoman. Avec une travée centrale de 1 550 mètres et une longueur totale de 2 682 mètres, il était à son inauguration le quatrième plus long pont suspendu au monde. Les pylônes culminent à 252 mètres de hauteur et le tablier est suspendu à 64 mètres au-dessus de la mer. Il fait partie de l'autoroute Gebze-Orhangazi-Izmir (O-5) et a réduit le trajet Istanbul-Izmir de 10 heures à seulement 3h30, transformant radicalement les échanges entre la mer de Marmara et la côte égéenne.",
     anecdotes: [
       "Le temps de traversée du golfe d'Izmit est passé de 2 heures (en ferry) à seulement 6 minutes.",
@@ -886,6 +912,7 @@
     photos: [
     ],
     historyLabel:"Détails du vol",
+    gps: "41.2753,28.7519",
     history: "Vol Transavia **TO3421** de Istanbul (IST) à Nantes (NTE). Départ à **14h00** pour une arrivée à 17h10\n"+
     "**Sièges** : 15D, 15E, 15F, 16F, 16F\n"+
     "Priority boarding\n"+
