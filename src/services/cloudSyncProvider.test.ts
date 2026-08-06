@@ -848,7 +848,7 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     expect(updates["profiles/profile-1/recoveryConfiguredAt"]).toBeNull();
   });
 
-  it("writes the family-wide before phase when the owner triggers a re-lock", async () => {
+  it("does not write family-wide phase from generic owner snapshot sync", async () => {
     mockUpdate.mockClear();
 
     await pushCloudSnapshot(db, familyId, {
@@ -866,7 +866,7 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
 
     expect(mockUpdate).toHaveBeenCalledOnce();
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
-    expect(updates.phase).toBe("before");
+    expect(updates.phase).toBeUndefined();
     expect(updates.ownerProfileId).toBe("profile-1");
     expect(updates["profiles/profile-1/role"]).toBe("proprietaire");
   });
@@ -890,7 +890,7 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     expect(mockUpdate).toHaveBeenCalledOnce();
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     expect(updates.ownerCodeHash).toBeUndefined();
-    expect(updates.phase).toBe("during");
+    expect(updates.phase).toBeUndefined();
   });
 
   it("does not write travelerCodeHash when it is not a valid sha256 hash", async () => {
@@ -938,7 +938,7 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     expect(updates["destinationSurvey/profile-1"]).toBeNull();
     expect(updates["destinationSurvey/profile-2"]).toBeNull();
-    expect(updates.phase).toBe("before");
+    expect(updates.phase).toBeUndefined();
   });
 
   it("does not let a non-owner overwrite the family-wide phase", async () => {

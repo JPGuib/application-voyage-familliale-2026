@@ -688,10 +688,11 @@ export async function pushCloudSnapshot(
       updates.travelerCodeHash = payload.travelerCodeHash.trim();
       updates.travelerCodePlain = payload.travelerCodePlain?.trim() || null;
     }
-    updates.phase = payload.phase;
-    if (typeof payload.launchGateCycle === "number") {
-      updates.launchGateCycle = toNonNegativeInteger(payload.launchGateCycle);
-    }
+    // Shared travel phase and launch gate cycle are intentionally NOT written
+    // from generic profile sync updates. They are owner-critical coordination
+    // fields and must only be changed through pushFamilyPhaseChange to avoid
+    // cross-device race conditions (owner device A writes "during", owner
+    // device B still on stale "before" overwrites it, causing UI flicker).
     // On n'écrit jamais explicitement null ici : tant qu'aucune fonctionnalité
     // "effacer la date" n'existe, une valeur locale vide/nulle ne doit jamais
     // écraser une date déjà enregistrée dans Firebase (voir bug corrigé :

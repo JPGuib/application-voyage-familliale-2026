@@ -92,14 +92,26 @@ describe("App offline media integration (story 27.2)", () => {
     });
   });
 
+  it("shows offline media quick progress section below travel photo links", async () => {
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Polarsteps/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText(/Offline media/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/% téléchargé/i)).toBeInTheDocument();
+    expect(screen.getByText(/ressources en cache/i)).toBeInTheDocument();
+  });
+
   it("opens offline media screen from dashboard navigation and shows six tracked sections", async () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Offline media/i)).toBeInTheDocument();
+      expect(document.querySelector('[data-tutorial-id="dashboard-offline-media"]')).not.toBeNull();
     });
 
-    fireEvent.click(screen.getByText(/Offline media/i));
+    fireEvent.click(document.querySelector('[data-tutorial-id="dashboard-offline-media"]') as Element);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Offline media/i })).toBeInTheDocument();
@@ -117,10 +129,10 @@ describe("App offline media integration (story 27.2)", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Offline media/i)).toBeInTheDocument();
+      expect(document.querySelector('[data-tutorial-id="dashboard-offline-media"]')).not.toBeNull();
     });
 
-    fireEvent.click(screen.getByText(/Offline media/i));
+    fireEvent.click(document.querySelector('[data-tutorial-id="dashboard-offline-media"]') as Element);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Offline media/i })).toBeInTheDocument();

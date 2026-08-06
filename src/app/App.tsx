@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, type ReactNode } from "react";
+﻿import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
 import {
   type LucideIcon,
   Check,
@@ -177,6 +177,7 @@ import {
   getNextLaunchGateCycle,
   shouldForceLaunchGate,
 } from "./launch-gate";
+import { readOfflineDownloadRegistry } from "./offline-media";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -370,7 +371,7 @@ const MAX_PLACE_COMMENT_LENGTH = 500;
 
 type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
 const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
-type QuickScreen = "guide" | "documents" | "offline-media" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
+type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
   id: string;
@@ -442,14 +443,6 @@ const QUICK_ACTIONS: QuickAction[] = [
     subtitle: "Vols, papiers et réservations",
     colorBg: "bg-[#E8F0FE]",
     colorText: "text-[#1A73E8]",
-  },
-  {
-    id: "offline-media",
-    emoji: "⬇️",
-    title: "Offline media",
-    subtitle: "Download cache by section",
-    colorBg: "bg-[#E8F5E9]",
-    colorText: "text-[#1B5E20]",
   },
   {
     id: "histoire",
@@ -2191,6 +2184,7 @@ function ChecklistScreen({
 function DashboardScreen({
   quickActions,
   canAccessChecklist,
+  canAccessOfflineMedia,
   onNavigate,
   onStartTutorial,
   currentDay,
@@ -2203,6 +2197,7 @@ function DashboardScreen({
 }: {
   quickActions: QuickAction[];
   canAccessChecklist: boolean;
+  canAccessOfflineMedia: boolean;
   onNavigate: (s: Screen) => void;
   onStartTutorial: () => void;
   currentDay: number;
@@ -2214,6 +2209,28 @@ function DashboardScreen({
   todayFormatted: string;
 }) {
   const [mapLightboxOpen, setMapLightboxOpen] = useState(false);
+  const offlineSummary = useMemo(() => {
+    const registry = readOfflineDownloadRegistry();
+    const totals = Object.values(registry.sectionProgress).reduce(
+      (acc, section) => {
+        acc.total += section.total;
+        acc.completed += section.completed;
+        return acc;
+      },
+      { total: 0, completed: 0 }
+    );
+
+    const percent = totals.total > 0
+      ? Math.round((totals.completed / totals.total) * 100)
+      : 0;
+
+    return {
+      completed: totals.completed,
+      total: totals.total,
+      percent,
+    };
+  }, []);
+
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       {/* Header */}
@@ -2367,7 +2384,7 @@ function DashboardScreen({
             className="block w-full active:scale-95 transition-transform"
           >
             <img
-              src="/images/Carte du voyage.png"
+              src="/images/Carte du voyage.webp"
               alt="Carte du circuit du séjour en Turquie"
               className="w-full h-auto object-contain"
             />
@@ -2391,7 +2408,7 @@ function DashboardScreen({
           </div>
           <div className="flex-1 flex items-center justify-center px-2 min-h-0" onClick={(e) => e.stopPropagation()}>
             <img
-              src="/images/Carte du voyage.png"
+              src="/images/Carte du voyage.webp"
               alt="Carte du circuit du séjour en Turquie"
               className="max-w-full max-h-full object-contain rounded-lg"
             />
@@ -2400,7 +2417,7 @@ function DashboardScreen({
       )}
 
       {/* Photos du séjour */}
-      <div className="px-4 mt-5 mb-6">
+      <div className="px-4 mt-5 mb-2">
         <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
           Photos du séjour
         </p>
@@ -2431,6 +2448,33 @@ function DashboardScreen({
           ))}
         </div>
       </div>
+
+      {canAccessOfflineMedia && (
+        <div className="px-4 mt-4 mb-6">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+            Offline media
+          </p>
+          <button
+            onClick={() => onNavigate("offline-media")}
+            data-tutorial-id="dashboard-offline-media"
+            className="w-full rounded-2xl border border-[#C8E6C9] bg-[#E8F5E9] px-4 py-3.5 text-left active:scale-95 transition-transform"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">⬇️</span>
+                <div>
+                  <p className="font-black text-sm text-[#1B5E20]">Offline media</p>
+                  <p className="text-xs text-[#2E7D32]">{offlineSummary.percent}% téléchargé</p>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-[#2E7D32]" />
+            </div>
+            <p className="mt-2 text-[11px] font-semibold text-[#33691E]">
+              {offlineSummary.completed}/{offlineSummary.total} ressources en cache
+            </p>
+          </button>
+        </div>
+      )}
 
 
     </div>
@@ -11354,6 +11398,7 @@ export default function App() {
         return <DashboardScreen
             quickActions={visibleQuickActions}
             canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
+            canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
             onNavigate={goToScreen}
             onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
@@ -11718,6 +11763,7 @@ export default function App() {
         return <DashboardScreen
             quickActions={visibleQuickActions}
             canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
+            canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
             onNavigate={goToScreen}
             onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
@@ -12085,6 +12131,7 @@ export default function App() {
         return <DashboardScreen
             quickActions={visibleQuickActions}
           canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
+            canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
             onNavigate={goToScreen}
           onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
