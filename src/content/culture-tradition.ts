@@ -12,9 +12,8 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "Splendeurs architecturales et lieux de recueillement",
     tag: "Architecture",
     image:
-      "https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/mosquée tradition.webp",
     photos: [
-      "https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800&h=500&fit=crop&auto=format",
       "/images/Culture/Mosquee 1.webp",
       "/images/Culture/Mosquee 2.webp",
     ],
@@ -82,7 +81,7 @@ export const CULTURE_TRADITION_TOPICS = [
       "/images/Culture/Chat.webp",
     photos: [
       "/images/Culture/Chat.webp",
-      "https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/chat 2.webp",
     ],
     audioTitle: "Miaulements sur le Bosphore",
     audioDuration: "2 min 45 sec",
@@ -100,10 +99,10 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "Kebabs, mezze, baklava et autres délices",
     tag: "Gastronomie",
     image:
-      "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/art culinaire 1.webp",
     photos: [
-      "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&h=500&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1600335895229-6e75511892c8?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/art culinaire 1.webp",
+      "/images/Culture/art culinaire 2.webp",
       "/images/Culture/Culinaire 1.webp",
       "/images/Culture/Culinaire 2.webp",
       "/images/Culture/Culinaire 3.webp",
@@ -124,9 +123,9 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "Codes vestimentaires et pratiques balnéaires",
     tag: "Pratique",
     image:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/bien entre.webp",
     photos: [
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/bien entre.webp",
     ],
     audioTitle: "Entre Bikini et Burqini",
     audioDuration: "2 min 30 sec",
@@ -144,10 +143,10 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "Rituel millénaire de purification, de détente et de socialisation",
     tag: "Bien-être",
     image:
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/bien etre 1.webp",
     photos: [
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&h=500&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&h=500&fit=crop&auto=format",
+      "/images/Culture/bien etre 1.webp",
+      "/images/Culture/bien etre 2.webp",
       "/images/Culture/hammam_traditionnel.webp",
     ],
     audioTitle: "Vapeur et marbre",
