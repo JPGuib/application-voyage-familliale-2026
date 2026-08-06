@@ -56,7 +56,14 @@ import {
   type QuizQuestion,
 } from "../content/game";
 import { TIPS } from "../content/tips";
-import { getScheduledCoordinates, getWeatherAdvice, useDeviceLocation, useWeather } from "./weather";
+import {
+  getScheduledCoordinates,
+  getWeatherAdvice,
+  parseGpsString,
+  useDeviceLocation,
+  useWeather,
+  type Coordinates,
+} from "./weather";
 import {
   convertEurToTry,
   convertTryToEur,
@@ -2359,11 +2366,84 @@ type ContentTopic = {
   historyLabel?: string;
   anecdotes: string[];
   anecdotesLabel?: string;
+  gps?: string;
   links?: Array<{
     label: string;
     url: string;
   }>;
 };
+
+function buildGoogleMapsPlaceUrl(destination: Coordinates): string {
+  const params = new URLSearchParams({
+    api: "1",
+    query: `${destination.lat},${destination.lon}`,
+  });
+  return `https://www.google.com/maps/search/?${params.toString()}`;
+}
+
+function buildGoogleMapsDirectionsUrl(destination: Coordinates, origin?: Coordinates): string {
+  const params = new URLSearchParams({
+    api: "1",
+    destination: `${destination.lat},${destination.lon}`,
+  });
+  if (origin) {
+    params.set("origin", `${origin.lat},${origin.lon}`);
+  }
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
+function openExternalWindow(url: string): void {
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function resolveDayFallbackGps(day: number | undefined): string | undefined {
+  if (!day) return undefined;
+  const dayEntry = JOURS_DESTINATIONS.find((entry) => entry.jour === day);
+  if (!dayEntry) return undefined;
+
+  for (const key of ["gps_matin", "gps_apresmidi", "gps_soir"] as const) {
+    const raw = dayEntry[key];
+    if (typeof raw !== "string") continue;
+    if (!parseGpsString(raw)) continue;
+    return raw;
+  }
+
+  return undefined;
+}
+
+function shouldAutoFillGpsForPlace(place: { tag?: string; jour?: number[] }): boolean {
+  if (!place.jour || place.jour.length === 0) {
+    return false;
+  }
+
+  const tag = (place.tag ?? "").toLowerCase();
+
+  // On ne force pas les vols ni les tuiles de découverte globale.
+  if (tag.includes("vol") || tag.includes("decouvrir") || tag.includes("découvrir")) {
+    return false;
+  }
+
+  return true;
+}
+
+const PLACES_WITH_AUTO_GPS = PLACES.map((place) => {
+  const currentGps = (place as { gps?: string }).gps;
+  if (currentGps && parseGpsString(currentGps)) {
+    return place;
+  }
+
+  if (!shouldAutoFillGpsForPlace(place as { tag?: string; jour?: number[] })) {
+    return place;
+  }
+
+  const firstDay = (place as { jour?: number[] }).jour?.[0];
+  const fallbackGps = resolveDayFallbackGps(firstDay);
+  if (!fallbackGps) {
+    return place;
+  }
+
+  return { ...place, gps: fallbackGps };
+});
 
 // ─── CONTENT LIST SCREEN (used by Guide and Histoire) ──────────────────────
 
@@ -2570,6 +2650,7 @@ function DocumentsScreen({
   const LEGACY_DOCUMENTS_STORAGE_KEY = "jp-documents-v2";
   const isOwner = role === "proprietaire";
   const canConsultScans = role !== "visiteur";
+  const { coords: deviceCoords } = useDeviceLocation();
 
   const [activeCategory, setActiveCategory] = useState<DocumentCategory>(
     DOCUMENT_CATEGORIES[0]
@@ -2587,6 +2668,8 @@ function DocumentsScreen({
   const [draftContent, setDraftContent] = useState("");
   const [draftDetails, setDraftDetails] = useState("");
   const [draftScans, setDraftScans] = useState("");
+  const [draftLinks, setDraftLinks] = useState("");
+  const [draftGps, setDraftGps] = useState("");
 
   useEffect(() => {
     try {
@@ -2626,6 +2709,21 @@ function DocumentsScreen({
         const scans = Array.isArray(candidate.scans)
           ? candidate.scans.filter((line): line is string => typeof line === "string")
           : undefined;
+        const links = Array.isArray(candidate.links)
+          ? candidate.links
+              .map((entry) => {
+                if (!entry || typeof entry !== "object") return null;
+                const link = entry as Record<string, unknown>;
+                if (typeof link.label !== "string" || typeof link.url !== "string") return null;
+                const label = link.label.trim();
+                const url = link.url.trim();
+                if (!label || !url) return null;
+                return { label, url };
+              })
+              .filter((entry): entry is { label: string; url: string } => Boolean(entry))
+          : undefined;
+        const gpsRaw = typeof candidate.gps === "string" ? candidate.gps.trim() : "";
+        const gps = gpsRaw && parseGpsString(gpsRaw) ? gpsRaw : undefined;
         const defaultScans = defaultDocumentsById.get(candidate.id)?.scans;
         const resolvedScans = scans && scans.length > 0
           ? scans
@@ -2645,6 +2743,8 @@ function DocumentsScreen({
               : undefined,
           details,
           scans: resolvedScans,
+          links: links && links.length > 0 ? links : undefined,
+          gps,
         });
       }
 
@@ -2679,6 +2779,8 @@ function DocumentsScreen({
     setDraftContent("");
     setDraftDetails("");
     setDraftScans("");
+    setDraftLinks("");
+    setDraftGps("");
   }
 
   function openCreateForm(): void {
@@ -2697,6 +2799,8 @@ function DocumentsScreen({
     setDraftContent(item.content);
     setDraftDetails((item.details ?? []).join("\n"));
     setDraftScans((item.scans ?? []).join("\n"));
+    setDraftLinks((item.links ?? []).map((link) => `${link.label}|${link.url}`).join("\n"));
+    setDraftGps(item.gps ?? "");
     setEditingId(item.id);
     setIsAdding(false);
   }
@@ -2718,6 +2822,26 @@ function DocumentsScreen({
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
+    const links = draftLinks
+      .split("\n")
+      .map((line) => {
+        const normalizedLine = line.trim();
+        if (!normalizedLine) return null;
+        const separatorIndex = normalizedLine.indexOf("|");
+        if (separatorIndex === -1) {
+          return { label: normalizedLine, url: normalizedLine };
+        }
+        const label = normalizedLine.slice(0, separatorIndex).trim();
+        const url = normalizedLine.slice(separatorIndex + 1).trim();
+        if (!label || !url) return null;
+        return { label, url };
+      })
+      .filter((entry): entry is { label: string; url: string } => Boolean(entry));
+    const gpsRaw = draftGps.trim();
+    if (gpsRaw && !parseGpsString(gpsRaw)) {
+      return;
+    }
+    const gps = gpsRaw && parseGpsString(gpsRaw) ? gpsRaw : undefined;
 
     if (targetId && !window.confirm("Confirmer la modification de ce document ?")) {
       return;
@@ -2732,6 +2856,8 @@ function DocumentsScreen({
       day: Number.isFinite(parsedDay) && parsedDay > 0 ? parsedDay : undefined,
       details: details.length > 0 ? details : undefined,
       scans: scans.length > 0 ? scans : undefined,
+      links: links.length > 0 ? links : undefined,
+      gps,
     };
 
     if (targetId) {
@@ -2773,8 +2899,25 @@ function DocumentsScreen({
     setScanLightboxIndex(null);
   }
 
+  function openDocumentLocation(item: TravelDocument): void {
+    if (!item.gps) return;
+    const coords = parseGpsString(item.gps);
+    if (!coords) return;
+    openExternalWindow(buildGoogleMapsPlaceUrl(coords));
+  }
+
+  function openDocumentDirections(item: TravelDocument): void {
+    if (!item.gps) return;
+    const destination = parseGpsString(item.gps);
+    if (!destination) return;
+    openExternalWindow(buildGoogleMapsDirectionsUrl(destination, deviceCoords ?? undefined));
+  }
+
   function renderDocumentEditor(targetId?: string) {
     const isEditMode = Boolean(targetId);
+    const draftGpsNormalized = draftGps.trim();
+    const draftGpsInvalid = draftGpsNormalized.length > 0 && !parseGpsString(draftGpsNormalized);
+
     return (
       <div className="rounded-2xl border border-[#BFDBFE] bg-[#EFF6FF] p-4 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -2847,14 +2990,40 @@ function DocumentsScreen({
           className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
         />
 
+        <textarea
+          value={draftLinks}
+          onChange={(event) => setDraftLinks(event.target.value)}
+          placeholder="Liens (un par ligne) format: Libellé|https://exemple.com"
+          aria-label="Liens du document"
+          rows={3}
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
+        />
+
+        <input
+          type="text"
+          value={draftGps}
+          onChange={(event) => setDraftGps(event.target.value)}
+          placeholder="Coordonnées GPS (format: 41.0086,28.9802)"
+          aria-label="Coordonnées GPS du document"
+          className={`w-full rounded-xl border px-3 py-2 text-sm bg-background text-foreground ${
+            draftGpsInvalid ? "border-destructive" : "border-border"
+          }`}
+        />
+        {draftGpsInvalid && (
+          <p className="text-xs font-semibold text-destructive">
+            Format GPS invalide. Utilisez le format latitude,longitude (ex: 41.0086,28.9802).
+          </p>
+        )}
+
         <p className="text-[11px] text-muted-foreground leading-relaxed">
-          Astuce formatage: écrivez une portion en gras avec **comme ceci**.
+          Astuce: gras avec **comme ceci**. Liens via Libellé|URL. GPS: lat,lon.
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => commitDraft(targetId)}
-            className="inline-flex items-center gap-1 rounded-xl bg-[#1565C0] px-3 py-2 text-xs font-black uppercase tracking-widest text-white"
+            disabled={draftGpsInvalid}
+            className="inline-flex items-center gap-1 rounded-xl bg-[#1565C0] px-3 py-2 text-xs font-black uppercase tracking-widest text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Check size={14} />
             {isEditMode ? "Enregistrer" : "Ajouter"}
@@ -3012,7 +3181,9 @@ function DocumentsScreen({
             <p className="text-sm text-muted-foreground italic">Aucun document renseigné pour cette catégorie</p>
           </div>
         ) : (
-          visibleItems.map((item) => (
+          visibleItems.map((item) => {
+            const mapCoords = item.gps ? parseGpsString(item.gps) : null;
+            return (
             <article key={item.id} className="rounded-2xl bg-card border border-border p-4">
               {editingId === item.id ? (
                 renderDocumentEditor(item.id)
@@ -3062,6 +3233,41 @@ function DocumentsScreen({
                   <div className="text-sm text-muted-foreground mt-3 leading-relaxed">
                     {renderFormattedText(item.content)}
                   </div>
+                  {item.links && item.links.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {item.links.map((link, linkIndex) => (
+                        <button
+                          key={`${item.id}-link-${linkIndex}`}
+                          type="button"
+                          onClick={() => openExternalWindow(link.url)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-[11px] font-bold text-foreground/80"
+                        >
+                          <Globe size={12} />
+                          {link.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {mapCoords && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openDocumentLocation(item)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#E3F2FD] px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-[#1565C0]"
+                      >
+                        <MapPin size={12} />
+                        Voir la carte
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openDocumentDirections(item)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#E8F5E9] px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-[#2E7D32]"
+                      >
+                        <Plane size={12} />
+                        Y aller
+                      </button>
+                    </div>
+                  )}
                   {item.details && item.details.length > 0 && (
                     <ul className="mt-3 space-y-1 list-disc pl-5 text-sm text-muted-foreground">
                       {item.details.map((detail, detailIndex) => (
@@ -3072,7 +3278,8 @@ function DocumentsScreen({
                 </>
               )}
             </article>
-          ))
+            );
+          })
         )}
         <div className="h-2" />
       </div>
@@ -3099,7 +3306,7 @@ function GuideScreen({
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
 
-  const dayPlaces = PLACES.filter((place) =>
+  const dayPlaces = PLACES_WITH_AUTO_GPS.filter((place) =>
     (place as { jour?: number[] }).jour?.includes(selectedDay)
   );
   const realDurations = useAudioDurations(dayPlaces);
@@ -3377,6 +3584,8 @@ function ContentDetailScreen({
   const [isMuted, setIsMuted] = useState(false);
   const [realDuration, setRealDuration] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const { coords: deviceCoords } = useDeviceLocation();
+  const destinationCoords = item.gps ? parseGpsString(item.gps) : null;
   const canPlayAudio = Boolean(item.audioSrc);
 
   useEffect(() => {
@@ -3456,6 +3665,16 @@ function ContentDetailScreen({
       }
       return next;
     });
+  };
+
+  const openPlaceLocation = () => {
+    if (!destinationCoords) return;
+    openExternalWindow(buildGoogleMapsPlaceUrl(destinationCoords));
+  };
+
+  const openPlaceDirections = () => {
+    if (!destinationCoords) return;
+    openExternalWindow(buildGoogleMapsDirectionsUrl(destinationCoords, deviceCoords ?? undefined));
   };
 
   return (
@@ -3624,6 +3843,35 @@ function ContentDetailScreen({
             {renderFormattedText(item.history)}
           </div>
         </div>
+
+        {destinationCoords && (
+          <div className="px-4 mt-5">
+            <h2 className="text-base font-black text-foreground mb-3">📍 Localisation</h2>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={openPlaceLocation}
+                className="inline-flex items-center gap-1 rounded-xl bg-[#E3F2FD] px-3 py-2 text-xs font-black uppercase tracking-widest text-[#1565C0]"
+              >
+                <MapPin size={14} />
+                Voir la carte
+              </button>
+              <button
+                type="button"
+                onClick={openPlaceDirections}
+                className="inline-flex items-center gap-1 rounded-xl bg-[#E8F5E9] px-3 py-2 text-xs font-black uppercase tracking-widest text-[#2E7D32]"
+              >
+                <Plane size={14} />
+                Y aller
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {deviceCoords
+                ? "Votre position GPS sera utilisée comme point de départ si autorisée."
+                : "Autorisez le GPS pour un itinéraire depuis votre position, sinon Google Maps vous laissera choisir le départ."}
+            </p>
+          </div>
+        )}
 
         {/* Anecdotes */}
         <div className="px-4 mt-5 mb-6">
@@ -8825,7 +9073,7 @@ export default function App() {
     setScreen("place");
   };
 
-  const place = PLACES.find((p) => p.id === selectedPlaceId);
+  const place = PLACES_WITH_AUTO_GPS.find((p) => p.id === selectedPlaceId);
 
   useEffect(() => {
     const existingVote = destinationSurveyVotes[profile.id];

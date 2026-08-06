@@ -9,6 +9,11 @@ export const DOCUMENT_CATEGORIES = [
 
 export type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];
 
+export type TravelDocumentLink = {
+  label: string;
+  url: string;
+};
+
 export type TravelDocument = {
   id: string;
   category: DocumentCategory;
@@ -18,6 +23,8 @@ export type TravelDocument = {
   day?: number;
   details?: string[];
   scans?: string[];
+  links?: TravelDocumentLink[];
+  gps?: string;
 };
 
 export const DOCUMENTS: TravelDocument[] = [
@@ -103,6 +110,13 @@ export const DOCUMENTS: TravelDocument[] = [
       "Check-out avant 11h00",
       "Petit-déjeuner inclus",
     ],
+    links: [
+      {
+        label: "Voir l'hôtel sur Google Maps",
+        url: "https://www.google.com/maps/search/?api=1&query=40.9909,29.0303",
+      },
+    ],
+    gps: "40.9909,29.0303",
   },
   {
     id: "assurance-voyage-famille",
