@@ -2096,6 +2096,7 @@ function ChecklistScreen({
 
 function DashboardScreen({
   quickActions,
+  canAccessChecklist,
   onNavigate,
   onStartTutorial,
   currentDay,
@@ -2107,6 +2108,7 @@ function DashboardScreen({
   todayFormatted,
 }: {
   quickActions: QuickAction[];
+  canAccessChecklist: boolean;
   onNavigate: (s: Screen) => void;
   onStartTutorial: () => void;
   currentDay: number;
@@ -2236,15 +2238,17 @@ function DashboardScreen({
           ))}
         </div>
         <div className="grid grid-cols-2 gap-3 mt-3">
-          <ActionCard
-            tutorialId="dashboard-quick-checklist"
-            emoji="✅"
-            title="Checklist"
-            subtitle="Préparer le départ"
-            colorBg="bg-[#E8F5E9]"
-            colorText="text-[#2E7D32]"
-            onClick={() => onNavigate("checklist")}
-          />
+          {canAccessChecklist && (
+            <ActionCard
+              tutorialId="dashboard-quick-checklist"
+              emoji="✅"
+              title="Checklist"
+              subtitle="Préparer le départ"
+              colorBg="bg-[#E8F5E9]"
+              colorText="text-[#2E7D32]"
+              onClick={() => onNavigate("checklist")}
+            />
+          )}
           <ActionCard
             tutorialId="dashboard-start-tutorial"
             emoji="🎯"
@@ -10749,6 +10753,7 @@ export default function App() {
       if (effectiveScreen === "dashboard") {
         return <DashboardScreen
             quickActions={visibleQuickActions}
+            canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             onNavigate={goToScreen}
             onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
@@ -11099,6 +11104,7 @@ export default function App() {
       case "dashboard":
         return <DashboardScreen
             quickActions={visibleQuickActions}
+            canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             onNavigate={goToScreen}
             onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
@@ -11454,7 +11460,9 @@ export default function App() {
         }
         return <DashboardScreen
             quickActions={visibleQuickActions}
+          canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             onNavigate={goToScreen}
+          onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
             totalDays={totalDays}
             todayDestination={todayDestination}
