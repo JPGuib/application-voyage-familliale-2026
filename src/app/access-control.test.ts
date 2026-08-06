@@ -33,7 +33,6 @@ describe("access-control policy", () => {
     expect(canAccessSection("proprietaire", "before", "game")).toBe(true);
     expect(canAccessSection("proprietaire", "before", "tips")).toBe(true);
     expect(canAccessSection("proprietaire", "before", "results")).toBe(true);
-    expect(canAccessScreen("proprietaire", "before", "epub")).toBe(true);
   });
 
   it("grants owner full access after unlock", () => {
@@ -48,7 +47,6 @@ describe("access-control policy", () => {
     expect(allowed).toEqual(["checklist", "documents", "settings"]);
     expect(canAccessSection("utilisateur", "before", "dashboard")).toBe(false);
     expect(canAccessSection("utilisateur", "before", "documents")).toBe(true);
-    expect(canAccessScreen("utilisateur", "before", "epub")).toBe(false);
   });
 
   it("unlocks all user sections except owner code actions", () => {
@@ -101,7 +99,6 @@ describe("access-control policy", () => {
     expect(getAllowedSections("visiteur", "before")).toEqual(getAllowedSections("visiteur", "during"));
     expect(canAccessSection("visiteur", "before", "dashboard")).toBe(true);
     expect(canAccessSection("visiteur", "during", "game")).toBe(false);
-    expect(canAccessScreen("visiteur", "during", "epub")).toBe(true);
   });
 
   it("returns a friendly denial message for a visitor targeting the checklist, the game or the results (story 24.3)", () => {

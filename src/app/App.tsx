@@ -33,7 +33,6 @@ import {
   Globe,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
-import { EpubReaderScreen } from "./EpubReaderScreen";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
 import {
@@ -350,8 +349,8 @@ const MAX_PLACE_COMMENT_LENGTH = 500;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "epub" | "game" | "results" | "tips" | "settings";
-const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "epub", "game", "results", "tips", "settings"];
+type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
 type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
@@ -10892,10 +10891,6 @@ export default function App() {
         ) : null;
       }
 
-      if (effectiveScreen === "epub") {
-        return <EpubReaderScreen profileId={profile.id} onBack={() => goToScreen("dashboard")} />;
-      }
-
       if (effectiveScreen === "game") {
         return (
           <GameScreen
@@ -11220,8 +11215,6 @@ export default function App() {
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
           />
         ) : null;
-      case "epub":
-        return <EpubReaderScreen profileId={profile.id} onBack={() => goToScreen("dashboard")} />;
       case "game":
         return (
           <GameScreen

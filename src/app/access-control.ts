@@ -32,7 +32,6 @@ export type AppScreen =
   | "culture"
   | "culture-topic"
   | "visite-guidee"
-  | "epub"
   | "game"
   | "results"
   | "tips"
@@ -88,7 +87,7 @@ const VISITOR_ALLOWED: ReadonlyArray<AccessSection> = [
 ];
 
 function screenToSection(screen: AppScreen): AccessSection {
-  if (screen === "map" || screen === "place" || screen === "visite-guidee" || screen === "epub") {
+  if (screen === "map" || screen === "place" || screen === "visite-guidee") {
     return "guide";
   }
 
