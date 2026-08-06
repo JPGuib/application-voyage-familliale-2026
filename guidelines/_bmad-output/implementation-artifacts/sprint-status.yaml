@@ -204,7 +204,7 @@ development_status:
   epic-26: in-progress
   26-1-formulaire-connexion-classique: backlog
   26-2-visibilite-lieux-proprietaire: done
-  26-3-visibilite-documents-et-modes-affichage-sejour: review
+  26-3-visibilite-documents-et-modes-affichage-sejour: done
   epic-26-retrospective: optional
 
   epic-27: done

@@ -4,7 +4,7 @@ baseline_commit: 1afac2f1d3af8259958a5d6e5029c6202148a784
 
 # Story 26.3: Owner visibility control for important travel documents
 
-Status: review
+Status: done
 Epic: 26 - Sensitive content visibility and display controls
 Story Key: 26-3-visibilite-documents-et-modes-affichage-sejour
 Date: 2026-08-06

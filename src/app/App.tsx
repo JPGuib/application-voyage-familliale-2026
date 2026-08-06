@@ -340,6 +340,12 @@ export const CHECKLIST_CATEGORIES: ChecklistCategory[] = [
       { id: "bagages-valise-soute", label: "Pour chacun : grande valise en soute de dimensions 158 cm (L+l+h) max et poids max 23kg" },
     ],
   },
+  {
+    id: "autre",
+    emoji: "📝",
+    label: "Autre",
+    items: [],
+  },
 ];
 
 const CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY = "jp-custom-checklist-items-by-profile";

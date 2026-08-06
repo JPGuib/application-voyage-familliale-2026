@@ -9,7 +9,6 @@ Evolutions :
 * Quand je créé la mire de connexion : soit je me connecte et je suis voyageur sinon visiteur je vois l'appli par défaut comme un visiteur. 
 Pour se connecter en tant que voyageur faut le code
 * Evolution de la 21.1 => voir sur un point les lieux de visite (pas uniquement la ville)
-* possible de découvrir jour après jour ou tout avoir => à paramétrer
 * Et si le réseau ne passe pas ??? Offline  via disque dur ??
 * rajouter une rubrique "AUTRE" sans item dans la chekclist
 * pb audio Topkapi
