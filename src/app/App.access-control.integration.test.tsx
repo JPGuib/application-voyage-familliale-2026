@@ -373,6 +373,34 @@ describe("App access-control integration", () => {
     expect(screen.queryByText(/Nécessite une connexion/i)).not.toBeInTheDocument();
   });
 
+  it("prevents opening the daily game while offline (story 27.5)", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const snapshot = makeSnapshot("during");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    setNavigatorOnline(false);
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    const gameButton = screen.getByRole("button", { name: /Jeu du jour/i });
+    expect(gameButton).toBeDisabled();
+    expect(screen.getByText(/Connexion requise/i)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Jeu du jour/i })).not.toBeInTheDocument();
+  });
+
   it("does not show the lock badge or toggle button in a non-owner's settings (story 18.2)", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 

@@ -1014,6 +1014,7 @@ function ActionCard({
   colorBg,
   colorText,
   onClick,
+  disabled = false,
 }: {
   tutorialId?: string;
   emoji: string;
@@ -1022,12 +1023,14 @@ function ActionCard({
   colorBg: string;
   colorText: string;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       data-tutorial-id={tutorialId}
-      className={`${colorBg} rounded-2xl p-4 text-left active:scale-95 transition-transform w-full shadow-sm`}
+      className={`${colorBg} rounded-2xl p-4 text-left active:scale-95 transition-transform w-full shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100`}
     >
       <span className="text-3xl mb-2 block">{emoji}</span>
       <p className={`font-black text-sm ${colorText}`}>{title}</p>
@@ -2189,6 +2192,7 @@ function DashboardScreen({
   quickActions,
   canAccessChecklist,
   canAccessOfflineMedia,
+  isOnline,
   onNavigate,
   onStartTutorial,
   currentDay,
@@ -2202,6 +2206,7 @@ function DashboardScreen({
   quickActions: QuickAction[];
   canAccessChecklist: boolean;
   canAccessOfflineMedia: boolean;
+  isOnline: boolean;
   onNavigate: (s: Screen) => void;
   onStartTutorial: () => void;
   currentDay: number;
@@ -2339,18 +2344,23 @@ function DashboardScreen({
           MENU
         </p>
         <div className="grid grid-cols-2 gap-3">
-          {quickActions.map((item) => (
-            <ActionCard
-              key={item.id}
-              tutorialId={`dashboard-quick-${item.id}`}
-              emoji={item.emoji}
-              title={item.title}
-              subtitle={item.subtitle}
-              colorBg={item.colorBg}
-              colorText={item.colorText}
-              onClick={() => onNavigate(item.id)}
-            />
-          ))}
+          {quickActions.map((item) => {
+            const isGameOfflineLocked = item.id === "game" && !isOnline;
+
+            return (
+              <ActionCard
+                key={item.id}
+                tutorialId={`dashboard-quick-${item.id}`}
+                emoji={item.emoji}
+                title={item.title}
+                subtitle={isGameOfflineLocked ? "Connexion requise" : item.subtitle}
+                colorBg={item.colorBg}
+                colorText={item.colorText}
+                onClick={() => onNavigate(item.id)}
+                disabled={isGameOfflineLocked}
+              />
+            );
+          })}
         </div>
         <div className="grid grid-cols-2 gap-3 mt-3">
           {canAccessChecklist && (
@@ -9511,6 +9521,12 @@ export default function App() {
   };
 
   const performNavigation = (s: Screen) => {
+    if (s === "game" && !isOnline) {
+      setAccessDeniedMessage("Jeu du jour indisponible hors ligne. Reconnectez-vous pour le lancer.");
+      setScreen(getSafeScreen(profile.role, phase));
+      return;
+    }
+
     if (!canAccessScreen(profile.role, phase, s)) {
       setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, s));
       setScreen(getSafeScreen(profile.role, phase));
@@ -11550,6 +11566,7 @@ export default function App() {
             quickActions={visibleQuickActions}
             canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
+          isOnline={isOnline}
             onNavigate={goToScreen}
             onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
@@ -11924,6 +11941,7 @@ export default function App() {
             quickActions={visibleQuickActions}
             canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
+          isOnline={isOnline}
             onNavigate={goToScreen}
             onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}

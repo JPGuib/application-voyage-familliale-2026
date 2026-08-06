@@ -4,7 +4,6 @@ Backlog
 Evolutions : 
 * Quand je créé la mire de connexion : soit je me connecte et je suis voyageur sinon visiteur je vois l'appli par défaut comme un visiteur. 
 Pour se connecter en tant que voyageur faut le code
-* Et si le réseau ne passe pas ??? Offline  via disque dur ??
 
 COntenu : 
 *  Rajoute les audios guides en ligne : https://audio.arvadmc.com/tour-detail?value=195
