@@ -8353,6 +8353,14 @@ export default function App() {
     });
     setPlaceVisibilityMap((previous) => {
       const nextFromCloud = cloudSnapshot.placeVisibilityMap ?? {};
+      const pending = pendingPlaceVisibilityMapRef.current;
+      if (pending !== "none") {
+        const serializedCloud = JSON.stringify(nextFromCloud);
+        if (serializedCloud !== pending) {
+          return previous;
+        }
+        pendingPlaceVisibilityMapRef.current = "none";
+      }
       return arePlaceVisibilityMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
     });
     setDestinationSurveyVotes((previous) => {
@@ -8531,6 +8539,10 @@ export default function App() {
       }
     | "none"
   >("none");
+  // Même principe que pendingPlaceCommentsRef, appliqué à la visibilité des
+  // lieux: évite le clignotement quand un snapshot cloud ancien revient juste
+  // après un toggle local propriétaire.
+  const pendingPlaceVisibilityMapRef = useRef<string | "none">("none");
   const previousCommentsSnapshotRef = useRef<PlaceCommentsByPlace | null>(null);
   const pendingLaunchGateCompletionRef = useRef<{ profileId: string; cycle: number } | null>(null);
   const lastChecklistReminderKeyRef = useRef<string | null>(null);
@@ -8602,7 +8614,7 @@ export default function App() {
 
     const normalized = enforceOwnerUniqueness(familyState);
     const canWriteFamilyState =
-      canUpdateOwnerCode(normalized, profile.id) && isOwnerCodeHash(ownerCodeHash.trim());
+      profile.role === "proprietaire" || canUpdateOwnerCode(normalized, profile.id);
     if (
       canWriteFamilyState &&
       !ownerDeviceRegisteredRef.current &&
@@ -9238,6 +9250,9 @@ export default function App() {
         delete next[placeId];
       } else {
         next[placeId] = nextState;
+      }
+      if (cloudEnabled) {
+        pendingPlaceVisibilityMapRef.current = JSON.stringify(next);
       }
       return next;
     });

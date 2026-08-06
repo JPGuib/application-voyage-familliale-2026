@@ -12,6 +12,7 @@ Pour se connecter en tant que voyageur faut le code
 * possible de découvrir jour après jour ou tout avoir => à paramétrer
 * Et si le réseau ne passe pas ??? Offline  via disque dur ??
 * rajouter une rubrique "AUTRE" sans item dans la chekclist
+* pb audio Topkapi
 
 COntenu : 
 *  Rajoute les audios guides en ligne : https://audio.arvadmc.com/tour-detail?value=195
