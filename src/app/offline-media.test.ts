@@ -5,6 +5,9 @@ import {
   computeSectionStatus,
   downloadOfflineMediaSection,
   normalizeMediaUrl,
+  readOfflineDownloadRegistry,
+  requestPersistentStorage,
+  verifyOfflineCacheIntegrity,
   type OfflineMediaInventory,
 } from "./offline-media";
 
@@ -125,5 +128,69 @@ describe("offline media domain model", () => {
 
     const [resource] = Object.values(result.registry.resources);
     expect(resource.errorMessage).toMatch(/insufficient storage space/i);
+  });
+});
+
+describe("offline storage persistence and integrity (story 27.3)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("requests persistent storage and journals the granted outcome in the registry", async () => {
+    const persist = vi.fn().mockResolvedValue(true);
+    const state = await requestPersistentStorage({ storageManager: { persist } });
+
+    expect(state).toEqual({ supported: true, granted: true, checkedAt: expect.any(String) });
+    expect(readOfflineDownloadRegistry().storagePersistence).toEqual(state);
+  });
+
+  it("journals a denied outcome without throwing", async () => {
+    const persist = vi.fn().mockResolvedValue(false);
+    const state = await requestPersistentStorage({ storageManager: { persist } });
+
+    expect(state.granted).toBe(false);
+    expect(readOfflineDownloadRegistry().storagePersistence.granted).toBe(false);
+  });
+
+  it("reports unsupported rather than failing when the Storage API is unavailable", async () => {
+    const state = await requestPersistentStorage({ storageManager: undefined });
+
+    expect(state).toEqual({ supported: false, granted: null, checkedAt: expect.any(String) });
+  });
+
+  it("detects evicted cache entries and downgrades the affected section to partial", async () => {
+    const inventory = makeInventory(["https://offline.local/images/a.webp"]);
+    const cache = {
+      put: vi.fn().mockResolvedValue(undefined),
+      match: vi.fn().mockResolvedValue(undefined),
+    } as unknown as Cache;
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(new Response("ok", { status: 200 }));
+
+    await downloadOfflineMediaSection("stay-guide", { inventory, cache, fetchImpl });
+    const verified = await verifyOfflineCacheIntegrity({ inventory, cache });
+
+    expect(verified.sectionProgress["stay-guide"].status).toBe("partial");
+    const [resource] = Object.values(verified.resources);
+    expect(resource.status).toBe("failed");
+    expect(resource.errorMessage).toMatch(/cache/i);
+  });
+
+  it("leaves the registry unchanged when every cached resource is still present", async () => {
+    const inventory = makeInventory(["https://offline.local/images/a.webp"]);
+    const cache = {
+      put: vi.fn().mockResolvedValue(undefined),
+      match: vi.fn().mockResolvedValue(new Response("ok")),
+    } as unknown as Cache;
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(new Response("ok", { status: 200 }));
+
+    await downloadOfflineMediaSection("stay-guide", { inventory, cache, fetchImpl });
+    const verified = await verifyOfflineCacheIntegrity({ inventory, cache });
+
+    expect(verified.sectionProgress["stay-guide"].status).toBe("complete");
+  });
+
+  it("does not throw when the Cache Storage API is unavailable", async () => {
+    const inventory = makeInventory(["https://offline.local/images/a.webp"]);
+    await expect(verifyOfflineCacheIntegrity({ inventory })).resolves.toBeDefined();
   });
 });

@@ -37,11 +37,18 @@ export type OfflineResourceRegistryItem = {
   errorMessage: string | null;
 };
 
+export type OfflineStoragePersistenceState = {
+  supported: boolean;
+  granted: boolean | null;
+  checkedAt: string | null;
+};
+
 export type OfflineDownloadRegistry = {
   version: 1;
   updatedAt: string;
   resources: Record<string, OfflineResourceRegistryItem>;
   sectionProgress: Record<OfflineSectionKey, OfflineSectionProgress>;
+  storagePersistence: OfflineStoragePersistenceState;
 };
 
 export type OfflineMediaInventory = {
@@ -77,6 +84,10 @@ const MEDIA_EXTENSION_RE = /\.(png|jpg|jpeg|webp|gif|mp3|m4a|wav|ogg)(\?|#|$)/i;
 
 function getNowIso(): string {
   return new Date().toISOString();
+}
+
+function getDefaultStoragePersistenceState(): OfflineStoragePersistenceState {
+  return { supported: false, granted: null, checkedAt: null };
 }
 
 function getBaseOrigin(): string {
@@ -279,6 +290,7 @@ function createInitialRegistry(inventory: OfflineMediaInventory): OfflineDownloa
     updatedAt: getNowIso(),
     resources,
     sectionProgress: buildSectionProgress(inventory.bySection, resources),
+    storagePersistence: getDefaultStoragePersistenceState(),
   };
 }
 
@@ -292,6 +304,7 @@ export function syncRegistryWithInventory(
         updatedAt: existingRegistry.updatedAt,
         resources: { ...existingRegistry.resources },
         sectionProgress: existingRegistry.sectionProgress,
+        storagePersistence: existingRegistry.storagePersistence ?? getDefaultStoragePersistenceState(),
       }
     : createInitialRegistry(inventory);
 
@@ -499,4 +512,89 @@ export function listFailedSectionUrls(
     .filter(([, item]) => item.status === "failed" && item.sections.includes(section))
     .map(([url]) => url)
     .sort((left, right) => left.localeCompare(right));
+}
+
+/**
+ * Requests persistent storage from the browser (story 27.3, AC2) and
+ * journals the outcome (supported/granted/checked-at) in the local
+ * download registry, so it can be surfaced in the offline media screen
+ * and inspected across sessions. Safe to call on browsers without the
+ * Storage API (e.g. older Safari): reports `supported: false` rather
+ * than throwing.
+ */
+export async function requestPersistentStorage(options?: {
+  storageManager?: Pick<StorageManager, "persist"> | undefined;
+}): Promise<OfflineStoragePersistenceState> {
+  const storageManager =
+    options?.storageManager ?? (typeof navigator !== "undefined" ? navigator.storage : undefined);
+
+  let state: OfflineStoragePersistenceState;
+  if (!storageManager || typeof storageManager.persist !== "function") {
+    state = { supported: false, granted: null, checkedAt: getNowIso() };
+  } else {
+    try {
+      const granted = await storageManager.persist();
+      state = { supported: true, granted, checkedAt: getNowIso() };
+    } catch {
+      state = { supported: true, granted: false, checkedAt: getNowIso() };
+    }
+  }
+
+  const registry = readOfflineDownloadRegistry();
+  registry.storagePersistence = state;
+  registry.updatedAt = getNowIso();
+  saveOfflineDownloadRegistry(registry);
+  return state;
+}
+
+/**
+ * Verifies that resources previously marked `complete` are still actually
+ * present in Cache Storage (story 27.3, AC4). The OS/browser can evict part
+ * of the cache despite installation and persistent storage (e.g. very low
+ * disk space); this detects that silent gap at launch and downgrades the
+ * affected resources back to `failed` so the existing section status/retry
+ * UI (story 27.2) surfaces it explicitly instead of a media silently
+ * failing to load offline.
+ */
+export async function verifyOfflineCacheIntegrity(options?: {
+  cache?: Cache;
+  inventory?: OfflineMediaInventory;
+}): Promise<OfflineDownloadRegistry> {
+  const inventory = options?.inventory ?? buildOfflineMediaInventory();
+  let registry = syncRegistryWithInventory(readOfflineDownloadRegistry(inventory), inventory);
+
+  let cache: Cache | null = null;
+  try {
+    cache = options?.cache ?? (await openOfflineCache());
+  } catch {
+    cache = null;
+  }
+
+  if (!cache) {
+    return registry;
+  }
+
+  let changed = false;
+  for (const [url, item] of Object.entries(registry.resources)) {
+    if (item.status !== "complete") {
+      continue;
+    }
+    const match = await cache.match(url);
+    if (!match) {
+      registry.resources[url] = {
+        ...item,
+        status: "failed",
+        lastAttemptAt: getNowIso(),
+        errorMessage: "Contenu absent du cache (evince par le systeme) - a retelecharger.",
+      };
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    registry = syncRegistryWithInventory(registry, inventory);
+    saveOfflineDownloadRegistry(registry);
+  }
+
+  return registry;
 }

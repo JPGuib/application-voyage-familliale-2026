@@ -146,4 +146,23 @@ describe("App offline media integration (story 27.2)", () => {
 
     expect(screen.getByRole("button", { name: /Download all/i })).toBeDisabled();
   });
+
+  it("invites the profile to install the app before downloading and checks persistent storage (story 27.3)", async () => {
+    render(<App />);
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-tutorial-id="dashboard-offline-media"]')).not.toBeNull();
+    });
+
+    fireEvent.click(document.querySelector('[data-tutorial-id="dashboard-offline-media"]') as Element);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Offline media/i })).toBeInTheDocument();
+    });
+
+    // jsdom has no matchMedia/navigator.standalone, so the app must default
+    // to "not installed" and show the reminder rather than assume install.
+    expect(screen.getByText(/install this app on your home screen/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/persistent storage/i).length).toBeGreaterThan(0);
+  });
 });

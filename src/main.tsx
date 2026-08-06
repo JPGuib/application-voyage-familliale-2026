@@ -3,7 +3,12 @@
   import { registerSW } from "virtual:pwa-register";
   import App from "./app/App.tsx";
   import { ErrorBoundary } from "./app/ErrorBoundary.tsx";
+  import { captureInstallPromptEvents } from "./app/pwa-install.ts";
   import "./styles/index.css";
+
+  // Story 27.3: capture the native "Add to Home Screen" prompt as early as
+  // possible so it can be replayed later from the offline media screen.
+  captureInstallPromptEvents();
 
   registerSW({
     immediate: true,

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, Download, RefreshCcw } from "lucide-react";
 import {
   OFFLINE_SECTION_ORDER,
@@ -6,9 +6,19 @@ import {
   downloadOfflineMediaSection,
   listFailedSectionUrls,
   readOfflineDownloadRegistry,
+  requestPersistentStorage,
+  verifyOfflineCacheIntegrity,
   type OfflineDownloadRegistry,
   type OfflineSectionKey,
+  type OfflineStoragePersistenceState,
 } from "./offline-media";
+import {
+  detectInstallPlatformHint,
+  hasDeferredInstallPrompt,
+  installInstructions,
+  isRunningInstalled,
+  triggerInstallPrompt,
+} from "./pwa-install";
 
 const SECTION_LABELS: Record<OfflineSectionKey, string> = {
   "stay-guide": "Guide du sejour",
@@ -56,6 +66,37 @@ export function OfflineMediaScreen({
     total: number;
     percent: number;
   } | null>(null);
+  const [installed, setInstalled] = useState(() => isRunningInstalled());
+  const [installPromptAvailable, setInstallPromptAvailable] = useState(() => hasDeferredInstallPrompt());
+  const [persistence, setPersistence] = useState<OfflineStoragePersistenceState>(
+    () => readOfflineDownloadRegistry().storagePersistence
+  );
+  const [integrityChecked, setIntegrityChecked] = useState(false);
+  const platformHint = useMemo(() => detectInstallPlatformHint(), []);
+
+  // Story 27.3: request persistent storage and check that previously
+  // "complete" resources are still actually present in Cache Storage each
+  // time this screen is opened, rather than assuming the cache is intact.
+  useEffect(() => {
+    let isMounted = true;
+
+    requestPersistentStorage().then((state) => {
+      if (isMounted) {
+        setPersistence(state);
+      }
+    });
+
+    verifyOfflineCacheIntegrity().then((updatedRegistry) => {
+      if (isMounted) {
+        setRegistry(updatedRegistry);
+        setIntegrityChecked(true);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const totals = useMemo(() => {
     return OFFLINE_SECTION_ORDER.reduce(
@@ -69,6 +110,14 @@ export function OfflineMediaScreen({
       { total: 0, completed: 0, failed: 0 }
     );
   }, [registry]);
+
+  const handleInstallClick = async () => {
+    const outcome = await triggerInstallPrompt();
+    if (outcome === "accepted") {
+      setInstalled(isRunningInstalled());
+    }
+    setInstallPromptAvailable(hasDeferredInstallPrompt());
+  };
 
   const handleDownloadAll = async () => {
     if (!isOnline) {
@@ -195,6 +244,55 @@ export function OfflineMediaScreen({
         {!isOnline && (
           <div className="rounded-2xl border border-[#F57F17] bg-[#FFF8E1] px-4 py-3 text-sm font-semibold text-[#8D6E63]">
             You are offline. Existing cache remains available, but new downloads are disabled.
+          </div>
+        )}
+
+        {!installed ? (
+          <div className="rounded-2xl border border-[#1565C0] bg-[#E3F2FD] px-4 py-3 text-sm text-[#0D47A1]">
+            <p className="font-black">Install this app on your home screen before you go</p>
+            <p className="mt-1 text-xs font-semibold">{installInstructions(platformHint)}</p>
+            <p className="mt-1 text-xs">
+              Without this, iOS may delete downloaded content after about 7 days of tab-only use. You can still use
+              the app and download offline content without installing, but the content may not survive the trip.
+            </p>
+            {platformHint === "android" && installPromptAvailable && (
+              <button
+                type="button"
+                onClick={handleInstallClick}
+                className="mt-2 inline-flex items-center gap-2 rounded-xl bg-[#1565C0] px-3 py-2 text-xs font-black text-white"
+              >
+                Install now
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-[#2E7D32] bg-[#E8F5E9] px-4 py-3 text-xs font-bold text-[#2E7D32]">
+            App installed on home screen.
+          </div>
+        )}
+
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Persistent storage</p>
+          <p className="text-sm font-semibold text-foreground mt-2">
+            {!persistence.supported && "Not supported by this browser."}
+            {persistence.supported && persistence.granted === true &&
+              "Granted - the browser will try hard not to evict this content."}
+            {persistence.supported && persistence.granted === false &&
+              "Not granted - downloaded content may be evicted under storage pressure."}
+            {persistence.supported && persistence.granted === null && "Not checked yet."}
+          </p>
+          {!installed && persistence.granted !== true && (
+            <p className="mt-1 text-xs font-semibold text-[#F57F17]">
+              Risk: without installing the app and persistent storage, offline content can disappear during the
+              trip.
+            </p>
+          )}
+        </div>
+
+        {integrityChecked && totals.failed > 0 && (
+          <div className="rounded-2xl border border-[#F57F17] bg-[#FFF8E1] px-4 py-3 text-xs font-semibold text-[#8D6E63]">
+            Cache check found {totals.failed} missing resource(s) (possibly evicted by the system). Use Retry on the
+            affected sections below to restore them.
           </div>
         )}
 
