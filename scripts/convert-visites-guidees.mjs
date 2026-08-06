@@ -25,6 +25,7 @@ import mammoth from "mammoth";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { spawnSync } from "node:child_process";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
@@ -168,6 +169,20 @@ function stripHtml(html) {
     .trim();
 }
 
+function convertImageToWebp(sourcePath, targetPath) {
+  const result = spawnSync(
+    "ffmpeg",
+    ["-y", "-loglevel", "error", "-i", sourcePath, "-c:v", "libwebp", "-q:v", "80", "-compression_level", "6", targetPath],
+    { stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" }
+  );
+
+  if (result.error || result.status !== 0 || !fs.existsSync(targetPath) || fs.statSync(targetPath).size === 0) {
+    return false;
+  }
+
+  return true;
+}
+
 async function generateTts(text, outputPath) {
   try {
     const tts = new MsEdgeTTS();
@@ -234,9 +249,21 @@ async function convertOne(placeId, docxPath) {
     convertImage: mammoth.images.imgElement(async (image) => {
       imageCounter += 1;
       const extension = image.contentType.split("/")[1] || "png";
-      const filename = `image-${imageCounter}.${extension}`;
+      const filename = `image-${imageCounter}.webp`;
+      const rawFilename = `image-${imageCounter}.${extension}`;
       const buffer = await image.read();
-      fs.writeFileSync(path.join(imageDir, filename), buffer);
+      const rawPath = path.join(imageDir, rawFilename);
+      const webpPath = path.join(imageDir, filename);
+      fs.writeFileSync(rawPath, buffer);
+
+      const converted = convertImageToWebp(rawPath, webpPath);
+      if (converted) {
+        fs.unlinkSync(rawPath);
+      } else {
+        // Fallback if ffmpeg is unavailable or conversion fails for a specific image.
+        fs.renameSync(rawPath, webpPath);
+      }
+
       return { src: `/images/places/${placeId}/visite-guidee/${filename}` };
     }),
   };

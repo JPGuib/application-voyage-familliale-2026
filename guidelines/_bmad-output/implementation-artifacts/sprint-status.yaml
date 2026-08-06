@@ -207,6 +207,7 @@ development_status:
   26-3-visibilite-documents-et-modes-affichage-sejour: done
   epic-26-retrospective: optional
 
-  epic-27: done
+  epic-27: in-progress
   27-1-generateur-automatique-tutoriels-interactifs: done
+  27-1-optimisation-medias-hors-ligne: review
   epic-27-retrospective: optional
