@@ -1302,6 +1302,41 @@ function ProfileSetupScreen({
   );
 }
 
+function CloudLoadingScreen() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="text-center">
+        <div className="mb-6 flex justify-center">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 border-4 border-transparent border-t-blue-500 border-r-blue-500 rounded-full animate-spin"></div>
+          </div>
+        </div>
+        <p className="text-xl font-semibold text-gray-800 mb-2">Chargement en cours...</p>
+        <p className="text-sm text-gray-600">Synchronisation avec le cloud</p>
+      </div>
+    </div>
+  );
+}
+
+function CloudAccessErrorScreen({ reason, onRetry }: { reason: string; onRetry: () => void }) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-orange-100">
+      <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md mx-4 text-center">
+        <div className="mb-6 text-5xl">⚠️</div>
+        <h1 className="text-2xl font-black text-gray-900 mb-3">Erreur d'accès</h1>
+        <p className="text-gray-700 mb-2">{reason}</p>
+        <p className="text-sm text-gray-500 mb-6">Vérifiez votre connexion internet et réessayez.</p>
+        <button
+          onClick={onRetry}
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-colors"
+        >
+          Réessayer
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function CloudLoginScreen({
   profiles,
   selectedProfileId,
