@@ -213,4 +213,5 @@ development_status:
   27-2-telechargement-cache-offline: done 
   27-3-stockage-persistant-installation-ecran-accueil: review
   27-4-lecture-offline-coherente-contenu-visibilite: review
+  27-5-verrouillage-reglages-hors-ligne: ready-for-dev
   epic-27-retrospective: optional

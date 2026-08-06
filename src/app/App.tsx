@@ -5895,6 +5895,8 @@ function SettingsScreen({
   onResetScores,
   familyMembersForGameProgressReset,
   onResetGameProgress,
+  isOnline,
+  lastSyncAt,
 }: {
   profile: Profile;
   ownerCodeConfigured: boolean;
@@ -5955,6 +5957,8 @@ function SettingsScreen({
     code: string,
     targetProfileId: string
   ) => Promise<{ ok: boolean; message: string }>;
+  isOnline: boolean;
+  lastSyncAt: number | null;
 }) {
   const [surnameInput, setSurnameInput] = useState(profile.surname);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -6045,8 +6049,17 @@ function SettingsScreen({
         : notificationPermissionStatus === "default"
           ? "Non demandee"
           : "Non supportee";
+  const settingsWriteActionsDisabled = !isOnline;
   const notificationTogglesDisabled =
-    !notificationsSupported || notificationPermissionStatus === "denied";
+    settingsWriteActionsDisabled || !notificationsSupported || notificationPermissionStatus === "denied";
+  const settingsDisabledButtonClass = "disabled:opacity-40 disabled:cursor-not-allowed";
+  const lastSyncLabel =
+    typeof lastSyncAt === "number" && Number.isFinite(lastSyncAt) && lastSyncAt > 0
+      ? new Intl.DateTimeFormat("fr-FR", {
+          dateStyle: "short",
+          timeStyle: "short",
+        }).format(new Date(lastSyncAt))
+      : null;
 
   useEffect(() => {
     if (!profileRecoveryConfigured && passwordProofMethod === "recovery") {
@@ -6094,6 +6107,18 @@ function SettingsScreen({
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {settingsWriteActionsDisabled && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4 text-amber-950">
+            <p className="text-xs font-extrabold uppercase tracking-widest">Nécessite une connexion</p>
+            <p className="mt-2 text-xs text-amber-900">
+              Les réglages restent consultables hors ligne. Les actions de modification se réactiveront automatiquement au retour du réseau.
+            </p>
+            <p className="mt-2 text-[11px] font-bold text-amber-900/80">
+              Dernière synchronisation : {lastSyncLabel ?? "indisponible"}
+            </p>
+          </div>
+        )}
+
         <div className="bg-card rounded-2xl border border-border p-4">
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
             Surnom
@@ -6112,7 +6137,8 @@ function SettingsScreen({
               const result = onSaveSurname(surnameInput);
               setFeedback(result.message);
             }}
-            className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+            disabled={settingsWriteActionsDisabled}
+            className={`mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black ${settingsDisabledButtonClass}`}
           >
             Enregistrer le surnom
           </button>
@@ -6141,11 +6167,12 @@ function SettingsScreen({
                   onSaveProfileMetadata(g, selectedHouseholdRole);
                   setMetadataFeedback("Profil de préparation mis à jour.");
                 }}
+                disabled={settingsWriteActionsDisabled}
                 className={`rounded-xl py-2 text-xs font-black border transition-colors ${
                   selectedGender === g
                     ? "bg-primary text-primary-foreground border-primary"
                     : "border-border text-foreground"
-                }`}
+                } ${settingsDisabledButtonClass}`}
               >
                 {g === "unspecified" ? "Non précisé" : g === "male" ? "Homme" : "Femme"}
               </button>
@@ -6164,11 +6191,12 @@ function SettingsScreen({
                   onSaveProfileMetadata(selectedGender, r);
                   setMetadataFeedback("Profil de préparation mis à jour.");
                 }}
+                disabled={settingsWriteActionsDisabled}
                 className={`rounded-xl py-2 text-xs font-black border transition-colors ${
                   selectedHouseholdRole === r
                     ? "bg-primary text-primary-foreground border-primary"
                     : "border-border text-foreground"
-                }`}
+                } ${settingsDisabledButtonClass}`}
               >
                 {r === "member" ? "Non précisé" : r === "parent" ? "Parent" : "Enfant"}
               </button>
@@ -6292,7 +6320,8 @@ function SettingsScreen({
                     setProfilePasswordFeedback(result.message);
                     if (result.ok) setProfilePasswordInput("");
                   }}
-                  className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+                  disabled={settingsWriteActionsDisabled}
+                  className={`mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black ${settingsDisabledButtonClass}`}
                 >
                   Définir le mot de passe
                 </button>
@@ -6306,7 +6335,8 @@ function SettingsScreen({
                       setShowPasswordChangeFlow(true);
                       setPasswordChangeFeedback(null);
                     }}
-                    className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+                    disabled={settingsWriteActionsDisabled}
+                    className={`mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black ${settingsDisabledButtonClass}`}
                   >
                     Changer le mot de passe en session
                   </button>
@@ -6431,7 +6461,8 @@ function SettingsScreen({
                             setShowPasswordChangeFlow(false);
                           }
                         }}
-                        className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
+                        disabled={settingsWriteActionsDisabled}
+                        className={`rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground ${settingsDisabledButtonClass}`}
                       >
                         Confirmer le changement
                       </button>
@@ -6502,7 +6533,8 @@ function SettingsScreen({
                 );
                 setProfileRecoveryFeedback(result.message);
               }}
-              className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+              disabled={settingsWriteActionsDisabled}
+              className={`mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black ${settingsDisabledButtonClass}`}
             >
               {profileRecoveryConfigured ? "Mettre à jour la récupération" : "Définir la récupération"}
             </button>
@@ -6545,7 +6577,8 @@ function SettingsScreen({
                 const result = onSaveTripStartDate(tripStartDateInput);
                 setTripStartDateFeedback(result.message);
               }}
-              className="mt-2 w-full rounded-xl bg-primary text-primary-foreground font-black text-sm py-2.5 active:scale-95 transition-transform"
+              disabled={settingsWriteActionsDisabled}
+              className={`mt-2 w-full rounded-xl bg-primary text-primary-foreground font-black text-sm py-2.5 active:scale-95 transition-transform ${settingsDisabledButtonClass}`}
             >
               Enregistrer la date de début
             </button>
@@ -6593,7 +6626,8 @@ function SettingsScreen({
                 const result = await onSaveOwnerCode(ownerCodeInput);
                 setOwnerCodeFeedback(result.message);
               }}
-              className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+              disabled={settingsWriteActionsDisabled}
+              className={`mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black ${settingsDisabledButtonClass}`}
             >
               {ownerCodeConfigured ? "Mettre à jour le code" : "Définir le code"}
             </button>
@@ -6638,7 +6672,8 @@ function SettingsScreen({
                   const result = await onSaveTravelerCode(travelerCodeInput);
                   setTravelerCodeFeedback(result.message);
                 }}
-                className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
+                disabled={settingsWriteActionsDisabled}
+                className={`mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black ${settingsDisabledButtonClass}`}
               >
                 {travelerCodeConfigured ? "Mettre à jour le code voyageur" : "Définir le code voyageur"}
               </button>
@@ -6682,8 +6717,8 @@ function SettingsScreen({
                       setShowLockToggleCodeInput(false);
                       setShowLockTogglePrompt(true);
                     }}
-                    disabled={!ownerLockActionsEnabled}
-                    className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!ownerLockActionsEnabled || settingsWriteActionsDisabled}
+                    className={`mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground ${settingsDisabledButtonClass}`}
                   >
                     {appLocked ? "Débloquer l'application" : "Bloquer l'application"}
                   </button>
@@ -6694,7 +6729,8 @@ function SettingsScreen({
                   )}
                   <button
                     onClick={onOpenLaunchReplay}
-                    className="mt-2 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
+                    disabled={settingsWriteActionsDisabled}
+                    className={`mt-2 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground ${settingsDisabledButtonClass}`}
                   >
                     Rejouer le rituel de départ
                   </button>
@@ -6754,7 +6790,8 @@ function SettingsScreen({
 
                             setLockToggleFeedback(result.message);
                           }}
-                          className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
+                          disabled={settingsWriteActionsDisabled}
+                          className={`rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground ${settingsDisabledButtonClass}`}
                         >
                           Valider
                         </button>
@@ -6798,8 +6835,8 @@ function SettingsScreen({
                   setShowDayOverrideCodeInput(false);
                   setShowDayOverridePrompt(true);
                 }}
-                disabled={gameDayOverride === "open"}
-                className="w-full rounded-xl py-3 text-sm font-black border border-border text-foreground disabled:opacity-40"
+                disabled={settingsWriteActionsDisabled || gameDayOverride === "open"}
+                className={`w-full rounded-xl py-3 text-sm font-black border border-border text-foreground ${settingsDisabledButtonClass}`}
               >
                 Forcer l&apos;ouverture du jour {currentDay}
               </button>
@@ -6811,8 +6848,8 @@ function SettingsScreen({
                   setShowDayOverrideCodeInput(false);
                   setShowDayOverridePrompt(true);
                 }}
-                disabled={gameDayOverride === "closed"}
-                className="w-full rounded-xl py-3 text-sm font-black border border-border text-foreground disabled:opacity-40"
+                disabled={settingsWriteActionsDisabled || gameDayOverride === "closed"}
+                className={`w-full rounded-xl py-3 text-sm font-black border border-border text-foreground ${settingsDisabledButtonClass}`}
               >
                 Forcer la fermeture du jour {currentDay}
               </button>
@@ -6824,8 +6861,8 @@ function SettingsScreen({
                   setShowDayOverrideCodeInput(false);
                   setShowDayOverridePrompt(true);
                 }}
-                disabled={gameDayOverride === null}
-                className="w-full rounded-xl py-3 text-sm font-black border border-border text-foreground disabled:opacity-40"
+                disabled={settingsWriteActionsDisabled || gameDayOverride === null}
+                className={`w-full rounded-xl py-3 text-sm font-black border border-border text-foreground ${settingsDisabledButtonClass}`}
               >
                 Revenir à l&apos;automatique
               </button>
@@ -6896,7 +6933,8 @@ function SettingsScreen({
 
                     setDayOverrideFeedback(result.message);
                   }}
-                  className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
+                  disabled={settingsWriteActionsDisabled}
+                  className={`rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground ${settingsDisabledButtonClass}`}
                 >
                   Valider
                 </button>
@@ -6922,7 +6960,8 @@ function SettingsScreen({
                 setShowScoreResetCodeInput(false);
                 setShowScoreResetPrompt(true);
               }}
-              className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-destructive text-destructive"
+              disabled={settingsWriteActionsDisabled}
+              className={`mt-3 w-full rounded-xl py-3 text-sm font-black border border-destructive text-destructive ${settingsDisabledButtonClass}`}
             >
               Réinitialiser tous les scores
             </button>
@@ -6950,7 +6989,8 @@ function SettingsScreen({
                   setShowScoreResetCodeInput(false);
                   setShowScoreResetPrompt(true);
                 }}
-                className="rounded-xl py-3 px-4 text-sm font-black border border-destructive text-destructive"
+                disabled={settingsWriteActionsDisabled}
+                className={`rounded-xl py-3 px-4 text-sm font-black border border-destructive text-destructive ${settingsDisabledButtonClass}`}
               >
                 Réinitialiser ce jour
               </button>
@@ -6987,7 +7027,8 @@ function SettingsScreen({
                   setShowGameProgressResetCodeInput(false);
                   setShowGameProgressResetPrompt(true);
                 }}
-                className="rounded-xl py-3 px-4 text-sm font-black border border-destructive text-destructive"
+                disabled={settingsWriteActionsDisabled}
+                className={`rounded-xl py-3 px-4 text-sm font-black border border-destructive text-destructive ${settingsDisabledButtonClass}`}
               >
                 Réinitialiser
               </button>
@@ -7059,7 +7100,8 @@ function SettingsScreen({
 
                     setGameProgressResetFeedback(result.message);
                   }}
-                  className="rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground"
+                  disabled={settingsWriteActionsDisabled}
+                  className={`rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground ${settingsDisabledButtonClass}`}
                 >
                   Valider
                 </button>
@@ -7131,7 +7173,8 @@ function SettingsScreen({
 
                     setScoreResetFeedback(result.message);
                   }}
-                  className="rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground"
+                  disabled={settingsWriteActionsDisabled}
+                  className={`rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground ${settingsDisabledButtonClass}`}
                 >
                   Valider
                 </button>
@@ -7150,7 +7193,8 @@ function SettingsScreen({
             </p>
             <button
               onClick={() => setShowSwitchProfilePrompt(true)}
-              className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
+              disabled={settingsWriteActionsDisabled}
+              className={`mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground ${settingsDisabledButtonClass}`}
             >
               Se déconnecter / Changer de profil
             </button>
@@ -7174,7 +7218,8 @@ function SettingsScreen({
                 setDeleteProfileProofMethod("password");
                 setShowDeleteProfilePrompt(true);
               }}
-              className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-destructive text-destructive"
+              disabled={settingsWriteActionsDisabled}
+              className={`mt-3 w-full rounded-xl py-3 text-sm font-black border border-destructive text-destructive ${settingsDisabledButtonClass}`}
             >
               Supprimer mon profil
             </button>
@@ -7201,7 +7246,8 @@ function SettingsScreen({
                   setShowSwitchProfilePrompt(false);
                   onSwitchProfile();
                 }}
-                className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
+                disabled={settingsWriteActionsDisabled}
+                className={`rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground ${settingsDisabledButtonClass}`}
               >
                 Oui, se déconnecter
               </button>
@@ -7238,7 +7284,8 @@ function SettingsScreen({
                 {profilePasswordConfigured ? (
                   <button
                     onClick={() => setShowDeleteProfileCredentialStep(true)}
-                    className="rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground"
+                    disabled={settingsWriteActionsDisabled}
+                    className={`rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground ${settingsDisabledButtonClass}`}
                   >
                     Continuer
                   </button>
@@ -7251,7 +7298,8 @@ function SettingsScreen({
                         setShowDeleteProfilePrompt(false);
                       }
                     }}
-                    className="rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground"
+                    disabled={settingsWriteActionsDisabled}
+                    className={`rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground ${settingsDisabledButtonClass}`}
                   >
                     Supprimer définitivement
                   </button>
@@ -7346,7 +7394,8 @@ function SettingsScreen({
                         setDeleteProfileConfirmError(result.message);
                       }
                     }}
-                    className="rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground"
+                    disabled={settingsWriteActionsDisabled}
+                    className={`rounded-xl py-3 text-sm font-black bg-destructive text-destructive-foreground ${settingsDisabledButtonClass}`}
                   >
                     Supprimer définitivement
                   </button>
@@ -10338,6 +10387,8 @@ export default function App() {
   const currentProfileRecoveryHash = profileRecoveryHashes[profile.id] || "";
   const currentProfileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";
   const currentProfileRecoveryAnswer = profileRecoveryAnswers[profile.id] || "";
+  const currentProfileLastSyncAt =
+    cloudSnapshot?.profiles?.[profile.id]?.lastSyncAt ?? cloudSnapshot?.updatedAt ?? null;
 
   const changeProfilePasswordInSession = async (
     method: InSessionPasswordProofMethod,
@@ -11488,6 +11539,8 @@ export default function App() {
               surname: member.surname,
             }))}
             onResetGameProgress={confirmGameProgressReset}
+            isOnline={isOnline}
+            lastSyncAt={currentProfileLastSyncAt}
           />
         );
       }
@@ -12238,6 +12291,8 @@ export default function App() {
               surname: member.surname,
             }))}
             onResetGameProgress={confirmGameProgressReset}
+            isOnline={isOnline}
+            lastSyncAt={currentProfileLastSyncAt}
           />
         );
       default:

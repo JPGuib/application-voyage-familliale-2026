@@ -1,5 +1,5 @@
 ﻿import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import App from "./App";
 import { hashOwnerCode } from "./owner-code";
 
@@ -82,10 +82,18 @@ function makeSnapshot(phase: SnapshotPhase) {
   };
 }
 
+function setNavigatorOnline(value: boolean) {
+  Object.defineProperty(window.navigator, "onLine", {
+    configurable: true,
+    value,
+  });
+}
+
 describe("App access-control integration", () => {
   beforeEach(() => {
     localStorage.clear();
     cloudSyncMock.mockReset();
+    setNavigatorOnline(true);
   });
 
   it("grants owner full access to all screens before unlock (story 18.2)", async () => {
@@ -303,6 +311,66 @@ describe("App access-control integration", () => {
     expect(screen.getByText(/Débloquée/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Bloquer l'application/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Débloquer l'application/i })).not.toBeInTheDocument();
+  });
+
+  it("disables settings write actions offline and restores them online again (story 27.5)", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const lastSyncAt = Date.UTC(2026, 7, 6, 9, 15, 0);
+    const snapshot = {
+      ...makeSnapshot("during"),
+      ownerCodePlain: "1234",
+      travelerCodePlain: "famille2026",
+      updatedAt: lastSyncAt,
+      profiles: {
+        ...makeSnapshot("during").profiles,
+        p1: {
+          ...makeSnapshot("during").profiles.p1,
+          lastSyncAt,
+        },
+      },
+    };
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    setNavigatorOnline(false);
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Nécessite une connexion/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dernière synchronisation/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Enregistrer le surnom/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Mettre à jour le code/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Bloquer l'application/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Se déconnecter \/ Changer de profil/i })).toBeDisabled();
+
+    setNavigatorOnline(true);
+    act(() => {
+      window.dispatchEvent(new Event("online"));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Enregistrer le surnom/i })).toBeEnabled();
+    });
+
+    expect(screen.queryByText(/Nécessite une connexion/i)).not.toBeInTheDocument();
   });
 
   it("does not show the lock badge or toggle button in a non-owner's settings (story 18.2)", async () => {
