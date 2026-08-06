@@ -3354,6 +3354,7 @@ function GuideScreen({
   role,
   placeVisibilityMap,
   onTogglePlaceVisibility,
+  canManagePlaceVisibility,
 }: {
   onBack: () => void;
   onPlaceSelect: (id: string) => void;
@@ -3364,6 +3365,7 @@ function GuideScreen({
   role: Role | null;
   placeVisibilityMap: PlaceVisibilityMap;
   onTogglePlaceVisibility: (placeId: string, nextState: PlaceVisibilityState) => void;
+  canManagePlaceVisibility: boolean;
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
 
@@ -3467,7 +3469,7 @@ function GuideScreen({
           const counts = getPlaceReactionCounts(commentsByPlace[item.id]);
           const visibilityState = placeVisibilityMap[item.id] ?? "visible";
           const isHiddenByOwner = visibilityState === "hiddenByOwner";
-          const canToggleVisibility = role === "proprietaire";
+          const canToggleVisibility = canManagePlaceVisibility;
 
           return (
             <div key={item.id} className="space-y-2">
@@ -3492,7 +3494,7 @@ function GuideScreen({
                       <h3 className="font-black text-foreground mt-0.5">
                         {item.name}
                       </h3>
-                      {isHiddenByOwner && role === "proprietaire" && (
+                      {isHiddenByOwner && canManagePlaceVisibility && (
                         <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-[#B71C1C]">
                           Masqué par le propriétaire
                         </p>
@@ -8613,8 +8615,7 @@ export default function App() {
     }
 
     const normalized = enforceOwnerUniqueness(familyState);
-    const canWriteFamilyState =
-      profile.role === "proprietaire" || canUpdateOwnerCode(normalized, profile.id);
+    const canWriteFamilyState = canUpdateOwnerCode(normalized, profile.id);
     if (
       canWriteFamilyState &&
       !ownerDeviceRegisteredRef.current &&
@@ -9240,7 +9241,7 @@ export default function App() {
   };
 
   const setPlaceVisibilityForOwner = (placeId: string, nextState: PlaceVisibilityState) => {
-    if (profile.role !== "proprietaire") {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
       return;
     }
 
@@ -9596,7 +9597,7 @@ export default function App() {
     }
 
     const normalizedFamilyState = enforceOwnerUniqueness(familyState);
-    const canWriteFamilyState = profile.role === "proprietaire" || canUpdateOwnerCode(normalizedFamilyState, profile.id);
+    const canWriteFamilyState = canUpdateOwnerCode(normalizedFamilyState, profile.id);
     if (!canWriteFamilyState) {
       return {
         ok: false as const,
@@ -11223,6 +11224,7 @@ export default function App() {
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
             onTogglePlaceVisibility={setPlaceVisibilityForOwner}
+            canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
           />
         );
       }
@@ -11577,6 +11579,7 @@ export default function App() {
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
             onTogglePlaceVisibility={setPlaceVisibilityForOwner}
+            canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
           />
         );
       case "planning":
