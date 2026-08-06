@@ -2723,7 +2723,18 @@ function DocumentsScreen({
               .filter((entry): entry is { label: string; url: string } => Boolean(entry))
           : undefined;
         const gpsRaw = typeof candidate.gps === "string" ? candidate.gps.trim() : "";
-        const gps = gpsRaw && parseGpsString(gpsRaw) ? gpsRaw : undefined;
+        const defaultLinks = defaultDocumentsById.get(candidate.id)?.links;
+        const resolvedLinks = links && links.length > 0
+          ? links
+          : defaultLinks && defaultLinks.length > 0
+            ? defaultLinks
+            : undefined;
+        const defaultGps = defaultDocumentsById.get(candidate.id)?.gps;
+        const gps = gpsRaw && parseGpsString(gpsRaw)
+          ? gpsRaw
+          : defaultGps && parseGpsString(defaultGps)
+            ? defaultGps
+            : undefined;
         const defaultScans = defaultDocumentsById.get(candidate.id)?.scans;
         const resolvedScans = scans && scans.length > 0
           ? scans
@@ -2743,7 +2754,7 @@ function DocumentsScreen({
               : undefined,
           details,
           scans: resolvedScans,
-          links: links && links.length > 0 ? links : undefined,
+          links: resolvedLinks,
           gps,
         });
       }
@@ -3533,6 +3544,49 @@ function CultureScreen({
 // minimal (pas de vraie syntaxe Markdown complète) pour rester simple à
 // écrire directement dans les fichiers de contenu.
 function renderFormattedText(text: string | string[] | null | undefined) {
+  const renderTextWithLinks = (rawText: string, keyPrefix: string): ReactNode[] => {
+    const urlRegex = /(https?:\/\/[^\s)]+|www\.[^\s)]+)/g;
+    const chunks: ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null = null;
+
+    while ((match = urlRegex.exec(rawText)) !== null) {
+      const found = match[0];
+      const index = match.index;
+      if (index > lastIndex) {
+        chunks.push(
+          <span key={`${keyPrefix}-txt-${lastIndex}`}>
+            {rawText.slice(lastIndex, index)}
+          </span>
+        );
+      }
+
+      const href = found.startsWith("http") ? found : `https://${found}`;
+      chunks.push(
+        <a
+          key={`${keyPrefix}-url-${index}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 text-accent font-semibold break-all"
+        >
+          {found}
+        </a>
+      );
+      lastIndex = index + found.length;
+    }
+
+    if (lastIndex < rawText.length) {
+      chunks.push(
+        <span key={`${keyPrefix}-txt-tail`}>
+          {rawText.slice(lastIndex)}
+        </span>
+      );
+    }
+
+    return chunks.length > 0 ? chunks : [<span key={`${keyPrefix}-txt-only`}>{rawText}</span>];
+  };
+
   // Tolérance : si le contenu a été écrit par erreur comme un tableau de
   // chaînes (ex: history: ["...", "**Titre**", "..."]), on le rejoint en une
   // seule chaîne plutôt que de planter — l'écran de détail ne doit jamais
@@ -3547,10 +3601,10 @@ function renderFormattedText(text: string | string[] | null | undefined) {
         {paragraph.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
           part.startsWith("**") && part.endsWith("**") ? (
             <strong key={i} className="font-black text-foreground">
-              {part.slice(2, -2)}
+              {renderTextWithLinks(part.slice(2, -2), `p${pIndex}-b${i}`)}
             </strong>
           ) : (
-            <span key={i}>{part}</span>
+            <span key={i}>{renderTextWithLinks(part, `p${pIndex}-n${i}`)}</span>
           )
         )}
       </p>
@@ -3865,11 +3919,6 @@ function ContentDetailScreen({
                 Y aller
               </button>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {deviceCoords
-                ? "Votre position GPS sera utilisée comme point de départ si autorisée."
-                : "Autorisez le GPS pour un itinéraire depuis votre position, sinon Google Maps vous laissera choisir le départ."}
-            </p>
           </div>
         )}
 
