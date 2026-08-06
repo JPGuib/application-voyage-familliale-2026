@@ -23,6 +23,7 @@ export type AppScreen =
   | "guide"
   | "planning"
   | "documents"
+  | "offline-media"
   | "map"
   | "place"
   | "histoire"
@@ -87,6 +88,10 @@ const VISITOR_ALLOWED: ReadonlyArray<AccessSection> = [
 ];
 
 function screenToSection(screen: AppScreen): AccessSection {
+  if (screen === "offline-media") {
+    return "tips";
+  }
+
   if (screen === "map" || screen === "place" || screen === "visite-guidee") {
     return "guide";
   }

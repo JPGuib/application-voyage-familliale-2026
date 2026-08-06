@@ -76,6 +76,29 @@ export default defineConfig({
         // chunks JS soient servis, causant un écran blanc au refresh.
         globPatterns: ['**/*.{js,css,html,woff2}'],
         cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) =>
+              url.pathname.startsWith('/images/') || url.pathname.startsWith('/audio/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'offline-media-v1',
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'offline-media-v1',
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
     }),
   ],

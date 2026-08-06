@@ -210,4 +210,5 @@ development_status:
   epic-27: in-progress
   27-1-generateur-automatique-tutoriels-interactifs: done
   27-1-optimisation-medias-hors-ligne: review
+  27-2-telechargement-cache-offline: review
   epic-27-retrospective: optional

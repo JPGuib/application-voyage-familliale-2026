@@ -31,8 +31,10 @@ import {
   MessageCircle,
   Scroll,
   Globe,
+  Download,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
+import { OfflineMediaScreen } from "./OfflineMediaScreen";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
 import {
@@ -366,9 +368,9 @@ const MAX_PLACE_COMMENT_LENGTH = 500;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
-const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
-type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
+type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
+type QuickScreen = "guide" | "documents" | "offline-media" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
   id: string;
@@ -442,6 +444,14 @@ const QUICK_ACTIONS: QuickAction[] = [
     colorText: "text-[#1A73E8]",
   },
   {
+    id: "offline-media",
+    emoji: "⬇️",
+    title: "Offline media",
+    subtitle: "Download cache by section",
+    colorBg: "bg-[#E8F5E9]",
+    colorText: "text-[#1B5E20]",
+  },
+  {
     id: "histoire",
     emoji: "🏛️",
     title: "Histoire",
@@ -508,6 +518,7 @@ const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> =
   { id: "map", icon: MapIcon, label: "Carte" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
   { id: "tips", icon: Lightbulb, label: "Conseils" },
+  { id: "offline-media", icon: Download, label: "Offline" },
   { id: "histoire", icon: Scroll, label: "Histoire" },
   { id: "geographie", icon: Globe, label: "Géographie" },
   { id: "culture", icon: Theater, label: "Culture" },
@@ -11561,6 +11572,10 @@ export default function App() {
         return <TipsScreen onBack={() => goToScreen("dashboard")} currentDay={currentDay} />;
       }
 
+      if (effectiveScreen === "offline-media") {
+        return <OfflineMediaScreen isOnline={isOnline} onBack={() => goToScreen("dashboard")} />;
+      }
+
       return (
         <ChecklistScreen
           categories={visibleCategories}
@@ -11889,6 +11904,8 @@ export default function App() {
         );
       case "tips":
         return <TipsScreen onBack={() => goToScreen("dashboard")} currentDay={currentDay} />;
+      case "offline-media":
+        return <OfflineMediaScreen isOnline={isOnline} onBack={() => goToScreen("dashboard")} />;
       case "settings":
         return (
           <SettingsScreen
