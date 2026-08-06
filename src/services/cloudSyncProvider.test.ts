@@ -815,7 +815,7 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     expect(updates["profiles/profile-1/recoveryConfiguredAt"]).toBe(12345);
   });
 
-  it("writes null for recoveryQuestion when question is empty", async () => {
+  it("does not overwrite recoveryQuestion when question is empty but hash is valid", async () => {
     mockUpdate.mockClear();
 
     await pushCloudSnapshot(db, familyId, {
@@ -828,7 +828,8 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     expect(mockUpdate).toHaveBeenCalledOnce();
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     expect(updates["profiles/profile-1/recoveryHash"]).toBe("sha256:" + "b".repeat(64));
-    expect(updates["profiles/profile-1/recoveryQuestion"]).toBeNull();
+    // When question is empty, the key must NOT be written (preserves existing Firebase value)
+    expect(updates["profiles/profile-1/recoveryQuestion"]).toBeUndefined();
   });
 
   it("writes null for both recoveryHash and recoveryQuestion when hash is empty", async () => {

@@ -648,10 +648,14 @@ export async function pushCloudSnapshot(
     const normalizedRecoveryHash = payload.profileRecoveryHash.trim();
     if (normalizedRecoveryHash.length > 0) {
       updates[`profiles/${payload.profileId}/recoveryHash`] = payload.profileRecoveryHash;
-      updates[`profiles/${payload.profileId}/recoveryQuestion`] =
-        payload.profileRecoveryQuestion?.trim() || null;
-      updates[`profiles/${payload.profileId}/recoveryAnswer`] =
-        payload.profileRecoveryAnswer?.trim() || null;
+      const normalizedQuestion = payload.profileRecoveryQuestion?.trim() || null;
+      // Only write question/answer when we have data — never overwrite with null
+      // (prevents auto-sync from erasing recovery data when local state is empty).
+      if (normalizedQuestion !== null) {
+        updates[`profiles/${payload.profileId}/recoveryQuestion`] = normalizedQuestion;
+        updates[`profiles/${payload.profileId}/recoveryAnswer`] =
+          payload.profileRecoveryAnswer?.trim() || null;
+      }
       updates[`profiles/${payload.profileId}/recoveryConfiguredAt`] =
         payload.profileRecoveryConfiguredAt ?? timestamp;
     } else {

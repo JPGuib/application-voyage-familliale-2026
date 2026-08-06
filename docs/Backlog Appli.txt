@@ -14,4 +14,9 @@ COntenu :
 * https://books.apple.com/us/book/church-of-chora/id1178728769
 
 
-
+TESTER TOUTE L'APPLICATION
+* tester le mode offline
+* Tester nouvelle mire (qq bugs) 
+    - bug à la création d'un visiteur car checklist bloquée
+    - pouvoir saisr quelque lettre et ne pas tout afficher la liste
+* revoir la vidéo et les trajets de l'avion

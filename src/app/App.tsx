@@ -1608,15 +1608,17 @@ function CloudLoginScreen({
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
 
-                      <div className="mt-2 text-right">
-                        <button
-                          type="button"
-                          onClick={onOpenProfileForgotPassword}
-                          className="text-xs font-bold text-[#FF6B3D] hover:underline underline-offset-2"
-                        >
-                          Mot de passe oublié ?
-                        </button>
-                      </div>
+                      {profileRecoveryQuestion && (
+                        <div className="mt-2 text-right">
+                          <button
+                            type="button"
+                            onClick={onOpenProfileForgotPassword}
+                            className="text-xs font-bold text-[#FF6B3D] hover:underline underline-offset-2"
+                          >
+                            Mot de passe oublié ?
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
