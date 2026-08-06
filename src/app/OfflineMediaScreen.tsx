@@ -49,6 +49,13 @@ export function OfflineMediaScreen({
   const [registry, setRegistry] = useState<OfflineDownloadRegistry>(() => readOfflineDownloadRegistry());
   const [busyScope, setBusyScope] = useState<OfflineSectionKey | "all" | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [activeProgress, setActiveProgress] = useState<{
+    scope: OfflineSectionKey | "all";
+    section: OfflineSectionKey;
+    completed: number;
+    total: number;
+    percent: number;
+  } | null>(null);
 
   const totals = useMemo(() => {
     return OFFLINE_SECTION_ORDER.reduce(
@@ -70,9 +77,43 @@ export function OfflineMediaScreen({
     }
 
     setBusyScope("all");
-    setFeedback(null);
+    setFeedback("Download started. Please keep this screen open.");
+    const totalToProcess = OFFLINE_SECTION_ORDER.reduce((acc, sectionKey) => {
+      return acc + (registry.sectionProgress[sectionKey]?.total ?? 0);
+    }, 0);
+    const sectionDone = new Map<OfflineSectionKey, number>();
+    for (const sectionKey of OFFLINE_SECTION_ORDER) {
+      sectionDone.set(sectionKey, 0);
+    }
+
+    if (totalToProcess > 0) {
+      setActiveProgress({
+        scope: "all",
+        section: "stay-guide",
+        completed: 0,
+        total: totalToProcess,
+        percent: 0,
+      });
+    } else {
+      setActiveProgress(null);
+    }
     try {
-      const result = await downloadAllOfflineMedia();
+      const result = await downloadAllOfflineMedia({
+        onProgress: (event) => {
+          sectionDone.set(event.section, event.completed);
+          const completedAcrossSections = Array.from(sectionDone.values()).reduce((acc, value) => acc + value, 0);
+          const percent = totalToProcess > 0
+            ? Math.min(100, Math.round((completedAcrossSections / totalToProcess) * 100))
+            : 100;
+          setActiveProgress({
+            scope: "all",
+            section: event.section,
+            completed: completedAcrossSections,
+            total: totalToProcess,
+            percent,
+          });
+        },
+      });
       setRegistry(result.registry);
       if (result.failed > 0) {
         setFeedback(`Download finished with ${result.failed} failed resources. Retry the partial sections.`);
@@ -80,6 +121,7 @@ export function OfflineMediaScreen({
         setFeedback("Offline media download completed.");
       }
     } finally {
+      setActiveProgress(null);
       setBusyScope(null);
     }
   };
@@ -91,9 +133,34 @@ export function OfflineMediaScreen({
     }
 
     setBusyScope(section);
-    setFeedback(null);
+    setFeedback(`Section ${SECTION_LABELS[section]} download started.`);
+    const sectionTotal = registry.sectionProgress[section]?.total ?? 0;
+    if (sectionTotal > 0) {
+      setActiveProgress({
+        scope: section,
+        section,
+        completed: 0,
+        total: sectionTotal,
+        percent: 0,
+      });
+    } else {
+      setActiveProgress(null);
+    }
     try {
-      const result = await downloadOfflineMediaSection(section);
+      const result = await downloadOfflineMediaSection(section, {
+        onProgress: (event) => {
+          const percent = event.total > 0
+            ? Math.min(100, Math.round((event.completed / event.total) * 100))
+            : 100;
+          setActiveProgress({
+            scope: section,
+            section: event.section,
+            completed: event.completed,
+            total: event.total,
+            percent,
+          });
+        },
+      });
       setRegistry(result.registry);
 
       if (result.failed > 0) {
@@ -106,6 +173,7 @@ export function OfflineMediaScreen({
         setFeedback(`Section ${SECTION_LABELS[section]} is now complete.`);
       }
     } finally {
+      setActiveProgress(null);
       setBusyScope(null);
     }
   };
@@ -144,6 +212,19 @@ export function OfflineMediaScreen({
           >
             <Download size={14} /> Download all
           </button>
+          {activeProgress && activeProgress.scope === "all" && (
+            <div className="mt-3 rounded-xl border border-border bg-muted/30 px-3 py-2">
+              <p className="text-xs font-bold text-foreground">
+                Downloading {SECTION_LABELS[activeProgress.section]}: {activeProgress.completed}/{activeProgress.total} ({activeProgress.percent}%)
+              </p>
+              <div className="mt-2 h-2 rounded-full bg-muted">
+                <div
+                  className="h-2 rounded-full bg-[#2E7D32]"
+                  style={{ width: `${activeProgress.percent}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-3">
@@ -179,7 +260,11 @@ export function OfflineMediaScreen({
                     {status === "partial" ? "Retry" : "Download"}
                   </button>
                   {sectionBusy && (
-                    <span className="self-center text-xs text-muted-foreground">Downloading...</span>
+                    <span className="self-center text-xs text-muted-foreground">
+                      {activeProgress && activeProgress.scope === sectionKey
+                        ? `Downloading... ${activeProgress.completed}/${activeProgress.total} (${activeProgress.percent}%)`
+                        : "Downloading..."}
+                    </span>
                   )}
                 </div>
               </div>

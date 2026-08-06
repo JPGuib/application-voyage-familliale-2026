@@ -8699,11 +8699,9 @@ export default function App() {
     if (cloudSnapshot && pendingCloudPhaseRef.current === cloudSnapshot.phase) {
       pendingCloudPhaseRef.current = null;
     }
-    const isAwaitingCommittedPhase = pendingCloudPhaseRef.current === phase;
-    const isPhaseSynced = cloudSnapshot
-      ? phase === cloudSnapshot.phase || isAwaitingCommittedPhase
-      : false;
-    setIsProfileHydrationPending(hasCloudProfile && (!isHydratedProfile || !isPhaseSynced));
+    // Keep UI stable during cloud phase propagation. We only gate on profile
+    // hydration, not on transient phase-sync delays, to prevent lock/unlock flicker.
+    setIsProfileHydrationPending(hasCloudProfile && !isHydratedProfile);
   }, [cloudEnabled, cloudSnapshot, isAuthenticated, phase, profile.id, hydratedProfileId]);
 
   useEffect(() => {

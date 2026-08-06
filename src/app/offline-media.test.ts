@@ -52,6 +52,13 @@ describe("offline media domain model", () => {
 
     const unique = new Set(inventory.allUrls);
     expect(unique.size).toBe(inventory.allUrls.length);
+
+    // Guide HTML can contain external article links in anchors; they should
+    // not be part of the offline media inventory because local <img src> is
+    // already cached for the same content.
+    expect(
+      inventory.bySection["stay-guide"].some((url) => url.includes("toutistanbul.com"))
+    ).toBe(false);
   });
 
   it("computes section status transitions", () => {

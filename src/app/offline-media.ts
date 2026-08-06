@@ -168,16 +168,11 @@ function collectTipsMedia(tips: typeof TIPS): Set<string> {
 
 function extractMediaFromHtml(html: string): Set<string> {
   const urls = new Set<string>();
-  const attrRe = /\b(src|href)=\"([^\"]+)\"/gi;
+  const attrRe = /\bsrc=\"([^\"]+)\"/gi;
   let match: RegExpExecArray | null = attrRe.exec(html);
   while (match) {
-    const attr = match[1]?.toLowerCase();
-    const value = match[2] ?? "";
-    if (attr === "src") {
-      pushIfMedia(urls, value);
-    } else if (attr === "href" && MEDIA_EXTENSION_RE.test(value)) {
-      pushIfMedia(urls, value);
-    }
+    const value = match[1] ?? "";
+    pushIfMedia(urls, value);
     match = attrRe.exec(html);
   }
   return urls;
