@@ -241,6 +241,38 @@ export function computeSectionStatus(total: number, completed: number, failed: n
   return "partial";
 }
 
+export type ContentAvailabilityTone = "complete" | "partial" | "unavailable";
+
+export type ContentAvailabilityBadge = {
+  tone: ContentAvailabilityTone;
+  label: string;
+};
+
+/**
+ * Story 27.4: derives the French, user-facing "disponible hors ligne /
+ * partiellement disponible / nécessite une connexion" state for a content
+ * section (Guide de séjour, Documents, Histoire, Géographie-économie,
+ * Culture-tradition, Conseils) from the story 27.2 registry alone — no new
+ * tracking store, no network call. Returns null when there is nothing worth
+ * surfacing: nothing has been downloaded yet, but the device is currently
+ * online and can simply fetch over the network as usual.
+ */
+export function getSectionOfflineAvailability(
+  progress: OfflineSectionProgress,
+  isOnline: boolean
+): ContentAvailabilityBadge | null {
+  if (progress.status === "complete") {
+    return { tone: "complete", label: "Disponible hors ligne" };
+  }
+  if (progress.status === "partial") {
+    return { tone: "partial", label: "Partiellement disponible hors ligne" };
+  }
+  if (isOnline) {
+    return null;
+  }
+  return { tone: "unavailable", label: "Nécessite une connexion" };
+}
+
 function buildSectionProgress(
   bySection: Record<OfflineSectionKey, string[]>,
   resources: Record<string, OfflineResourceRegistryItem>

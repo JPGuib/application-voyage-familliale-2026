@@ -4,11 +4,13 @@ import {
   buildOfflineMediaInventory,
   computeSectionStatus,
   downloadOfflineMediaSection,
+  getSectionOfflineAvailability,
   normalizeMediaUrl,
   readOfflineDownloadRegistry,
   requestPersistentStorage,
   verifyOfflineCacheIntegrity,
   type OfflineMediaInventory,
+  type OfflineSectionProgress,
 } from "./offline-media";
 
 function makeInventory(urls: string[]): OfflineMediaInventory {
@@ -192,5 +194,45 @@ describe("offline storage persistence and integrity (story 27.3)", () => {
   it("does not throw when the Cache Storage API is unavailable", async () => {
     const inventory = makeInventory(["https://offline.local/images/a.webp"]);
     await expect(verifyOfflineCacheIntegrity({ inventory })).resolves.toBeDefined();
+  });
+});
+
+describe("getSectionOfflineAvailability (story 27.4)", () => {
+  function progress(overrides: Partial<OfflineSectionProgress>): OfflineSectionProgress {
+    return { total: 3, completed: 0, failed: 0, status: "not-downloaded", ...overrides };
+  }
+
+  it("reports 'Disponible hors ligne' for a fully downloaded section, online or offline", () => {
+    const complete = progress({ completed: 3, status: "complete" });
+    expect(getSectionOfflineAvailability(complete, true)).toEqual({
+      tone: "complete",
+      label: "Disponible hors ligne",
+    });
+    expect(getSectionOfflineAvailability(complete, false)).toEqual({
+      tone: "complete",
+      label: "Disponible hors ligne",
+    });
+  });
+
+  it("reports 'Partiellement disponible hors ligne' for a partial section, online or offline", () => {
+    const partial = progress({ completed: 1, failed: 1, status: "partial" });
+    expect(getSectionOfflineAvailability(partial, true)?.tone).toBe("partial");
+    expect(getSectionOfflineAvailability(partial, false)).toEqual({
+      tone: "partial",
+      label: "Partiellement disponible hors ligne",
+    });
+  });
+
+  it("stays silent for a not-yet-downloaded section while online (no false alarm)", () => {
+    const notDownloaded = progress({ status: "not-downloaded" });
+    expect(getSectionOfflineAvailability(notDownloaded, true)).toBeNull();
+  });
+
+  it("reports 'Nécessite une connexion' for a not-yet-downloaded section while offline", () => {
+    const notDownloaded = progress({ status: "not-downloaded" });
+    expect(getSectionOfflineAvailability(notDownloaded, false)).toEqual({
+      tone: "unavailable",
+      label: "Nécessite une connexion",
+    });
   });
 });

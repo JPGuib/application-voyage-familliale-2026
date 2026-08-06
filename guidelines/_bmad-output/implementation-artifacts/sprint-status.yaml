@@ -209,7 +209,8 @@ development_status:
 
   epic-27: in-progress
   27-1-generateur-automatique-tutoriels-interactifs: done
-  27-1-optimisation-medias-hors-ligne: review
-  27-2-telechargement-cache-offline: review
+  27-1-optimisation-medias-hors-ligne: done
+  27-2-telechargement-cache-offline: done 
   27-3-stockage-persistant-installation-ecran-accueil: review
+  27-4-lecture-offline-coherente-contenu-visibilite: review
   epic-27-retrospective: optional

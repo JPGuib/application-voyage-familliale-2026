@@ -177,7 +177,11 @@ import {
   getNextLaunchGateCycle,
   shouldForceLaunchGate,
 } from "./launch-gate";
-import { readOfflineDownloadRegistry } from "./offline-media";
+import {
+  getSectionOfflineAvailability,
+  readOfflineDownloadRegistry,
+  type OfflineSectionKey,
+} from "./offline-media";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -2576,6 +2580,45 @@ const PLACES_WITH_AUTO_GPS = PLACES.map((place) => {
   return { ...place, gps: fallbackGps };
 });
 
+// ─── OFFLINE CONTENT AVAILABILITY BADGE (story 27.4) ────────────────────────
+// Shared, read-only indicator reused by every content screen (Guide de
+// séjour, Documents, Histoire, Géographie-économie, Culture-tradition,
+// Conseils) to surface the section's offline-download state — sourced
+// exclusively from the story 27.2 registry via getSectionOfflineAvailability,
+// never duplicated or recomputed here.
+
+function ContentOfflineStatusBadge({
+  section,
+  isOnline,
+}: {
+  section: OfflineSectionKey;
+  isOnline: boolean;
+}) {
+  const badge = useMemo(() => {
+    const registry = readOfflineDownloadRegistry();
+    return getSectionOfflineAvailability(registry.sectionProgress[section], isOnline);
+  }, [section, isOnline]);
+
+  if (!badge) {
+    return null;
+  }
+
+  const toneClass =
+    badge.tone === "complete"
+      ? "bg-[#E8F5E9] text-[#1B5E20]"
+      : badge.tone === "partial"
+        ? "bg-[#FFF3E0] text-[#E65100]"
+        : "bg-[#FDECEA] text-[#B71C1C]";
+
+  return (
+    <span
+      className={`relative z-10 inline-flex items-center gap-1 rounded-full px-2.5 py-1 mt-2 text-[10px] font-black uppercase tracking-widest ${toneClass}`}
+    >
+      {badge.label}
+    </span>
+  );
+}
+
 // ─── CONTENT LIST SCREEN (used by Guide and Histoire) ──────────────────────
 
 function ContentListScreen({
@@ -2583,6 +2626,8 @@ function ContentListScreen({
   headerEmoji,
   headerTitle,
   headerSubtitle,
+  offlineSection,
+  isOnline,
   onBack,
   onItemSelect,
 }: {
@@ -2590,6 +2635,8 @@ function ContentListScreen({
   headerEmoji: string;
   headerTitle: string;
   headerSubtitle: string;
+  offlineSection: OfflineSectionKey;
+  isOnline: boolean;
   onBack: () => void;
   onItemSelect: (id: string) => void;
 }) {
@@ -2611,6 +2658,7 @@ function ContentListScreen({
         <p className="relative z-10 text-sm opacity-90 mt-1">
           {headerSubtitle}
         </p>
+        <ContentOfflineStatusBadge section={offlineSection} isOnline={isOnline} />
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
@@ -2786,12 +2834,14 @@ function DocumentsScreen({
   documentVisibilityMap,
   onToggleDocumentVisibility,
   canManageDocumentVisibility,
+  isOnline,
 }: {
   onBack: () => void;
   role: Role | null;
   documentVisibilityMap: DocumentVisibilityMap;
   onToggleDocumentVisibility: (documentId: string, nextState: DocumentVisibilityState) => void;
   canManageDocumentVisibility: boolean;
+  isOnline: boolean;
 }) {
   const DOCUMENTS_STORAGE_KEY = "jp-documents-v3";
   const LEGACY_DOCUMENTS_STORAGE_KEY = "jp-documents-v2";
@@ -3310,6 +3360,7 @@ function DocumentsScreen({
         <p className="relative z-10 text-sm opacity-90 mt-1">
           Classez et éditez vos informations de voyage par catégorie
         </p>
+        <ContentOfflineStatusBadge section="important-documents" isOnline={isOnline} />
       </div>
 
       <div className="px-4 mt-4 grid grid-cols-3 gap-2 flex-shrink-0">
@@ -3500,6 +3551,7 @@ function GuideScreen({
   placeVisibilityMap,
   onTogglePlaceVisibility,
   canManagePlaceVisibility,
+  isOnline,
 }: {
   onBack: () => void;
   onPlaceSelect: (id: string) => void;
@@ -3511,6 +3563,7 @@ function GuideScreen({
   placeVisibilityMap: PlaceVisibilityMap;
   onTogglePlaceVisibility: (placeId: string, nextState: PlaceVisibilityState) => void;
   canManagePlaceVisibility: boolean;
+  isOnline: boolean;
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
 
@@ -3532,6 +3585,9 @@ function GuideScreen({
           <ChevronLeft size={18} /> Accueil
         </button>
         <h1 data-tutorial-id="guide-title" className="relative z-10 text-2xl font-black">Guide du séjour 📖</h1>
+        <div>
+          <ContentOfflineStatusBadge section="stay-guide" isOnline={isOnline} />
+        </div>
 
         <div className="relative z-20 mt-3">
           <button
@@ -3698,9 +3754,11 @@ function GuideScreen({
 function HistoireScreen({
   onBack,
   onTopicSelect,
+  isOnline,
 }: {
   onBack: () => void;
   onTopicSelect: (id: string) => void;
+  isOnline: boolean;
 }) {
   return (
     <ContentListScreen
@@ -3708,6 +3766,8 @@ function HistoireScreen({
       headerEmoji="🏛️"
       headerTitle="Histoire de Turquie"
       headerSubtitle={`${HISTOIRE_TOPICS.length} rubriques à explorer`}
+      offlineSection="history"
+      isOnline={isOnline}
       onBack={onBack}
       onItemSelect={onTopicSelect}
     />
@@ -3719,9 +3779,11 @@ function HistoireScreen({
 function GeographieScreen({
   onBack,
   onTopicSelect,
+  isOnline,
 }: {
   onBack: () => void;
   onTopicSelect: (id: string) => void;
+  isOnline: boolean;
 }) {
   return (
     <ContentListScreen
@@ -3729,6 +3791,8 @@ function GeographieScreen({
       headerEmoji="🗺️"
       headerTitle="Géographie et Économie"
       headerSubtitle={`${GEOGRAPHIE_ECONOMIE_TOPICS.length} rubriques à explorer`}
+      offlineSection="geography-economy"
+      isOnline={isOnline}
       onBack={onBack}
       onItemSelect={onTopicSelect}
     />
@@ -3740,9 +3804,11 @@ function GeographieScreen({
 function CultureScreen({
   onBack,
   onTopicSelect,
+  isOnline,
 }: {
   onBack: () => void;
   onTopicSelect: (id: string) => void;
+  isOnline: boolean;
 }) {
   return (
     <ContentListScreen
@@ -3750,6 +3816,8 @@ function CultureScreen({
       headerEmoji="🎭"
       headerTitle="Culture et Tradition"
       headerSubtitle={`${CULTURE_TRADITION_TOPICS.length} rubriques à explorer`}
+      offlineSection="culture-tradition"
+      isOnline={isOnline}
       onBack={onBack}
       onItemSelect={onTopicSelect}
     />
@@ -3839,6 +3907,8 @@ function ContentDetailScreen({
   visiteGuideeCtaSubtext = "Histoire détaillée, salle par salle",
   extraSection,
   heroReactionCounts,
+  offlineSection,
+  isOnline,
 }: {
   item: ContentTopic;
   onBack: () => void;
@@ -3847,6 +3917,8 @@ function ContentDetailScreen({
   visiteGuideeCtaSubtext?: string;
   extraSection?: ReactNode;
   heroReactionCounts?: { likes: number; dislikes: number };
+  offlineSection: OfflineSectionKey;
+  isOnline: boolean;
 }) {
   const visiteGuidee = VISITES_GUIDEES[item.id];
   const photos = item.photos?.length ? item.photos : [item.image];
@@ -3981,6 +4053,7 @@ function ContentDetailScreen({
           <h1 className="text-xl font-black text-white mt-1 leading-tight">
             {item.name}
           </h1>
+          <ContentOfflineStatusBadge section={offlineSection} isOnline={isOnline} />
         </div>
       </div>
 
@@ -4435,6 +4508,7 @@ function PlaceScreen({
   onUpsertComment,
   onBack,
   onOpenVisiteGuidee,
+  isOnline,
 }: {
   place: (typeof PLACES)[0];
   profile: Profile;
@@ -4443,6 +4517,7 @@ function PlaceScreen({
   onUpsertComment: (input: { placeId: string; reaction: PlaceCommentReaction | null; text: string }) => void;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
+  isOnline: boolean;
 }) {
   const reactionCounts = getPlaceReactionCounts(comments);
 
@@ -4452,6 +4527,8 @@ function PlaceScreen({
       onBack={onBack}
       onOpenVisiteGuidee={onOpenVisiteGuidee}
       heroReactionCounts={reactionCounts}
+      offlineSection="stay-guide"
+      isOnline={isOnline}
       extraSection={
         <PlaceCommentsSection
           placeId={place.id}
@@ -4471,10 +4548,12 @@ function HistoireTopicScreen({
   topic,
   onBack,
   onOpenVisiteGuidee,
+  isOnline,
 }: {
   topic: (typeof HISTOIRE_TOPICS)[0];
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
+  isOnline: boolean;
 }) {
   return (
     <ContentDetailScreen
@@ -4483,6 +4562,8 @@ function HistoireTopicScreen({
       onOpenVisiteGuidee={onOpenVisiteGuidee}
       visiteGuideeCtaText="Pour en savoir plus"
       visiteGuideeCtaSubtext=""
+      offlineSection="history"
+      isOnline={isOnline}
     />
   );
 }
@@ -4491,10 +4572,12 @@ function GeographieTopicScreen({
   topic,
   onBack,
   onOpenVisiteGuidee,
+  isOnline,
 }: {
   topic: (typeof GEOGRAPHIE_ECONOMIE_TOPICS)[0];
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
+  isOnline: boolean;
 }) {
   return (
     <ContentDetailScreen
@@ -4503,6 +4586,8 @@ function GeographieTopicScreen({
       onOpenVisiteGuidee={onOpenVisiteGuidee}
       visiteGuideeCtaText="Pour en savoir plus"
       visiteGuideeCtaSubtext=""
+      offlineSection="geography-economy"
+      isOnline={isOnline}
     />
   );
 }
@@ -4511,10 +4596,12 @@ function CultureTopicScreen({
   topic,
   onBack,
   onOpenVisiteGuidee,
+  isOnline,
 }: {
   topic: (typeof CULTURE_TRADITION_TOPICS)[0];
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
+  isOnline: boolean;
 }) {
   return (
     <ContentDetailScreen
@@ -4523,6 +4610,8 @@ function CultureTopicScreen({
       onOpenVisiteGuidee={onOpenVisiteGuidee}
       visiteGuideeCtaText="Pour en savoir plus"
       visiteGuideeCtaSubtext=""
+      offlineSection="culture-tradition"
+      isOnline={isOnline}
     />
   );
 }
@@ -5337,7 +5426,15 @@ function ResultsScreen({
 
 // ─── TIPS SCREEN ─────────────────────────────────────────────────────────────
 
-function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: number }) {
+function TipsScreen({
+  onBack,
+  currentDay,
+  isOnline,
+}: {
+  onBack: () => void;
+  currentDay: number;
+  isOnline: boolean;
+}) {
   const dayEntry = JOURS_DESTINATIONS.find((d) => d.jour === currentDay) as
     | Record<string, unknown>
     | undefined;
@@ -5437,6 +5534,7 @@ function TipsScreen({ onBack, currentDay }: { onBack: () => void; currentDay: nu
         <p className="relative z-10 text-sm opacity-90 mt-1">
           Tout ce qu&apos;il faut savoir pour la Turquie
         </p>
+        <ContentOfflineStatusBadge section="tips" isOnline={isOnline} />
       </div>
 
       {/* Weather */}
@@ -11424,6 +11522,7 @@ export default function App() {
             placeVisibilityMap={placeVisibilityMap}
             onTogglePlaceVisibility={setPlaceVisibilityForOwner}
             canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
+            isOnline={isOnline}
           />
         );
       }
@@ -11452,6 +11551,7 @@ export default function App() {
             documentVisibilityMap={documentVisibilityMap}
             onToggleDocumentVisibility={setDocumentVisibilityForOwner}
             canManageDocumentVisibility={canUpdateOwnerCode(familyState, profile.id)}
+            isOnline={isOnline}
           />
         );
       }
@@ -11479,6 +11579,7 @@ export default function App() {
             onUpsertComment={upsertPlaceComment}
             onBack={() => goToScreen("guide")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
+            isOnline={isOnline}
           />
         ) : null;
       }
@@ -11498,6 +11599,7 @@ export default function App() {
           <HistoireScreen
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openHistoireTopic}
+            isOnline={isOnline}
           />
         );
       }
@@ -11508,6 +11610,7 @@ export default function App() {
             topic={histoireTopic}
             onBack={() => goToScreen("histoire")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "histoire-topic")}
+            isOnline={isOnline}
           />
         ) : null;
       }
@@ -11517,6 +11620,7 @@ export default function App() {
           <GeographieScreen
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openGeographieTopic}
+            isOnline={isOnline}
           />
         );
       }
@@ -11527,6 +11631,7 @@ export default function App() {
             topic={geographieTopic}
             onBack={() => goToScreen("geographie")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "geographie-topic")}
+            isOnline={isOnline}
           />
         ) : null;
       }
@@ -11536,6 +11641,7 @@ export default function App() {
           <CultureScreen
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openCultureTopic}
+            isOnline={isOnline}
           />
         );
       }
@@ -11546,6 +11652,7 @@ export default function App() {
             topic={cultureTopic}
             onBack={() => goToScreen("culture")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
+            isOnline={isOnline}
           />
         ) : null;
       }
@@ -11612,7 +11719,7 @@ export default function App() {
       }
 
       if (effectiveScreen === "tips") {
-        return <TipsScreen onBack={() => goToScreen("dashboard")} currentDay={currentDay} />;
+        return <TipsScreen onBack={() => goToScreen("dashboard")} currentDay={currentDay} isOnline={isOnline} />;
       }
 
       if (effectiveScreen === "offline-media") {
@@ -11787,6 +11894,7 @@ export default function App() {
             placeVisibilityMap={placeVisibilityMap}
             onTogglePlaceVisibility={setPlaceVisibilityForOwner}
             canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
+            isOnline={isOnline}
           />
         );
       case "planning":
@@ -11811,6 +11919,7 @@ export default function App() {
             documentVisibilityMap={documentVisibilityMap}
             onToggleDocumentVisibility={setDocumentVisibilityForOwner}
             canManageDocumentVisibility={canUpdateOwnerCode(familyState, profile.id)}
+            isOnline={isOnline}
           />
         );
       case "map":
@@ -11834,6 +11943,7 @@ export default function App() {
             onUpsertComment={upsertPlaceComment}
             onBack={() => goToScreen("guide")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
+            isOnline={isOnline}
           />
         ) : null;
       case "visite-guidee":
@@ -11849,6 +11959,7 @@ export default function App() {
           <HistoireScreen
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openHistoireTopic}
+            isOnline={isOnline}
           />
         );
       case "histoire-topic":
@@ -11857,6 +11968,7 @@ export default function App() {
             topic={histoireTopic}
             onBack={() => goToScreen("histoire")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "histoire-topic")}
+            isOnline={isOnline}
           />
         ) : null;
       case "geographie":
@@ -11864,6 +11976,7 @@ export default function App() {
           <GeographieScreen
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openGeographieTopic}
+            isOnline={isOnline}
           />
         );
       case "geographie-topic":
@@ -11872,6 +11985,7 @@ export default function App() {
             topic={geographieTopic}
             onBack={() => goToScreen("geographie")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "geographie-topic")}
+            isOnline={isOnline}
           />
         ) : null;
       case "culture":
@@ -11879,6 +11993,7 @@ export default function App() {
           <CultureScreen
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openCultureTopic}
+            isOnline={isOnline}
           />
         );
       case "culture-topic":
@@ -11887,6 +12002,7 @@ export default function App() {
             topic={cultureTopic}
             onBack={() => goToScreen("culture")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
+            isOnline={isOnline}
           />
         ) : null;
       case "game":
@@ -11947,7 +12063,7 @@ export default function App() {
           />
         );
       case "tips":
-        return <TipsScreen onBack={() => goToScreen("dashboard")} currentDay={currentDay} />;
+        return <TipsScreen onBack={() => goToScreen("dashboard")} currentDay={currentDay} isOnline={isOnline} />;
       case "offline-media":
         return <OfflineMediaScreen isOnline={isOnline} onBack={() => goToScreen("dashboard")} />;
       case "settings":
