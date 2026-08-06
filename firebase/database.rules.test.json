@@ -141,6 +141,12 @@
             ".validate": "newData.val() === 'visible' || newData.val() === 'hiddenByOwner'"
           }
         },
+        "documentVisibilityMap": {
+          ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          "$documentId": {
+            ".validate": "newData.val() === 'visible' || newData.val() === 'hiddenByOwner'"
+          }
+        },
         "destinationSurvey": {
           "$profileId": {
             ".read": "auth != null",

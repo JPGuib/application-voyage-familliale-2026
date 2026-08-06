@@ -350,6 +350,66 @@ describe("place comments parsing and sync (story 21.2)", () => {
   });
 });
 
+describe("document visibility parsing and sync (story 26.3)", () => {
+  it("parses valid document visibility map values and ignores invalid ones", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {
+        "profile-a": { surname: "A", role: "proprietaire", createdAt: 1, lastSyncAt: 2 },
+      },
+      documentVisibilityMap: {
+        "vol-nantes-paris-af7507": "hiddenByOwner",
+        "hotel-istanbul-kadikoy": "visible",
+        invalid: "secret",
+      },
+    });
+
+    expect(snapshot.documentVisibilityMap).toEqual({
+      "vol-nantes-paris-af7507": "hiddenByOwner",
+      "hotel-istanbul-kadikoy": "visible",
+    });
+  });
+
+  it("writes documentVisibilityMap for owner family-state updates", async () => {
+    mockUpdate.mockClear();
+    const db = {} as import("firebase/database").Database;
+
+    await pushCloudSnapshot(db, "famille-test", {
+      actorUid: "uid-owner",
+      canWriteFamilyState: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-owner",
+        profiles: [{ id: "profile-owner", role: "proprietaire" }],
+      } as import("../app/owner-policy").SharedFamilyState,
+      ownerCodeHash: `sha256:${"a".repeat(64)}`,
+      ownerCodePlain: "1234",
+      ownerRecoveryHash: "",
+      ownerRecoveryConfiguredAt: undefined,
+      profileId: "profile-owner",
+      surname: "Maman",
+      role: "proprietaire",
+      checklist: {},
+      profileCustomChecklistItems: [],
+      ownerGlobalChecklistAdditions: [],
+      ownerGlobalChecklistRemovals: {},
+      placeComments: {},
+      placeVisibilityMap: {},
+      documentVisibilityMap: {
+        "vol-nantes-paris-af7507": "hiddenByOwner",
+      },
+      gameResults: [],
+      gameProgress: null,
+      phase: "during",
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.documentVisibilityMap).toEqual({
+      "vol-nantes-paris-af7507": "hiddenByOwner",
+    });
+  });
+});
+
 describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
   it("parses a valid in-progress gameProgress entry per profile", () => {
     const snapshot = parseCloudSnapshot({

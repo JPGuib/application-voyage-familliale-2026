@@ -4,7 +4,7 @@ baseline_commit: uncommitted
 
 # Story 26.2: Pilotage proprietaire de la visibilite des lieux (surprise)
 
-Status: review
+Status: done
 
 ## Story
 
@@ -134,3 +134,4 @@ GPT-5.3-Codex
 
 - 2026-08-06: Added ready-for-dev implementation artifact for story 26.2.
 - 2026-08-06: Implemented story 26.2 place-visibility controls, cloud/rules wiring, and integration/regression tests; status moved to review.
+- 2026-08-06: Story validated and moved to done.

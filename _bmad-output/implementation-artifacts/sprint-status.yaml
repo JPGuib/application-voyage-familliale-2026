@@ -203,6 +203,6 @@ development_status:
 
   epic-26: backlog
   26-1-formulaire-connexion-classique: backlog
-  26-2-visibilite-lieux-proprietaire: review
+  26-2-visibilite-lieux-proprietaire: done
   26-3-visibilite-documents-et-modes-affichage-sejour: backlog
   epic-26-retrospective: optional

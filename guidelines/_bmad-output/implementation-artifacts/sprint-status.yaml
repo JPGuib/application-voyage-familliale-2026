@@ -201,9 +201,10 @@ development_status:
   25-4-parcours-video-on-est-parti: done
   epic-25-retrospective: optional
 
-  epic-26: backlog
+  epic-26: in-progress
   26-1-formulaire-connexion-classique: backlog
-  26-2-visibilite-lieux-proprietaire: review
+  26-2-visibilite-lieux-proprietaire: done
+  26-3-visibilite-documents-et-modes-affichage-sejour: review
   epic-26-retrospective: optional
 
   epic-27: done

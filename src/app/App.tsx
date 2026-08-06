@@ -349,6 +349,7 @@ const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 const PROFILE_RECOVERY_ANSWER_STORAGE_KEY = "jp-profile-recovery-answers";
 const PLACE_COMMENTS_STORAGE_KEY = "jp-place-comments";
 const PLACE_VISIBILITY_STORAGE_KEY = "jp-place-visibility-map";
+const DOCUMENT_VISIBILITY_STORAGE_KEY = "jp-document-visibility-map";
 const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
 const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
 const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-by-profile";
@@ -386,6 +387,8 @@ type PlaceComment = {
 type PlaceCommentsByPlace = Record<string, Record<string, PlaceComment>>;
 type PlaceVisibilityState = "visible" | "hiddenByOwner";
 type PlaceVisibilityMap = Record<string, PlaceVisibilityState>;
+type DocumentVisibilityState = "visible" | "hiddenByOwner";
+type DocumentVisibilityMap = Record<string, DocumentVisibilityState>;
 
 type LoginCandidate = {
   id: string;
@@ -916,6 +919,37 @@ function isPlaceVisibleForRole(
 }
 
 function arePlaceVisibilityMapsEqual(left: PlaceVisibilityMap, right: PlaceVisibilityMap): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function parseDocumentVisibilityMap(raw: unknown): DocumentVisibilityMap {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  const next: DocumentVisibilityMap = {};
+  for (const [documentId, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (value === "visible" || value === "hiddenByOwner") {
+      next[documentId] = value;
+    }
+  }
+
+  return next;
+}
+
+function isDocumentVisibleForRole(
+  role: Role | null,
+  documentId: string,
+  visibilityMap: DocumentVisibilityMap
+): boolean {
+  if (role === "proprietaire") {
+    return true;
+  }
+
+  return (visibilityMap[documentId] ?? "visible") === "visible";
+}
+
+function areDocumentVisibilityMapsEqual(left: DocumentVisibilityMap, right: DocumentVisibilityMap): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
@@ -2686,9 +2720,15 @@ function PlanningScreen({
 function DocumentsScreen({
   onBack,
   role,
+  documentVisibilityMap,
+  onToggleDocumentVisibility,
+  canManageDocumentVisibility,
 }: {
   onBack: () => void;
   role: Role | null;
+  documentVisibilityMap: DocumentVisibilityMap;
+  onToggleDocumentVisibility: (documentId: string, nextState: DocumentVisibilityState) => void;
+  canManageDocumentVisibility: boolean;
 }) {
   const DOCUMENTS_STORAGE_KEY = "jp-documents-v3";
   const LEGACY_DOCUMENTS_STORAGE_KEY = "jp-documents-v2";
@@ -2820,10 +2860,24 @@ function DocumentsScreen({
     }
   }, [isOwner]);
 
-  const grouped = groupDocumentsByCategory(allDocuments);
+  useEffect(() => {
+    if (role === "proprietaire" || !scansDocumentId) {
+      return;
+    }
+
+    if ((documentVisibilityMap[scansDocumentId] ?? "visible") !== "visible") {
+      setScansDocumentId(null);
+      setScanLightboxIndex(null);
+    }
+  }, [documentVisibilityMap, role, scansDocumentId]);
+
+  const visibleDocuments = allDocuments.filter((document) =>
+    isDocumentVisibleForRole(role, document.id, documentVisibilityMap)
+  );
+  const grouped = groupDocumentsByCategory(visibleDocuments);
   const visibleItems = grouped[activeCategory];
   const scansDocument = scansDocumentId
-    ? allDocuments.find((doc) => doc.id === scansDocumentId) ?? null
+    ? visibleDocuments.find((doc) => doc.id === scansDocumentId) ?? null
     : null;
 
   function clearDraft(): void {
@@ -3233,11 +3287,17 @@ function DocumentsScreen({
 
         {visibleItems.length === 0 ? (
           <div className="rounded-2xl bg-card border border-border p-4">
-            <p className="text-sm text-muted-foreground italic">Aucun document renseigné pour cette catégorie</p>
+            <p className="text-sm text-muted-foreground italic">
+              {isOwner
+                ? "Aucun document renseigné pour cette catégorie"
+                : "Aucun document visible pour cette catégorie"}
+            </p>
           </div>
         ) : (
           visibleItems.map((item) => {
             const mapCoords = item.gps ? parseGpsString(item.gps) : null;
+            const visibilityState = documentVisibilityMap[item.id] ?? "visible";
+            const isHiddenByOwner = visibilityState === "hiddenByOwner";
             return (
             <article key={item.id} className="rounded-2xl bg-card border border-border p-4">
               {editingId === item.id ? (
@@ -3254,6 +3314,11 @@ function DocumentsScreen({
                         {item.tag ? (
                           <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{item.tag}</span>
                         ) : null}
+                        {isOwner && isHiddenByOwner ? (
+                          <span className="rounded-full bg-[#FDECEA] px-2.5 py-1 text-[#B71C1C]">
+                            Masqué par le propriétaire
+                          </span>
+                        ) : null}
                         {(item.scans?.length ?? 0) > 0 && canConsultScans ? (
                             <button
                               type="button"
@@ -3269,6 +3334,23 @@ function DocumentsScreen({
                     </div>
                     {isOwner && (
                       <div className="flex items-center gap-2">
+                        {canManageDocumentVisibility && (
+                          <button
+                            onClick={() =>
+                              onToggleDocumentVisibility(
+                                item.id,
+                                isHiddenByOwner ? "visible" : "hiddenByOwner"
+                              )
+                            }
+                            className={`rounded-lg px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest ${
+                              isHiddenByOwner
+                                ? "bg-[#FDECEA] text-[#B71C1C]"
+                                : "bg-[#E8F5E9] text-[#1B5E20]"
+                            }`}
+                          >
+                            {isHiddenByOwner ? "Rendre visible" : "Masquer"}
+                          </button>
+                        )}
                         <button
                           onClick={() => startEdit(item)}
                           className="rounded-lg bg-muted px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-muted-foreground"
@@ -7424,6 +7506,18 @@ export default function App() {
       return {};
     }
   });
+  const [documentVisibilityMap, setDocumentVisibilityMap] = useState<DocumentVisibilityMap>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(DOCUMENT_VISIBILITY_STORAGE_KEY) || "{}");
+      return parseDocumentVisibilityMap(parsed);
+    } catch {
+      return {};
+    }
+  });
   const [destinationSurveyVotes, setDestinationSurveyVotes] = useState<Record<string, DestinationSurveyVote>>(() => {
     if (cloudEnabled) {
       return {};
@@ -7963,6 +8057,7 @@ export default function App() {
         localStorage.removeItem("jp-game-history");
         localStorage.removeItem("jp-game-progress");
         localStorage.removeItem(PLACE_VISIBILITY_STORAGE_KEY);
+        localStorage.removeItem(DOCUMENT_VISIBILITY_STORAGE_KEY);
         localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY);
@@ -8030,6 +8125,10 @@ export default function App() {
             JSON.stringify(placeVisibilityMap)
           );
           localStorage.setItem(
+            DOCUMENT_VISIBILITY_STORAGE_KEY,
+            JSON.stringify(documentVisibilityMap)
+          );
+          localStorage.setItem(
             DESTINATION_SURVEY_STORAGE_KEY,
             JSON.stringify(destinationSurveyVotes)
           );
@@ -8090,6 +8189,7 @@ export default function App() {
     ownerGlobalChecklistRemovals,
     placeCommentsByPlace,
     placeVisibilityMap,
+    documentVisibilityMap,
     destinationSurveyVotes,
     launchGateCycle,
     launchGateCompletedCycleByProfile,
@@ -8365,6 +8465,18 @@ export default function App() {
       }
       return arePlaceVisibilityMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
     });
+    setDocumentVisibilityMap((previous) => {
+      const nextFromCloud = cloudSnapshot.documentVisibilityMap ?? {};
+      const pending = pendingDocumentVisibilityMapRef.current;
+      if (pending !== "none") {
+        const serializedCloud = JSON.stringify(nextFromCloud);
+        if (serializedCloud !== pending) {
+          return previous;
+        }
+        pendingDocumentVisibilityMapRef.current = "none";
+      }
+      return areDocumentVisibilityMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
+    });
     setDestinationSurveyVotes((previous) => {
       const nextFromCloud = cloudSnapshot.destinationSurvey ?? {};
       const pendingVote = pendingDestinationSurveyVoteRef.current;
@@ -8545,6 +8657,9 @@ export default function App() {
   // lieux: évite le clignotement quand un snapshot cloud ancien revient juste
   // après un toggle local propriétaire.
   const pendingPlaceVisibilityMapRef = useRef<string | "none">("none");
+  // Même principe que pendingPlaceVisibilityMapRef, appliqué à la visibilité
+  // des documents importants.
+  const pendingDocumentVisibilityMapRef = useRef<string | "none">("none");
   const previousCommentsSnapshotRef = useRef<PlaceCommentsByPlace | null>(null);
   const pendingLaunchGateCompletionRef = useRef<{ profileId: string; cycle: number } | null>(null);
   const lastChecklistReminderKeyRef = useRef<string | null>(null);
@@ -8659,6 +8774,7 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       placeCommentsByPlace,
       placeVisibilityMap,
+      documentVisibilityMap,
       destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       launchGateCycle,
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
@@ -8701,6 +8817,7 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       placeComments: placeCommentsByPlace,
       placeVisibilityMap,
+      documentVisibilityMap,
       profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       launchGateCycle,
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
@@ -8740,6 +8857,7 @@ export default function App() {
     ownerGlobalChecklistRemovals,
     placeCommentsByPlace,
     placeVisibilityMap,
+    documentVisibilityMap,
     destinationSurveyVotes,
     launchGateCycle,
     launchGateCompletedCycleByProfile,
@@ -9254,6 +9372,25 @@ export default function App() {
       }
       if (cloudEnabled) {
         pendingPlaceVisibilityMapRef.current = JSON.stringify(next);
+      }
+      return next;
+    });
+  };
+
+  const setDocumentVisibilityForOwner = (documentId: string, nextState: DocumentVisibilityState) => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return;
+    }
+
+    setDocumentVisibilityMap((previous) => {
+      const next = { ...previous };
+      if (nextState === "visible") {
+        delete next[documentId];
+      } else {
+        next[documentId] = nextState;
+      }
+      if (cloudEnabled) {
+        pendingDocumentVisibilityMapRef.current = JSON.stringify(next);
       }
       return next;
     });
@@ -11250,6 +11387,9 @@ export default function App() {
           <DocumentsScreen
             onBack={() => goToScreen("dashboard")}
             role={profile.role}
+            documentVisibilityMap={documentVisibilityMap}
+            onToggleDocumentVisibility={setDocumentVisibilityForOwner}
+            canManageDocumentVisibility={canUpdateOwnerCode(familyState, profile.id)}
           />
         );
       }
@@ -11601,6 +11741,9 @@ export default function App() {
           <DocumentsScreen
             onBack={() => goToScreen("dashboard")}
             role={profile.role}
+            documentVisibilityMap={documentVisibilityMap}
+            onToggleDocumentVisibility={setDocumentVisibilityForOwner}
+            canManageDocumentVisibility={canUpdateOwnerCode(familyState, profile.id)}
           />
         );
       case "map":

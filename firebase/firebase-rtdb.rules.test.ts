@@ -149,6 +149,36 @@ suite("firebase rtdb rules owner phase guard", () => {
     );
   });
 
+  it("allows owner to set hidden visibility for a document", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb
+        .ref(`families/${FAMILY_ID}/documentVisibilityMap/vol-nantes-paris-af7507`)
+        .set("hiddenByOwner")
+    );
+  });
+
+  it("denies non-owner from writing document visibility map", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb
+        .ref(`families/${FAMILY_ID}/documentVisibilityMap/vol-nantes-paris-af7507`)
+        .set("hiddenByOwner")
+    );
+  });
+
+  it("denies invalid document visibility value", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb
+        .ref(`families/${FAMILY_ID}/documentVisibilityMap/vol-nantes-paris-af7507`)
+        .set("secret")
+    );
+  });
+
   it("allows non-owner to write profile-scoped checklist", async () => {
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
 

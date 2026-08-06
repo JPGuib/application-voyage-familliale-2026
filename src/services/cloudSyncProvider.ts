@@ -22,6 +22,7 @@ import type {
   CloudPlaceCommentsByPlace,
   CloudDestinationSurveyByProfile,
   CloudDestinationSurveyVote,
+  DocumentVisibilityState,
   CloudProfileRecord,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
@@ -296,6 +297,19 @@ function parsePlaceVisibilityMap(value: unknown): Record<string, PlaceVisibility
   return next;
 }
 
+function parseDocumentVisibilityMap(value: unknown): Record<string, DocumentVisibilityState> {
+  const raw = asRecord(value);
+  const next: Record<string, DocumentVisibilityState> = {};
+
+  for (const [documentId, candidate] of Object.entries(raw)) {
+    if (candidate === "visible" || candidate === "hiddenByOwner") {
+      next[documentId] = candidate;
+    }
+  }
+
+  return next;
+}
+
 function parseDestinationSurveyVote(
   profileId: string,
   value: unknown
@@ -466,6 +480,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     ownerGlobalChecklistRemovals: parseChecklistRemovals(ownerGlobalRemovalRecords),
     placeComments: parsePlaceComments(placeCommentRecords),
     placeVisibilityMap: parsePlaceVisibilityMap(root.placeVisibilityMap),
+    documentVisibilityMap: parseDocumentVisibilityMap(root.documentVisibilityMap),
     destinationSurvey: destinationSurveyRecords,
     gameDayOverrides: parseGameDayOverrides(root.gameDayOverrides),
     launchGateCycle: toNonNegativeInteger(root.launchGateCycle),
@@ -692,6 +707,9 @@ export async function pushCloudSnapshot(
     updates.checklistCatalogRemovals = payload.ownerGlobalChecklistRemovals;
     if (payload.placeVisibilityMap) {
       updates.placeVisibilityMap = payload.placeVisibilityMap;
+    }
+    if (payload.documentVisibilityMap) {
+      updates.documentVisibilityMap = payload.documentVisibilityMap;
     }
     updates.updatedAt = timestamp;
 
