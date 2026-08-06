@@ -90,14 +90,14 @@ export function isItemVisibleForProfile(
  */
 export function filterCategoriesForProfile<
   I extends ChecklistItemTargeting & { id: string },
-  C extends { id: string; items: I[] }
+  C extends { id: string; items: I[]; keepWhenEmpty?: boolean }
 >(categories: C[], profile: ProfileFilterInput): C[] {
   const result: C[] = [];
   for (const cat of categories) {
     const visibleItems = cat.items.filter((item) =>
       isItemVisibleForProfile(item, profile)
     );
-    if (visibleItems.length > 0) {
+    if (visibleItems.length > 0 || cat.keepWhenEmpty) {
       result.push({ ...cat, items: visibleItems });
     }
   }

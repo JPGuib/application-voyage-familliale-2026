@@ -188,6 +188,7 @@ type ChecklistCategory = {
   id: string;
   emoji: string;
   label: string;
+  keepWhenEmpty?: boolean;
   items: ChecklistItem[];
 };
 
@@ -344,6 +345,7 @@ export const CHECKLIST_CATEGORIES: ChecklistCategory[] = [
     id: "autre",
     emoji: "📝",
     label: "Autre",
+    keepWhenEmpty: true,
     items: [],
   },
 ];
@@ -1893,7 +1895,7 @@ function ChecklistScreen({
         {categories.map((cat) => {
           const catChecked = cat.items.filter((i) => checked[i.id]).length;
           const isOpen = openCategories.has(cat.id);
-          const allDone = catChecked === cat.items.length;
+          const allDone = cat.items.length > 0 && catChecked === cat.items.length;
           const catBadges = getCategoryBadges(cat.items);
           return (
             <div

@@ -322,6 +322,27 @@ describe("filterCategoriesForProfile - AC4 empty category removal", () => {
     expect(result.find((c) => c.id === "womens-clothing")).toBeDefined();
     expect(result.find((c) => c.id === "family-items")).toBeDefined();
   });
+
+  it("keeps category flagged keepWhenEmpty even when it has no visible items", () => {
+    const user: ProfileFilterInput = {
+      role: "utilisateur",
+      gender: "female",
+      householdRole: "parent",
+    };
+    const categoriesWithManualSection = [
+      ...SAMPLE_CATEGORIES,
+      {
+        id: "autre",
+        keepWhenEmpty: true,
+        items: [],
+      },
+    ];
+
+    const result = filterCategoriesForProfile(categoriesWithManualSection, user);
+    const autre = result.find((c) => c.id === "autre");
+    expect(autre).toBeDefined();
+    expect(autre?.items).toEqual([]);
+  });
 });
 
 describe("filterCategoriesForProfile - AC8 QA matrix combinations", () => {
