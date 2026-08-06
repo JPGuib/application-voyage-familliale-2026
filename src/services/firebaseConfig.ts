@@ -109,6 +109,10 @@ export async function ensureFirebaseAnonymousAuth(): Promise<User | null> {
   }
 
   if (auth.currentUser) {
+    if (!navigator.onLine) {
+      // Offline: return the cached identity without forcing a server round-trip.
+      return auth.currentUser;
+    }
     try {
       // Force token refresh so expired/invalid anonymous sessions are detected
       // during bootstrap instead of failing later as opaque permission errors.
@@ -121,6 +125,12 @@ export async function ensureFirebaseAnonymousAuth(): Promise<User | null> {
         // Ignore sign-out errors and continue with a fresh sign-in attempt.
       }
     }
+  }
+
+  if (!navigator.onLine) {
+    // Cannot create a new anonymous session without network; return null so
+    // the caller can enter offline mode gracefully (no error thrown).
+    return null;
   }
 
   const credential = await signInAnonymously(auth);

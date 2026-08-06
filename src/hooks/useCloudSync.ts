@@ -131,13 +131,35 @@ export function useCloudSync() {
     () => !cloudRuntimeAvailable
   );
   const [cloudReadRetryNonce, setCloudReadRetryNonce] = useState(0);
-  const [cloudSnapshot, setCloudSnapshot] = useState<CloudSyncSnapshot | null>(null);
+  const [bootstrapNonce, setBootstrapNonce] = useState(0);
+  const offlineSnapshotCacheKey = `jp-offline-snapshot-${familyId}`;
+  const [cloudSnapshot, setCloudSnapshot] = useState<CloudSyncSnapshot | null>(() => {
+    // Pre-load the last known snapshot so the auto-restore can proceed on
+    // a cold start while offline (RTDB onValue never fires without network).
+    if (!cloudRuntimeAvailable || navigator.onLine) return null;
+    try {
+      const raw = localStorage.getItem(`jp-offline-snapshot-${familyId}`);
+      return raw ? (JSON.parse(raw) as CloudSyncSnapshot) : null;
+    } catch {
+      return null;
+    }
+  });
   const isFlushingQueueRef = useRef(false);
   const permissionDeniedRetryCountRef = useRef(0);
 
   useEffect(() => {
     if (!cloudRuntimeAvailable) {
       setIsAuthReady(true);
+      return;
+    }
+
+    if (!navigator.onLine) {
+      // Offline cold start: skip Firebase bootstrap entirely.  The cached
+      // snapshot (loaded in useState) lets the app render normally.  The
+      // bootstrapNonce effect re-runs this block once the device reconnects.
+      setIsAuthBootstrapping(false);
+      setIsAuthReady(true);
+      setIsMembershipReady(true);
       return;
     }
 
@@ -211,7 +233,9 @@ export function useCloudSync() {
       cancelled = true;
       unsubscribe();
     };
-  }, [cloudRuntimeAvailable]);
+    // bootstrapNonce increments when the device comes back online after an
+    // offline cold start, triggering a full Firebase re-bootstrap.
+  }, [cloudRuntimeAvailable, bootstrapNonce]);
 
   const flushPendingQueue = useCallback(async () => {
     if (!isEnabled || !database || !cloudUserUid) {
@@ -266,6 +290,17 @@ export function useCloudSync() {
     }
 
     if (!cloudUserUid) {
+      if (!navigator.onLine) {
+        try {
+          const hasCachedSnapshot = localStorage.getItem(offlineSnapshotCacheKey) !== null;
+          if (hasCachedSnapshot) {
+            // Offline with cached data: treat as ready without surfacing an auth
+            // error — the RTDB listener will catch up when connectivity returns.
+            setIsReady(true);
+            return;
+          }
+        } catch { /* ignore */ }
+      }
       setCloudAuthError((previous) => previous ?? "auth-required");
       setIsReady(true);
       return;
@@ -283,6 +318,8 @@ export function useCloudSync() {
         permissionDeniedRetryCountRef.current = 0;
         setCloudAuthError(null);
         setCloudSnapshot(snapshot);
+        // Keep a local cache so the app can start offline on next cold boot.
+        try { localStorage.setItem(offlineSnapshotCacheKey, JSON.stringify(snapshot)); } catch { }
         setIsReady(true);
       },
       () => {
@@ -316,6 +353,7 @@ export function useCloudSync() {
     isAuthBootstrapping,
     isAuthReady,
     isMembershipReady,
+    offlineSnapshotCacheKey,
     cloudReadRetryNonce,
   ]);
 
@@ -355,6 +393,18 @@ export function useCloudSync() {
       window.removeEventListener("online", handleOnline);
     };
   }, [cloudRuntimeAvailable, cloudUserUid, database, flushPendingQueue, isAuthReady]);
+
+  // When the device reconnects after an offline cold start (cloudUserUid is
+  // still null because the bootstrap was skipped), bump bootstrapNonce to
+  // trigger the full Firebase auth + snapshot flow.
+  useEffect(() => {
+    if (!cloudRuntimeAvailable) return;
+    const handleOnline = () => {
+      if (!cloudUserUid) setBootstrapNonce((n) => n + 1);
+    };
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
+  }, [cloudRuntimeAvailable, cloudUserUid]);
 
   const enqueuePendingMutation = useCallback(
     (mutation: CloudSyncWritePayload) => {
