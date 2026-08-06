@@ -287,6 +287,10 @@ describe("App cloud login flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
+      expect(claimRoleForProfileMock).toHaveBeenCalledTimes(1);
+    });
+
+    await waitFor(() => {
       expect(localStorage.getItem("jp-active-profile-id")).toMatch(/^profile-/);
     });
 
