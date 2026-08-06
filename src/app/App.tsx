@@ -1329,6 +1329,7 @@ function CloudLoginScreen({
   onPasswordPromptValueChange,
   onConfirmPasswordPrompt,
   onCancelPasswordPrompt,
+  onSubmitLogin,
 }: {
   profiles: LoginCandidate[];
   selectedProfileId: string | null;
@@ -1356,32 +1357,55 @@ function CloudLoginScreen({
   onPasswordPromptValueChange: (value: string) => void;
   onConfirmPasswordPrompt: () => void;
   onCancelPasswordPrompt: () => void;
+  onSubmitLogin?: (profileId: string, password: string) => void;
 }) {
-  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
   const [showRecoveryAnswer, setShowRecoveryAnswer] = useState(false);
   const [showRecoveryNewPassword, setShowRecoveryNewPassword] = useState(false);
   const [showRecoveryConfirm, setShowRecoveryConfirm] = useState(false);
 
-  useEffect(() => {
-    if (!passwordPromptProfileSurname) {
-      setShowPasswordPrompt(false);
-      setShowRecoveryAnswer(false);
-      setShowRecoveryNewPassword(false);
-      setShowRecoveryConfirm(false);
+  const selectedProfile = profiles.find((p) => p.id === selectedProfileId);
+  const isProtected = Boolean(selectedProfile?.passwordHash);
+
+  const handleLogin = () => {
+    setLocalError(null);
+    if (!selectedProfileId) {
+      setLocalError("Veuillez sélectionner un profil.");
+      return;
     }
-  }, [passwordPromptProfileSurname]);
+    if (isProtected && !password.trim()) {
+      setLocalError("Veuillez saisir votre mot de passe.");
+      return;
+    }
+
+    if (onSubmitLogin) {
+      onSubmitLogin(selectedProfileId, password);
+    } else {
+      onLoginWithSelected();
+      if (isProtected) {
+        onPasswordPromptValueChange(password);
+        setTimeout(() => onConfirmPasswordPrompt(), 50);
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleLogin();
+    }
+  };
 
   useEffect(() => {
-    if (profileRecoveryStep !== "recovery") {
-      setShowRecoveryAnswer(false);
-      setShowRecoveryNewPassword(false);
-      setShowRecoveryConfirm(false);
-    }
-  }, [profileRecoveryStep]);
+    setPassword("");
+    setLocalError(null);
+  }, [selectedProfileId]);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
+    <div className="flex flex-col h-full overflow-hidden bg-[#FFF8F5]">
+      <div className="relative bg-[#FF6B3D] text-white px-6 pt-12 pb-8 flex-shrink-0">
         <MemphisDecor />
         <div className="relative z-10">
           <p className="text-xs font-extrabold opacity-80 tracking-widest uppercase mb-1">
@@ -1391,279 +1415,224 @@ function CloudLoginScreen({
             Se connecter
           </h1>
           <p className="text-sm opacity-90">
-            Choisissez un profil existant ou créez le vôtre.
+            Accédez à votre espace voyage
           </p>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
-        {profiles.length > 0 && (
-          <div className="bg-card rounded-2xl border border-border p-4">
-            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
-              Profils existants
-            </p>
-            <div className="space-y-2">
-              {profiles.map((candidate) => {
-                const isSelected = selectedProfileId === candidate.id;
-                return (
-                  <button
-                    key={candidate.id}
-                    onClick={() => onSelectProfile(candidate.id)}
-                    className={`w-full rounded-xl border px-3 py-3 text-left transition-colors ${
-                      isSelected
-                        ? "border-primary bg-primary/10"
-                        : "border-border bg-background"
-                    }`}
-                  >
-                    <p className="text-sm font-black text-foreground">{candidate.surname}</p>
-                    <p className="text-[11px] font-bold text-muted-foreground mt-0.5">
-                      {candidate.role === "proprietaire"
-                        ? "Propriétaire"
-                        : candidate.role === "visiteur"
-                          ? "Visiteur"
-                          : "Voyageur"}
-                      {candidate.passwordHash ? " · Protégé" : ""}
-                    </p>
-                  </button>
-                );
-              })}
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        {profileRecoveryStep === "recovery" ? (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+            <div>
+              <p className="text-lg font-black text-gray-900">Récupérer l&apos;accès</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Répondez à votre question de sécurité pour définir un nouveau mot de passe.
+              </p>
             </div>
-            <button
-              onClick={onLoginWithSelected}
-              className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
-            >
-              Se connecter avec ce profil
-            </button>
+
+            <div>
+              <label className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
+                Question de récupération
+              </label>
+              <p className="mt-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm font-bold text-gray-900">
+                {profileRecoveryQuestion || "Question indisponible"}
+              </p>
+            </div>
+
+            <div className="relative">
+              <label className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
+                Réponse
+              </label>
+              <input
+                type={showRecoveryAnswer ? "text" : "password"}
+                value={profileRecoveryAnswerInput}
+                onChange={(e) => onProfileRecoveryAnswerChange(e.target.value)}
+                placeholder="Votre réponse"
+                className="mt-2 w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowRecoveryAnswer((p) => !p)}
+                className="absolute right-3 top-[38px] text-gray-400"
+              >
+                {showRecoveryAnswer ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            <div className="relative">
+              <label className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
+                Nouveau mot de passe
+              </label>
+              <input
+                type={showRecoveryNewPassword ? "text" : "password"}
+                value={profileRecoveryNewPasswordInput}
+                onChange={(e) => onProfileRecoveryNewPasswordChange(e.target.value)}
+                placeholder="Minimum 4 caractères"
+                className="mt-2 w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowRecoveryNewPassword((p) => !p)}
+                className="absolute right-3 top-[38px] text-gray-400"
+              >
+                {showRecoveryNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            <div className="relative">
+              <label className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
+                Confirmer le mot de passe
+              </label>
+              <input
+                type={showRecoveryConfirm ? "text" : "password"}
+                value={profileRecoveryNewPasswordConfirmInput}
+                onChange={(e) => onProfileRecoveryNewPasswordConfirmChange(e.target.value)}
+                placeholder="Confirmez votre mot de passe"
+                className="mt-2 w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowRecoveryConfirm((p) => !p)}
+                className="absolute right-3 top-[38px] text-gray-400"
+              >
+                {showRecoveryConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            {profileRecoveryError && (
+              <p className="text-xs font-bold text-red-500">{profileRecoveryError}</p>
+            )}
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={onCancelProfileRecovery}
+                className="rounded-xl py-3 text-sm font-black border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 transition-transform"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={onConfirmProfileRecoveryReset}
+                className="rounded-xl py-3 text-sm font-black bg-[#FF6B3D] text-white shadow-md active:scale-95 transition-transform"
+              >
+                Réinitialiser
+              </button>
+            </div>
           </div>
-        )}
+        ) : (
+          <>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+              {profiles.length > 0 ? (
+                <>
+                  <div>
+                    <label className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
+                      Nom d&apos;utilisateur
+                    </label>
+                    <div className="relative mt-2">
+                      <select
+                        value={selectedProfileId ?? ""}
+                        onChange={(e) => {
+                          onSelectProfile(e.target.value);
+                          setLocalError(null);
+                        }}
+                        className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D] appearance-none"
+                      >
+                        <option value="" disabled>
+                          Sélectionnez un profil
+                        </option>
+                        {profiles.map((candidate) => (
+                          <option key={candidate.id} value={candidate.id}>
+                            {candidate.surname} {candidate.role === "proprietaire" ? "(Propriétaire)" : candidate.role === "visiteur" ? "(Visiteur)" : "(Voyageur)"}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    </div>
+                  </div>
 
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
-            Nouveau profil
-          </p>
-          <input
-            value={createSurname}
-            onChange={(e) => onCreateSurnameChange(e.target.value)}
-            placeholder="Ex: Maman, Papa, Léo"
-            className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-          />
-          <button
-            onClick={onCreateAndContinue}
-            className="mt-3 w-full rounded-xl py-3 text-sm font-black border border-border text-foreground"
-          >
-            Créer un nouveau profil
-          </button>
-        </div>
+                  {selectedProfileId && isProtected && (
+                    <div className="relative">
+                      <label className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
+                        Mot de passe
+                      </label>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setLocalError(null);
+                        }}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Votre mot de passe"
+                        className="mt-2 w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((p) => !p)}
+                        className="absolute right-3 top-[38px] text-gray-400"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
 
-        {error && <p className="text-sm font-bold text-destructive">{error}</p>}
-      </div>
+                      <div className="mt-2 text-right">
+                        <button
+                          type="button"
+                          onClick={onOpenProfileForgotPassword}
+                          className="text-xs font-bold text-[#FF6B3D] hover:underline underline-offset-2"
+                        >
+                          Mot de passe oublié ?
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
-      {passwordPromptProfileSurname && (
-        <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-end md:items-center justify-center p-4 z-20">
-          <div className="w-full md:max-w-sm bg-card rounded-2xl border border-border p-4">
-            {profileRecoveryStep === "recovery" ? (
-              <>
-                <p className="text-sm font-black text-foreground">Récupérer l'accès au profil</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Répondez à la question de sécurité pour définir un nouveau mot de passe.
-                </p>
-                <p className="mt-3 text-[11px] font-extrabold text-muted-foreground uppercase tracking-widest">
-                  Question de récupération
-                </p>
-                <p className="mt-1 rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm font-bold text-foreground">
-                  {profileRecoveryQuestion || "Question indisponible"}
-                </p>
-                <div className="relative mt-3">
-                  <input
-                    type={showRecoveryAnswer ? "text" : "password"}
-                    value={profileRecoveryAnswerInput}
-                    onChange={(e) => onProfileRecoveryAnswerChange(e.target.value)}
-                    placeholder="Réponse"
-                    className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                  />
+                  {(localError || error || passwordPromptError) && (
+                    <p className="text-xs font-bold text-red-500">
+                      {localError || error || passwordPromptError}
+                    </p>
+                  )}
+
                   <button
-                    type="button"
-                    onClick={() => setShowRecoveryAnswer((previous) => !previous)}
-                    aria-label={showRecoveryAnswer ? "Masquer la réponse saisie" : "Afficher la réponse saisie"}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  >
-                    {showRecoveryAnswer ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                <div className="relative mt-2">
-                  <input
-                    type={showRecoveryNewPassword ? "text" : "password"}
-                    value={profileRecoveryNewPasswordInput}
-                    onChange={(e) => onProfileRecoveryNewPasswordChange(e.target.value)}
-                    placeholder="Nouveau mot de passe"
-                    className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowRecoveryNewPassword((previous) => !previous)}
-                    aria-label={showRecoveryNewPassword ? "Masquer le nouveau mot de passe saisi" : "Afficher le nouveau mot de passe saisi"}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  >
-                    {showRecoveryNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                <div className="relative mt-2">
-                  <input
-                    type={showRecoveryConfirm ? "text" : "password"}
-                    value={profileRecoveryNewPasswordConfirmInput}
-                    onChange={(e) => onProfileRecoveryNewPasswordConfirmChange(e.target.value)}
-                    placeholder="Confirmer le nouveau mot de passe"
-                    className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowRecoveryConfirm((previous) => !previous)}
-                    aria-label={showRecoveryConfirm ? "Masquer la confirmation saisie" : "Afficher la confirmation saisie"}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  >
-                    {showRecoveryConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {profileRecoveryError && (
-                  <p className="mt-2 text-xs font-bold text-destructive">{profileRecoveryError}</p>
-                )}
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <button
-                    onClick={onCancelProfileRecovery}
-                    className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={onConfirmProfileRecoveryReset}
-                    className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
-                  >
-                    Réinitialiser
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-sm font-black text-foreground">Profil protégé</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Saisissez le mot de passe du profil {passwordPromptProfileSurname}.
-                </p>
-                <div className="relative mt-3">
-                  <input
-                    type={showPasswordPrompt ? "text" : "password"}
-                    value={passwordPromptValue}
-                    onChange={(e) => onPasswordPromptValueChange(e.target.value)}
-                    placeholder="Mot de passe"
-                    className="w-full rounded-xl bg-input-background px-3 py-3 pr-10 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPasswordPrompt((previous) => !previous)}
-                    aria-label={showPasswordPrompt ? "Masquer le mot de passe saisi" : "Afficher le mot de passe saisi"}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  >
-                    {showPasswordPrompt ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {passwordPromptError && (
-                  <p className="mt-2 text-xs font-bold text-destructive">{passwordPromptError}</p>
-                )}
-                {profileRecoveryQuestion && (
-                  <button
-                    onClick={onOpenProfileForgotPassword}
-                    className="mt-2 text-xs font-black text-primary underline underline-offset-2"
-                  >
-                    Mot de passe oublié ?
-                  </button>
-                )}
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <button
-                    onClick={onCancelPasswordPrompt}
-                    className="rounded-xl py-3 text-sm font-black border border-border text-foreground"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={onConfirmPasswordPrompt}
-                    className="rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground"
+                    onClick={handleLogin}
+                    disabled={!selectedProfileId}
+                    className="w-full bg-[#FF6B3D] text-white rounded-2xl py-4 text-sm font-black shadow-md active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Se connecter
                   </button>
+                </>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-500">
+                    Aucun profil existant. Créez le vôtre ci-dessous.
+                  </p>
                 </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+              )}
+            </div>
 
-function CloudLoadingScreen() {
-  return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
-        <MemphisDecor />
-        <div className="relative z-10">
-          <p className="text-xs font-extrabold opacity-80 tracking-widest uppercase mb-1">
-            ☁️ Synchronisation
-          </p>
-          <h1 className="text-2xl font-black leading-tight mb-2">Préparation du cloud</h1>
-          <p className="text-sm opacity-90">
-            Chargement des profils de la famille...
-          </p>
-        </div>
-      </div>
-      <div className="flex-1 px-4 py-5">
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <p className="text-sm font-semibold text-muted-foreground">
-            Patientez quelques secondes.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
+            <div className="flex items-center gap-3 my-2">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs font-bold text-gray-400 uppercase">ou</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
 
-function CloudAccessErrorScreen({
-  reason,
-  onRetry,
-}: {
-  reason: string;
-  onRetry?: () => void;
-}) {
-  const detailsByReason: Record<string, string> = {
-    "auth-required": "Authentification cloud requise mais session non disponible.",
-    "auth-unavailable": "Authentification cloud indisponible pour le moment.",
-    "permission-denied": "Acces cloud refuse. Verifiez les regles Firebase et l appartenance famille.",
-  };
-
-  return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
-        <MemphisDecor />
-        <div className="relative z-10">
-          <p className="text-xs font-extrabold opacity-80 tracking-widest uppercase mb-1">
-            ☁️ Synchronisation
-          </p>
-          <h1 className="text-2xl font-black leading-tight mb-2">Acces cloud bloque</h1>
-          <p className="text-sm opacity-90">L application attend une session cloud valide.</p>
-        </div>
-      </div>
-      <div className="flex-1 px-4 py-5">
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <p className="text-sm font-semibold text-muted-foreground">
-            {detailsByReason[reason] || "Erreur cloud non documentee."}
-          </p>
-          {onRetry && (
-            <button
-              onClick={onRetry}
-              className="mt-4 w-full rounded-xl bg-primary px-3 py-2.5 text-sm font-black text-primary-foreground"
-            >
-              Reessayer la synchronisation
-            </button>
-          )}
-        </div>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
+              <p className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
+                Nouveau profil
+              </p>
+              <input
+                value={createSurname}
+                onChange={(e) => onCreateSurnameChange(e.target.value)}
+                placeholder="Ex: Maman, Papa, Léo"
+                className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
+              />
+              <button
+                onClick={onCreateAndContinue}
+                className="w-full rounded-xl py-3 text-sm font-black border-2 border-[#FF6B3D] text-[#FF6B3D] hover:bg-[#FFF0EB] active:scale-95 transition-transform"
+              >
+                Créer un nouveau profil
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -9795,7 +9764,60 @@ export default function App() {
 
   const cultureTopic = CULTURE_TRADITION_TOPICS.find((t) => t.id === selectedCultureTopicId);
 
-  const resetForProfileSwitch = () => {
+  const handleLoginSubmit = async (profileId: string, password: string) => {
+    if (!cloudSnapshot) {
+      setAuthError("Synchronisation cloud indisponible pour le moment.");
+      return;
+    }
+    if (!profileId) {
+      setAuthError("Sélectionnez un profil pour continuer.");
+      return;
+    }
+
+    const selected = cloudSnapshot.profiles[profileId];
+    if (!selected) {
+      setAuthError("Profil introuvable. Rechargez puis réessayez.");
+      return;
+    }
+
+    const selectedPasswordHash = selected.passwordHash?.trim() || "";
+    if (selectedPasswordHash) {
+      if (!isProfilePasswordHash(selectedPasswordHash)) {
+        setAuthError("Authentification impossible. Vérifiez les informations saisies.");
+        return;
+      }
+      const verified = await verifyProfilePassword(password, selectedPasswordHash);
+      if (!verified) {
+        setPasswordPromptProfileId(selected.profileId);
+        setPasswordPromptInput("");
+        setPasswordPromptError("Mot de passe incorrect.");
+        setProfileRecoveryStep("none");
+        return;
+      }
+    }
+
+    setProfile((previous) => ({
+      ...previous,
+      id: selected.profileId,
+      surname: selected.surname,
+      role: selected.role,
+      gender: selected.gender ?? "unspecified",
+      householdRole: selected.householdRole ?? "member",
+    }));
+    const nextPhase = cloudSnapshot.phase;
+    setPhase(nextPhase);
+    const savedScreen = localStorage.getItem("jp-screen");
+    const screenToRestore = (savedScreen as Screen) || getPostAuthLandingScreen(nextPhase);
+    setScreen(screenToRestore);
+    setIsAuthenticated(true);
+    setAuthError(null);
+    saveSessionToken(selected.profileId);
+    setPasswordPromptProfileId(null);
+    setPasswordPromptInput("");
+    setPasswordPromptError(null);
+  };
+
+const resetForProfileSwitch = () => {
     try {
       localStorage.removeItem(ACTIVE_PROFILE_ID_KEY);
       localStorage.removeItem("jp-screen");
@@ -10833,6 +10855,7 @@ export default function App() {
           selectedProfileId={selectedLoginProfileId}
           createSurname={createProfileSurname}
           error={authError}
+          onSubmitLogin={handleLoginSubmit}
           passwordPromptProfileSurname={
             passwordPromptProfileId
               ? cloudSnapshot?.profiles[passwordPromptProfileId]?.surname || null
