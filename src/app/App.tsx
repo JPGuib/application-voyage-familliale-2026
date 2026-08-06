@@ -348,6 +348,7 @@ const OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY = "jp-owner-global-checklist-removals"
 const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 const PROFILE_RECOVERY_ANSWER_STORAGE_KEY = "jp-profile-recovery-answers";
 const PLACE_COMMENTS_STORAGE_KEY = "jp-place-comments";
+const PLACE_VISIBILITY_STORAGE_KEY = "jp-place-visibility-map";
 const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
 const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
 const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-by-profile";
@@ -383,6 +384,8 @@ type PlaceComment = {
 };
 
 type PlaceCommentsByPlace = Record<string, Record<string, PlaceComment>>;
+type PlaceVisibilityState = "visible" | "hiddenByOwner";
+type PlaceVisibilityMap = Record<string, PlaceVisibilityState>;
 
 type LoginCandidate = {
   id: string;
@@ -882,6 +885,37 @@ function stableSerializeForCloudPush(value: unknown): string {
 }
 
 function arePlaceCommentsEqual(left: PlaceCommentsByPlace, right: PlaceCommentsByPlace): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function parsePlaceVisibilityMap(raw: unknown): PlaceVisibilityMap {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  const next: PlaceVisibilityMap = {};
+  for (const [placeId, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (value === "visible" || value === "hiddenByOwner") {
+      next[placeId] = value;
+    }
+  }
+
+  return next;
+}
+
+function isPlaceVisibleForRole(
+  role: Role | null,
+  placeId: string,
+  visibilityMap: PlaceVisibilityMap
+): boolean {
+  if (role === "proprietaire") {
+    return true;
+  }
+
+  return (visibilityMap[placeId] ?? "visible") === "visible";
+}
+
+function arePlaceVisibilityMapsEqual(left: PlaceVisibilityMap, right: PlaceVisibilityMap): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
@@ -2538,11 +2572,15 @@ function PlanningScreen({
   onDaySelect,
   currentDay,
   tripFinished,
+  role,
+  placeVisibilityMap,
 }: {
   onBack: () => void;
   onDaySelect: (day: number) => void;
   currentDay: number;
   tripFinished: boolean;
+  role: Role | null;
+  placeVisibilityMap: PlaceVisibilityMap;
 }) {
   const dayPlaces = PLACES.reduce(
     (acc, place) => {
@@ -2556,6 +2594,12 @@ function PlanningScreen({
       return acc;
     },
     {} as Record<number, typeof PLACES>
+  );
+  const visiblePlacesByDay = Object.fromEntries(
+    Object.entries(dayPlaces).map(([day, places]) => [
+      Number(day),
+      places.filter((place) => isPlaceVisibleForRole(role, place.id, placeVisibilityMap)),
+    ])
   );
 
   return (
@@ -2576,7 +2620,7 @@ function PlanningScreen({
       {/* Day cards */}
       <div className="px-4 pt-5 pb-6 space-y-3">
         {JOURS_DESTINATIONS.map((dayEntry) => {
-          const places = dayPlaces[dayEntry.jour] || [];
+          const places = visiblePlacesByDay[dayEntry.jour] || [];
           const isCurrentDay = dayEntry.jour === currentDay && !tripFinished;
 
           return (
@@ -2622,7 +2666,7 @@ function PlanningScreen({
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground mt-2">
-                      Pas de détail renseigné
+                      {role === "proprietaire" ? "Pas de détail renseigné" : "Aucun lieu visible pour ce jour"}
                     </p>
                   )}
                 </div>
@@ -3307,6 +3351,9 @@ function GuideScreen({
   selectedDay,
   onSelectedDayChange,
   commentsByPlace,
+  role,
+  placeVisibilityMap,
+  onTogglePlaceVisibility,
 }: {
   onBack: () => void;
   onPlaceSelect: (id: string) => void;
@@ -3314,12 +3361,15 @@ function GuideScreen({
   selectedDay: number;
   onSelectedDayChange: (day: number) => void;
   commentsByPlace: PlaceCommentsByPlace;
+  role: Role | null;
+  placeVisibilityMap: PlaceVisibilityMap;
+  onTogglePlaceVisibility: (placeId: string, nextState: PlaceVisibilityState) => void;
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
 
-  const dayPlaces = PLACES_WITH_AUTO_GPS.filter((place) =>
-    (place as { jour?: number[] }).jour?.includes(selectedDay)
-  );
+  const dayPlaces = PLACES_WITH_AUTO_GPS
+    .filter((place) => (place as { jour?: number[] }).jour?.includes(selectedDay))
+    .filter((place) => isPlaceVisibleForRole(role, place.id, placeVisibilityMap));
   const realDurations = useAudioDurations(dayPlaces);
   const selectedEntry = JOURS_DESTINATIONS.find((d) => d.jour === selectedDay) ?? null;
 
@@ -3415,56 +3465,79 @@ function GuideScreen({
         )}
         {dayPlaces.map((item) => {
           const counts = getPlaceReactionCounts(commentsByPlace[item.id]);
+          const visibilityState = placeVisibilityMap[item.id] ?? "visible";
+          const isHiddenByOwner = visibilityState === "hiddenByOwner";
+          const canToggleVisibility = role === "proprietaire";
 
           return (
-            <button
-              key={item.id}
-              onClick={() => onPlaceSelect(item.id)}
-              data-tutorial-id={`guide-place-${item.id}`}
-              className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
-            >
-              <div className="relative h-40 bg-muted overflow-hidden">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <span className="text-xs font-extrabold text-accent uppercase tracking-widest">
-                      {item.tag}
-                    </span>
-                    <h3 className="font-black text-foreground mt-0.5">
-                      {item.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {item.shortDesc}
-                    </p>
-                    <div className="mt-3 flex items-center justify-between gap-2">
-                      <div className="flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
-                        <span className="rounded-full bg-muted px-2.5 py-1">
-                          {item.photos?.length ?? 1} photos
-                        </span>
-                        <span className="rounded-full bg-muted px-2.5 py-1">
-                          {realDurations[item.id] ?? item.audioDuration ?? "Audio à venir"}
-                        </span>
-                      </div>
-                      <ReactionCountersBadge
-                        likes={counts.likes}
-                        dislikes={counts.dislikes}
-                        className="!bg-white !text-black border border-black/15 [&>span]:text-[10px] [&>span]:font-normal"
-                      />
-                    </div>
-                  </div>
-                  <ChevronRight
-                    size={20}
-                    className="text-muted-foreground mt-1 flex-shrink-0"
+            <div key={item.id} className="space-y-2">
+              <button
+                onClick={() => onPlaceSelect(item.id)}
+                data-tutorial-id={`guide-place-${item.id}`}
+                className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
+              >
+                <div className="relative h-40 bg-muted overflow-hidden">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
                   />
                 </div>
-              </div>
-            </button>
+                <div className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <span className="text-xs font-extrabold text-accent uppercase tracking-widest">
+                        {item.tag}
+                      </span>
+                      <h3 className="font-black text-foreground mt-0.5">
+                        {item.name}
+                      </h3>
+                      {isHiddenByOwner && role === "proprietaire" && (
+                        <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-[#B71C1C]">
+                          Masqué par le propriétaire
+                        </p>
+                      )}
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {item.shortDesc}
+                      </p>
+                      <div className="mt-3 flex items-center justify-between gap-2">
+                        <div className="flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
+                          <span className="rounded-full bg-muted px-2.5 py-1">
+                            {item.photos?.length ?? 1} photos
+                          </span>
+                          <span className="rounded-full bg-muted px-2.5 py-1">
+                            {realDurations[item.id] ?? item.audioDuration ?? "Audio à venir"}
+                          </span>
+                        </div>
+                        <ReactionCountersBadge
+                          likes={counts.likes}
+                          dislikes={counts.dislikes}
+                          className="!bg-white !text-black border border-black/15 [&>span]:text-[10px] [&>span]:font-normal"
+                        />
+                      </div>
+                    </div>
+                    <ChevronRight
+                      size={20}
+                      className="text-muted-foreground mt-1 flex-shrink-0"
+                    />
+                  </div>
+                </div>
+              </button>
+              {canToggleVisibility && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onTogglePlaceVisibility(item.id, isHiddenByOwner ? "visible" : "hiddenByOwner");
+                  }}
+                  className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${
+                    isHiddenByOwner ? "bg-[#FDECEA] text-[#B71C1C]" : "bg-[#E8F5E9] text-[#1B5E20]"
+                  }`}
+                  aria-label={`Basculer visibilité de ${item.name}`}
+                >
+                  {isHiddenByOwner ? "Rendre visible" : "Masquer pour non-propriétaires"}
+                </button>
+              )}
+            </div>
           );
         })}
         <div className="h-2" />
@@ -7337,6 +7410,18 @@ export default function App() {
       return {};
     }
   });
+  const [placeVisibilityMap, setPlaceVisibilityMap] = useState<PlaceVisibilityMap>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(PLACE_VISIBILITY_STORAGE_KEY) || "{}");
+      return parsePlaceVisibilityMap(parsed);
+    } catch {
+      return {};
+    }
+  });
   const [destinationSurveyVotes, setDestinationSurveyVotes] = useState<Record<string, DestinationSurveyVote>>(() => {
     if (cloudEnabled) {
       return {};
@@ -7875,6 +7960,7 @@ export default function App() {
         localStorage.removeItem("jp-checklist");
         localStorage.removeItem("jp-game-history");
         localStorage.removeItem("jp-game-progress");
+        localStorage.removeItem(PLACE_VISIBILITY_STORAGE_KEY);
         localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY);
@@ -7938,6 +8024,10 @@ export default function App() {
             JSON.stringify(placeCommentsByPlace)
           );
           localStorage.setItem(
+            PLACE_VISIBILITY_STORAGE_KEY,
+            JSON.stringify(placeVisibilityMap)
+          );
+          localStorage.setItem(
             DESTINATION_SURVEY_STORAGE_KEY,
             JSON.stringify(destinationSurveyVotes)
           );
@@ -7997,6 +8087,7 @@ export default function App() {
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
     placeCommentsByPlace,
+    placeVisibilityMap,
     destinationSurveyVotes,
     launchGateCycle,
     launchGateCompletedCycleByProfile,
@@ -8259,6 +8350,10 @@ export default function App() {
       return arePlaceCommentsEqual(previous, nextFromCloud)
         ? previous
         : nextFromCloud;
+    });
+    setPlaceVisibilityMap((previous) => {
+      const nextFromCloud = cloudSnapshot.placeVisibilityMap ?? {};
+      return arePlaceVisibilityMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
     });
     setDestinationSurveyVotes((previous) => {
       const nextFromCloud = cloudSnapshot.destinationSurvey ?? {};
@@ -8550,6 +8645,7 @@ export default function App() {
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
       placeCommentsByPlace,
+      placeVisibilityMap,
       destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       launchGateCycle,
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
@@ -8591,6 +8687,7 @@ export default function App() {
       ownerGlobalChecklistAdditions,
       ownerGlobalChecklistRemovals,
       placeComments: placeCommentsByPlace,
+      placeVisibilityMap,
       profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       launchGateCycle,
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
@@ -8629,6 +8726,7 @@ export default function App() {
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
     placeCommentsByPlace,
+    placeVisibilityMap,
     destinationSurveyVotes,
     launchGateCycle,
     launchGateCompletedCycleByProfile,
@@ -9117,10 +9215,45 @@ export default function App() {
       return;
     }
 
+    if (!isPlaceVisibleForRole(profile.role, id, placeVisibilityMap)) {
+      setAccessDeniedMessage("Ce lieu est masqué par le propriétaire.");
+      setSelectedPlaceId(null);
+      setScreen("guide");
+      return;
+    }
+
     setAccessDeniedMessage(null);
     setSelectedPlaceId(id);
     setScreen("place");
   };
+
+  const setPlaceVisibilityForOwner = (placeId: string, nextState: PlaceVisibilityState) => {
+    if (profile.role !== "proprietaire") {
+      return;
+    }
+
+    setPlaceVisibilityMap((previous) => {
+      const next = { ...previous };
+      if (nextState === "visible") {
+        delete next[placeId];
+      } else {
+        next[placeId] = nextState;
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (screen !== "place" || !selectedPlaceId) {
+      return;
+    }
+
+    if (!isPlaceVisibleForRole(profile.role, selectedPlaceId, placeVisibilityMap)) {
+      setAccessDeniedMessage("Ce lieu est masqué par le propriétaire.");
+      setSelectedPlaceId(null);
+      setScreen("guide");
+    }
+  }, [screen, selectedPlaceId, profile.role, placeVisibilityMap]);
 
   const place = PLACES_WITH_AUTO_GPS.find((p) => p.id === selectedPlaceId);
 
@@ -11072,6 +11205,9 @@ export default function App() {
             selectedDay={guideSelectedDay ?? currentDay}
             onSelectedDayChange={setGuideSelectedDay}
             commentsByPlace={placeCommentsByPlace}
+            role={profile.role}
+            placeVisibilityMap={placeVisibilityMap}
+            onTogglePlaceVisibility={setPlaceVisibilityForOwner}
           />
         );
       }
@@ -11086,6 +11222,8 @@ export default function App() {
             }}
             currentDay={currentDay}
             tripFinished={tripFinished}
+            role={profile.role}
+            placeVisibilityMap={placeVisibilityMap}
           />
         );
       }
@@ -11421,6 +11559,9 @@ export default function App() {
             selectedDay={guideSelectedDay ?? currentDay}
             onSelectedDayChange={setGuideSelectedDay}
             commentsByPlace={placeCommentsByPlace}
+            role={profile.role}
+            placeVisibilityMap={placeVisibilityMap}
+            onTogglePlaceVisibility={setPlaceVisibilityForOwner}
           />
         );
       case "planning":
@@ -11433,6 +11574,8 @@ export default function App() {
             }}
             currentDay={currentDay}
             tripFinished={tripFinished}
+            role={profile.role}
+            placeVisibilityMap={placeVisibilityMap}
           />
         );
       case "documents":

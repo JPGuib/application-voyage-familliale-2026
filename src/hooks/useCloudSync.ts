@@ -32,6 +32,7 @@ import type {
   CloudSyncSnapshot,
   CloudSyncWritePayload,
   GameDayOverride,
+  PlaceVisibilityState,
   ProfileGender,
   ProfileHouseholdRole,
   TravelPhase,
@@ -67,6 +68,7 @@ type PushSnapshotInput = {
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
+  placeVisibilityMap?: Record<string, PlaceVisibilityState>;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   launchGateCycle?: number;
   launchGateCompletedCycleForProfile?: number | null;
@@ -393,6 +395,7 @@ export function useCloudSync() {
         ownerGlobalChecklistAdditions: snapshot.ownerGlobalChecklistAdditions,
         ownerGlobalChecklistRemovals: snapshot.ownerGlobalChecklistRemovals,
         placeComments: snapshot.placeComments,
+        placeVisibilityMap: snapshot.placeVisibilityMap,
         profileDestinationSurveyVote: snapshot.profileDestinationSurveyVote,
         launchGateCycle: snapshot.launchGateCycle,
         launchGateCompletedCycleForProfile: snapshot.launchGateCompletedCycleForProfile,

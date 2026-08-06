@@ -985,6 +985,74 @@ describe("gameDayOverrides parsing (story 19.1 owner override)", () => {
   });
 });
 
+describe("place visibility parsing and sync (story 26.2)", () => {
+  it("parses valid hidden/visible place visibility entries", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {},
+      placeVisibilityMap: {
+        "sainte-sophie": "hiddenByOwner",
+        "tour-galata": "visible",
+      },
+    });
+
+    expect(snapshot.placeVisibilityMap).toEqual({
+      "sainte-sophie": "hiddenByOwner",
+      "tour-galata": "visible",
+    });
+  });
+
+  it("drops invalid place visibility entries and defaults to visible map empty", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {},
+      placeVisibilityMap: {
+        "sainte-sophie": "hiddenByOwner",
+        "tour-galata": "secret",
+      },
+    });
+
+    expect(snapshot.placeVisibilityMap).toEqual({
+      "sainte-sophie": "hiddenByOwner",
+    });
+  });
+
+  it("writes owner place visibility map during owner-scoped push", async () => {
+    mockUpdate.mockClear();
+    const db = {} as import("firebase/database").Database;
+
+    await pushCloudSnapshot(db, "famille-test", {
+      actorUid: "owner-uid",
+      canWriteFamilyState: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-1",
+        profiles: [{ id: "profile-1", role: "proprietaire" }],
+      },
+      ownerCodeHash: "sha256:" + "d".repeat(64),
+      profileId: "profile-1",
+      surname: "Owner",
+      role: "proprietaire",
+      checklist: {},
+      profileCustomChecklistItems: [],
+      ownerGlobalChecklistAdditions: [],
+      ownerGlobalChecklistRemovals: {},
+      placeComments: {},
+      placeVisibilityMap: {
+        "sainte-sophie": "hiddenByOwner",
+      },
+      gameResults: [],
+      gameProgress: null,
+      phase: "during",
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.placeVisibilityMap).toEqual({
+      "sainte-sophie": "hiddenByOwner",
+    });
+  });
+});
+
 describe("pushGameDayOverride (story 19.1 owner override)", () => {
   const db = {} as import("firebase/database").Database;
   const familyId = "famille-test";

@@ -125,6 +125,30 @@ suite("firebase rtdb rules owner phase guard", () => {
     await assertFails(ownerDb.ref(`families/${FAMILY_ID}/gameDayOverrides/3`).set("maybe"));
   });
 
+  it("allows owner to set hidden visibility for a place", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb.ref(`families/${FAMILY_ID}/placeVisibilityMap/sainte-sophie`).set("hiddenByOwner")
+    );
+  });
+
+  it("denies non-owner from writing place visibility map", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/placeVisibilityMap/sainte-sophie`).set("hiddenByOwner")
+    );
+  });
+
+  it("denies invalid place visibility value", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb.ref(`families/${FAMILY_ID}/placeVisibilityMap/sainte-sophie`).set("secret")
+    );
+  });
+
   it("allows non-owner to write profile-scoped checklist", async () => {
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
 

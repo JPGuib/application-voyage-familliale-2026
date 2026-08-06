@@ -135,6 +135,12 @@
             }
           }
         },
+        "placeVisibilityMap": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          "$placeId": {
+            ".validate": "newData.val() === 'visible' || newData.val() === 'hiddenByOwner'"
+          }
+        },
         "destinationSurvey": {
           "$profileId": {
             ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
