@@ -2859,8 +2859,15 @@ function DocumentsScreen({
   canManageDocumentVisibility: boolean;
   isOnline: boolean;
 }) {
-  const DOCUMENTS_STORAGE_KEY = "jp-documents-v3";
+  const DOCUMENTS_STORAGE_KEY = "jp-documents-v4";
   const LEGACY_DOCUMENTS_STORAGE_KEY = "jp-documents-v2";
+  const LEGACY_DOCUMENTS_STORAGE_KEY_V3 = "jp-documents-v3";
+  const DOCUMENTS_STORAGE_VERSION = 1;
+  type PersistedDocumentsState = {
+    version: number;
+    hasManualEdits: boolean;
+    documents: TravelDocument[];
+  };
   const isOwner = role === "proprietaire";
   const canConsultScans = role !== "visiteur";
   const { coords: deviceCoords } = useDeviceLocation();
@@ -2869,6 +2876,7 @@ function DocumentsScreen({
     DOCUMENT_CATEGORIES[0]
   );
   const [allDocuments, setAllDocuments] = useState<TravelDocument[]>(DOCUMENTS);
+  const [hasManualDocumentEdits, setHasManualDocumentEdits] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [scansDocumentId, setScansDocumentId] = useState<string | null>(null);
@@ -2888,13 +2896,23 @@ function DocumentsScreen({
     try {
       const raw =
         localStorage.getItem(DOCUMENTS_STORAGE_KEY) ??
+        localStorage.getItem(LEGACY_DOCUMENTS_STORAGE_KEY_V3) ??
         localStorage.getItem(LEGACY_DOCUMENTS_STORAGE_KEY);
       if (!raw) {
+        setHasManualDocumentEdits(false);
         setAllDocuments(DOCUMENTS);
         return;
       }
       const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) {
+
+      const serializedDocuments = Array.isArray(parsed)
+        ? parsed
+        : Array.isArray((parsed as PersistedDocumentsState).documents)
+          ? (parsed as PersistedDocumentsState).documents
+          : null;
+
+      if (!serializedDocuments) {
+        setHasManualDocumentEdits(false);
         setAllDocuments(DOCUMENTS);
         return;
       }
@@ -2902,7 +2920,7 @@ function DocumentsScreen({
       const defaultDocumentsById = new Map(DOCUMENTS.map((doc) => [doc.id, doc]));
 
       const sanitized: TravelDocument[] = [];
-      for (const item of parsed) {
+      for (const item of serializedDocuments) {
         if (!item || typeof item !== "object") continue;
         const candidate = item as Record<string, unknown>;
         const category = candidate.category;
@@ -2972,15 +2990,43 @@ function DocumentsScreen({
         });
       }
 
-      setAllDocuments(sanitized.length > 0 ? sanitized : DOCUMENTS);
+      // Migration behavior: for legacy array storage, treat source documents as
+      // authoritative and keep only user-created custom items (unknown IDs).
+      if (Array.isArray(parsed)) {
+        const defaultDocumentIds = new Set(DOCUMENTS.map((doc) => doc.id));
+        const customDocs = sanitized.filter((doc) => !defaultDocumentIds.has(doc.id));
+        const migratedDocuments = [...DOCUMENTS, ...customDocs];
+        setAllDocuments(migratedDocuments);
+        setHasManualDocumentEdits(customDocs.length > 0);
+        return;
+      }
+
+      const persistedState = parsed as PersistedDocumentsState;
+      const persistedHasManualEdits =
+        persistedState.version === DOCUMENTS_STORAGE_VERSION &&
+        persistedState.hasManualEdits === true;
+
+      setHasManualDocumentEdits(persistedHasManualEdits);
+      setAllDocuments(persistedHasManualEdits && sanitized.length > 0 ? sanitized : DOCUMENTS);
     } catch {
+      setHasManualDocumentEdits(false);
       setAllDocuments(DOCUMENTS);
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(allDocuments));
-  }, [allDocuments]);
+    if (!hasManualDocumentEdits) {
+      localStorage.removeItem(DOCUMENTS_STORAGE_KEY);
+      return;
+    }
+
+    const payload: PersistedDocumentsState = {
+      version: DOCUMENTS_STORAGE_VERSION,
+      hasManualEdits: true,
+      documents: allDocuments,
+    };
+    localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(payload));
+  }, [allDocuments, hasManualDocumentEdits]);
 
   useEffect(() => {
     if (!isOwner) {
@@ -3099,9 +3145,11 @@ function DocumentsScreen({
     };
 
     if (targetId) {
+      setHasManualDocumentEdits(true);
       setAllDocuments((prev) => prev.map((doc) => (doc.id === targetId ? payload : doc)));
       setEditingId(null);
     } else {
+      setHasManualDocumentEdits(true);
       setAllDocuments((prev) => [...prev, payload]);
       setIsAdding(false);
     }
@@ -3115,6 +3163,7 @@ function DocumentsScreen({
     if (!window.confirm("Confirmer la suppression de ce document ?")) {
       return;
     }
+    setHasManualDocumentEdits(true);
     setAllDocuments((prev) => prev.filter((doc) => doc.id !== id));
     if (editingId === id) {
       setEditingId(null);
