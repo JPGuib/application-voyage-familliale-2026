@@ -162,7 +162,7 @@ export const DOCUMENTS: TravelDocument[] = [
     title: "Passeports",
     tag: "Passeports",
     content:
-      "Numéros de passeport :"
+      "Numéros de passeport :",
     details: [
       "JP : 25EE06870 - expire le 01/07/2035",
       "KG : 25DK73206 - expire le 10/06/2035",
@@ -175,7 +175,8 @@ export const DOCUMENTS: TravelDocument[] = [
       "/images/tips/Passeport KG.webp",
       "/images/tips/Passeport Thomas.webp",
       "/images/tips/Passeport Emma.webp",
-      "/images/tips/Passeport Julie.webp",,
+      "/images/tips/Passeport Julie.webp",
+    ]
   },
   {
     id: "LCL",
