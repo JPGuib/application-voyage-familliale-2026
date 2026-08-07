@@ -5508,7 +5508,7 @@ function TipsScreen({
   const activeCoords = deviceCoords ?? scheduledCoords;
   const { weather, loading: weatherLoading, error: weatherError } = useWeather(activeCoords);
   const [tab, setTab] = useState<
-    "transport" | "customs" | "dictionary" | "payment" | "emergency" | "food"
+    "Telephonie" | "customs" | "dictionary" | "payment" | "emergency" | "food"
   >("payment");
 
   const [rateSnapshot, setRateSnapshot] = useState<ExchangeRateSnapshot | null>(null);
@@ -5566,7 +5566,7 @@ function TipsScreen({
   }
 
   const tabs = [
-    { id: "transport" as const, label: "🚆 Transport" },
+    { id: "Telephonie" as const, label: "📱 Téléphonie" },
     { id: "customs" as const, label: "🙏 Coutumes" },
     { id: "dictionary" as const, label: "🗣️ Dico" },
     { id: "payment" as const, label: "💳 Paiement" },
@@ -5574,7 +5574,7 @@ function TipsScreen({
     { id: "food" as const, label: "🍽️ Cuisine" },
   ];
   const content = {
-    transport: TIPS.transport,
+    Telephonie: TIPS.Telephonie,
     customs: TIPS.customs,
     dictionary: TIPS.dictionary,
     payment: TIPS.payment,
