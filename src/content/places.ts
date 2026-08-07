@@ -542,6 +542,26 @@
       "Option rooftop hôtel : vue panoramique sur la ville et la Corne d'Or.",
     ],
   },
+    {
+    id: "nuit-hotel-windsoer-2",
+    jour: [3],
+    name: "hôtel WINDSOR HOTEL & CONVENTION CENTER 5*",
+    shortDesc: "Nuit à l'hôtel Windsor",
+    tag: "hotel",
+    image: "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
+    photos: [
+      "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
+      "/images/Jour 2/Nuit hotel jour 1 et 2 - 2.webp",
+    ],
+    gps: "41.044255,28.9131665",
+    historyLabel:"Présentation de l'hôtel",
+    history:
+      "Le Windsor Hotel & Convention Center est un établissement 5★ moderne situé dans le quartier de Bayrampaşa, à Istanbul. Il se distingue par son vaste centre de convention, ses chambres élégantes et ses installations haut de gamme : spa complet, piscines intérieure et extérieure, sauna, hammam, ainsi qu’un salon panoramique au 17ᵉ étage offrant une vue superbe sur la ville et la Corne d’Or.",
+    anecdotesLabel: "Informations pratiques",
+    anecdotes: [
+      "1 chambre double et 1 chambre triple normalement réservés",
+    ],
+  },
   {
     id: "grand-bazar",
     jour: [4],
