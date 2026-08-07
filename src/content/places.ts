@@ -855,6 +855,33 @@
     ],
   },
   {
+    id: "montgolfiere-cappadoce",
+    jour: [6],
+    name: "Vol en montgolfière",
+    shortDesc: "Survoler les cheminées de fées au lever du jour",
+    tag: "Activité",
+    image: "/images/Jour 6/Montgolfiere_1.webp",
+    photos: [
+      "/images/Jour 6/Montgolfiere_1.webp",
+      "/images/Jour 6/Montgolfiere_2.webp",
+      "/images/Jour 6/Montgolfiere_3.webp",
+      "/images/Jour 6/Montgolfiere_4.webp"
+    ],
+    audioTitle: "Cappadoce vue du ciel",
+    audioDuration: "2 min 50 sec",
+    audioSrc: "/audio/places/vol_en_montgolfiere.mp3",
+    gps: "38.6431,34.8287",
+    historyLabel: "Le vol en montgolfière",
+    history: "Le vol en montgolfière au-dessus de Cappadoce est considéré comme l'une des plus belles expériences aériennes au monde. Chaque année, des centaines de ballons s'élèvent à l'aube pour offrir une vue panoramique sur les vallées, vignobles et cheminées de fées. Cette tradition a commencé dans les années 1990 et attire désormais des visiteurs du monde entier.",
+    anecdotesLabel: "Présentation et conseils",
+    anecdotes: [
+      "Les vols ont lieu très tôt le matin pour profiter des vents les plus calmes.",
+      "Prise en charge à l'hôtel à 4h du matin, horaire à confirmer",
+      "On peut parfois apercevoir des renards et des lièvres depuis le ciel.",
+      "La Cappadoce est l'un des sites de montgolfière les plus fréquentés au monde, aux côtés de Bagan et du Serengeti."
+    ]
+  },
+    {
     id: "cappadoce",
     jour: [6],
     name: "Cappadoce",
@@ -879,30 +906,6 @@
       "Le mot 'Cappadoce' viendrait du vieux perse et signifierait 'le pays des beaux chevaux'.",
       "Les cheminées de fées sont formées lorsque le basalte dur protège le tuf tendre situé en dessous de l'érosion.",
       "Plus de 3 000 églises rupestres ont été recensées dans la région."
-    ]
-  },
-  {
-    id: "montgolfiere-cappadoce",
-    jour: [6],
-    name: "Vol en montgolfière",
-    shortDesc: "Survoler les cheminées de fées au lever du jour",
-    tag: "Activité",
-    image: "/images/Jour 6/Montgolfiere_1.webp",
-    photos: [
-      "/images/Jour 6/Montgolfiere_1.webp",
-      "/images/Jour 6/Montgolfiere_2.webp",
-      "/images/Jour 6/Montgolfiere_3.webp",
-      "/images/Jour 6/Montgolfiere_4.webp"
-    ],
-    audioTitle: "Cappadoce vue du ciel",
-    audioDuration: "2 min 50 sec",
-    audioSrc: "/audio/places/vol_en_montgolfiere.mp3",
-    gps: "38.6431,34.8287",
-    history: "Le vol en montgolfière au-dessus de Cappadoce est considéré comme l'une des plus belles expériences aériennes au monde. Chaque année, des centaines de ballons s'élèvent à l'aube pour offrir une vue panoramique sur les vallées, vignobles et cheminées de fées. Cette tradition a commencé dans les années 1990 et attire désormais des visiteurs du monde entier.",
-    anecdotes: [
-      "Les vols ont lieu très tôt le matin pour profiter des vents les plus calmes.",
-      "On peut parfois apercevoir des renards et des lièvres depuis le ciel.",
-      "La Cappadoce est l'un des sites de montgolfière les plus fréquentés au monde, aux côtés de Bagan et du Serengeti."
     ]
   },
   {
@@ -954,6 +957,139 @@
       "Certaines cheminées de fées ressemblent étrangement à des silhouettes humaines ou animales.",
       "Les pigeonniers étaient peints de couleurs vives pour attirer les oiseaux."
     ]
+  },
+{
+  id: "restaurant-nana-cappadocia",
+  jour: [6],
+  name: "NANA Cappadocia Restaurant",
+  shortDesc: "Un dîner en terrasse au cœur de Göreme",
+  tag: "Restaurant",
+  image: "/images/Jour 6/NANA Cappadocia 1.webp",
+  photos: [
+    "/images/Jour 6/NANA Cappadocia 1.webp",
+    "/images/Jour 6/NANA Cappadocia 2.webp",
+    "/images/Jour 6/NANA Cappadocia 3.webp",
+  ],
+  gps: "38.641846,34.829168",
+  historyLabel: "Présentation du restaurant",
+  history:
+    "Situé au cœur de Göreme, NANA Cappadocia Restaurant séduit par sa terrasse offrant une vue sur le village et les paysages emblématiques de la Cappadoce. Dans une ambiance chaleureuse et élégante, le restaurant propose une cuisine turque mettant à l'honneur les spécialités locales, préparées avec des produits frais. C'est une adresse idéale pour terminer une journée d'exploration en profitant d'un dîner face aux reliefs uniques de la région.",
+  anecdotesLabel: "Informations pratiques",
+  anecdotes: [
+    "Réservation confirmée via WhatsApp.",
+    "Jeudi 21 août à 19 h 15.",
+    "Table réservée en terrasse pour 5 personnes.",
+    "Situé dans le quartier d'İsali - Gaferli, à quelques minutes à pied du centre de Göreme.",
+    "Le restaurant est réputé pour son cadre agréable, particulièrement au coucher du soleil.",
+  ],
+  links: [
+    {
+        label: "Site du restaurant & bar",
+        url: "https://nanacappadocia.com/gallery/",
+      },
+  ]
+},
+{
+  id: "restaurant-numero-10-ortahisar",
+  jour: [6],
+  name: "Restaurant N°10",
+  shortDesc: "Une soirée conviviale au cœur d'Ortahisar",
+  tag: "Restaurant",
+  image: "/images/Jour 6/no-10-restaurant 1.webp",
+  photos: [
+    "/images/Jour 6/no-10-restaurant 1.webp",
+    "/images/Jour 6/no-10-restaurant 2.webp",
+    "/images/Jour 6/no-10-restaurant 3.webp",
+  ],
+  audioTitle: "Dîner à Ortahisar, au cœur de la Cappadoce",
+  audioDuration: "2 min 00 sec",
+  audioSrc: "/audio/places/Restaurant_N10_Ortahisar.mp3",
+  gps: "38.6177,34.8719",
+
+  historyLabel: "Présentation du restaurant",
+  history:
+    "Situé à Ortahisar, à proximité de l'hôtel, le Restaurant N°10 propose une expérience conviviale au cœur d'un des villages emblématiques de Cappadoce. Ortahisar est connu pour son imposante forteresse rocheuse qui domine la vallée et ses ruelles authentiques bordées de maisons traditionnelles. Après une journée de découverte des paysages cappadociens, ce restaurant offre une halte agréable pour profiter de la cuisine locale dans une ambiance chaleureuse.",
+
+  anecdotesLabel: "Informations pratiques",
+  anecdotes: [
+    "Demande de réservation effectuée par SMS, confirmation en attente.",
+    "Horaire souhaité : 19 h 15.",
+    "Restaurant situé à proximité de l'hôtel, pratique pour une soirée sans déplacement.",
+    "Adresse : Ulus Meydanı Kaledibi Sok. Ortahisar, Ürgüp, Nevşehir, Turquie.",
+    "Ortahisar est célèbre pour sa grande forteresse naturelle creusée dans la roche volcanique.",
+  ],
+},
+{
+  id: "restaurant-kaira-rooftop-2",
+  jour: [6],
+  name: "Kaira Rooftop Bar & Restaurant",
+  shortDesc: "Un dîner avec vue sur les cheminées de fées",
+  tag: "Restaurant",
+  image: "/images/Jour 5/Kaira Rooftop 1.webp",
+  photos: [
+    "/images/Jour 5/Kaira Rooftop 1.webp",
+    "/images/Jour 5/Kaira Rooftop 2.webp",
+    "/images/Jour 5/Kaira Rooftop 3.webp",
+  ],
+  gps: "38.6439,34.8283",
+  historyLabel: "Présentation du restaurant",
+  history:
+    "Situé au cœur de Göreme, le Kaira Rooftop Bar & Restaurant offre l'une des plus belles vues sur les célèbres cheminées de fées de Cappadoce. Depuis sa terrasse panoramique, les visiteurs profitent d'un cadre exceptionnel, particulièrement au coucher du soleil, tout en dégustant une cuisine turque généreuse accompagnée de quelques spécialités internationales. L'atmosphère est à la fois élégante, chaleureuse et propice à un dîner mémorable après une journée d'exploration dans les vallées de Cappadoce.",
+  anecdotesLabel: "Informations pratiques",
+  anecdotes: [
+    "ATTENTION : réservation non faite, venir vers 18h30/19h00 pour avoir une table pour 5 avec vue sur couché du soleil.",
+    "Terrasse panoramique offrant une vue spectaculaire sur Göreme et les cheminées de fées.",
+    "Le coucher du soleil est le moment le plus prisé",
+    "Cuisine turque traditionnelle, grillades, mezzés et quelques plats internationaux.",
+    "Situé à quelques minutes à pied du centre de Göreme, il est facilement accessible après une balade dans le village.",
+  ],
+},
+{
+  id: "restaurant-sky-rooftop-2",
+  jour: [6],
+  name: "Sky Cappadocia Rooftop & Restaurant",
+  shortDesc: "Une vue imprenable sur Göreme au coucher du soleil",
+  tag: "Restaurant",
+  image: "/images/Jour 5/Kaira Rooftop 1.webp",
+  photos: [
+    "/images/Jour 5/Kaira Rooftop 1.webp",
+    "/images/Jour 5/Kaira Rooftop 2.webp",
+    "/images/Jour 5/Kaira Rooftop 3.webp",
+  ],
+  gps: "38.6437,34.8277",
+  historyLabel: "Présentation du restaurant",
+  history:
+    "Perché sur les hauteurs de Göreme, le Sky Cappadocia Rooftop & Restaurant offre une vue panoramique exceptionnelle sur les vallées et les célèbres cheminées de fées. Sa terrasse est particulièrement appréciée au moment du coucher du soleil, lorsque les falaises volcaniques se parent de teintes dorées. La carte met à l'honneur les saveurs de la cuisine turque, accompagnées d'une belle sélection de vins et de cocktails, dans une ambiance élégante et décontractée.",
+  anecdotesLabel: "Informations pratiques",
+  anecdotes: [
+    "Pas de réservation faite, il faudra se rendre sur place",
+    "L'un des meilleurs endroits de Göreme pour admirer le coucher du soleil.",
+    "Terrasse avec vue panoramique sur les vallées et les habitations troglodytiques.",
+    "Cuisine turque, mezzés, grillades et cocktails servis dans une ambiance lounge.",
+    "Il est conseillé de réserver une table en terrasse, particulièrement entre avril et octobre.",
+  ],
+},
+{
+    id: "nuit-BURCU-KAYA-CAPPADOCE-2",
+    jour: [6],
+    name: "hôtel BURCU KAYA - CAPPADOCE 4*",
+    shortDesc: "Nuit (et diner?) à l'hôtel BURCU KAYA - CAPPADOCE",
+    tag: "hotel",
+    image: "/images/Jour 5/Nuit hotel jour 6 - 1.webp",
+    photos: [
+      "/images/Jour 5/Nuit hotel jour 6 - 1.webp",
+      "/images/Jour 5/Nuit hotel jour 6 - 2.webp",
+    ],
+    gps: "38.642980 , 34.853410",
+    historyLabel:"Présentation de l'hôtel",
+    history:
+      "Le Burcu Kaya Hotel est un établissement 4★ typique de la Cappadoce, construit dans le style troglodyte avec des façades en pierre locale. Il se trouve dans un secteur calme d’Ortahisar, à proximité du château et à quelques minutes des vallées emblématiques (Rose Valley, Red Valley, Love Valley).\n"+
+      "L’hôtel propose des chambres creusées dans la roche, une piscine extérieure, un restaurant panoramique, ainsi qu’une atmosphère authentique idéale pour un séjour romantique ou une découverte culturelle.",
+    anecdotesLabel: "Informations pratiques",
+    anecdotes: [
+      "1 chambre double et 1 chambre triple normalement réservés",
+      "Restaurant réservé pour le dîner du soir à l'hôtel si nécessaire",
+    ],
   },
   {
     id: "konya-route-soie",
