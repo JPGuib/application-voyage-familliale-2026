@@ -15,7 +15,7 @@ describe("documents screen data helpers", () => {
     expect(withData.VOLS.length).toBeGreaterThan(0);
     expect(withData.HEBERGEMENT.length).toBeGreaterThan(0);
     expect(withData.TRANSPORTS.length).toBeGreaterThan(0);
-    expect(withData.IDENTITE.length).toBeGreaterThan(0);
+    expect(withData.PAPIERS.length).toBeGreaterThan(0);
   });
 
   it("documents include optional scans for gallery mode", () => {

@@ -4,7 +4,7 @@ export const DOCUMENT_CATEGORIES = [
   "RESTAURANT",
   "ACTIVITES",
   "TRANSPORTS",
-  "IDENTITE",
+  "PAPIERS",
 ] as const;
 
 export type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];

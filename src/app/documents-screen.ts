@@ -13,6 +13,9 @@ export function groupDocumentsByCategory(docs: readonly TravelDocument[]): Docum
   }, {} as DocumentsByCategory);
 
   return docs.reduce((acc, doc) => {
+    if (!acc[doc.category]) {
+      acc[doc.category] = [];
+    }
     acc[doc.category].push(doc);
     return acc;
   }, initial);
