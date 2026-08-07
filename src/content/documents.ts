@@ -141,7 +141,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "assurance-voyage-famille",
-    category: "IDENTITE",
+    category: "PAPIERS",
     title: "Assurance Matmut",
     tag: "Assurance",
     content:
@@ -155,6 +155,39 @@ export const DOCUMENTS: TravelDocument[] = [
       "Conserver la carte d'assuré dans chaque sac cabine",
       "Numéro d'assistance disponible 24h/24",
     ],
+  },
+  {
+    id: "passeports-famille",
+    category: "PAPIERS",
+    title: "Passeports",
+    tag: "Passeports",
+    content:
+      "Numéros de passeport :"
+    details: [
+      "JP : 25EE06870 - expire le 01/07/2035",
+      "KG : 25DK73206 - expire le 10/06/2035",
+      "Emma : 21CA91950 - expire le 06/06/2031",
+      "Thomas : 25CE42308 - expire le 16/03/2035",
+      "Julie : 26AH17517 - expire le 18/02/2036",
+    ],
+    scans: [
+      "/images/tips/Passeport JPG.webp",
+      "/images/tips/Passeport KG.webp",
+      "/images/tips/Passeport Thomas.webp",
+      "/images/tips/Passeport Emma.webp",
+      "/images/tips/Passeport Julie.webp",,
+  },
+  {
+    id: "LCL",
+    category: "PAPIERS",
+    title: "Service carte CB",
+    tag: "Banque",
+    content:
+      "Déclarer le vol ou la perte de votre carte 24h/24",
+    details: [
+      "Depuis l'appli LCL Mes comptes",
+      "Par téléphone (France et Etranger) : +33 9 69 32 03 10",
+      ],
   },
   {
     id: "reservation-transfert-aeroport",
