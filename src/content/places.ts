@@ -600,6 +600,34 @@
     ],
   },
   {
+    id: "bus-istanbul-ankara",
+    jour: [4], // à préciser selon ton programme
+    name: "Trajet en bus Istanbul – Ankara",
+    shortDesc: "Traversée de l'Anatolie, entre deux capitales",
+    tag: "Trajet",
+    image: "/images/Bus.webp",
+    photos: [
+      "/images/Bus.webp",
+      "/images/Jour 4/Trajet Istanbul - Ankara.webp",
+    ],
+    audioTitle: "Sur la route d'Ankara, à travers l'Anatolie",
+    audioDuration: "1 min 05 sec",
+    audioSrc: "/audio/places/Trajet_Istanbul - ankara.mp3",
+    links: [
+      {
+        label: "Ouvrir la carte interactive du trajet",
+        url: "/visites-guidees/istanbul_ankara_bus_route.html",
+      },
+    ],
+    historyLabel:"Le trajet en bus Istanbul – Ankara",
+    history:
+      "Le trajet en bus entre Istanbul et Ankara couvre environ 450 km et dure généralement 5 à 6 heures. La route quitte les rives du Bosphore pour traverser les plaines et collines de l'Anatolie occidentale, offrant un aperçu de la Turquie rurale, loin de l'agitation des grandes villes. Les compagnies turques (Metro, Kâmil Koç, Pamukkale...) sont réputées pour leur confort et leur ponctualité, avec des bus modernes équipés de sièges inclinables et de services à bord. Les montagnes de Bolu — après avoir quitté la région de Sakarya, le bus grimpe dans les montagnes de Bolu, avec des forêts de conifères, des vallées verdoyantes et des routes sinueuses. En automne, les feuillages flamboyants offrent un spectacle magnifique, et en hiver, les paysages se couvrent de neige",
+    anecdotes: [
+      "La route traverse le plateau anatolien, un paysage de collines douces et de steppes qui change radicalement du décor côtier d'Istanbul.",
+      "Ankara, contrairement à Istanbul, est une ville plus administrative et moderne : le contraste est saisissant à l'arrivée.",
+    ],
+  },
+  {
     id: "ankara",
     jour: [4],
     name: "Ankara",
@@ -623,6 +651,49 @@
       "Le mausolée d'Atatürk, Anıtkabir, est l'un des monuments les plus visités du pays et accueille plusieurs millions de visiteurs chaque année.",
       "Bien qu'Istanbul soit la plus grande ville de Turquie, Ankara concentre les principales institutions politiques et diplomatiques du pays.",
     ],
+  },
+  {
+    id: "nuit-HILTONSA-ANKARA",
+    jour: [4],
+    name: "hôtel HILTONSA ANKARA 5*",
+    shortDesc: "Diner et nuit à l'hôtel HILTONSA ANKARA",
+    tag: "hotel",
+    image: "/images/Jour 2/Nuit hotel jour 3 - 1.webp",
+    photos: [
+      "/images/Jour 4/Nuit hotel jour 3 - 1.webp",
+      "/images/Jour 4/Nuit hotel jour 3 - 2.webp",
+    ],
+    gps: "39.9019688 , 32.8638103",
+    historyLabel:"Présentation de l'hôtel",
+    history:
+      "Le HiltonSA Ankara est un hôtel 5★ emblématique situé dans le quartier diplomatique de Çankaya, l’un des plus prestigieux d’Ankara. Installé dans une tour moderne, il propose des chambres élégantes, un restaurant avec terrasse, un piano‑bar, ainsi qu’un centre de bien‑être complet comprenant piscine intérieure, sauna et salle de sport.",
+    anecdotesLabel: "Informations pratiques",
+    anecdotes: [
+      "1 chambre double et 1 chambre triple normalement réservés",
+      "Restaurant réservé pour le dîner du soir à l'hôtel",
+    ],
+  },
+   {
+    "id": "anitkabir",
+    "jour": [5],
+    "name": "Mausolée d'Atatürk",
+    "shortDesc": "Le monument national de la République turque",
+    "tag": "Monument",
+    "image": "/images/Jour 5/Anitkabir_1.webp",
+    "photos": [
+	"/images/Jour 5/Anitkabir_1.webp",
+	"/images/Jour 5/Anitkabir_2.webp",
+	"/images/Jour 5/Anitkabir_3.webp"
+    ],
+    "audioTitle": "Anitkabir, la mémoire d'une nation",
+    "audioDuration": "3 min 50 sec",
+    "audioSrc": "/audio/places/Mausolee_d_Ataturk.mp3",
+    "history": "Anıtkabir est le mausolée de Mustafa Kemal Atatürk, fondateur et premier président de la République de Turquie. Situé à Ankara sur la colline d'Anıttepe, ce monument monumental fut construit entre 1944 et 1953. Le complexe de 750 000 m² comprend le mausolée, le Parc de la Paix, l'allée des Lions et plusieurs tours symboliques. Les pierres et marbres proviennent de toutes les régions de Turquie, symbolisant l'unité nationale. C'est un lieu de pèlerinage où des millions de visiteurs viennent chaque année rendre hommage au Père de la Nation.",
+    "anecdotes": [
+      "Le drapeau turque flotte sur un mât de 33,53 m, le plus haut mât d'un seul tenant d'Europe.",
+      "Les soldats de la garde d'honneur sont sélectionnés pour leur taille (minimum 1m80) et leur allure impeccable.",
+      "Le sarcophage d'Atatürk pèse 40 tonnes et est fait d'un seul bloc de pierre."
+    ]
   },
   {
     id: "lac-sale",
@@ -675,27 +746,27 @@
       "Les puits de ventilation étaient si bien conçus qu'ils empêchaient l'ennemi de détecter la présence des habitants.",
     ],
   },
-    {
-    "id": "anitkabir",
-    "jour": [5],
-    "name": "Mausolée d'Atatürk",
-    "shortDesc": "Le monument national de la République turque",
-    "tag": "Monument",
-    "image": "/images/Jour 5/Anitkabir_1.webp",
-    "photos": [
-	"/images/Jour 5/Anitkabir_1.webp",
-	"/images/Jour 5/Anitkabir_2.webp",
-	"/images/Jour 5/Anitkabir_3.webp"
+{
+    id: "nuit-BURCU-KAYA-CAPPADOCE",
+    jour: [5],
+    name: "hôtel BURCU KAYA - CAPPADOCE 4*",
+    shortDesc: "Diner et nuit à l'hôtel BURCU KAYA - CAPPADOCE",
+    tag: "hotel",
+    image: "/images/Jour 5/Nuit hotel jour 5 - 1.webp",
+    photos: [
+      "/images/Jour 5/Nuit hotel jour 5 - 1.webp",
+      "/images/Jour 5/Nuit hotel jour 5 - 2.webp",
     ],
-    "audioTitle": "Anitkabir, la mémoire d'une nation",
-    "audioDuration": "3 min 50 sec",
-    "audioSrc": "/audio/places/Mausolee_d_Ataturk.mp3",
-    "history": "Anıtkabir est le mausolée de Mustafa Kemal Atatürk, fondateur et premier président de la République de Turquie. Situé à Ankara sur la colline d'Anıttepe, ce monument monumental fut construit entre 1944 et 1953. Le complexe de 750 000 m² comprend le mausolée, le Parc de la Paix, l'allée des Lions et plusieurs tours symboliques. Les pierres et marbres proviennent de toutes les régions de Turquie, symbolisant l'unité nationale. C'est un lieu de pèlerinage où des millions de visiteurs viennent chaque année rendre hommage au Père de la Nation.",
-    "anecdotes": [
-      "Le drapeau turque flotte sur un mât de 33,53 m, le plus haut mât d'un seul tenant d'Europe.",
-      "Les soldats de la garde d'honneur sont sélectionnés pour leur taille (minimum 1m80) et leur allure impeccable.",
-      "Le sarcophage d'Atatürk pèse 40 tonnes et est fait d'un seul bloc de pierre."
-    ]
+    gps: "38.642980 , 34.853410",
+    historyLabel:"Présentation de l'hôtel",
+    history:
+      "Le Burcu Kaya Hotel est un établissement 4★ typique de la Cappadoce, construit dans le style troglodyte avec des façades en pierre locale. Il se trouve dans un secteur calme d’Ortahisar, à proximité du château et à quelques minutes des vallées emblématiques (Rose Valley, Red Valley, Love Valley).\n"+
+      "L’hôtel propose des chambres creusées dans la roche, une piscine extérieure, un restaurant panoramique, ainsi qu’une atmosphère authentique idéale pour un séjour romantique ou une découverte culturelle.",
+    anecdotesLabel: "Informations pratiques",
+    anecdotes: [
+      "1 chambre double et 1 chambre triple normalement réservés",
+      "Restaurant réservé pour le dîner du soir à l'hôtel",
+    ],
   },
   {
     id: "cappadoce",
