@@ -1,7 +1,7 @@
 jour,destination,visites_prevues,gps_matin,gps_apresmidi,gps_soir
 1,En Route vers la Turquie,"Nantes, Paris, Istanbul","47.2184,-1.5536","47.2184,-1.5536","48.8566,2.3522"
-2,Istanbul,"Sainte-Sophie, Citerne Basilique, Kadikoi, Le Bosphore","41.0138,28.9497","41.0138,28.9497","41.0138,28.9497"
-3,Istanbul,"Mosquee Bleue, Place Taksim, Quartier de Pera","41.0138,28.9497","41.0138,28.9497","41.0138,28.9497"
+2,Istanbul en autonomie,"Sainte-Sophie, Citerne Basilique, Kadikoi, Le Bosphore","41.0138,28.9497","41.0138,28.9497","41.0138,28.9497"
+3,Istanbul visite organisée,"Mosquee Bleue, Place Taksim, Quartier de Pera","41.0138,28.9497","41.0138,28.9497","41.0138,28.9497"
 4,D'Istanbul à Ankara,"Instabul Grand Bazar, Ankara, Mausolé d'Ataturk","41.0138,28.9497","40.5000,30.9000","39.9199,32.8543"
 5,Vers la Cappadoce,"Cappadoce, lac salé, villes souterraines","39.9199,32.8543","38.6431,34.8287","38.6431,34.8287"
 6,Cappadoce,"Vol en montgolfière, Musée de Goreme,vallees d’Avcilar et de Guvercinlik","38.6431,34.8287","38.6420,34.8260","38.6431,34.8287"

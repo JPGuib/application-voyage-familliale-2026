@@ -19,7 +19,7 @@ export const JOURS_DESTINATIONS: JourDestination[] = [
   },
   {
     "jour": 2,
-    "destination": "Istanbul",
+    "destination": "Istanbul en autonomie",
     "visites_prevues": "Sainte-Sophie, Citerne Basilique, Kadikoi, Le Bosphore",
     "gps_matin": "41.0138,28.9497",
     "gps_apresmidi": "41.0138,28.9497",
@@ -27,7 +27,7 @@ export const JOURS_DESTINATIONS: JourDestination[] = [
   },
   {
     "jour": 3,
-    "destination": "Istanbul",
+    "destination": "Istanbul visite organisée",
     "visites_prevues": "Mosquee Bleue, Place Taksim, Quartier de Pera",
     "gps_matin": "41.0138,28.9497",
     "gps_apresmidi": "41.0138,28.9497",

@@ -221,11 +221,13 @@
     photos: [
       "/images/Jour 2/Kadikoy 2.webp",
       "/images/Jour 2/Kadikoy 1.webp",
+      "/images/Jour 2/Kadikoy 3.webp",
+      "/images/Jour 2/Kadikoy 4.webp",
     ],
     audioTitle: "Kadıköy, l'âme asiatique d'Istanbul",
     audioDuration: "3 min 10 sec",
     audioSrc: "/audio/places/kadikoy.mp3",
-    gps: "40.9909,29.0276",
+    gps: "40.988750 , 29.027639",
     history:
       "Kadıköy est l'un des quartiers les plus vivants de la rive asiatique d'Istanbul. Son marché (çarşı) regorge de produits frais, d'épices, de poissons et de boutiques locales. C'est un lieu de rencontre authentique, loin du tourisme de masse.",
     anecdotes: [
