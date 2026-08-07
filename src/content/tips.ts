@@ -1,4 +1,11 @@
 export const TIPS = {
+  Telephonie:[
+    {
+      icon: "📱",
+      title: "Carte SIM locale", 
+      desc: "Turkcell propose une offre prépayée Turkcell Tourist Welcome Pack de 1800 TL pour 20 Go de data, 200 minutes d'appels locaux et d'une durée de validité de 28 jours",
+    },
+  ],
   transport: [
     {
       icon: "🚄",

@@ -4,7 +4,6 @@ Backlog
 Evolutions : 
 * une autre fois ! 
 * Acheter un nom de domaine ?
-* Dans documents => voyageurs en plus de propriétaires pour voir les scans ?
 
 COntenu : 
 *  Rajoute les audios guides en ligne : https://audio.arvadmc.com/tour-detail?value=195
@@ -21,4 +20,3 @@ TESTER TOUTE L'APPLICATION
     - bug à la création d'un visiteur car checklist bloquée
     - pouvoir saisr quelque lettre et ne pas tout afficher la liste
     - il n'y a plus la possibilité de retrouver mot de passe via la question
-* revoir la vidéo et les trajets de l'avion

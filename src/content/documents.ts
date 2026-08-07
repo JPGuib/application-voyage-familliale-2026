@@ -181,7 +181,7 @@ export const DOCUMENTS: TravelDocument[] = [
   {
     id: "LCL",
     category: "PAPIERS",
-    title: "Service carte CB",
+    title: "Service carte CB LCL",
     tag: "Banque",
     content:
       "Déclarer le vol ou la perte de votre carte 24h/24",
