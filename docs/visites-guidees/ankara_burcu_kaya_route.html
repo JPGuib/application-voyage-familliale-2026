@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_d8a03f1fb749d95b4ebe2d7b502d1f96 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+<div style="position: fixed; top: 10px; right: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; font-size: 12px; font-family: sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 9999;">
+    <div style="margin-bottom:6px;"><span style="display:inline-block;width:20px;height:3px;background:#e74c3c;vertical-align:middle;margin-right:6px;border-radius:2px;"></span>Route E90 / O-21 → D-300</div>
+    <div style="margin-bottom:4px;"><span style="display:inline-block;width:8px;height:8px;background:#27ae60;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Départ : Ankara</div>
+    <div><span style="display:inline-block;width:8px;height:8px;background:#e74c3c;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Arrivée : Burcu Kaya Hotel</div>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;color:#666;font-size:11px;">~294 km · ~4h en bus</div>
+</div>
+    
+            <div class="folium-map" id="map_d8a03f1fb749d95b4ebe2d7b502d1f96" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_d8a03f1fb749d95b4ebe2d7b502d1f96 = L.map(
+                "map_d8a03f1fb749d95b4ebe2d7b502d1f96",
+                {
+                    center: [39.0, 33.8],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 7,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_ecd0413320cf1a21b6a0275ae95d2429 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_ecd0413320cf1a21b6a0275ae95d2429.addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+            var poly_line_8321fd6003014882c2dfb3d9c838cc86 = L.polyline(
+                [[39.9334, 32.8597], [39.85, 32.95], [39.7, 33.15], [39.55, 33.35], [39.4, 33.6], [39.25, 33.8], [39.1, 33.9], [38.95, 33.95], [38.8, 34.0], [38.65, 34.02], [38.55, 34.05], [38.45, 34.15], [38.4, 34.3], [38.38, 34.45], [38.4, 34.55], [38.45, 34.65], [38.5, 34.72], [38.55, 34.78], [38.58, 34.82], [38.6, 34.84], [38.62, 34.865]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 5}
+            ).addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+            poly_line_8321fd6003014882c2dfb3d9c838cc86.bindTooltip(
+                `<div>
+                     Route E90 / O-21 → D-300
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_a27e2ae05820eee9cd87382e4f3562dd = L.polyline(
+                [[39.9334, 32.8597], [39.85, 32.95], [39.7, 33.15], [39.55, 33.35], [39.4, 33.6], [39.25, 33.8], [39.1, 33.9], [38.95, 33.95], [38.8, 34.0], [38.65, 34.02], [38.55, 34.05], [38.45, 34.15], [38.4, 34.3], [38.38, 34.45], [38.4, 34.55], [38.45, 34.65], [38.5, 34.72], [38.55, 34.78], [38.58, 34.82], [38.6, 34.84], [38.62, 34.865]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.15, "smoothFactor": 1.0, "stroke": true, "weight": 12}
+            ).addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+            var circle_marker_4b76b57476569b2dd94420566813d760 = L.circleMarker(
+                [39.9334, 32.8597],
+                {"bubblingMouseEvents": true, "color": "#27ae60", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#27ae60", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+        var popup_27ac3c85a8c9f87ca131258745c6b53e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_a47df0c4daad2bcf5ab941568a2f6bd7 = $(`<div id="html_a47df0c4daad2bcf5ab941568a2f6bd7" style="width: 100.0%; height: 100.0%;"><b>Ankara</b></div>`)[0];
+                popup_27ac3c85a8c9f87ca131258745c6b53e.setContent(html_a47df0c4daad2bcf5ab941568a2f6bd7);
+            
+        
+
+        circle_marker_4b76b57476569b2dd94420566813d760.bindPopup(popup_27ac3c85a8c9f87ca131258745c6b53e)
+        ;
+
+        
+    
+    
+            var marker_23ae9a6432036ec6fa61a0dc2727fd2a = L.marker(
+                [39.9334, 32.8597],
+                {
+}
+            ).addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+            var div_icon_690beb0bad88906786da31d00c60b31d = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eAnkara\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_23ae9a6432036ec6fa61a0dc2727fd2a.setIcon(div_icon_690beb0bad88906786da31d00c60b31d);
+            
+    
+            var circle_marker_c8ce6294ff5cdf89477dd051879f8497 = L.circleMarker(
+                [38.3687, 33.9997],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+        var popup_130f124d255abf9bf383dd2e8820bc50 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f1779308dc334a6ea8ad14686286a7ee = $(`<div id="html_f1779308dc334a6ea8ad14686286a7ee" style="width: 100.0%; height: 100.0%;"><b>Aksaray</b></div>`)[0];
+                popup_130f124d255abf9bf383dd2e8820bc50.setContent(html_f1779308dc334a6ea8ad14686286a7ee);
+            
+        
+
+        circle_marker_c8ce6294ff5cdf89477dd051879f8497.bindPopup(popup_130f124d255abf9bf383dd2e8820bc50)
+        ;
+
+        
+    
+    
+            var marker_9e422a071cb7f9ba3cb6a34470194eb1 = L.marker(
+                [38.3687, 33.9997],
+                {
+}
+            ).addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+            var div_icon_f2962d314387e247c6f371ed20b3378a = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eAksaray\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_9e422a071cb7f9ba3cb6a34470194eb1.setIcon(div_icon_f2962d314387e247c6f371ed20b3378a);
+            
+    
+            var circle_marker_6ab80795807f1ea47d556d654df4cbcb = L.circleMarker(
+                [38.6247, 34.7142],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+        var popup_61aa8eec541902b9cede9e8dff2565a7 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_232ffac7c858338cafd6d14bfcaf0108 = $(`<div id="html_232ffac7c858338cafd6d14bfcaf0108" style="width: 100.0%; height: 100.0%;"><b>Nevşehir</b></div>`)[0];
+                popup_61aa8eec541902b9cede9e8dff2565a7.setContent(html_232ffac7c858338cafd6d14bfcaf0108);
+            
+        
+
+        circle_marker_6ab80795807f1ea47d556d654df4cbcb.bindPopup(popup_61aa8eec541902b9cede9e8dff2565a7)
+        ;
+
+        
+    
+    
+            var marker_6905a7741e6315ad203fc1b0911e93af = L.marker(
+                [38.6247, 34.7142],
+                {
+}
+            ).addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+            var div_icon_2d204ea5c2eb966e3f27004ac70ba0c6 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eNev\u015fehir\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_6905a7741e6315ad203fc1b0911e93af.setIcon(div_icon_2d204ea5c2eb966e3f27004ac70ba0c6);
+            
+    
+            var circle_marker_76e7cacadb3e5c71386fe06c2ac117fe = L.circleMarker(
+                [38.62, 34.865],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3c", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
+            ).addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+        var popup_da57fd549e72e3bdd3905ff908720e30 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_03735298ca45519bbf19c93de578db39 = $(`<div id="html_03735298ca45519bbf19c93de578db39" style="width: 100.0%; height: 100.0%;"><b>Ortahisar — Burcu Kaya Hotel ★★★★</b></div>`)[0];
+                popup_da57fd549e72e3bdd3905ff908720e30.setContent(html_03735298ca45519bbf19c93de578db39);
+            
+        
+
+        circle_marker_76e7cacadb3e5c71386fe06c2ac117fe.bindPopup(popup_da57fd549e72e3bdd3905ff908720e30)
+        ;
+
+        
+    
+    
+            var marker_8968dd577764eb75d8c2973ec4fda3cc = L.marker(
+                [38.62, 34.865],
+                {
+}
+            ).addTo(map_d8a03f1fb749d95b4ebe2d7b502d1f96);
+        
+    
+            var div_icon_8d1d232cf03dfa8256fa98c420444673 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eOrtahisar \u2014 Burcu Kaya Hotel \u2605\u2605\u2605\u2605\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_8968dd577764eb75d8c2973ec4fda3cc.setIcon(div_icon_8d1d232cf03dfa8256fa98c420444673);
+            
+</script>
+</html>

@@ -6,7 +6,7 @@ Evolutions :
 * Acheter un nom de domaine ?
 * changer jour 1 => jour 0 ? 
 * adapter le contenu (entre les jours => pour jour 2 et 3 notamment)   
-
+* rajouter la date du jour à côté du jour (ou le remplacer d'ailleurs)
 
 COntenu : 
 *  Rajoute les audios guides en ligne : https://audio.arvadmc.com/tour-detail?value=195

@@ -658,7 +658,7 @@
     name: "hôtel HILTONSA ANKARA 5*",
     shortDesc: "Diner et nuit à l'hôtel HILTONSA ANKARA",
     tag: "hotel",
-    image: "/images/Jour 2/Nuit hotel jour 3 - 1.webp",
+    image: "/images/Jour 4/Nuit hotel jour 3 - 1.webp",
     photos: [
       "/images/Jour 4/Nuit hotel jour 3 - 1.webp",
       "/images/Jour 4/Nuit hotel jour 3 - 2.webp",
@@ -694,6 +694,42 @@
       "Les soldats de la garde d'honneur sont sélectionnés pour leur taille (minimum 1m80) et leur allure impeccable.",
       "Le sarcophage d'Atatürk pèse 40 tonnes et est fait d'un seul bloc de pierre."
     ]
+  },
+  {
+  id: "trajet-ankara-cappadoce",
+  jour: [5],
+  name: "D'Ankara à la Cappadoce",
+  shortDesc: "En route vers les paysages les plus étonnants de Turquie",
+  tag: "Trajet",
+  image: "/images//Bus.webp",
+  photos: [
+    "/images/Jour 5/chemin vers Cappadoce 1.webp",
+    "/images/Jour 5/chemin vers Cappadoce 2.webp",
+    "/images/Jour 5/chemin vers Cappadoce 3.webp",
+    "/images/Jour 5/chemin vers Cappadoce 4.webp",
+    "/images/Jour 5/chemin vers Cappadoce 5.webp",
+    "/images/Jour 5/chemin vers Cappadoce 6.webp",  
+  ],
+  audioTitle: "Sur la route de la Cappadoce",
+  audioDuration: "3 min 30 sec",
+  audioSrc: "/audio/places/Ankara-vers-Cappadoce.mp3",
+  historyLabel: "Le trajet",
+  history:
+    "En quittant Ankara, la capitale moderne de la Turquie, la route s'enfonce progressivement dans les vastes plateaux d'Anatolie centrale. Les immeubles laissent place aux champs de céréales, aux collines ondulantes et aux immenses étendues où l'on croise parfois des troupeaux de moutons ou quelques villages traditionnels. Après environ trois heures de route, le paysage commence à changer. Les premières formations rocheuses apparaissent, sculptées par des millions d'années d'érosion volcanique. Vous entrez alors dans l'une des régions géologiques les plus fascinantes au monde : la Cappadoce.",
+  anecdotesLabel: "À observer pendant le trajet",
+  anecdotes: [
+    "La distance entre Ankara et la Cappadoce est d'environ 290 kilomètres.",
+    "Le trajet dure généralement entre 3 h et 3 h 30 selon les arrêts.",
+    "Vous traversez le cœur de l'Anatolie, vaste région agricole de la Turquie.",
+    "Les paysages deviennent progressivement plus minéraux à l'approche de la Cappadoce.",
+    "Les premières cheminées de fées annoncent que vous êtes arrivé dans un décor presque irréel.",
+  ],
+  links: [
+      {
+        label: "Ouvrir la carte interactive du trajet",
+        url: "/visites-guidees/ankara_burcu_kaya_route.html",
+      },
+    ],
   },
   {
     id: "lac-sale",
@@ -746,11 +782,61 @@
       "Les puits de ventilation étaient si bien conçus qu'ils empêchaient l'ennemi de détecter la présence des habitants.",
     ],
   },
+  {
+  id: "restaurant-kaira-rooftop",
+  jour: [5],
+  name: "Kaira Rooftop Bar & Restaurant",
+  shortDesc: "Un dîner avec vue sur les cheminées de fées",
+  tag: "Restaurant",
+  image: "/images/Jour 5/Kaira Rooftop 1.webp",
+  photos: [
+    "/images/Jour 5/Kaira Rooftop 1.webp",
+    "/images/Jour 5/Kaira Rooftop 2.webp",
+    "/images/Jour 5/Kaira Rooftop 3.webp",
+  ],
+  gps: "38.6439,34.8283",
+  historyLabel: "Présentation du restaurant",
+  history:
+    "Situé au cœur de Göreme, le Kaira Rooftop Bar & Restaurant offre l'une des plus belles vues sur les célèbres cheminées de fées de Cappadoce. Depuis sa terrasse panoramique, les visiteurs profitent d'un cadre exceptionnel, particulièrement au coucher du soleil, tout en dégustant une cuisine turque généreuse accompagnée de quelques spécialités internationales. L'atmosphère est à la fois élégante, chaleureuse et propice à un dîner mémorable après une journée d'exploration dans les vallées de Cappadoce.",
+  anecdotesLabel: "Informations pratiques",
+  anecdotes: [
+    "ATTENTION : réservation non faite, venir vers 18h30/19h00 pour avoir une table pour 5 avec vue sur couché du soleil.",
+    "Terrasse panoramique offrant une vue spectaculaire sur Göreme et les cheminées de fées.",
+    "Le coucher du soleil est le moment le plus prisé",
+    "Cuisine turque traditionnelle, grillades, mezzés et quelques plats internationaux.",
+    "Situé à quelques minutes à pied du centre de Göreme, il est facilement accessible après une balade dans le village.",
+  ],
+},
+{
+  id: "restaurant-sky-rooftop",
+  jour: [5],
+  name: "Sky Cappadocia Rooftop & Restaurant",
+  shortDesc: "Une vue imprenable sur Göreme au coucher du soleil",
+  tag: "Restaurant",
+  image: "/images/Jour 5/Kaira Rooftop 1.webp",
+  photos: [
+    "/images/Jour 5/Kaira Rooftop 1.webp",
+    "/images/Jour 5/Kaira Rooftop 2.webp",
+    "/images/Jour 5/Kaira Rooftop 3.webp",
+  ],
+  gps: "38.6437,34.8277",
+  historyLabel: "Présentation du restaurant",
+  history:
+    "Perché sur les hauteurs de Göreme, le Sky Cappadocia Rooftop & Restaurant offre une vue panoramique exceptionnelle sur les vallées et les célèbres cheminées de fées. Sa terrasse est particulièrement appréciée au moment du coucher du soleil, lorsque les falaises volcaniques se parent de teintes dorées. La carte met à l'honneur les saveurs de la cuisine turque, accompagnées d'une belle sélection de vins et de cocktails, dans une ambiance élégante et décontractée.",
+  anecdotesLabel: "Informations pratiques",
+  anecdotes: [
+    "Pas de réservation faite, il faudra se rendre sur place",
+    "L'un des meilleurs endroits de Göreme pour admirer le coucher du soleil.",
+    "Terrasse avec vue panoramique sur les vallées et les habitations troglodytiques.",
+    "Cuisine turque, mezzés, grillades et cocktails servis dans une ambiance lounge.",
+    "Il est conseillé de réserver une table en terrasse, particulièrement entre avril et octobre.",
+  ],
+},
 {
     id: "nuit-BURCU-KAYA-CAPPADOCE",
     jour: [5],
     name: "hôtel BURCU KAYA - CAPPADOCE 4*",
-    shortDesc: "Diner et nuit à l'hôtel BURCU KAYA - CAPPADOCE",
+    shortDesc: "Nuit (et diner?) à l'hôtel BURCU KAYA - CAPPADOCE",
     tag: "hotel",
     image: "/images/Jour 5/Nuit hotel jour 5 - 1.webp",
     photos: [
@@ -765,7 +851,7 @@
     anecdotesLabel: "Informations pratiques",
     anecdotes: [
       "1 chambre double et 1 chambre triple normalement réservés",
-      "Restaurant réservé pour le dîner du soir à l'hôtel",
+      "Restaurant réservé pour le dîner du soir à l'hôtel si nécessaire",
     ],
   },
   {
