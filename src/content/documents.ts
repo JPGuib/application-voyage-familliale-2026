@@ -114,6 +114,31 @@ export const DOCUMENTS: TravelDocument[] = [
         url: "https://customerlogin.transavia.com/379fb04b-964b-4985-965c-2d9097eef215/b2c_1a_customer_signuporsignin/oauth2/v2.0/authorize?client_id=ed9a43b5-64fb-47b1-abac-bc510a1802e5&redirect_uri=https%3A%2F%2Fwww.transavia.com%2Fapi%2Fpersonalaccountauth%2Fcallback&response_type=code&scope=openid%20https%3A%2F%2Ftransaviacustomerprod.onmicrosoft.com%2Fshared-api%2Fcustomer.profile.read&code_challenge_method=S256&code_challenge=NlBXc6f0dODwkm5-5kjZpEejRRYBY5FbSzeylqp4opo&state=OpenIdConnect.AuthenticationProperties%3DL2dwjWMIX3JHTgkzmG0Kw2tdO5NCicdthlMO2uc_mXisWeI8SWktD8X5DGrvqhhCxmUgAZ_H1hS_dZRvhKPfjxJILknEhSs4EYGlY3nG-qNeoOJpRaJfAD1-OBRe1tdA-5MJn5WviRFUbCPuNUiwTyRbseMQlkE5NjAoRtRjQDTTsmbpKp_4ipOrnmSYCY7YH1Ngnxfs4XJeD4-DW22_TMLbkeFbel7L0sEm6mxnl_W5ArpggbNKqHQnUt9L5W08mfEplCbouyaVvtDyB1NjtzGjkLE-U0fpog5i1Toaz4LE2lsffdobU36UVmVMzw12ILi54v2RArB5ckoR3knk6tof_Nxw91IzrebLxWXbW3BtclMhU5rstFdW5w2BGLN0qQjCRaZT_ibEDOvM6JpUEuxE1MXRoqzt71sWnqy8dlJGgVVRdaJ8U9RQ-nJ_fvi9HX3CEBPoQa2ylX84Eb8KNNxa_GVAJe__dS3HbIdF8g3zOr12MhsbcjaTX6UiBEu_yIC0F2SI1mumMGols1XEmMBXyVKTCHjse7l23huMcGc&response_mode=form_post&ui_locales=fr-FR&locale=fr-FR&x-client-SKU=ID_NET461&x-client-ver=5.7.0.0",
       },
     ],
+    scans: [
+      "/images/Vol/Vol retour JPG.webp",
+      "/images/Vol/Vol retour KG.webp",
+      "/images/Vol/Vol retour Thomas.webp",
+      "/images/Vol/Vol retour Emma.webp",
+      "/images/Vol/Vol retour Julie.webp", 
+    ],
+  },
+  {
+    id: "Parking-aeroport-Nantes",
+    category: "VOLS",
+    title: "Parking Nantes Atlantique",
+    tag: "Parking",
+    content:
+      "Parking aéroport de Nantes Atlantique réservés :",
+    details: [
+      "Réservation : numéro de réservation",
+      "Parking : numéro de parking",
+      ],
+    links: [
+      {
+        label: "Accès à la réservation",
+        url: "https://www.nantes.aeroport.fr/parking",
+      },
+    ],
   },
   {
     id: "hotel-istanbul-kadikoy",
@@ -154,6 +179,10 @@ export const DOCUMENTS: TravelDocument[] = [
     details: [
       "Conserver la carte d'assuré dans chaque sac cabine",
       "Numéro d'assistance disponible 24h/24",
+    ],
+    scans: [
+      "/images/Vol/Memo matmut 1.webp",
+      "/images/Vol/Memo matmut 2.webp",
     ],
   },
   {
