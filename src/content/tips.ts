@@ -5,6 +5,16 @@ export const TIPS = {
       title: "Carte SIM locale", 
       desc: "Turkcell propose une offre prépayée Turkcell Tourist Welcome Pack de 1800 TL pour 20 Go de data, 200 minutes d'appels locaux et d'une durée de validité de 28 jours",
     },
+    {
+      icon: "📞",
+      title: "Indicatif téléphone en Turquie",
+      desc: "L'indicatif téléphonique international de la Turquie est le +90",
+    },
+    {
+      icon: "📶",
+      title: "Forfait Free 5G en Turquie",
+      desc: "Le forfait Free 5G est utilisable en Turquie, mais il est limité à 25 Go de data. Au-delà, la vitesse est réduite à 128 kbps.",
+    },
   ],
   transport: [
     {
