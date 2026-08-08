@@ -18,8 +18,6 @@ Evolutions :
 
 
 COntenu : 
-*  Rajoute les audios guides en ligne : https://audio.arvadmc.com/tour-detail?value=195
-* Trouver les sites pour chaque visite avec des liens
 * Revoir tous les quizz ! avec les quides et faire un gros challenge en fin de séjour ?
 * un plan des bateaux Istanbul?
 * audios guides : https://audio.arvadmc.com/tour-detail?value=195

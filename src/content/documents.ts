@@ -342,6 +342,33 @@ export const DOCUMENTS: TravelDocument[] = [
     ],  
   },
   {
+    id: "Navettes-Bateau-Istanbul",
+    category: "TRANSPORTS",
+    title: "Navettes bateau Istanbul",
+    tag: "Navettes",
+    content:
+    "Les bateaux-navettes sont l'un des moyens les plus agréables de se déplacer à Istanbul. Ils permettent notamment de traverser le Bosphore entre la rive européenne et la rive asiatique, tout en profitant d'une superbe vue sur la ville.",
+    details: [
+    "Les principales lignes relient notamment Eminönü, Karaköy, Beşiktaş, Üsküdar et Kadıköy",
+    "Les bateaux permettent de passer très facilement d'une rive à l'autre du Bosphore",
+    "Le trajet entre l'Europe et l'Asie ne prend généralement que quelques dizaines de minutes",
+    "L'Istanbulkart peut être utilisée pour régler les trajets sur les transports publics, y compris les ferries municipaux",
+    "Il est conseillé de se placer à l'extérieur ou sur le pont supérieur lorsque cela est possible pour profiter de la vue",
+    "Les horaires et les fréquences varient selon les lignes et les jours de la semaine",
+    "Attention à bien vérifier le quai et la destination affichée avant de monter à bord",
+    "Ces navettes sont des transports en commun et non des croisières touristiques : elles permettent néanmoins de découvrir Istanbul depuis le Bosphore à moindre coût",
+    ],
+    scans: [
+      "/images/guide/Carte ferry Istanbul sehirhatrali.webp",
+    ],
+    links: [
+      {
+        label: "Carte des ferries d'Istanbul",
+        url: "https://www.sehirhatlari.istanbul"
+      },
+    ],    
+},
+  {
     id: "restaurant-vina-garden",
     category: "RESTAURANT",
     title: "Sultanahmet - La Vina Garden 1864 Restaurant",
