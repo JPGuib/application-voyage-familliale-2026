@@ -231,9 +231,9 @@ export const DOCUMENTS: TravelDocument[] = [
     content:
       "Navette réservée par le voyagiste pour le transfert de l'aéroport d'Istanbul (IST) vers l'hôtel",
     details: [
-      "Il faut sortir par la **poste n°9** une fois bagages récupérés et formalités de douane passées",
-      "**Il ne faut pas descendre à l'étage -2 !**",
-      "Notre assistant nous accueillera à la sortie avec un panneau de **Voyage Privé**",
+      "Il faut sortir par la poste n°9 une fois bagages récupérés et formalités de douane passées",
+      "Il ne faut pas descendre à l'étage -2 !",
+      "Notre assistant nous accueillera à la sortie avec un panneau de Voyage Privé",
       "En cas d'urgence, il faut appeler le voyagiste au +90 545 344 55 08",
       "Le point de rencontre et le plan sont indiqués sur le scan ci-dessous",
     ],
@@ -241,22 +241,6 @@ export const DOCUMENTS: TravelDocument[] = [
       "/images/guide/Information Transfert 1.webp",
       "/images/guide/Information Transfert 2.webp",
     ],  
-  },
-  {
-    id: "reservation-transfert-aeroport",
-    category: "TRANSPORTS",
-    title: "Transfert retour → Aéroport IST",
-    tag: "Transfert",
-    day: 9,
-    content:
-      "Navette réservée pour l'arrivée de nuit à Istanbul.\n" +
-      "**Prestataire** : Istanbul Shuttle\n" +
-      "**Référence** : SH-IST-3412\n" +
-      "**Point de rendez-vous** : sortie terminal international",
-    details: [
-      "Chauffeur avec pancarte nom de famille",
-      "Valable pour 5 passagers + bagages",
-    ],
   },
   {
     id: "restaurant-a-completer",
