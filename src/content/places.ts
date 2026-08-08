@@ -283,6 +283,12 @@
       "Les mosaïques ont été réalisées entre 1315 et 1321.",
       "Le lieu est souvent moins fréquenté que Sainte-Sophie, ce qui permet une visite plus sereine.",
     ],
+    links: [
+      {
+        label: "Pour approfondir",
+        url: "https://www.churchofchora.com/",
+      },
+    ],
   },
   {
     id: "balat",

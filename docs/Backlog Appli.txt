@@ -19,11 +19,8 @@ Evolutions :
 
 COntenu : 
 * Revoir tous les quizz ! avec les quides et faire un gros challenge en fin de séjour ?
-* un plan des bateaux Istanbul?
-* audios guides : https://audio.arvadmc.com/tour-detail?value=195
-* https://books.apple.com/us/book/church-of-chora/id1178728769
 * revoir les coordonnées GPS
-*  Quelque chose sur le vin et la bière ?
+* Quelque chose sur le vin et la bière ?
 * revoir les textes et mettre en gras
 
 TESTER TOUTE L'APPLICATION
