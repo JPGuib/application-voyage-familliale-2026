@@ -94,30 +94,6 @@ export const CULTURE_TRADITION_TOPICS = [
     ],
   },
   {
-    id: "plats-culinaires",
-    name: "Les plats culinaires turcs",
-    shortDesc: "Kebabs, mezze, baklava et autres délices",
-    tag: "Gastronomie",
-    image:
-      "/images/Culture/art culinaire 1.webp",
-    photos: [
-      "/images/Culture/art culinaire 1.webp",
-      "/images/Culture/art culinaire 2.webp",
-      "/images/Culture/Culinaire 1.webp",
-      "/images/Culture/Culinaire 2.webp",
-      "/images/Culture/Culinaire 3.webp",
-    ],
-    audioTitle: "Un festin de saveurs",
-    audioDuration: "3 min 20 sec",
-    audioSrc: "/audio/Culture/Les_plats.mp3",
-    history:
-      "La cuisine turque est l'un des trois grands patrimoines gastronomiques du monde, aux côtés de la française et de la chinoise. Elle puise ses racines dans la tradition nomade des steppes d'Asie centrale, enrichie par les influences ottomanes, arabes, perses et méditerranéennes. Le kebab, dans ses multiples déclinaisons (döner, şiş, adana), est bien sûr le plus célèbre, mais la table turque offre bien plus : les mezze (houmous, caviar d'aubergine, dolma), le manti (raviolis turcs), le lahmacun (pizza fine à la viande hachée), et le poisson grillé au bord du Bosphore. Le repas se termine invariablement par un baklava feuilleté au miel et aux pistaches, arrosé d'un café turc si fort qu'on dit qu'il en reste sur la moustache.",
-    anecdotes: [
-      "Le baklava de Gaziantep est le seul au monde à bénéficier d'une indication géographique protégée par l'UE, au même titre que le champagne ou le parmesan.",
-      "Le café turc traditionnel est servi avec la mousse intacte ; si vous la mangez avec une cuillère, le serveur comprendra immédiatement que vous n'êtes pas du coin.",
-    ],
-  },
-  {
     id: "maillots-bain",
     name: "Maillots de bain dans les hôtels et à la plage",
     shortDesc: "Codes vestimentaires et pratiques balnéaires",
@@ -179,6 +155,52 @@ export const CULTURE_TRADITION_TOPICS = [
       "Avant chaque cérémonie, les derviches retirent leurs manteaux noirs symbolisant le tombeau terrestre pour révéler leurs robes blanches — un passage de la mort à la résurrection spirituelle qui dure exactement le temps d'un soupir collectif dans la salle.",
     ],
   },
+  {
+    id: "plats-culinaires",
+    name: "Les plats culinaires turcs",
+    shortDesc: "Kebabs, mezze, baklava et autres délices",
+    tag: "Gastronomie",
+    image:
+      "/images/Culture/art culinaire 1.webp",
+    photos: [
+      "/images/Culture/art culinaire 1.webp",
+      "/images/Culture/art culinaire 2.webp",
+      "/images/Culture/Culinaire 1.webp",
+      "/images/Culture/Culinaire 2.webp",
+      "/images/Culture/Culinaire 3.webp",
+    ],
+    audioTitle: "Un festin de saveurs",
+    audioDuration: "3 min 20 sec",
+    audioSrc: "/audio/Culture/Les_plats.mp3",
+    history:
+      "La cuisine turque est l'un des trois grands patrimoines gastronomiques du monde, aux côtés de la française et de la chinoise. Elle puise ses racines dans la tradition nomade des steppes d'Asie centrale, enrichie par les influences ottomanes, arabes, perses et méditerranéennes. Le kebab, dans ses multiples déclinaisons (döner, şiş, adana), est bien sûr le plus célèbre, mais la table turque offre bien plus : les mezze (houmous, caviar d'aubergine, dolma), le manti (raviolis turcs), le lahmacun (pizza fine à la viande hachée), et le poisson grillé au bord du Bosphore. Le repas se termine invariablement par un baklava feuilleté au miel et aux pistaches, arrosé d'un café turc si fort qu'on dit qu'il en reste sur la moustache.",
+    anecdotes: [
+      "Le baklava de Gaziantep est le seul au monde à bénéficier d'une indication géographique protégée par l'UE, au même titre que le champagne ou le parmesan.",
+      "Le café turc traditionnel est servi avec la mousse intacte ; si vous la mangez avec une cuillère, le serveur comprendra immédiatement que vous n'êtes pas du coin.",
+    ],
+  },
+ {
+    id: "vin-biere-alcool",
+    name: "Le vin, la bière et le rakı",
+    shortDesc: "Vignobles millénaires, bières locales et raki, l'anisé national",
+    tag: "Vins, bières et spiritueux",
+    image:
+      "/images/Culture/vin turques.webp",
+    photos: [
+      "/images/Culture/vin turques.webp",
+      "/images/Culture/vin turques 2.webp",
+      "/images/Culture/vin turques 3.webp",
+      "/images/Culture/Efes_Pilsener.webp",
+      "/images/Culture/Biere.webp",
+      "/images/Culture/raki.webp"
+    ],
+    history:
+      "La Turquie fait partie des plus anciens berceaux viticoles du monde : c'est en Anatolie que l'on situe certaines des premières traces de vinification, plusieurs millénaires avant notre ère. Aujourd'hui encore, le pays cultive plus de 60 cépages, dont des variétés locales méconnues comme l'Öküzgözü, le Boğazkere ou le Kalecik Karası pour les rouges, et le Narince ou l'Emir pour les blancs. Deux maisons historiques, Kavaklıdere (Ankara, 1929) et Doluca (Thrace, 1926), dominent le marché et proposent aussi bien des vins de table que des cuvées de belle qualité. Côté bière, Efes Pilsen règne en maître depuis des décennies, accompagnée de la plus ancienne brasserie du pays, Bomonti, fondée en 1890. Mais l'âme spiritueuse de la Turquie reste le rakı, une eau-de-vie de raisin anisée que l'on dilue avec de l'eau pour la voir se troubler en blanc laiteux — d'où son surnom de « lait de lion ». Servi en longues soirées de meze, il est bien plus qu'une boisson : c'est un rituel social.",
+    anecdotes: [
+      "Le rakı devient trouble et blanc au contact de l'eau à cause de l'anéthol qu'il contient, un phénomène appelé « effet ouzo » que l'on retrouve aussi dans le pastis ou l'ouzo grec.",
+      "Malgré la majorité musulmane du pays, la Turquie est l'un des dix premiers producteurs mondiaux de raisin — mais l'essentiel est destiné à la consommation en fruit frais ou séché, pas au vin.",
+    ],
+  },  
   {
     id: "sport-panorama",
     name: "Le sport en Turquie",

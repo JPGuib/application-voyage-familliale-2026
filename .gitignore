@@ -26,3 +26,6 @@ dist/
 
 # je retirer les livres qui prennent du volume
 /docs/Livres/
+
+# les jeux créés indépendamment du projet (ex: jeux de société, jeux de cartes, etc.)
+/jeux
