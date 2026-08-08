@@ -26,6 +26,7 @@ COntenu :
 * https://books.apple.com/us/book/church-of-chora/id1178728769
 * revoir les coordonnées GPS
 *  Quelque chose sur le vin et la bière ?
+* revoir les textes et mettre en gras
 
 TESTER TOUTE L'APPLICATION
 * tester le mode offline
