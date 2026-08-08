@@ -144,29 +144,148 @@ export const DOCUMENTS: TravelDocument[] = [
     ],
   },
   {
-    id: "hotel-istanbul-kadikoy",
+    id: "hotel-istanbul-windsor",
     category: "HEBERGEMENT",
-    title: "Istanbul - Hôtel Kadikoy",
-    tag: "Jour 1 à 4",
-    day: 1,
+    title: "Istanbul - Windsor Hotel & Convention Center",
+    tag: "Jour 2, 3 et 9",
     content:
       "Réservation famille pour le séjour à Istanbul.\n" +
-      "**Nom de réservation** : Famille Guionie\n" +
-      "**Code de confirmation** : IST-KDK-2026\n" +
-      "**Adresse** : Quartier Kadikoy, Istanbul",
+      "**Hôtel** : Windsor Hotel & Convention Center – Bayrampaşa\n" +
+      "**Catégorie** : 5 étoiles\n" +
+      "**Adresse** : Yenidoğan, Erciyes Sokağı No: 7, 34030 Bayrampaşa/İstanbul, Turquie\n" +
+      "**Téléphone** : +90 212 674 44 00",
     details: [
-      "Check-in à partir de 15h00",
-      "Check-out avant 11h00",
-      "Petit-déjeuner inclus",
+      "Check-in à partir de 14h00",
+      "Check-out avant 12h00",
+      "Hôtel 5 étoiles",
     ],
     links: [
       {
         label: "Voir l'hôtel sur Google Maps",
-        url: "https://www.google.com/maps/search/?api=1&query=40.9909,29.0303",
+        url: "https://www.google.com/maps/search/?api=1&query=41.04431,28.91344",
+      },
+      {
+        label: "Site officiel de l'hôtel",
+        url: "https://www.windsoristanbul.com/",
       },
     ],
-    gps: "40.9909,29.0303",
-  },
+    gps: "41.04431,28.91344",
+},
+{
+  id: "hotel-ankara-hiltonsa",
+  category: "HEBERGEMENT",
+  title: "Ankara - HiltonSA",
+  tag: "Jour 4",
+  content:
+    "Réservation famille pour le séjour à Ankara.\n" +
+    "**Hôtel** : Ankara HiltonSA\n" +
+    "**Catégorie** : 5 étoiles\n" +
+    "**Adresse** : Kavaklıdere, Tahran Cd. No:12, 06700 Çankaya/Ankara, Turquie\n" +
+    "**Téléphone** : +90 312 455 00 00",
+  details: [
+    "Check-in à partir de 14h00",
+    "Check-out avant 12h00",
+    "Hôtel 5 étoiles",
+  ],
+  links: [
+    {
+      label: "Voir l'hôtel sur Google Maps",
+      url: "https://www.google.com/maps/search/?api=1&query=39.90168,32.86437",
+    },
+    {
+      label: "Site officiel de l'hôtel",
+      url: "https://www.hilton.com/en/hotels/ankhitw-ankara-hiltonsa/",
+    },
+  ],
+  gps: "39.90168,32.86437",
+},
+{
+  id: "hotel-cappadoce-burcu-kaya",
+  category: "HEBERGEMENT",
+  title: "Cappadoce - Burcu Kaya Hotel",
+  tag: "Jour 5 et 6",
+  content:
+    "Réservation famille pour le séjour en Cappadoce.\n" +
+    "**Hôtel** : Burcu Kaya Hotel\n" +
+    "**Catégorie** : 4 étoiles\n" +
+    "**Adresse** : Bahçelievler Mah. İsmail Yavuz Cad. 19/1, 50650 Ortahisar/Ürgüp/Nevşehir, Turquie\n" +
+    "**Téléphone** : +90 384 343 32 00",
+  details: [
+    "Hôtel 4 étoiles",
+    "Situé à Ortahisar, au cœur de la Cappadoce",
+    "Hôtel de style traditionnel cappadocien",
+  ],
+  links: [
+    {
+      label: "Voir l'hôtel sur Google Maps",
+      url: "https://www.google.com/maps/search/?api=1&query=38.62519,34.86333",
+    },
+    {
+      label: "Site officiel de l'hôtel",
+      url: "https://burcukayahotel.com/",
+    },
+  ],
+  gps: "38.62519,34.86333",
+},
+
+{
+  id: "hotel-pamukkale-pam-thermal",
+  category: "HEBERGEMENT",
+  title: "Pamukkale - Pam Thermal Hotel",
+  tag: "Jour 7",
+  content:
+    "Réservation famille pour le séjour à Pamukkale.\n" +
+    "**Hôtel** : Pam Thermal Hotel\n" +
+    "**Catégorie** : 5 étoiles\n" +
+    "**Adresse** : Karahayıt, 120. Sağlık Sk No:5/1, 20190 Pamukkale/Denizli, Turquie\n" +
+    "**Téléphone** : +90 258 404 01 32",
+  details: [
+    "Hôtel 5 étoiles",
+    "Situé à Karahayıt, à proximité de Pamukkale",
+    "Station thermale",
+  ],
+  links: [
+    {
+      label: "Voir l'hôtel sur Google Maps",
+      url: "https://www.google.com/maps/search/?api=1&query=37.96271,29.10789",
+    },
+    {
+      label: "Site officiel de l'hôtel",
+      url: "https://www.pamthermal.com/",
+    },
+  ],
+  gps: "37.96271,29.10789",
+},
+{
+  id: "hotel-izmir-park-inn",
+  category: "HEBERGEMENT",
+  title: "Izmir - Park Inn by Radisson",
+  tag: "Jour 8",
+  day: 5,
+  content:
+    "Réservation famille pour le séjour à Izmir.\n" +
+    "**Hôtel** : Park Inn by Radisson İzmir\n" +
+    "**Catégorie** : 4 étoiles\n" +
+    "**Adresse** : Alsancak Mahallesi, Cumhuriyet Blv No:124, 35210 Konak/İzmir, Turquie\n" +
+    "**Téléphone** : +90 232 404 42 42",
+  details: [
+    "Check-in à partir de 14h00",
+    "Check-out avant 12h00",
+    "Hôtel 4 étoiles",
+    "Situé à proximité du front de mer de Kordon",
+  ],
+  links: [
+    {
+      label: "Voir l'hôtel sur Google Maps",
+      url: "https://www.google.com/maps/search/?api=1&query=38.427069,27.1331611",
+    },
+    {
+      label: "Site officiel de l'hôtel",
+      url: "https://www.radissonhotels.com/tr-tr/oteller/park-inn-izmir",
+    },
+  ],
+  gps: "38.427069,27.1331611",
+},
   {
     id: "assurance-voyage-famille",
     category: "ASSURANCE",
