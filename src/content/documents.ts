@@ -343,7 +343,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "restaurant-vina-garden",
-    category: "RESTAURATION",
+    category: "RESTAURANT",
     title: "Sultanahmet - La Vina Garden 1864 Restaurant",
     tag: "Réservé",
     day: 2,
@@ -371,7 +371,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "restaurant-kaira-rooftop",
-    category: "RESTAURATION",
+    category: "RESTAURANT",
     title: "Göreme - Kaira Rooftop Bar & Restaurant",
     tag: "Réservé",
     day: 5,
@@ -397,7 +397,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "restaurant-sky-rooftop",
-    category: "RESTAURATION",
+    category: "RESTAURANT",
     title: "Göreme - Sky Cappadocia Rooftop & Restaurant",
     tag: "Non réservé",
     day: 5,
@@ -423,7 +423,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "restaurant-nana-cappadocia",
-    category: "RESTAURATION",
+    category: "RESTAURANT",
     title: "Göreme - NANA Cappadocia Restaurant",
     tag: "Réservé",
     day: 6,
@@ -452,7 +452,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "restaurant-numero-10-ortahisar",
-    category: "RESTAURATION",
+    category: "RESTAURANT",
     title: "Ortahisar - Restaurant N°10",
     tag: "Non réservé",
     day: 6,
