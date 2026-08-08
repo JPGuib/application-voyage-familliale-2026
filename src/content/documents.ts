@@ -190,7 +190,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "passeports-famille",
-    category: "BANQUE",
+    category: "PAPIERS",
     title: "Passeports",
     tag: "Passeports",
     content:
@@ -212,7 +212,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "LCL",
-    category: "PAPIERS",
+    category: "BANQUE",
     title: "Service carte CB LCL",
     tag: "Banque",
     content:
