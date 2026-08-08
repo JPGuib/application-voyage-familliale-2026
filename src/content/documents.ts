@@ -161,10 +161,6 @@ export const DOCUMENTS: TravelDocument[] = [
     ],
     links: [
       {
-        label: "Voir l'hôtel sur Google Maps",
-        url: "https://www.google.com/maps/search/?api=1&query=41.04431,28.91344",
-      },
-      {
         label: "Site officiel de l'hôtel",
         url: "https://www.windsoristanbul.com/",
       },
@@ -189,10 +185,6 @@ export const DOCUMENTS: TravelDocument[] = [
   ],
   links: [
     {
-      label: "Voir l'hôtel sur Google Maps",
-      url: "https://www.google.com/maps/search/?api=1&query=39.90168,32.86437",
-    },
-    {
       label: "Site officiel de l'hôtel",
       url: "https://www.hilton.com/en/hotels/ankhitw-ankara-hiltonsa/",
     },
@@ -216,10 +208,6 @@ export const DOCUMENTS: TravelDocument[] = [
     "Hôtel de style traditionnel cappadocien",
   ],
   links: [
-    {
-      label: "Voir l'hôtel sur Google Maps",
-      url: "https://www.google.com/maps/search/?api=1&query=38.62519,34.86333",
-    },
     {
       label: "Site officiel de l'hôtel",
       url: "https://burcukayahotel.com/",
@@ -246,10 +234,6 @@ export const DOCUMENTS: TravelDocument[] = [
   ],
   links: [
     {
-      label: "Voir l'hôtel sur Google Maps",
-      url: "https://www.google.com/maps/search/?api=1&query=37.96271,29.10789",
-    },
-    {
       label: "Site officiel de l'hôtel",
       url: "https://www.pamthermal.com/",
     },
@@ -275,10 +259,6 @@ export const DOCUMENTS: TravelDocument[] = [
     "Situé à proximité du front de mer de Kordon",
   ],
   links: [
-    {
-      label: "Voir l'hôtel sur Google Maps",
-      url: "https://www.google.com/maps/search/?api=1&query=38.427069,27.1331611",
-    },
     {
       label: "Site officiel de l'hôtel",
       url: "https://www.radissonhotels.com/tr-tr/oteller/park-inn-izmir",
