@@ -342,13 +342,139 @@ export const DOCUMENTS: TravelDocument[] = [
     ],  
   },
   {
-    id: "restaurant-a-completer",
-    category: "RESTAURANT",
-    title: "Réservations restaurants",
-    tag: "À compléter",
+    id: "restaurant-vina-garden",
+    category: "RESTAURATION",
+    title: "Sultanahmet - La Vina Garden 1864 Restaurant",
+    tag: "Réservé",
+    day: 2,
     content:
-      "Ajoutez ici vos réservations de restaurants.\n" +
-      "Utilisez **texte en gras** avec la syntaxe **comme ceci**.",
+      "**Nom** : La Vina Garden 1864 Restaurant\n" +
+      "**Description** : Situé dans le quartier historique de Sultanahmet, La Vina Garden 1864 propose une cuisine raffinée dans un cadre élégant. C'est une adresse à réserver pour profiter d'un dîner de qualité au cœur de la vieille ville.\n" +
+      "**Adresse** : Sultanahmet, Istanbul, Turquie",
+    details: [
+      "Réservation confirmée à 19h30/20h.",
+      "Situé à Sultanahmet, à proximité des principaux monuments.",
+      "Le restaurant propose une carte mêlant cuisine turque traditionnelle et créations modernes.",
+      "Idéal pour aller ensuite se promener dans le quartier de Sultanahmet après le dîner.",
+    ],
+    links: [
+      {
+        label: "Site du restaurant",
+        url: "https://www.lavina1864.com/",
+      },
+      {
+        label: "Avis tripadvisor restaurant",
+        url: "https://www.tripadvisor.fr/Restaurant_Review-g293974-d28117312-Reviews-La_Vina_Garden_1864_Restaurant-Istanbul.html",
+      }
+    ],
+    gps: "41.0040927,28.9787788",
+  },
+  {
+    id: "restaurant-kaira-rooftop",
+    category: "RESTAURATION",
+    title: "Göreme - Kaira Rooftop Bar & Restaurant",
+    tag: "Réservé",
+    day: 5,
+    content:
+      "Un dîner avec vue sur les cheminées de fées.\n" +
+      "**Nom** : Kaira Rooftop Bar & Restaurant\n" +
+      "**Description** : Situé au cœur de Göreme, le Kaira Rooftop Bar & Restaurant offre l'une des plus belles vues sur les célèbres cheminées de fées de Cappadoce. Depuis sa terrasse panoramique, les visiteurs profitent d'un cadre exceptionnel, particulièrement au coucher du soleil, tout en dégustant une cuisine turque généreuse accompagnée de quelques spécialités internationales.\n" +
+      "**Adresse** : Göreme, Cappadoce, Turquie",
+    details: [
+      "ATTENTION : réservation non faite, venir vers 18h30/19h00 pour avoir une table pour 5 avec vue sur couché du soleil.",
+      "Terrasse panoramique offrant une vue spectaculaire sur Göreme et les cheminées de fées.",
+      "Le coucher du soleil est le moment le plus prisé.",
+      "Cuisine turque traditionnelle, grillades, mezzés et quelques plats internationaux.",
+      "Situé à quelques minutes à pied du centre de Göreme, il est facilement accessible après une balade dans le village.",
+    ],
+    links: [
+      { 
+        label: "Avis tripadvisor restaurant",
+        url: "https://www.tripadvisor.fr/Restaurant_Review-g297983-d25997073-Reviews-Kaira_Rooftop_Bar_Restaurant-Goreme_Nevsehir_Province_Cappadocia.html",
+      },
+    ],
+    gps: "38.6439,34.8283",
+  },
+  {
+    id: "restaurant-sky-rooftop",
+    category: "RESTAURATION",
+    title: "Göreme - Sky Cappadocia Rooftop & Restaurant",
+    tag: "Non réservé",
+    day: 5,
+    content:
+      "Une vue imprenable sur Göreme au coucher du soleil.\n" +
+      "**Nom** : Sky Cappadocia Rooftop & Restaurant\n" +
+      "**Description** : Perché sur les hauteurs de Göreme, le Sky Cappadocia Rooftop & Restaurant offre une vue panoramique exceptionnelle sur les vallées et les célèbres cheminées de fées. Sa terrasse est particulièrement appréciée au moment du coucher du soleil, lorsque les falaises volcaniques se parent de teintes dorées. La carte met à l'honneur les saveurs de la cuisine turque, accompagnées d'une belle sélection de vins et de cocktails, dans une ambiance élégante et décontractée.\n" +
+      "**Adresse** : Göreme, Cappadoce, Turquie",
+    details: [
+      "Pas de réservation faite, il faudra se rendre sur place.",
+      "L'un des meilleurs endroits de Göreme pour admirer le coucher du soleil.",
+      "Terrasse avec vue panoramique sur les vallées et les habitations troglodytiques.",
+      "Cuisine turque, mezzés, grillades et cocktails servis dans une ambiance lounge.",
+      "Il est conseillé de réserver une table en terrasse, particulièrement entre avril et octobre.",
+    ],
+    links: [
+      {
+        label: "Avis tripadvisor restaurant",
+        url: "https://www.tripadvisor.fr/Restaurant_Review-g297983-d33133833-Reviews-Sky_Cappadocia_Rooftop_Restaurant-Goreme_Nevsehir_Province_Cappadocia.html",
+      },
+    ],
+    gps: "38.6437,34.8277",
+  },
+  {
+    id: "restaurant-nana-cappadocia",
+    category: "RESTAURATION",
+    title: "Göreme - NANA Cappadocia Restaurant",
+    tag: "Réservé",
+    day: 6,
+    content:
+      "Un dîner en terrasse au cœur de Göreme.\n" +
+      "**Nom** : NANA Cappadocia Restaurant\n" +
+      "**Description** : Situé au cœur de Göreme, NANA Cappadocia Restaurant séduit par sa terrasse offrant une vue sur le village et les paysages emblématiques de la Cappadoce. Dans une ambiance chaleureuse et élégante, le restaurant propose une cuisine turque mettant à l'honneur les spécialités locales, préparées avec des produits frais. C'est une adresse idéale pour terminer une journée d'exploration en profitant d'un dîner face aux reliefs uniques de la région.\n" +
+      "**Adresse** : İsali - Gaferli, Göreme, Cappadoce, Turquie",
+    details: [
+      "Réservation confirmée via WhatsApp.",
+      "Jeudi 21 août à 19 h 15.",
+      "Table réservée en terrasse pour 5 personnes.",
+      "Situé dans le quartier d'İsali - Gaferli, à quelques minutes à pied du centre de Göreme.",
+      "Le restaurant est réputé pour son cadre agréable, particulièrement au coucher du soleil.",
+    ],
+    links: [
+      {
+        label: "Site du restaurant & bar",
+        url: "https://nanacappadocia.com/gallery/",
+      },
+    ],
+    gps: "38.641846,34.829168",
+    scans: [
+      "/images/Jour 6/Reservation Nana Cappadoce.webp",
+    ]
+  },
+  {
+    id: "restaurant-numero-10-ortahisar",
+    category: "RESTAURATION",
+    title: "Ortahisar - Restaurant N°10",
+    tag: "Non réservé",
+    day: 6,
+    content:
+      "Une soirée conviviale au cœur d'Ortahisar.\n" +
+      "**Nom** : Restaurant N°10\n" +
+      "**Description** : Situé à Ortahisar, à proximité de l'hôtel, le Restaurant N°10 propose une expérience conviviale au cœur d'un des villages emblématiques de Cappadoce. Ortahisar est connu pour son imposante forteresse rocheuse qui domine la vallée et ses ruelles authentiques bordées de maisons traditionnelles. Après une journée de découverte des paysages cappadociens, ce restaurant offre une halte agréable pour profiter de la cuisine locale dans une ambiance chaleureuse.\n" +
+      "**Adresse** : Ulus Meydanı Kaledibi Sok. Ortahisar, Ürgüp, Nevşehir, Turquie",
+    details: [
+      "Demande de réservation effectuée par SMS, confirmation en attente.",
+      "Horaire souhaité : 19 h 15.",
+      "Restaurant situé à proximité de l'hôtel, pratique pour une soirée sans déplacement.",
+      "Adresse : Ulus Meydanı Kaledibi Sok. Ortahisar, Ürgüp, Nevşehir, Turquie.",
+      "Ortahisar est célèbre pour sa grande forteresse naturelle creusée dans la roche volcanique.",
+    ],
+    links: [
+      {
+        label: "Avis tripadvisor restaurant",
+        url: "https://www.tripadvisor.fr/Restaurant_Review-g297987-d10682874-Reviews-No_10_Restaurant-Ortahisar_Nevsehir_Province_Cappadocia.html",
+      },
+    ],
+    gps: "38.6177,34.8719",
   },
   {
     id: "activites-a-completer",
