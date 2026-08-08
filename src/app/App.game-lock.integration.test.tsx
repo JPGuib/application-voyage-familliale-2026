@@ -93,9 +93,22 @@ function mockCloudSync(snapshot: Snapshot) {
   });
 }
 
+function loginWithProfileLabel(profileLabelPattern: RegExp) {
+  const select = screen.getByRole("combobox") as HTMLSelectElement;
+  const matchingOption = screen
+    .getAllByRole("option")
+    .find((option) => profileLabelPattern.test(option.textContent ?? ""));
+
+  expect(matchingOption).toBeDefined();
+
+  fireEvent.change(select, {
+    target: { value: (matchingOption as HTMLOptionElement).value },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+}
+
 async function loginAs(surnamePattern: RegExp) {
-  fireEvent.click(screen.getByRole("button", { name: surnamePattern }));
-  fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+  loginWithProfileLabel(surnamePattern);
   await waitFor(() => {
     expect(screen.getByRole("button", { name: "Jeu" })).toBeInTheDocument();
   });

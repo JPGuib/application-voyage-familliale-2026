@@ -2892,6 +2892,19 @@ function DocumentsScreen({
   const [draftLinks, setDraftLinks] = useState("");
   const [draftGps, setDraftGps] = useState("");
 
+  function mergeDocumentsWithDefaults(persistedDocs: TravelDocument[]): TravelDocument[] {
+    const defaultDocsById = new Map(DOCUMENTS.map((doc) => [doc.id, doc]));
+
+    // Keep current catalog order, but allow persisted versions to override items
+    // with same ID (owner edits) and append custom documents at the end.
+    const mergedDefaults = DOCUMENTS.map(
+      (defaultDoc) => persistedDocs.find((doc) => doc.id === defaultDoc.id) ?? defaultDoc
+    );
+    const customDocs = persistedDocs.filter((doc) => !defaultDocsById.has(doc.id));
+
+    return [...mergedDefaults, ...customDocs];
+  }
+
   useEffect(() => {
     try {
       const raw =
@@ -2991,13 +3004,11 @@ function DocumentsScreen({
       }
 
       // Migration behavior: for legacy array storage, treat source documents as
-      // authoritative and keep only user-created custom items (unknown IDs).
+      // authoritative while preserving local edits and custom documents.
       if (Array.isArray(parsed)) {
-        const defaultDocumentIds = new Set(DOCUMENTS.map((doc) => doc.id));
-        const customDocs = sanitized.filter((doc) => !defaultDocumentIds.has(doc.id));
-        const migratedDocuments = [...DOCUMENTS, ...customDocs];
+        const migratedDocuments = mergeDocumentsWithDefaults(sanitized);
         setAllDocuments(migratedDocuments);
-        setHasManualDocumentEdits(customDocs.length > 0);
+        setHasManualDocumentEdits(sanitized.length > 0);
         return;
       }
 
@@ -3007,7 +3018,11 @@ function DocumentsScreen({
         persistedState.hasManualEdits === true;
 
       setHasManualDocumentEdits(persistedHasManualEdits);
-      setAllDocuments(persistedHasManualEdits && sanitized.length > 0 ? sanitized : DOCUMENTS);
+      setAllDocuments(
+        persistedHasManualEdits && sanitized.length > 0
+          ? mergeDocumentsWithDefaults(sanitized)
+          : DOCUMENTS
+      );
     } catch {
       setHasManualDocumentEdits(false);
       setAllDocuments(DOCUMENTS);

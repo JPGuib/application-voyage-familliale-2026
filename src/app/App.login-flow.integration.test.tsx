@@ -86,6 +86,20 @@ function fillMandatoryProfileCreationFields() {
   });
 }
 
+function loginWithProfileLabel(profileLabelPattern: RegExp) {
+  const select = screen.getByRole("combobox") as HTMLSelectElement;
+  const matchingOption = screen
+    .getAllByRole("option")
+    .find((option) => profileLabelPattern.test(option.textContent ?? ""));
+
+  expect(matchingOption).toBeDefined();
+
+  fireEvent.change(select, {
+    target: { value: (matchingOption as HTMLOptionElement).value },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+}
+
 describe("App cloud login flow", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -120,7 +134,7 @@ describe("App cloud login flow", () => {
       )
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
@@ -130,8 +144,7 @@ describe("App cloud login flow", () => {
   it("returns to cloud selection screen after switch profile action", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Maman/i);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
@@ -145,7 +158,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("button", { name: /Maman/i })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Maman/i })).toBeInTheDocument();
   });
 
   it("lands on home screen after login when travel is already unlocked", async () => {
@@ -178,8 +191,7 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Maman/i);
 
     await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
@@ -219,8 +231,7 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Maman/i);
 
     await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
@@ -232,8 +243,7 @@ describe("App cloud login flow", () => {
   it("keeps current session when switch profile confirmation is canceled", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Maman/i);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
@@ -252,8 +262,7 @@ describe("App cloud login flow", () => {
   it("blocks dashboard access until profile selection after logout confirmation", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Maman/i);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
@@ -269,7 +278,7 @@ describe("App cloud login flow", () => {
 
     expect(screen.queryByRole("heading", { name: "Préparation des bagages" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Paramètres" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Maman/i })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Maman/i })).toBeInTheDocument();
   });
 
   it("creates a new profile then completes setup and persists active profile id", async () => {
@@ -1075,11 +1084,10 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
 
     expect(screen.getByText("Profil protégé")).toBeInTheDocument();
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "wrong-password" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -1090,7 +1098,7 @@ describe("App cloud login flow", () => {
       ).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "secret-1234" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -1125,8 +1133,7 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
 
     await waitFor(() => {
       expect(
@@ -1176,8 +1183,7 @@ describe("App cloud login flow", () => {
   it("does not show a button to remove a configured profile password", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Maman/i);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
@@ -1226,8 +1232,7 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
 
     expect(screen.getByRole("button", { name: "Mot de passe oublié ?" })).toBeInTheDocument();
   });
@@ -1258,8 +1263,7 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
 
     expect(screen.queryByRole("button", { name: "Mot de passe oublié ?" })).not.toBeInTheDocument();
   });
@@ -1301,8 +1305,7 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
     fireEvent.click(screen.getByRole("button", { name: "Mot de passe oublié ?" }));
 
     expect(screen.getByText("Quel est ton premier voyage ?")).toBeInTheDocument();
@@ -1361,8 +1364,7 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
     fireEvent.click(screen.getByRole("button", { name: "Mot de passe oublié ?" }));
 
     fireEvent.change(screen.getByPlaceholderText("Réponse"), {
@@ -1415,12 +1417,11 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
     fireEvent.click(screen.getByRole("button", { name: "Mot de passe oublié ?" }));
     fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
 
-    expect(screen.getByPlaceholderText("Mot de passe")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Votre mot de passe")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Se connecter" })).toBeInTheDocument();
   });
 
@@ -1458,9 +1459,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    loginWithProfileLabel(/Léo/i);
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "secret-1234" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -1505,12 +1505,11 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
 
     expect(screen.getByText("Profil protégé")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "wrong-password" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -1520,7 +1519,7 @@ describe("App cloud login flow", () => {
       ).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "secret-1234" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -1562,9 +1561,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    loginWithProfileLabel(/Léo/i);
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "secret-1234" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -1634,9 +1632,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    loginWithProfileLabel(/Léo/i);
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "secret-1234" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -1705,9 +1702,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    loginWithProfileLabel(/Léo/i);
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "secret-1234" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -1754,9 +1750,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    loginWithProfileLabel(/Léo/i);
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "secret-1234" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -1826,10 +1821,9 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
 
-    const passwordInput = screen.getByPlaceholderText("Mot de passe");
+    const passwordInput = screen.getByPlaceholderText("Votre mot de passe");
     expect(passwordInput).toHaveAttribute("type", "password");
 
     fireEvent.click(screen.getByRole("button", { name: "Afficher le mot de passe saisi" }));
@@ -1868,8 +1862,7 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
     fireEvent.click(screen.getByRole("button", { name: "Mot de passe oublié ?" }));
 
     const answerInput = screen.getByPlaceholderText("Réponse");
@@ -1924,9 +1917,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    loginWithProfileLabel(/Léo/i);
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "secret-1234" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -1999,8 +1991,7 @@ describe("App profile deletion (story 18.3)", () => {
     render(<App />);
 
     // Login as non-owner (Léo = p2, utilisateur)
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
 
     await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
@@ -2015,8 +2006,7 @@ describe("App profile deletion (story 18.3)", () => {
     render(<App />);
 
     // Login as owner (Maman = p1, proprietaire)
-    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Maman/i);
 
     await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
@@ -2070,8 +2060,7 @@ describe("App profile deletion (story 18.3)", () => {
     render(<App />);
 
     // Login as visiteur (Tonton = p3, no password configured)
-    fireEvent.click(screen.getByRole("button", { name: /Tonton/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Tonton/i);
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Paramètres" })).toBeInTheDocument();
@@ -2092,8 +2081,7 @@ describe("App profile deletion (story 18.3)", () => {
   it("no-password flow: warning dialog shows and confirm deletes and redirects to login screen", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
 
     await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
@@ -2148,9 +2136,8 @@ describe("App profile deletion (story 18.3)", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    loginWithProfileLabel(/Léo/i);
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "correct-pw" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -2210,9 +2197,8 @@ describe("App profile deletion (story 18.3)", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
-    fireEvent.change(screen.getByPlaceholderText("Mot de passe"), {
+    loginWithProfileLabel(/Léo/i);
+    fireEvent.change(screen.getByPlaceholderText("Votre mot de passe"), {
       target: { value: "my-secret" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
@@ -2269,8 +2255,7 @@ describe("App profile deletion (story 18.3)", () => {
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
 
     await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
@@ -2285,7 +2270,7 @@ describe("App profile deletion (story 18.3)", () => {
     });
 
     // Maman (owner) should still appear in the profile selection list
-    expect(screen.getByRole("button", { name: /Maman/i })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Maman/i })).toBeInTheDocument();
   });
 
   it("does not resurrect the deleted profile if the cloud snapshot echoes the deletion before local state resets", async () => {
@@ -2336,8 +2321,7 @@ describe("App profile deletion (story 18.3)", () => {
 
     const { rerender } = render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Léo/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Léo/i);
 
     await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
@@ -2508,8 +2492,7 @@ describe("App profile recovery question settings (story 10.6)", () => {
   it("requires a recovery question and answer and confirms save", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Maman/i);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
@@ -2536,8 +2519,7 @@ describe("App profile recovery question settings (story 10.6)", () => {
   it("rejects a recovery question shorter than 8 characters", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Maman/i);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
@@ -2564,8 +2546,7 @@ describe("App profile recovery question settings (story 10.6)", () => {
   it("rejects a recovery answer shorter than 5 characters", async () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Maman/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Se connecter avec ce profil" }));
+    loginWithProfileLabel(/Maman/i);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Préparation des bagages" })).toBeInTheDocument();
@@ -2589,3 +2570,5 @@ describe("App profile recovery question settings (story 10.6)", () => {
     });
   });
 });
+
+
