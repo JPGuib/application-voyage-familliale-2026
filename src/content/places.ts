@@ -1567,7 +1567,7 @@
     ],
     audioTitle: "La Mosquée verte, splendeur de Bursa",
     audioDuration: "3 min 45 sec",
-    audioSrc: "/audio/places/Mosquee verte.mp3",
+    audioSrc: "/audio/places/Mosquee_verte.mp3",
     gps: "40.1829,29.0776",
     history:
       "Commandée par le sultan Mehmed Ier (Çelebi Mehmed) après avoir réunifié l'Empire ottoman, la Mosquée verte fut édifiée entre 1412 et 1420 à Bursa, l'ancienne capitale. L'architecte Hacı İvaz Pasha, ancien commandant militaire du sultan, conçut un édifice au plan en T inversé qui marqua un tournant dans l'architecture ottomane. Les célèbres carreaux turquoise et verts, réalisés par des maîtres artisans de Tabriz, recouvrent mihrab, iwans et loge royale, faisant de ce monument le symbole de la renaissance ottomane.",
@@ -1595,7 +1595,7 @@
       ,
     audioTitle: "Le Mausolée vert, dernière demeure d'un sultan",
     audioDuration: "2 min 50 sec",
-    audioSrc: "/audio/places/Mausolee vert.mp3",
+    audioSrc: "/audio/places/Mausolee_vert.mp3",
     gps: "40.1830,29.0780",
     history:
       "Érigé en 1421 par le fils et successeur de Mehmed Ier, le sultan Murad II, le Mausolée vert (Yeşil Türbe) est le tombeau du cinquième sultan ottoman. Situé face à la Mosquée verte dans le quartier éponyme de Bursa, cet édifice octogonal est entièrement revêtu de carreaux d'Iznik aux tons turquoise qui lui valent son nom. À l'intérieur reposent non seulement Mehmed Ier, mais également plusieurs de ses fils, dans un décor de céramique, de stuc et de bois sculpté d'une rare finesse.",
