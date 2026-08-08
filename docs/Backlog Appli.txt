@@ -2,14 +2,19 @@
 Backlog
 -----------
 Evolutions : 
-* une autre fois ! 
+* préparer l'application pour un autre voyage ! 
 * Acheter un nom de domaine ?
 * changer jour 1 => jour 0 ? 
-* adapter le contenu (entre les jours => pour jour 2 et 3 notamment)   
+* adapter le contenu entre les jours => pour jour 2 et 3 notamment. 
+==> Que l'utilisateur puisse indiquer le jour de l'activité (sinon il faut le mettre plusieurs fois et rendre visible / invisible)   
 * rajouter la date du jour à côté du jour (ou le remplacer d'ailleurs)
-* Crée un jeu collaboratif à base de questions type trivial ?
+* Crée un jeu collaboratif à base de questions type trivial ? (ingère les pts?)
+* intégrer candy crush (=> le highsore rendre en bonus du jour ?)
 * joindre tous les points d'un jour avec les coordonnées pour tracer un trajet de fin
-
+* Tester et revoir la nouvelle mire (qq bugs) 
+    - bug à la création d'un visiteur car checklist bloquée
+    - pouvoir saisr quelque lettre et ne pas tout afficher la liste
+    - il n'y a plus la possibilité de retrouver mot de passe via la question
 
 
 COntenu : 
@@ -19,7 +24,6 @@ COntenu :
 * un plan des bateaux Istanbul?
 * audios guides : https://audio.arvadmc.com/tour-detail?value=195
 * https://books.apple.com/us/book/church-of-chora/id1178728769
-* jeu => des niveaux différents ?
 * revoir les coordonnées GPS
 
 TESTER TOUTE L'APPLICATION

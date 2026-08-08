@@ -1,10 +1,13 @@
 export const DOCUMENT_CATEGORIES = [
   "VOLS",
+  "TRANSPORTS",
+  "SEJOUR",
   "HEBERGEMENT",
   "RESTAURANT",
   "ACTIVITES",
-  "TRANSPORTS",
   "PAPIERS",
+  "ASSURANCE",
+  "BANQUE",
 ] as const;
 
 export type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];
@@ -166,7 +169,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "assurance-voyage-famille",
-    category: "PAPIERS",
+    category: "ASSURANCE",
     title: "Assurance Matmut",
     tag: "Assurance",
     content:
@@ -187,7 +190,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "passeports-famille",
-    category: "PAPIERS",
+    category: "BANQUE",
     title: "Passeports",
     tag: "Passeports",
     content:
@@ -223,8 +226,28 @@ export const DOCUMENTS: TravelDocument[] = [
     id: "reservation-transfert-aeroport",
     category: "TRANSPORTS",
     title: "Transfert aéroport IST → hébergement",
-    tag: "Navette",
+    tag: "Transfert",
     day: 1,
+    content:
+      "Navette réservée par le voyagiste pour le transfert de l'aéroport d'Istanbul (IST) vers l'hôtel",
+    details: [
+      "Il faut sortir par la **poste n°9** une fois bagages récupérés et formalités de douane passées",
+      "**Il ne faut pas descendre à l'étage -2 !**",
+      "Notre assistant nous accueillera à la sortie avec un panneau de **Voyage Privé**",
+      "En cas d'urgence, il faut appeler le voyagiste au +90 545 344 55 08",
+      "Le point de rencontre et le plan sont indiqués sur le scan ci-dessous",
+    ],
+    scans: [
+      "/images/guide/Information Transfert 1.webp",
+      "/images/guide/Information Transfert 2.webp",
+    ],  
+  },
+  {
+    id: "reservation-transfert-aeroport",
+    category: "TRANSPORTS",
+    title: "Transfert retour → Aéroport IST",
+    tag: "Transfert",
+    day: 9,
     content:
       "Navette réservée pour l'arrivée de nuit à Istanbul.\n" +
       "**Prestataire** : Istanbul Shuttle\n" +
@@ -253,4 +276,71 @@ export const DOCUMENTS: TravelDocument[] = [
       "Ajoutez ici vos activités (billets, horaires, points de rendez-vous).\n" +
       "Exemple : **Croisière Bosphore** - départ 18h30.",
   },
+  {
+    id: "programme-sejour",
+    category: "SEJOUR",
+    title: "Détail du programme",
+    tag: "sejour",
+    content:
+      "Voir scans des éléments du programme de voyage envoyé par l'agence.",
+    scans: [
+      "/images/guide/Détail du programme 1.webp",
+      "/images/guide/Détail du programme 2.webp",
+      "/images/guide/Détail du programme 3.webp",
+      "/images/guide/Détail du programme 4.webp",
+    ]
+  },
+  {
+    id: "information-sejour",
+    category: "SEJOUR",
+    title: "Informations sur le séjour",
+    tag: "sejour",
+    content:
+      "Information importante données par le voyagiste concernant le séjour.",
+    details: [
+      "Voyage privé booking : 104904700VPFR",
+      "Prestataire : DELUKS TURIZM",
+      "Adresse : 19 Mayis Mah. 19 Mayis Cad. No: 2, Kadikoy, Istanbul",
+    ],
+    scans: [
+      "/images/guide/Information Tour 1.webp",
+      "/images/guide/Information Tour 2.webp",
+      "/images/guide/Nom du prestataire voyage.webp",
+    ],
+  },
+   {
+    id: "eSIM-gratuire",
+    category: "SEJOUR",
+    title: "Informations sur l'eSIM gratuite",
+    tag: "sejour",
+    content:
+      "2 Go d'eSIM gratuite.",
+    details: [
+      "Fournisseur : Hubby eSIM",
+      "Code promo : FY544M6ZKY",
+      "Il faut télécharger l'application Hubby eSIM sur le téléphone et activer l'eSIM avec le code promo.",
+    ],
+    scans: [
+      "/images/guide/esim 2 Go gratuite 1.webp",
+      "/images/guide/esim 2 Go gratuite 2.webp",
+      "/images/guide/Information esim 2Go 1.webp",
+    ],
+  },
+  {
+    id: "Pourboire",
+    category: "SEJOUR",
+    title: "Pourboire",
+    tag: "sejour",
+    content:
+      "Informations sur le pourboire.",
+    details: [
+      "Pourboire pour le guide, le chauffeur, et les taxes de séjour à régler sur place au guide",
+      "60 € par personne, soit 350 € pour la famille de 5 personnes",
+    ],
+    scans: [
+      "/images/guide/Information pourboire.webp",
+    ],
+  },
+
+  
 ];

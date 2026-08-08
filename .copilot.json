@@ -1,0 +1,8 @@
+{
+  "style": {
+    "avoid": ["npm install"],
+    "prefer": {
+      "dependency_install": "npm ci --ignore-scripts"
+    }
+  }
+}
