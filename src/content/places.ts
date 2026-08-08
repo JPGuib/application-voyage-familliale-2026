@@ -1595,7 +1595,7 @@
       ,
     audioTitle: "Le Mausolée vert, dernière demeure d'un sultan",
     audioDuration: "2 min 50 sec",
-    audioSrc: "/audio/places/Mausolee-vert.mp3",
+    audioSrc: "/audio/places/Mausolee vert.mp3",
     gps: "40.1830,29.0780",
     history:
       "Érigé en 1421 par le fils et successeur de Mehmed Ier, le sultan Murad II, le Mausolée vert (Yeşil Türbe) est le tombeau du cinquième sultan ottoman. Situé face à la Mosquée verte dans le quartier éponyme de Bursa, cet édifice octogonal est entièrement revêtu de carreaux d'Iznik aux tons turquoise qui lui valent son nom. À l'intérieur reposent non seulement Mehmed Ier, mais également plusieurs de ses fils, dans un décor de céramique, de stuc et de bois sculpté d'une rare finesse.",

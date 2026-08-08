@@ -343,7 +343,7 @@ export const DOCUMENTS: TravelDocument[] = [
   },
   {
     id: "restaurant-vina-garden",
-    category: "HEBERGEMENT",
+    category: "RESTAURANT",
     title: "Sultanahmet - La Vina Garden 1864 Restaurant",
     tag: "Réservé",
     day: 2,
