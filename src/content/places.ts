@@ -379,6 +379,12 @@
     anecdotes: [
       "1 chambre double et 1 chambre triple normalement réservés",
     ],
+    links: [
+      {
+        label: "Site officiel de l'hôtel",
+        url: "https://www.windsorhotelistanbul.com/",
+      },
+    ],
   },
   {
     id: "topkapi",
@@ -561,6 +567,12 @@
     anecdotes: [
       "1 chambre double et 1 chambre triple normalement réservés",
     ],
+    links: [
+      {
+        label: "Site officiel de l'hôtel",
+        url: "https://www.windsorhotelistanbul.com/",
+      },
+    ],
   },
   {
     id: "grand-bazar",
@@ -618,6 +630,10 @@
         label: "Ouvrir la carte interactive du trajet",
         url: "/visites-guidees/istanbul_ankara_bus_route.html",
       },
+      {
+        label: "Ouvrir la carte interactive du trajet via google maps",
+        url: "https://www.google.com/maps/dir/Istanbul,+Turquie/Ankara,+Turquie/@40.373303,28.978798,7z/data=!4m14!4m13!1m5!1m1!1s0x14caa2f3e6b8e9d3:0x400bd2ce5a1f0c0!2m2!1d28.9783589!2d41.0082376!1m5!1m1!1s0x14caa2f3e6b8e9d3:0x400bd2ce5a1f0c0!2m2!1d32.8597419!2d39.9333655",
+      },
     ],
     historyLabel:"Le trajet en bus Istanbul – Ankara",
     history:
@@ -672,6 +688,12 @@
       "1 chambre double et 1 chambre triple normalement réservés",
       "Restaurant réservé pour le dîner du soir à l'hôtel",
     ],
+    links: [
+      {
+        label: "Site officiel de l'hôtel",
+        url: "https://www.hilton.com/en/hotels/ankhitw-ankara-hiltonsa/",
+      },
+    ],
   },
    {
     "id": "anitkabir",
@@ -723,6 +745,12 @@
     "Vous traversez le cœur de l'Anatolie, vaste région agricole de la Turquie.",
     "Les paysages deviennent progressivement plus minéraux à l'approche de la Cappadoce.",
     "Les premières cheminées de fées annoncent que vous êtes arrivé dans un décor presque irréel.",
+  ],
+  likns: [
+    {
+      label: "Ouvrir la carte interactive du trajet via google maps",
+      url: "https://www.google.com/maps/dir/Ankara,+Turquie/Cappadoce,+Turquie/@39.9208,32.8541,7z/data=!4m14!4m13!1m5!1m1!1s0x14d34f3e6c9b0e7f:0x400bd2ce2b6a0c0!2m2!1d32.8541!2d39.9208!1m5!1m1!1s0x14d3f3e6c9b0e7f:0x400bd2ce2b6a0c0!2m2!1d34.8279!2d38.6439",
+    },
   ],
   links: [
       {
@@ -853,6 +881,12 @@
       "1 chambre double et 1 chambre triple normalement réservés",
       "Restaurant réservé pour le dîner du soir à l'hôtel si nécessaire",
     ],
+    links: [
+      {
+        label: "Site officiel de l'hôtel",
+        url: "https://burcukayahotel.com/",
+      },
+    ],
   },
   {
     id: "montgolfiere-cappadoce",
@@ -969,6 +1003,7 @@
     "/images/Jour 6/NANA Cappadocia 1.webp",
     "/images/Jour 6/NANA Cappadocia 2.webp",
     "/images/Jour 6/NANA Cappadocia 3.webp",
+    "/images/Jour 6/Reservation Nana Cappadoce.webp"
   ],
   gps: "38.641846,34.829168",
   historyLabel: "Présentation du restaurant",
@@ -1082,7 +1117,84 @@
       "Konya abrite le mausolée de Rûmi, fondateur de l'ordre des derviches tourneurs.",
       "La ville fut appelée 'Iconium' à l'époque romaine.",
       "Le haut plateau anatolien offre des paysages de steppe à perte de vue."
+    ],
+    links: [
+      {
+        label: "Site officiel de l'hôtel",
+        url: "https://burcukayahotel.com/",
+      },
+    ],
+  },
+  {
+    id: "montgolfiere-cappadoce",
+    jour: [7],
+    name: "Vol en montgolfière",
+    shortDesc: "Survoler les cheminées de fées au lever du jour",
+    tag: "Activité",
+    image: "/images/Jour 6/Montgolfiere_1.webp",
+    photos: [
+      "/images/Jour 6/Montgolfiere_1.webp",
+      "/images/Jour 6/Montgolfiere_2.webp",
+      "/images/Jour 6/Montgolfiere_3.webp",
+      "/images/Jour 6/Montgolfiere_4.webp"
+    ],
+    audioTitle: "Cappadoce vue du ciel",
+    audioDuration: "2 min 50 sec",
+    audioSrc: "/audio/places/vol_en_montgolfiere.mp3",
+    gps: "38.6431,34.8287",
+    historyLabel: "Le vol en montgolfière",
+    history: "Le vol en montgolfière au-dessus de Cappadoce est considéré comme l'une des plus belles expériences aériennes au monde. Chaque année, des centaines de ballons s'élèvent à l'aube pour offrir une vue panoramique sur les vallées, vignobles et cheminées de fées. Cette tradition a commencé dans les années 1990 et attire désormais des visiteurs du monde entier.",
+    anecdotesLabel: "Présentation et conseils",
+    anecdotes: [
+      "Les vols ont lieu très tôt le matin pour profiter des vents les plus calmes.",
+      "Prise en charge à l'hôtel à 4h du matin, horaire à confirmer",
+      "On peut parfois apercevoir des renards et des lièvres depuis le ciel.",
+      "La Cappadoce est l'un des sites de montgolfière les plus fréquentés au monde, aux côtés de Bagan et du Serengeti."
     ]
+  },
+  {
+    id: "trajet-cappadoce-konya",
+    jour: [7],
+    name: "De la Cappadoce à Konya",
+    shortDesc: "Des paysages de Cappadoce aux terres spirituelles de Konya",
+    tag: "Trajet",
+    image: "/images/Bus.webp",
+    photos: [
+      "/images/Jour 7/Cappadoce - Konya 1.webp",
+      "/images/Jour 7/Cappadoce - Konya 2.webp",
+      "/images/Jour 7/Cappadoce - Konya 3.webp",
+      "/images/Jour 7/Cappadoce - Konya 4.webp",
+      "/images/Jour 7/Cappadoce - Konya 5.webp",
+      "/images/Jour 7/Cappadoce - Konya 6.webp",
+      "/images/Jour 7/Cappadoce - Konya 7.webp"
+    ],
+    audioTitle: "Sur la route de Konya",
+    audioDuration: "2 min 00 sec",
+    audioSrc: "/audio/places/Sur_la_route_de_Konya.mp3",
+    gps: "37.8715,32.4846",
+    historyLabel: "Le trajet",
+    history:
+      "Nous quittons maintenant les paysages extraordinaires de la Cappadoce pour prendre la direction de Konya, au cœur de l'Anatolie. Pendant le trajet, les cheminées de fées et les vallées sculptées dans la roche vont progressivement laisser place aux vastes plaines de l'Anatolie centrale, aux grandes étendues agricoles et aux collines arides. Cette région est profondément marquée par l'histoire : depuis l'Antiquité, ces terres constituent un important passage entre l'est et l'ouest de l'Anatolie. Puis apparaît Konya, ancienne capitale du sultanat seldjoukide de Roum et ville de Rûmî, plus connu sous le nom de Mevlana. C'est ici que s'est développée la tradition des derviches tourneurs et leur célèbre cérémonie du Sema. Après les paysages spectaculaires de la Cappadoce, nous découvrons ainsi une autre facette de la Turquie, davantage tournée vers la spiritualité, la poésie et l'histoire.",
+
+    anecdotesLabel: "À observer pendant le trajet",
+    anecdotes: [
+      "Le trajet relie Göreme et Konya sur environ 240 kilomètres.",
+      "Les paysages de Cappadoce laissent progressivement place aux grandes plaines de l'Anatolie centrale.",
+      "La région de Konya est l'une des grandes zones agricoles de Turquie.",
+      "Konya fut la capitale du sultanat seldjoukide de Roum au Moyen Âge.",
+      "La ville est intimement liée à Rûmî, dit Mevlana, poète et mystique du XIIIe siècle.",
+      "Les derviches tourneurs et la cérémonie du Sema sont devenus des symboles de la culture spirituelle de Konya.",
+    ],
+    links: [
+      {
+        label: "Ouvrir la carte interactive du trajet via google maps",
+        url: "https://www.google.com/maps/dir/G%C3%B6reme/Konya",
+      },
+      {
+        label: "Ouvrir la carte interactive du trajet",
+        url: "/visites-guidees/cappadocia_konya_route.html",
+      },
+    ],
   },
   {
     id: "caravanserail",
@@ -1111,6 +1223,48 @@
     ]
   },
   {
+    id: "trajet-konya-pamukkale",
+    jour: [7],
+    name: "De Konya à Pamukkale",
+    shortDesc: "Des grandes plaines d'Anatolie aux terrasses blanches de Pamukkale",
+    tag: "Trajet",
+    image: "/images/Bus.webp",
+    photos: [
+      "/images/Jour 7/Konya Pamukkale 1.webp",
+      "/images/Jour 7/Konya Pamukkale 2.webp",
+      "/images/Jour 7/Konya Pamukkale 3.webp",
+      "/images/Jour 7/Konya Pamukkale 4.webp",
+      "/images/Jour 7/Konya Pamukkale 5.webp",
+      "/images/Jour 7/Konya Pamukkale 6.webp"
+    ],
+    audioTitle: "Sur la route de Pamukkale",
+    audioDuration: "2 min 00 sec",
+    audioSrc: "/audio/places/Sur_la_route_de_Pamukkale.mp3",
+    gps: "37.9204,29.1206",
+    historyLabel: "Le trajet",
+    history:
+      "Nous quittons Konya pour prendre la direction de l'ouest de la Turquie et de Pamukkale. La route traverse d'abord les vastes plaines agricoles de l'Anatolie centrale avant de rejoindre progressivement des paysages plus vallonnés et montagneux. Ce trajet permet de découvrir une Turquie rurale, entre champs, villages, troupeaux et grandes étendues sauvages. À l'approche de Pamukkale, le paysage change une nouvelle fois et annonce l'arrivée dans une région célèbre pour ses sources thermales. Depuis des milliers d'années, leurs eaux riches en minéraux ont façonné les célèbres terrasses blanches qui ont donné à Pamukkale son nom de « château de coton ». Juste au-dessus se trouvent les vestiges de Hiérapolis, une ancienne cité antique construite autour de ces sources.",
+    anecdotesLabel: "À observer pendant le trajet",
+    anecdotes: [
+      "Le trajet entre Konya et Pamukkale représente environ 390 kilomètres.",
+      "La route traverse une grande partie de l'Anatolie centrale avant de rejoindre les paysages plus montagneux de l'ouest.",
+      "Les plaines agricoles laissent progressivement place à des vallées et des reliefs plus marqués.",
+      "Pamukkale signifie littéralement « château de coton » en turc.",
+      "Les terrasses blanches ont été formées par des dépôts de carbonate de calcium laissés par les sources thermales.",
+      "Le site de Pamukkale est associé aux ruines de l'ancienne cité de Hiérapolis.",
+    ],
+    links: [
+      {
+        label: "Ouvrir la carte interactive du trajet via google maps",
+        url: "https://www.google.com/maps/dir/Konya/Pamukkale"
+      },
+      {
+        label: "Ouvrir la carte interactive du trajet",
+        url: "/visites-guidees/konya_pamukkale_route",
+      }
+    ],
+  },
+  {
     id: "pamukkale",
     jour: [7],
     name: "Pamukkale",
@@ -1135,27 +1289,72 @@
     ]
   },
   {
-    id: "izmir-kusadasi",
+    id: "hotel-pam-thermal",
     jour: [7],
-    name: "Route vers Izmir ou Kusadasi",
-    shortDesc: "La perle de la côte égéenne",
-    tag: "Ville / Bord de mer",
-    image: "/images/Jour 7/Izmir_1.webp",
+    name: "PAM Thermal Hotel Pamukkale",
+    shortDesc: "Une parenthèse thermale au cœur de Pamukkale",
+    tag: "Hôtel",
+    image: "/images/Jour 7/Hotel jour 7 - 1.webp",
     photos: [
-      "/images/Jour 7/Izmir_1.webp",
-      "/images/Jour 7/Izmir_2.webp",
-      "/images/Jour 7/Izmir_3.webp",
-      "/images/Jour 7/Izmir_4.webp"
+      "/images/Jour 7/Hotel jour 7 - 1.webp",
     ],
-    audioTitle: "Izmir et Kusadasi, trésors de la côte égéenne",
-    audioDuration: "4 min 15 sec",
-    audioSrc: "/audio/places/Izmir_ou_Kusadasi.mp3",
-    history: "Izmir est la troisième plus grande ville de Turquie et l'un des ports les plus anciens de la Méditerranée. Située sur la côte égéenne, elle mêle héritage gréco-romain, architecture ottomane et modernité. Kusadasi, à quelques kilomètres, est une station balnéaire réputée pour son port de croisières et sa proximité avec les ruines d'Éphèse. La route entre ces deux villes offre des panoramas spectaculaires sur la mer Égée.",
+    gps: "37.9588,29.1244",
+    historyLabel: "Présentation de l'hôtel",
+    history:
+      "Situé à proximité de Pamukkale, le PAM Thermal Hotel est un établissement 5 étoiles spécialisé dans l'expérience thermale. Installé dans un environnement verdoyant, l'hôtel profite des eaux thermales naturelles caractéristiques de la région de Denizli. Après la découverte des célèbres terrasses blanches et de l'ancienne cité de Hiérapolis, c'est une étape idéale pour profiter d'un moment de détente et découvrir l'une des traditions les plus anciennes de cette région : les bains thermaux.",
+    anecdotesLabel: "Informations pratiques",
     anecdotes: [
-      "Izmir fut connue sous le nom de Smyrne dans l'Antiquité, l'une des plus grandes cités de l'Empire romain.",
-      "Kusadasi signifie 'l'île aux oiseaux' en turc, en référence à l'îlot qui domine son port.",
-      "La promenade du Kordon à Izmir est l'un des lieux de rendez-vous préférés des habitants pour admirer le coucher de soleil."
-    ]
+      "Hôtel 5 étoiles situé dans la région de Pamukkale.",
+      "Établissement réputé pour ses installations thermales et ses piscines d'eau chaude.",
+      "Les eaux thermales constituent l'une des grandes particularités naturelles de la région.",
+      "Une étape idéale pour se détendre après la découverte de Pamukkale et de Hiérapolis.",
+      "L'hôtel permet de profiter de l'ambiance thermale caractéristique de cette partie de la Turquie.",
+    ],
+    links: [
+      {
+        label: "Site officiel de l'hôtel",
+        url: "https://www.pamthermal.com/",
+      },
+    ],
+  },
+  {
+    id: "trajet-pamukkale-ephese",
+    jour: [8],
+    name: "De Pamukkale à Éphèse",
+    shortDesc: "Des sources thermales de Pamukkale aux vestiges de la cité d'Éphèse",
+    tag: "Trajet",
+    image: "/images/Bus.webp",
+    photos: [
+      "/images/Jour 8/Trajet Pamukkale Ephese 1.webp",
+      "/images/Jour 8/Trajet Pamukkale Ephese 2.webp",
+      "/images/Jour 8/Trajet Pamukkale Ephese 3.webp",
+    ],
+    audioTitle: "Sur la route d'Éphèse",
+    audioDuration: "2 min 00 sec",
+    audioSrc: "/audio/places/Sur_la_route_d_Ephese.mp3",
+    gps: "37.9391,27.3410",
+    historyLabel: "Le trajet",
+    history:
+      "Nous quittons Pamukkale pour prendre la direction de l'ouest de la Turquie et de la cité antique d'Éphèse. Après les paysages minéraux et les terrasses blanches de Pamukkale, la route traverse les terres agricoles de l'intérieur de l'Anatolie avant de rejoindre progressivement les paysages plus verdoyants de la région égéenne. Les montagnes, les vallées, les oliviers et les cultures annoncent l'arrivée dans une région au climat méditerranéen. Notre destination est Éphèse, l'une des plus grandes cités de l'Antiquité, qui fut pendant des siècles un important centre commercial, culturel et religieux. Après avoir découvert les merveilles naturelles de Pamukkale, ce trajet nous conduit ainsi vers une nouvelle étape de notre voyage : un véritable retour dans l'Histoire.",
+    anecdotesLabel: "À observer pendant le trajet",
+    anecdotes: [
+      "Le trajet entre Pamukkale et Éphèse représente environ 190 à 200 kilomètres selon l'itinéraire.",
+      "Les paysages évoluent progressivement des plaines intérieures vers les reliefs et vallées de la région égéenne.",
+      "La végétation devient plus méditerranéenne à mesure que l'on se rapproche d'Éphèse.",
+      "La région est connue pour ses oliviers, ses vignes et ses terres agricoles fertiles.",
+      "Éphèse fut l'une des grandes cités du monde antique et un important centre commercial.",
+      "La cité antique abrite notamment la célèbre bibliothèque de Celsus et l'un des plus grands théâtres antiques de Turquie.",
+    ],
+    links: [
+      {
+        label: "Ouvrir la carte interactive du trajet via google maps",
+        url: "https://www.google.com/maps/dir/Pamukkale/%C3%89ph%C3%A8se",
+      },
+      {
+        label: "Ouvrir la carte interactive du trajet",
+        url: "/visites-guidees/pamukkale_ephesus_route.html",
+      },
+    ],
   },
   {
     id: "ephese",
@@ -1182,6 +1381,155 @@
     ]
   },
   {
+    id: "trajet-ephese-izmir",
+    jour: [8],
+    name: "D'Éphèse à Izmir",
+    shortDesc: "Des vestiges antiques d'Éphèse aux rives de la mer Égée",
+    tag: "Trajet",
+    image: "/images/Bus.webp",
+    photos: [
+      "/images/Jour 8/Ephese Izmir 1.webp",
+      "/images/Jour 8/Ephese Izmir 2.webp",
+      "/images/Jour 8/Ephese Izmir 3.webp",
+      "/images/Jour 8/Ephese Izmir 4.webp",
+      "/images/Jour 8/Ephese Izmir 5.webp",
+      "/images/Jour 8/Ephese Izmir 6.webp",
+      "/images/Jour 8/Ephese Izmir 7.webp",
+      "/images/Jour 8/Ephese Izmir 8.webp",
+      "/images/Jour 8/Ephese Izmir 9.webp",
+      "/images/Jour 8/Ephese Izmir 10.webp",
+      "/images/Jour 8/Ephese Izmir 11.webp",
+    ],
+    audioTitle: "Sur la route d'Izmir",
+    audioDuration: "1 min 45 sec",
+    audioSrc: "/audio/places/Sur_la_route_d_Izmir.mp3",
+    gps: "38.4237,27.1428",
+    historyLabel: "Le trajet",
+    history:
+      "Nous quittons Éphèse pour rejoindre Izmir, l'une des grandes villes de la côte égéenne. Après les vestiges antiques, la route traverse les paysages verdoyants de la région, entre collines, oliviers, vignobles et terres agricoles. Peu à peu, l'environnement devient plus urbain et annonce l'arrivée dans la grande baie d'Izmir. Fondée dans l'Antiquité sous le nom de Smyrne, la ville a connu les influences grecques, romaines, byzantines et ottomanes. Aujourd'hui, Izmir est une métropole moderne et dynamique, tournée vers la mer Égée et réputée pour son atmosphère méditerranéenne.",
+    anecdotesLabel: "À observer pendant le trajet",
+    anecdotes: [
+      "Le trajet entre Éphèse et Izmir représente environ 80 kilomètres.",
+      "La route traverse les paysages verdoyants de la région égéenne.",
+      "Les oliviers et les vignobles sont très présents dans cette partie de la Turquie.",
+      "Izmir est la troisième plus grande ville de Turquie.",
+      "La ville était connue dans l'Antiquité sous le nom de Smyrne.",
+      "Le front de mer, appelé Kordon, est l'un des lieux emblématiques d'Izmir.",
+    ],
+    links: [
+      {
+        label: "Ouvrir la carte interactive du trajet via google maps",
+        url: "https://www.google.com/maps/dir/%C3%89ph%C3%A8se/Izmir",
+      },
+      {
+        label: "Ouvrir la carte interactive du trajet",
+        url: "/visites-guidees/ephesus_izmir_route.html",
+      },
+    ],
+  },
+  {
+    id: "izmir-kusadasi",
+    jour: [7],
+    name: "Izmir",
+    shortDesc: "La perle de la côte égéenne",
+    tag: "Ville / Bord de mer",
+    image: "/images/Jour 7/Izmir_1.webp",
+    photos: [
+      "/images/Jour 7/Izmir_1.webp",
+      "/images/Jour 7/Izmir_2.webp",
+      "/images/Jour 7/Izmir_3.webp",
+      "/images/Jour 7/Izmir_4.webp"
+    ],
+    audioTitle: "Izmir, trésors de la côte égéenne",
+    audioDuration: "4 min 15 sec",
+    audioSrc: "/audio/places/Izmir_ou_Kusadasi.mp3",
+    history: "Izmir est la troisième plus grande ville de Turquie et l'un des ports les plus anciens de la Méditerranée. Située sur la côte égéenne, elle mêle héritage gréco-romain, architecture ottomane et modernité. Kusadasi, à quelques kilomètres, est une station balnéaire réputée pour son port de croisières et sa proximité avec les ruines d'Éphèse. La route entre ces deux villes offre des panoramas spectaculaires sur la mer Égée.",
+    anecdotes: [
+      "Izmir fut connue sous le nom de Smyrne dans l'Antiquité, l'une des plus grandes cités de l'Empire romain.",
+      "Kusadasi signifie 'l'île aux oiseaux' en turc, en référence à l'îlot qui domine son port.",
+      "La promenade du Kordon à Izmir est l'un des lieux de rendez-vous préférés des habitants pour admirer le coucher de soleil."
+    ]
+  },
+  {
+    id: "hotel-park-inn-radisson-izmir",
+    jour: [8],
+    name: "Park Inn by Radisson İzmir",
+    shortDesc: "Un hôtel moderne face à la baie d'Izmir",
+    tag: "Hôtel",
+    image: "/images/Jour 8/Hotel jour 8 - 1.webp",
+    photos: [
+      "/images/Jour 8/Hotel jour 8 - 1.webp",
+      "/images/Jour 8/Hotel jour 8 - 2.webp",
+    ],
+    gps: "38.4303,27.1377",
+    historyLabel: "Présentation de l'hôtel",
+    history:
+      "Situé au cœur d'Izmir, le Park Inn by Radisson İzmir bénéficie d'un emplacement privilégié à proximité du front de mer et de la célèbre promenade du Kordon. Cet hôtel 4 étoiles propose un cadre moderne et confortable, idéal pour découvrir la ville à pied. Sa situation permet notamment de rejoindre facilement les principaux quartiers animés du centre-ville, les restaurants et les lieux emblématiques de la baie d'Izmir.",
+    anecdotesLabel: "Informations pratiques",
+    anecdotes: [
+      "Hôtel 4 étoiles situé dans le centre d'Izmir.",
+      "À proximité immédiate du front de mer et de la promenade du Kordon.",
+      "Emplacement pratique pour découvrir le centre-ville à pied.",
+      "L'hôtel dispose notamment d'un restaurant, d'un bar et d'une terrasse avec vue sur la ville.",
+      "Une bonne étape pour profiter de l'ambiance animée du centre d'Izmir en soirée.",
+    ],
+    links: [
+      {
+        label: "Site officiel de l'hôtel",
+        url: "https://www.radissonhotels.com/tr-tr/oteller/park-inn-izmir",
+      },
+    ],
+  },
+  {
+    id: "trajet-izmir-bursa",
+    jour: [9],
+    name: "D'Izmir à Bursa",
+    shortDesc: "De la mer Égée aux premières capitales ottomanes",
+    tag: "Trajet",
+    image: "/images/Bus.webp",
+    photos: [
+      "/images/Jour 9/Izmir - Bursa 1.webp",
+      "/images/Jour 9/Izmir - Bursa 2.webp",
+      "/images/Jour 9/Izmir - Bursa 3.webp",
+      "/images/Jour 9/Izmir - Bursa 4.webp",
+      "/images/Jour 9/Izmir - Bursa 5.webp",
+      "/images/Jour 9/Izmir - Bursa 6.webp",
+      "/images/Jour 9/Izmir - Bursa 7.webp",
+      "/images/Jour 9/Izmir - Bursa 8.webp",
+      "/images/Jour 9/Izmir - Bursa 9.webp",
+      "/images/Jour 9/Izmir - Bursa 10.webp",
+      "/images/Jour 9/Izmir - Bursa 11.webp",
+      "/images/Jour 9/Izmir - Bursa 12.webp",
+      "/images/Jour 9/Izmir - Bursa 13.webp",
+    ],
+    audioTitle: "Sur la route de Bursa",
+    audioDuration: "2 min 00 sec",
+    audioSrc: "/audio/places/Sur_la_route_de_Bursa.mp3",
+    gps: "40.1950,29.0600",
+    historyLabel: "Le trajet",
+    history:
+      "Nous quittons Izmir pour prendre la direction de Bursa, dans le nord-ouest de la Turquie. En quittant la baie d'Izmir, la route traverse les plaines fertiles de l'ouest de l'Anatolie, entre oliviers, vergers, champs et villages. Peu à peu, nous nous rapprochons de la mer de Marmara et des reliefs du nord-ouest de la Turquie. Le mont Uludağ, qui domine Bursa, apparaît progressivement à l'horizon. Bursa occupe une place majeure dans l'histoire du pays : elle fut la première grande capitale de l'Empire ottoman au XIVe siècle, avant que le pouvoir ne soit transféré à Edirne puis à Constantinople. La ville conserve de nombreux témoignages de cette période et reste également réputée pour ses sources thermales et sa gastronomie.",
+    anecdotesLabel: "À observer pendant le trajet",
+    anecdotes: [
+      "Le trajet entre Izmir et Bursa représente environ 330 kilomètres selon l'itinéraire.",
+      "La route traverse les plaines agricoles fertiles de l'ouest de l'Anatolie.",
+      "Les oliviers, les vergers et les champs sont très présents dans cette région.",
+      "Le mont Uludağ domine Bursa et culmine à plus de 2 500 mètres d'altitude.",
+      "Bursa fut la première grande capitale de l'Empire ottoman au XIVe siècle.",
+      "La ville est réputée pour ses sources thermales et pour l'İskender kebap, l'une de ses spécialités emblématiques.",
+    ],
+    links: [
+      {
+        label: "Ouvrir la carte interactive du trajet via google maps",
+        url: "https://www.google.com/maps/dir/Izmir/Bursa",
+      },
+      {
+        label: "Ouvrir la carte interactive du trajet",
+        url: "/visites-guidees/izmir_bursa_route.html",
+      },
+    ],   
+  },
+  {
     id: "bursa",
     jour: [9],
     name: "Bursa",
@@ -1192,18 +1540,124 @@
       "/images/Jour 9/Bursa_1.webp",
       "/images/Jour 9/Bursa_2.webp",
       "/images/Jour 9/Bursa_3.webp",
-      "/images/Jour 9/Bursa_4.webp"
+      "/images/Jour 9/Bursa_4.webp",
     ],
     audioTitle: "Bursa, berceau de l'Empire ottoman",
     audioDuration: "3 min 50 sec",
     audioSrc: "/audio/places/Bursa.mp3",
     gps: "40.1950,29.0600",
-    history: "Bursa fut la prmière capitale de l'Empire ottoman, conquise par Orhan Gazi en 1326. Nichée au pied du Mont Uludağ (l'antique Olympe de Mysie), elle conserve un riche patrimoine ottoman avec ses mosquées, ses mausolées et ses bains traditionnels. La ville est également réputée pour ses soies, ses kebabs et ses fruits confits.",
+    history: "Bursa fut la première capitale de l'Empire ottoman, conquise par Orhan Gazi en 1326. Nichée au pied du Mont Uludağ (l'antique Olympe de Mysie), elle conserve un riche patrimoine ottoman avec ses mosquées, ses mausolées et ses bains traditionnels. La ville est également réputée pour ses soies, ses kebabs et ses fruits confits.",
     anecdotes: [
       "La Mosquée Verte (Yeşil Camii) doit son nom aux carreaux de faïence vert émeraude qui la décorent.",
       "Les tombeaux des premiers sultans ottomans se trouvent dans le Mausolée Vert.",
-      "Le Mont Uludağ est aujourd'hui une importante station de ski."
+      "Le Mont Uludağ (Mont Olympe) est aujourd'hui une importante station de ski."
     ]
+  },
+  {
+    id: "mosquee-verte",
+    jour: [9],
+    name: "Mosquée verte (Yeşil Camii)",
+    shortDesc: "Joyau de céramique et couronnement de l'architecture ottomane primitive",
+    tag: "Monument",
+    image: "/images/Jour 9/Mosquee verte 1.webp",
+    photos: [
+      "/images/Jour 9/Mosquee verte 1.webp",
+      "/images/Jour 9/Mosquee verte 2.webp",
+      "/images/Jour 9/Mosquee verte 3.webp",
+    ],
+    audioTitle: "La Mosquée verte, splendeur de Bursa",
+    audioDuration: "3 min 45 sec",
+    audioSrc: "/audio/places/Mosquee_verte.mp3",
+    gps: "40.1829,29.0776",
+    history:
+      "Commandée par le sultan Mehmed Ier (Çelebi Mehmed) après avoir réunifié l'Empire ottoman, la Mosquée verte fut édifiée entre 1412 et 1420 à Bursa, l'ancienne capitale. L'architecte Hacı İvaz Pasha, ancien commandant militaire du sultan, conçut un édifice au plan en T inversé qui marqua un tournant dans l'architecture ottomane. Les célèbres carreaux turquoise et verts, réalisés par des maîtres artisans de Tabriz, recouvrent mihrab, iwans et loge royale, faisant de ce monument le symbole de la renaissance ottomane.",
+    anecdotes: [
+      "Les carreaux intérieurs sont signés des 'Maîtres de Tabriz', artisans persans importés spécialement pour l'occasion.",
+      "L'architecte Hacı İvaz Pasha était à l'origine un commandant militaire avant de se tourner vers l'architecture.",
+      "Les dômes étaient à l'origine recouverts de carreaux bleus et verts ; ils sont aujourd'hui habillés de plomb.",
+      "Mehmed Ier n'a jamais vu la mosquée achevée ; il mourut en 1421 alors que les travaux de décoration se poursuivaient encore.",
+    ],
+  },
+  {
+    id: "mausolee-vert",
+    jour: [9],
+    name: "Mausolée vert (Yeşil Türbe)",
+    shortDesc: "Tombeau octogonal de Mehmed Ier, écrin de céramique turquoise",
+    tag: "Monument",
+    image: "/images/Jour 9/Mausolee vert 1.webp",
+    photos: [
+      "/images/Jour 9/Mausolee vert 1.webp",
+      "/images/Jour 9/Mausolee vert 2.webp",
+      "/images/Jour 9/Mausolee vert 3.webp",
+      "/images/Jour 9/Mausolee vert 4.webp",
+      "/images/Jour 9/Mausolee vert 5.webp",
+    ]
+      ,
+    audioTitle: "Le Mausolée vert, dernière demeure d'un sultan",
+    audioDuration: "2 min 50 sec",
+    audioSrc: "/audio/places/Mausolee-vert.mp3",
+    gps: "40.1830,29.0780",
+    history:
+      "Érigé en 1421 par le fils et successeur de Mehmed Ier, le sultan Murad II, le Mausolée vert (Yeşil Türbe) est le tombeau du cinquième sultan ottoman. Situé face à la Mosquée verte dans le quartier éponyme de Bursa, cet édifice octogonal est entièrement revêtu de carreaux d'Iznik aux tons turquoise qui lui valent son nom. À l'intérieur reposent non seulement Mehmed Ier, mais également plusieurs de ses fils, dans un décor de céramique, de stuc et de bois sculpté d'une rare finesse.",
+    anecdotes: [
+      "Le plan octogonal du mausolée est hérité de la tradition funéraire islamique, où cette forme symbolise le passage vers l'au-delà.",
+      "Les carreaux turquoise qui habillent l'extérieur proviennent d'Iznik, bien avant que cette ville ne devienne le centre de la céramique ottomane classique.",
+      "Le tombeau fut construit en quelques mois seulement, juste après la mort de Mehmed Ier en 1421.",
+      "À l'intérieur, le sarcophage de Mehmed Ier est surmonté d'un turban de tissu brodé, tradition respectée pour les sépultures sultaniennes.",
+    ],
+},
+  {
+    id: "trajet-bursa-istanbul",
+    jour: [9],
+    name: "De Bursa à Istanbul par le pont Osmangazi",
+    shortDesc: "Dernière traversée avant le retour à Istanbul",
+    tag: "Trajet",
+    image: "/images/Bus.webp",
+    photos: [
+      "/images/Jour 9/Bursa Istanbul 1.webp",
+      "/images/Jour 9/Bursa Istanbul 2.webp",
+      "/images/Jour 9/Bursa Istanbul 4.webp",
+      "/images/Jour 9/Bursa Istanbul 5.webp",
+      "/images/Jour 9/Bursa Istanbul 6.webp",
+      "/images/Jour 9/Bursa Istanbul 7.webp",
+      "/images/Jour 9/Bursa Istanbul 8.webp",
+      "/images/Jour 9/Bursa Istanbul 9.webp",
+      "/images/Jour 9/Bursa Istanbul 10.webp",
+      "/images/Jour 9/Bursa Istanbul 11.webp",
+      "/images/Jour 9/Bursa Istanbul 12.webp",
+      "/images/Jour 9/Bursa Istanbul 13.webp",
+      "/images/Jour 9/Bursa Istanbul 14.webp",
+      "/images/Jour 9/Bursa Istanbul 15.webp",
+      "/images/Jour 9/Bursa Istanbul 16.webp",
+    ],
+    audioTitle: "Sur la route du retour vers Istanbul",
+    audioDuration: "2 min 00 sec",
+    audioSrc: "/audio/places/Sur_la_chemin_de_reour_vers_Istanbul.mp3",
+    gps: "40.7654,29.5170",
+    historyLabel: "Le trajet",
+    history:
+      "Nous quittons Bursa pour rejoindre Istanbul en traversant la baie d'Izmit par le célèbre pont Osmangazi. Inauguré en 2016, cet impressionnant pont suspendu permet de franchir la baie de manière beaucoup plus rapide qu'auparavant. Long d'environ 2,7 kilomètres, il porte le nom d'Osman Gazi, fondateur de la dynastie ottomane. Après la traversée, la route poursuit son chemin à travers les paysages du nord-ouest de la Turquie avant de rejoindre progressivement l'immense agglomération d'Istanbul. Ce dernier trajet marque la fin de notre découverte de la Turquie, après avoir traversé l'Anatolie et découvert ses paysages, son histoire et ses grandes civilisations.",
+    anecdotesLabel: "À observer pendant le trajet",
+    anecdotes: [
+      "Le trajet est d'environ 150 kilomètres entre Bursa et Istanbul",
+      "Le pont Osmangazi franchit la baie d'Izmit, sur la mer de Marmara.",
+      "Le pont mesure environ 2,7 kilomètres de long.",
+      "Il a été inauguré en 2016 et porte le nom d'Osman Gazi, fondateur de la dynastie ottomane.",
+      "La traversée permet d'éviter un long détour autour de la baie.",
+      "Depuis le pont, on bénéficie d'un vaste panorama sur la mer de Marmara.",
+      "En approchant d'Istanbul, le paysage devient progressivement beaucoup plus urbain.",
+      "Ce trajet constitue la dernière étape de notre grand parcours à travers la Turquie.",
+    ],
+    links: [
+      {
+        label: "Ouvrir la carte interactive du trajet via google maps",
+        url: "https://www.google.com/maps/dir/Bursa/Istanbul",
+      },
+      {
+        label: "Ouvrir la carte interactive du trajet",
+        url: "/visites-guidees/bursa_istanbul_osmangazi_route.html",
+      },
+    ],
   },
   {
     id: "osmangazi",
@@ -1227,6 +1681,32 @@
       "34 000 tonnes d'acier, provenant de Roumanie, ont été utilisées pour sa construction.",
       "Le pont a été construit dans l'une des zones les plus sismiques du monde ; les pylônes reposent sur une base de gravier permettant un glissement en cas de séisme."
     ]
+  },
+ {
+    id: "nuit-hotel-windsoer-2",
+    jour: [9],
+    name: "hôtel WINDSOR HOTEL & CONVENTION CENTER 5*",
+    shortDesc: "Nuit à l'hôtel Windsor",
+    tag: "hotel",
+    image: "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
+    photos: [
+      "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
+      "/images/Jour 2/Nuit hotel jour 1 et 2 - 2.webp",
+    ],
+    gps: "41.044255,28.9131665",
+    historyLabel:"Présentation de l'hôtel",
+    history:
+      "Le Windsor Hotel & Convention Center est un établissement 5★ moderne situé dans le quartier de Bayrampaşa, à Istanbul. Il se distingue par son vaste centre de convention, ses chambres élégantes et ses installations haut de gamme : spa complet, piscines intérieure et extérieure, sauna, hammam, ainsi qu’un salon panoramique au 17ᵉ étage offrant une vue superbe sur la ville et la Corne d’Or.",
+    anecdotesLabel: "Informations pratiques",
+    anecdotes: [
+      "1 chambre double et 1 chambre triple normalement réservés",
+    ],
+    links: [
+      {
+        label: "Site officiel de l'hôtel",
+        url: "https://www.windsorhotelistanbul.com/",
+      },
+    ],
   },
   {
     id: "Istanbul-Nantes",

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_94fd84b3f66fe2aa35290e49a870434f {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+<div style="position: fixed; top: 10px; right: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; font-size: 12px; font-family: sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 9999;">
+    <div style="margin-bottom:6px;"><span style="display:inline-block;width:20px;height:3px;background:#e74c3c;vertical-align:middle;margin-right:6px;border-radius:2px;"></span>Autoroute O-5 / O-22</div>
+    <div style="margin-bottom:4px;"><span style="display:inline-block;width:8px;height:8px;background:#27ae60;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Départ : Izmir</div>
+    <div><span style="display:inline-block;width:8px;height:8px;background:#e74c3c;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Arrivée : Bursa</div>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;color:#666;font-size:11px;">~258 km · ~4h en bus</div>
+</div>
+    
+            <div class="folium-map" id="map_94fd84b3f66fe2aa35290e49a870434f" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_94fd84b3f66fe2aa35290e49a870434f = L.map(
+                "map_94fd84b3f66fe2aa35290e49a870434f",
+                {
+                    center: [39.3, 28.1],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 7,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_c363aa96d4e671cc8b19a929b2b87a50 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_c363aa96d4e671cc8b19a929b2b87a50.addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+            var poly_line_f2f13c8c89290b2693e64830a66e0c1a = L.polyline(
+                [[38.4237, 27.1428], [38.45, 27.18], [38.5, 27.25], [38.55, 27.32], [38.6191, 27.4289], [38.7, 27.5], [38.8, 27.58], [38.9, 27.65], [39.0, 27.72], [39.1, 27.78], [39.2, 27.82], [39.3, 27.84], [39.4, 27.85], [39.5, 27.86], [39.6484, 27.8826], [39.75, 27.9], [39.85, 27.92], [39.95, 27.95], [40.05, 28.0], [40.1, 28.03], [40.1828, 29.0669]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 5}
+            ).addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+            poly_line_f2f13c8c89290b2693e64830a66e0c1a.bindTooltip(
+                `<div>
+                     Autoroute O-5 / O-22
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_faec2a0255b69cbbe2d016ba02d50056 = L.polyline(
+                [[38.4237, 27.1428], [38.45, 27.18], [38.5, 27.25], [38.55, 27.32], [38.6191, 27.4289], [38.7, 27.5], [38.8, 27.58], [38.9, 27.65], [39.0, 27.72], [39.1, 27.78], [39.2, 27.82], [39.3, 27.84], [39.4, 27.85], [39.5, 27.86], [39.6484, 27.8826], [39.75, 27.9], [39.85, 27.92], [39.95, 27.95], [40.05, 28.0], [40.1, 28.03], [40.1828, 29.0669]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.15, "smoothFactor": 1.0, "stroke": true, "weight": 12}
+            ).addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+            var circle_marker_8579ac6f3a6d19e69dd3021398a4dbf6 = L.circleMarker(
+                [38.4237, 27.1428],
+                {"bubblingMouseEvents": true, "color": "#27ae60", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#27ae60", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+        var popup_c7a1545c9e60ff99dedb98cf9339994e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0d5d655c2e072cf024c48fcfd56604c5 = $(`<div id="html_0d5d655c2e072cf024c48fcfd56604c5" style="width: 100.0%; height: 100.0%;"><b>Izmir</b></div>`)[0];
+                popup_c7a1545c9e60ff99dedb98cf9339994e.setContent(html_0d5d655c2e072cf024c48fcfd56604c5);
+            
+        
+
+        circle_marker_8579ac6f3a6d19e69dd3021398a4dbf6.bindPopup(popup_c7a1545c9e60ff99dedb98cf9339994e)
+        ;
+
+        
+    
+    
+            var marker_de0896c1570967b0c1e8172788d71cdf = L.marker(
+                [38.4237, 27.1428],
+                {
+}
+            ).addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+            var div_icon_8f1f7e4cb7f911cc143e1b107851447f = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eIzmir\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_de0896c1570967b0c1e8172788d71cdf.setIcon(div_icon_8f1f7e4cb7f911cc143e1b107851447f);
+            
+    
+            var circle_marker_3d157624f98739f7d5870e004d52fc32 = L.circleMarker(
+                [38.6191, 27.4289],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+        var popup_c7420d3e3e037556cc050411b26b7ed9 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_19c5fb2e6b0b42371dc4a74ac46313b8 = $(`<div id="html_19c5fb2e6b0b42371dc4a74ac46313b8" style="width: 100.0%; height: 100.0%;"><b>Manisa</b></div>`)[0];
+                popup_c7420d3e3e037556cc050411b26b7ed9.setContent(html_19c5fb2e6b0b42371dc4a74ac46313b8);
+            
+        
+
+        circle_marker_3d157624f98739f7d5870e004d52fc32.bindPopup(popup_c7420d3e3e037556cc050411b26b7ed9)
+        ;
+
+        
+    
+    
+            var marker_fda5768e6b3bed7030e6c454ced45152 = L.marker(
+                [38.6191, 27.4289],
+                {
+}
+            ).addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+            var div_icon_c03d122637d1907b7dafa5e80cfd9018 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eManisa\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_fda5768e6b3bed7030e6c454ced45152.setIcon(div_icon_c03d122637d1907b7dafa5e80cfd9018);
+            
+    
+            var circle_marker_d25d4c0deabdac37a159a2a2fe3a0e3c = L.circleMarker(
+                [39.6484, 27.8826],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+        var popup_b898fd9c74b2de1a3015d663c85aa1c0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_11d4193475bb4e4c778e93d4fc561540 = $(`<div id="html_11d4193475bb4e4c778e93d4fc561540" style="width: 100.0%; height: 100.0%;"><b>Balıkesir</b></div>`)[0];
+                popup_b898fd9c74b2de1a3015d663c85aa1c0.setContent(html_11d4193475bb4e4c778e93d4fc561540);
+            
+        
+
+        circle_marker_d25d4c0deabdac37a159a2a2fe3a0e3c.bindPopup(popup_b898fd9c74b2de1a3015d663c85aa1c0)
+        ;
+
+        
+    
+    
+            var marker_ae9c8ad1edfa9a7f1a3bbd5d26b9c3e5 = L.marker(
+                [39.6484, 27.8826],
+                {
+}
+            ).addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+            var div_icon_dadaffcda262c62f756854d1b679e70e = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eBal\u0131kesir\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_ae9c8ad1edfa9a7f1a3bbd5d26b9c3e5.setIcon(div_icon_dadaffcda262c62f756854d1b679e70e);
+            
+    
+            var circle_marker_f3dd9a6ec8e2f7e5480f8b0bf318c746 = L.circleMarker(
+                [40.1828, 29.0669],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3c", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
+            ).addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+        var popup_93c0715588bbef130f85a68b6f92393b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_788fa73732ed0db832474616c60be9ae = $(`<div id="html_788fa73732ed0db832474616c60be9ae" style="width: 100.0%; height: 100.0%;"><b>Bursa</b></div>`)[0];
+                popup_93c0715588bbef130f85a68b6f92393b.setContent(html_788fa73732ed0db832474616c60be9ae);
+            
+        
+
+        circle_marker_f3dd9a6ec8e2f7e5480f8b0bf318c746.bindPopup(popup_93c0715588bbef130f85a68b6f92393b)
+        ;
+
+        
+    
+    
+            var marker_fe8fb9f83fdda9f4ea25168f3bf1da78 = L.marker(
+                [40.1828, 29.0669],
+                {
+}
+            ).addTo(map_94fd84b3f66fe2aa35290e49a870434f);
+        
+    
+            var div_icon_45b67edb694652dd621dd9490890376b = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eBursa\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_fe8fb9f83fdda9f4ea25168f3bf1da78.setIcon(div_icon_45b67edb694652dd621dd9490890376b);
+            
+</script>
+</html>

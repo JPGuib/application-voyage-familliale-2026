@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_fde0cc5d16934cecaf9e381437a99291 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+<div style="position: fixed; top: 10px; right: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; font-size: 12px; font-family: sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 9999;">
+    <div style="margin-bottom:6px;"><span style="display:inline-block;width:20px;height:3px;background:#e74c3c;vertical-align:middle;margin-right:6px;border-radius:2px;"></span>Autoroute O-5</div>
+    <div style="margin-bottom:4px;"><span style="display:inline-block;width:8px;height:8px;background:#27ae60;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Départ : Bursa</div>
+    <div style="margin-bottom:4px;"><span style="display:inline-block;width:8px;height:8px;background:#3498db;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Pont Osmangazi (2 682 m)</div>
+    <div><span style="display:inline-block;width:8px;height:8px;background:#e74c3c;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Arrivée : Istanbul</div>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;color:#666;font-size:11px;">~155 km · ~2h30 en bus</div>
+</div>
+    
+            <div class="folium-map" id="map_fde0cc5d16934cecaf9e381437a99291" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_fde0cc5d16934cecaf9e381437a99291 = L.map(
+                "map_fde0cc5d16934cecaf9e381437a99291",
+                {
+                    center: [40.6, 29.5],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 8,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_e99ad9add33194bdf9994cd80c8ff152 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_e99ad9add33194bdf9994cd80c8ff152.addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+            var poly_line_386f81b529f41b56b774bbbb9fdae8a6 = L.polyline(
+                [[40.1828, 29.0669], [40.25, 29.12], [40.32, 29.17], [40.38, 29.22], [40.45, 29.27], [40.4892, 29.3089], [40.55, 29.35], [40.62, 29.4], [40.68, 29.44], [40.72, 29.47], [40.754, 29.515], [40.78, 29.5], [40.8, 29.47], [40.8028, 29.4304], [40.82, 29.38], [40.85, 29.32], [40.88, 29.26], [40.91, 29.2], [40.94, 29.15], [40.97, 29.1], [41.0082, 28.9784]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 5}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+            poly_line_386f81b529f41b56b774bbbb9fdae8a6.bindTooltip(
+                `<div>
+                     Autoroute O-5 — Pont Osmangazi
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_9c4fa9abcaf8bc5adfb135e4a588751b = L.polyline(
+                [[40.1828, 29.0669], [40.25, 29.12], [40.32, 29.17], [40.38, 29.22], [40.45, 29.27], [40.4892, 29.3089], [40.55, 29.35], [40.62, 29.4], [40.68, 29.44], [40.72, 29.47], [40.754, 29.515], [40.78, 29.5], [40.8, 29.47], [40.8028, 29.4304], [40.82, 29.38], [40.85, 29.32], [40.88, 29.26], [40.91, 29.2], [40.94, 29.15], [40.97, 29.1], [41.0082, 28.9784]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.15, "smoothFactor": 1.0, "stroke": true, "weight": 12}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+            var poly_line_927c95ffdf8ee8faaaa3d27d5c993370 = L.polyline(
+                [[40.72, 29.47], [40.754, 29.515], [40.78, 29.5]],
+                {"bubblingMouseEvents": true, "color": "#3498db", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#3498db", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1.0, "smoothFactor": 1.0, "stroke": true, "weight": 7}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+            poly_line_927c95ffdf8ee8faaaa3d27d5c993370.bindTooltip(
+                `<div>
+                     Pont Osmangazi — 2 682 m
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_6a973d6b9fa3311ffbd77161f26677cf = L.circleMarker(
+                [40.1828, 29.0669],
+                {"bubblingMouseEvents": true, "color": "#27ae60", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#27ae60", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+        var popup_dbfb61a4c57ad9df89b10765c1762aed = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_09d485dc869f20c0810b12ccbc2c6edb = $(`<div id="html_09d485dc869f20c0810b12ccbc2c6edb" style="width: 100.0%; height: 100.0%;"><b>Bursa</b></div>`)[0];
+                popup_dbfb61a4c57ad9df89b10765c1762aed.setContent(html_09d485dc869f20c0810b12ccbc2c6edb);
+            
+        
+
+        circle_marker_6a973d6b9fa3311ffbd77161f26677cf.bindPopup(popup_dbfb61a4c57ad9df89b10765c1762aed)
+        ;
+
+        
+    
+    
+            var marker_521b556983bc52015ed4ef1184a6bdb2 = L.marker(
+                [40.1828, 29.0669],
+                {
+}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+            var div_icon_85ff6ebd52c68703e8fe55abb94583df = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eBursa\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_521b556983bc52015ed4ef1184a6bdb2.setIcon(div_icon_85ff6ebd52c68703e8fe55abb94583df);
+            
+    
+            var circle_marker_44622acc32fd0ae873b59705c6d4c649 = L.circleMarker(
+                [40.4892, 29.3089],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+        var popup_8f9900c514bce5682c60ac686b93c381 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f50494b5ea3adfd09abcee47a70dadd9 = $(`<div id="html_f50494b5ea3adfd09abcee47a70dadd9" style="width: 100.0%; height: 100.0%;"><b>Orhangazi</b></div>`)[0];
+                popup_8f9900c514bce5682c60ac686b93c381.setContent(html_f50494b5ea3adfd09abcee47a70dadd9);
+            
+        
+
+        circle_marker_44622acc32fd0ae873b59705c6d4c649.bindPopup(popup_8f9900c514bce5682c60ac686b93c381)
+        ;
+
+        
+    
+    
+            var marker_4a758dcb8c67ec02e3d8dde705030d22 = L.marker(
+                [40.4892, 29.3089],
+                {
+}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+            var div_icon_86994925c5549a8ef219e43bf02acfe5 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eOrhangazi\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_4a758dcb8c67ec02e3d8dde705030d22.setIcon(div_icon_86994925c5549a8ef219e43bf02acfe5);
+            
+    
+            var circle_marker_3b31fc25dbfe5f49a220e8c31d3a2732 = L.circleMarker(
+                [40.754, 29.515],
+                {"bubblingMouseEvents": true, "color": "#3498db", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#3498db", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+        var popup_71e5459522de524d784c73759012435b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_53651272d94c789b1aab5142140cf4d5 = $(`<div id="html_53651272d94c789b1aab5142140cf4d5" style="width: 100.0%; height: 100.0%;"><b>Pont Osmangazi</b></div>`)[0];
+                popup_71e5459522de524d784c73759012435b.setContent(html_53651272d94c789b1aab5142140cf4d5);
+            
+        
+
+        circle_marker_3b31fc25dbfe5f49a220e8c31d3a2732.bindPopup(popup_71e5459522de524d784c73759012435b)
+        ;
+
+        
+    
+    
+            var marker_9db1da3c67d7743a862a003b37f66a87 = L.marker(
+                [40.754, 29.515],
+                {
+}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+            var div_icon_5dadc28b01146bbcefc4df7acb9dd92a = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003ePont Osmangazi\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_9db1da3c67d7743a862a003b37f66a87.setIcon(div_icon_5dadc28b01146bbcefc4df7acb9dd92a);
+            
+    
+            var circle_marker_63d2a44e875fcd746d7e90ce266dd86b = L.circleMarker(
+                [40.8028, 29.4304],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+        var popup_847df0881382909e9526e2200431d1a2 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_acbd4f1115a187b6af012e98b9960d74 = $(`<div id="html_acbd4f1115a187b6af012e98b9960d74" style="width: 100.0%; height: 100.0%;"><b>Gebze</b></div>`)[0];
+                popup_847df0881382909e9526e2200431d1a2.setContent(html_acbd4f1115a187b6af012e98b9960d74);
+            
+        
+
+        circle_marker_63d2a44e875fcd746d7e90ce266dd86b.bindPopup(popup_847df0881382909e9526e2200431d1a2)
+        ;
+
+        
+    
+    
+            var marker_63bb89f260830a10b1fd577f01c84015 = L.marker(
+                [40.8028, 29.4304],
+                {
+}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+            var div_icon_a1237989b087c9c94ef0071ae4c48935 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eGebze\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_63bb89f260830a10b1fd577f01c84015.setIcon(div_icon_a1237989b087c9c94ef0071ae4c48935);
+            
+    
+            var circle_marker_023c7f7c82f2fb0bded486549bcd4d16 = L.circleMarker(
+                [41.0082, 28.9784],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3c", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+        var popup_c76a142ea663120f24536a619cfde368 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_61222f17a419a8434296e15786cbca7d = $(`<div id="html_61222f17a419a8434296e15786cbca7d" style="width: 100.0%; height: 100.0%;"><b>Istanbul</b></div>`)[0];
+                popup_c76a142ea663120f24536a619cfde368.setContent(html_61222f17a419a8434296e15786cbca7d);
+            
+        
+
+        circle_marker_023c7f7c82f2fb0bded486549bcd4d16.bindPopup(popup_c76a142ea663120f24536a619cfde368)
+        ;
+
+        
+    
+    
+            var marker_5c62c91fed7afc9d3d64f881b15a1b45 = L.marker(
+                [41.0082, 28.9784],
+                {
+}
+            ).addTo(map_fde0cc5d16934cecaf9e381437a99291);
+        
+    
+            var div_icon_a0dde49e66345482d5dd1c8659ae5913 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eIstanbul\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_5c62c91fed7afc9d3d64f881b15a1b45.setIcon(div_icon_a0dde49e66345482d5dd1c8659ae5913);
+            
+</script>
+</html>

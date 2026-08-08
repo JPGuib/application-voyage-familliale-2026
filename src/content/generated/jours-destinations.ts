@@ -68,7 +68,7 @@ export const JOURS_DESTINATIONS: JourDestination[] = [
   {
     "jour": 8,
     "destination": "Site d'Ephèse",
-    "visites_prevues": "Cité d'Artémis",
+    "visites_prevues": "Cité d'Artémis, Izmir",
     "gps_matin": "37.9150,29.1183",
     "gps_apresmidi": "37.9390,27.3410",
     "gps_soir": "37.9390,27.3410"
@@ -76,16 +76,16 @@ export const JOURS_DESTINATIONS: JourDestination[] = [
   {
     "jour": 9,
     "destination": "Bursa",
-    "visites_prevues": "Bursa, Mosquée verte, mausolée vert",
+    "visites_prevues": "Bursa, Mosquée verte, mausolée vert, Isntanbul",
     "gps_matin": "40.1956,29.0601",
     "gps_apresmidi": "40.1956,29.0601",
-    "gps_soir": "40.1956,29.0601"
+    "gps_soir": "41.0138,28.9497"
   },
   {
     "jour": 10,
     "destination": "Retour en France",
     "visites_prevues": "Instabul, Paris, Nantes",
-    "gps_matin": "40.1956,29.0601",
+    "gps_matin": "41.0138,28.9497",
     "gps_apresmidi": "41.0138,28.9497",
     "gps_soir": "41.0138,28.9497"
   }

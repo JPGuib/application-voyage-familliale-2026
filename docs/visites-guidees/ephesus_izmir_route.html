@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_26414b9c00fee5e618825030e24d9bd4 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+<div style="position: fixed; top: 10px; right: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; font-size: 12px; font-family: sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 9999;">
+    <div style="margin-bottom:6px;"><span style="display:inline-block;width:20px;height:3px;background:#e74c3c;vertical-align:middle;margin-right:6px;border-radius:2px;"></span>Route D-550 / E87</div>
+    <div style="margin-bottom:4px;"><span style="display:inline-block;width:8px;height:8px;background:#27ae60;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Départ : Selçuk (Éphèse)</div>
+    <div><span style="display:inline-block;width:8px;height:8px;background:#e74c3c;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Arrivée : Izmir</div>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;color:#666;font-size:11px;">~80 km · ~1h15 en bus</div>
+</div>
+    
+            <div class="folium-map" id="map_26414b9c00fee5e618825030e24d9bd4" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_26414b9c00fee5e618825030e24d9bd4 = L.map(
+                "map_26414b9c00fee5e618825030e24d9bd4",
+                {
+                    center: [38.2, 27.25],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 9,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_0159a50106b728a75e00b9b5bfbcf28f = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_0159a50106b728a75e00b9b5bfbcf28f.addTo(map_26414b9c00fee5e618825030e24d9bd4);
+        
+    
+            var poly_line_a551e5b45cfb094ad3bcd2049cbbc8a1 = L.polyline(
+                [[37.9514, 27.3403], [37.98, 27.35], [38.02, 27.36], [38.06, 27.37], [38.1, 27.37], [38.152, 27.361], [38.18, 27.34], [38.22, 27.31], [38.26, 27.27], [38.3, 27.23], [38.34, 27.19], [38.38, 27.16], [38.4237, 27.1428]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 5}
+            ).addTo(map_26414b9c00fee5e618825030e24d9bd4);
+        
+    
+            poly_line_a551e5b45cfb094ad3bcd2049cbbc8a1.bindTooltip(
+                `<div>
+                     Route D-550 / E87
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_40e109b4f037eb53a0f4d363a5d3843b = L.polyline(
+                [[37.9514, 27.3403], [37.98, 27.35], [38.02, 27.36], [38.06, 27.37], [38.1, 27.37], [38.152, 27.361], [38.18, 27.34], [38.22, 27.31], [38.26, 27.27], [38.3, 27.23], [38.34, 27.19], [38.38, 27.16], [38.4237, 27.1428]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.15, "smoothFactor": 1.0, "stroke": true, "weight": 12}
+            ).addTo(map_26414b9c00fee5e618825030e24d9bd4);
+        
+    
+            var circle_marker_7016d4b96683a5b41b9529f51a89a523 = L.circleMarker(
+                [37.9514, 27.3403],
+                {"bubblingMouseEvents": true, "color": "#27ae60", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#27ae60", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_26414b9c00fee5e618825030e24d9bd4);
+        
+    
+        var popup_80cb773b5e1450b47bd3f6c851d69a19 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f1bdc86a7538abfa7cecded8e416441a = $(`<div id="html_f1bdc86a7538abfa7cecded8e416441a" style="width: 100.0%; height: 100.0%;"><b>Selçuk — Éphèse</b></div>`)[0];
+                popup_80cb773b5e1450b47bd3f6c851d69a19.setContent(html_f1bdc86a7538abfa7cecded8e416441a);
+            
+        
+
+        circle_marker_7016d4b96683a5b41b9529f51a89a523.bindPopup(popup_80cb773b5e1450b47bd3f6c851d69a19)
+        ;
+
+        
+    
+    
+            var marker_f3a558af26daa7f2d811658e7a4ee0f8 = L.marker(
+                [37.9514, 27.3403],
+                {
+}
+            ).addTo(map_26414b9c00fee5e618825030e24d9bd4);
+        
+    
+            var div_icon_a67e234f348b1d15458e9fa846843222 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eSel\u00e7uk \u2014 \u00c9ph\u00e8se\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_f3a558af26daa7f2d811658e7a4ee0f8.setIcon(div_icon_a67e234f348b1d15458e9fa846843222);
+            
+    
+            var circle_marker_d101a872e35396faba346a7267d5d3b3 = L.circleMarker(
+                [38.152, 27.361],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_26414b9c00fee5e618825030e24d9bd4);
+        
+    
+        var popup_8af930fed5d5e67a8b5018a52e273a5b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_fce834cc6adcb8e81e84120febd4bbbe = $(`<div id="html_fce834cc6adcb8e81e84120febd4bbbe" style="width: 100.0%; height: 100.0%;"><b>Torbalı</b></div>`)[0];
+                popup_8af930fed5d5e67a8b5018a52e273a5b.setContent(html_fce834cc6adcb8e81e84120febd4bbbe);
+            
+        
+
+        circle_marker_d101a872e35396faba346a7267d5d3b3.bindPopup(popup_8af930fed5d5e67a8b5018a52e273a5b)
+        ;
+
+        
+    
+    
+            var marker_d431507ef76b5fa505d951959b6229aa = L.marker(
+                [38.152, 27.361],
+                {
+}
+            ).addTo(map_26414b9c00fee5e618825030e24d9bd4);
+        
+    
+            var div_icon_85d3c4974dd84d9132e6d06e28f1c268 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eTorbal\u0131\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_d431507ef76b5fa505d951959b6229aa.setIcon(div_icon_85d3c4974dd84d9132e6d06e28f1c268);
+            
+    
+            var circle_marker_d69c4802b77c164ea9cba489b83e3911 = L.circleMarker(
+                [38.4237, 27.1428],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3c", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
+            ).addTo(map_26414b9c00fee5e618825030e24d9bd4);
+        
+    
+        var popup_3fc1e1b9d1dbf5039d1e96d7690f7361 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_90c277fa61e42f8b9344de20dc1b609f = $(`<div id="html_90c277fa61e42f8b9344de20dc1b609f" style="width: 100.0%; height: 100.0%;"><b>Izmir</b></div>`)[0];
+                popup_3fc1e1b9d1dbf5039d1e96d7690f7361.setContent(html_90c277fa61e42f8b9344de20dc1b609f);
+            
+        
+
+        circle_marker_d69c4802b77c164ea9cba489b83e3911.bindPopup(popup_3fc1e1b9d1dbf5039d1e96d7690f7361)
+        ;
+
+        
+    
+    
+            var marker_cc40eb81f429f4e1e8e5fa89fe8764b1 = L.marker(
+                [38.4237, 27.1428],
+                {
+}
+            ).addTo(map_26414b9c00fee5e618825030e24d9bd4);
+        
+    
+            var div_icon_ed055d04e6d6c136b5aef0b8827899ae = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eIzmir\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_cc40eb81f429f4e1e8e5fa89fe8764b1.setIcon(div_icon_ed055d04e6d6c136b5aef0b8827899ae);
+            
+</script>
+</html>

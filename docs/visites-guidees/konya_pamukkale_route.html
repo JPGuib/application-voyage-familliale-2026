@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_2467bf772b59ec3c500709ed2a9375e0 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+<div style="position: fixed; top: 10px; right: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; font-size: 12px; font-family: sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 9999;">
+    <div style="margin-bottom:6px;"><span style="display:inline-block;width:20px;height:3px;background:#e74c3c;vertical-align:middle;margin-right:6px;border-radius:2px;"></span>Route D-320 → D-650</div>
+    <div style="margin-bottom:4px;"><span style="display:inline-block;width:8px;height:8px;background:#27ae60;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Départ : Konya</div>
+    <div><span style="display:inline-block;width:8px;height:8px;background:#e74c3c;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Arrivée : Pamukkale</div>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;color:#666;font-size:11px;">~300 km · ~6–8h en bus</div>
+</div>
+    
+            <div class="folium-map" id="map_2467bf772b59ec3c500709ed2a9375e0" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_2467bf772b59ec3c500709ed2a9375e0 = L.map(
+                "map_2467bf772b59ec3c500709ed2a9375e0",
+                {
+                    center: [37.85, 30.8],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 7,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_9a5017d843458e8a3045d2253bb38a9b = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_9a5017d843458e8a3045d2253bb38a9b.addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+            var poly_line_71c3257436023d82f14097d250afd543 = L.polyline(
+                [[37.8667, 32.4925], [37.82, 32.35], [37.77, 32.2], [37.73, 32.0], [37.7, 31.85], [37.6774, 31.7246], [37.68, 31.55], [37.7, 31.35], [37.72, 31.15], [37.74, 30.95], [37.76, 30.75], [37.7648, 30.5566], [37.75, 30.45], [37.73, 30.35], [37.7161, 30.2906], [37.72, 30.15], [37.73, 29.95], [37.74, 29.75], [37.75, 29.55], [37.76, 29.35], [37.77, 29.15], [37.7765, 29.0864], [37.82, 29.09], [37.86, 29.1], [37.9, 29.11], [37.9137, 29.1187]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 5}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+            poly_line_71c3257436023d82f14097d250afd543.bindTooltip(
+                `<div>
+                     Route D-320 → D-650
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_8169cada91862bbc223bff9a1c42b159 = L.polyline(
+                [[37.8667, 32.4925], [37.82, 32.35], [37.77, 32.2], [37.73, 32.0], [37.7, 31.85], [37.6774, 31.7246], [37.68, 31.55], [37.7, 31.35], [37.72, 31.15], [37.74, 30.95], [37.76, 30.75], [37.7648, 30.5566], [37.75, 30.45], [37.73, 30.35], [37.7161, 30.2906], [37.72, 30.15], [37.73, 29.95], [37.74, 29.75], [37.75, 29.55], [37.76, 29.35], [37.77, 29.15], [37.7765, 29.0864], [37.82, 29.09], [37.86, 29.1], [37.9, 29.11], [37.9137, 29.1187]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.15, "smoothFactor": 1.0, "stroke": true, "weight": 12}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+            var circle_marker_4595afc3183aad2e774e3f14e21fda3c = L.circleMarker(
+                [37.8667, 32.4925],
+                {"bubblingMouseEvents": true, "color": "#27ae60", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#27ae60", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+        var popup_6a342cc69aaf7ff7b636b332fffda0a1 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0d8e796157a83eeee5f904c5859f6b56 = $(`<div id="html_0d8e796157a83eeee5f904c5859f6b56" style="width: 100.0%; height: 100.0%;"><b>Konya</b></div>`)[0];
+                popup_6a342cc69aaf7ff7b636b332fffda0a1.setContent(html_0d8e796157a83eeee5f904c5859f6b56);
+            
+        
+
+        circle_marker_4595afc3183aad2e774e3f14e21fda3c.bindPopup(popup_6a342cc69aaf7ff7b636b332fffda0a1)
+        ;
+
+        
+    
+    
+            var marker_8ca5958cf568c42f31b9be6d1ede42aa = L.marker(
+                [37.8667, 32.4925],
+                {
+}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+            var div_icon_b91949a784f813a28dcd9bb80b1c0d4e = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eKonya\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_8ca5958cf568c42f31b9be6d1ede42aa.setIcon(div_icon_b91949a784f813a28dcd9bb80b1c0d4e);
+            
+    
+            var circle_marker_a973a6da00793e6cf53b70307e98721b = L.circleMarker(
+                [37.6774, 31.7246],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+        var popup_149b24d3abc7a112b51502bff1398455 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_92994c797f4546e8b97c9151954663b9 = $(`<div id="html_92994c797f4546e8b97c9151954663b9" style="width: 100.0%; height: 100.0%;"><b>Beyşehir</b></div>`)[0];
+                popup_149b24d3abc7a112b51502bff1398455.setContent(html_92994c797f4546e8b97c9151954663b9);
+            
+        
+
+        circle_marker_a973a6da00793e6cf53b70307e98721b.bindPopup(popup_149b24d3abc7a112b51502bff1398455)
+        ;
+
+        
+    
+    
+            var marker_ece83153f7aca471743ce1ab91b48c86 = L.marker(
+                [37.6774, 31.7246],
+                {
+}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+            var div_icon_243e977632eb13fdc15888d5754bf8c9 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eBey\u015fehir\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_ece83153f7aca471743ce1ab91b48c86.setIcon(div_icon_243e977632eb13fdc15888d5754bf8c9);
+            
+    
+            var circle_marker_d56262333b8802dd2da729a5951dbb55 = L.circleMarker(
+                [37.7648, 30.5566],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+        var popup_bbc1e5a36e8cb771a4e157168feb5e4d = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_ddbe328ce6fab2c5ee14a9c105e62d67 = $(`<div id="html_ddbe328ce6fab2c5ee14a9c105e62d67" style="width: 100.0%; height: 100.0%;"><b>Isparta</b></div>`)[0];
+                popup_bbc1e5a36e8cb771a4e157168feb5e4d.setContent(html_ddbe328ce6fab2c5ee14a9c105e62d67);
+            
+        
+
+        circle_marker_d56262333b8802dd2da729a5951dbb55.bindPopup(popup_bbc1e5a36e8cb771a4e157168feb5e4d)
+        ;
+
+        
+    
+    
+            var marker_e711d19d0e310b43f05aab43266859f9 = L.marker(
+                [37.7648, 30.5566],
+                {
+}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+            var div_icon_68c11868d9b8efae450d05eacf9c7e1f = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eIsparta\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_e711d19d0e310b43f05aab43266859f9.setIcon(div_icon_68c11868d9b8efae450d05eacf9c7e1f);
+            
+    
+            var circle_marker_5520871ab4d782f6473674383273b369 = L.circleMarker(
+                [37.7161, 30.2906],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+        var popup_b60b0766e473748205aa0e9d8deebb7c = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_5513209491266f3a389bf267c85e9875 = $(`<div id="html_5513209491266f3a389bf267c85e9875" style="width: 100.0%; height: 100.0%;"><b>Burdur</b></div>`)[0];
+                popup_b60b0766e473748205aa0e9d8deebb7c.setContent(html_5513209491266f3a389bf267c85e9875);
+            
+        
+
+        circle_marker_5520871ab4d782f6473674383273b369.bindPopup(popup_b60b0766e473748205aa0e9d8deebb7c)
+        ;
+
+        
+    
+    
+            var marker_ea1a2750ac3141a2c460223b5905d4ac = L.marker(
+                [37.7161, 30.2906],
+                {
+}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+            var div_icon_8d1ade689132985188f2b6d89f624a61 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eBurdur\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_ea1a2750ac3141a2c460223b5905d4ac.setIcon(div_icon_8d1ade689132985188f2b6d89f624a61);
+            
+    
+            var circle_marker_e97822c01122939fb8ea2a9ece9f9103 = L.circleMarker(
+                [37.7765, 29.0864],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+        var popup_fe7a5dd231b2636e9bdb09d0c1f15b7d = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8dc5b7dca121370fcd84458d41e5b89a = $(`<div id="html_8dc5b7dca121370fcd84458d41e5b89a" style="width: 100.0%; height: 100.0%;"><b>Denizli</b></div>`)[0];
+                popup_fe7a5dd231b2636e9bdb09d0c1f15b7d.setContent(html_8dc5b7dca121370fcd84458d41e5b89a);
+            
+        
+
+        circle_marker_e97822c01122939fb8ea2a9ece9f9103.bindPopup(popup_fe7a5dd231b2636e9bdb09d0c1f15b7d)
+        ;
+
+        
+    
+    
+            var marker_4e9f8003af5684b33859feed21271bdc = L.marker(
+                [37.7765, 29.0864],
+                {
+}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+            var div_icon_e66e3d13e465f48a4f9ac7481a10975a = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eDenizli\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_4e9f8003af5684b33859feed21271bdc.setIcon(div_icon_e66e3d13e465f48a4f9ac7481a10975a);
+            
+    
+            var circle_marker_0368429a7875856bfb9181f3efc78a7c = L.circleMarker(
+                [37.9137, 29.1187],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3c", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+        var popup_d24e596dc99952aa82ee7dfada083544 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e4e5e78dffd01778e01f558140b27615 = $(`<div id="html_e4e5e78dffd01778e01f558140b27615" style="width: 100.0%; height: 100.0%;"><b>Pamukkale</b></div>`)[0];
+                popup_d24e596dc99952aa82ee7dfada083544.setContent(html_e4e5e78dffd01778e01f558140b27615);
+            
+        
+
+        circle_marker_0368429a7875856bfb9181f3efc78a7c.bindPopup(popup_d24e596dc99952aa82ee7dfada083544)
+        ;
+
+        
+    
+    
+            var marker_71944e20c52652680cd42364a8d4bd9d = L.marker(
+                [37.9137, 29.1187],
+                {
+}
+            ).addTo(map_2467bf772b59ec3c500709ed2a9375e0);
+        
+    
+            var div_icon_a85e44ebec8ec039d14c0a139fc9db47 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003ePamukkale\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_71944e20c52652680cd42364a8d4bd9d.setIcon(div_icon_a85e44ebec8ec039d14c0a139fc9db47);
+            
+</script>
+</html>

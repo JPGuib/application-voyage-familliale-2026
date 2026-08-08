@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_34eab381111901e7e9d9fc614f440891 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+<div style="position: fixed; top: 10px; right: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; font-size: 12px; font-family: sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,0.1); z-index: 9999;">
+    <div style="margin-bottom:6px;"><span style="display:inline-block;width:20px;height:3px;background:#e74c3c;vertical-align:middle;margin-right:6px;border-radius:2px;"></span>Route D-300 → D-330</div>
+    <div style="margin-bottom:4px;"><span style="display:inline-block;width:8px;height:8px;background:#27ae60;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Départ : Ortahisar (Cappadoce)</div>
+    <div><span style="display:inline-block;width:8px;height:8px;background:#e74c3c;border-radius:50%;vertical-align:middle;margin-right:8px;"></span>Arrivée : Konya</div>
+    <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee;color:#666;font-size:11px;">~238 km · ~3h en bus</div>
+</div>
+    
+            <div class="folium-map" id="map_34eab381111901e7e9d9fc614f440891" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_34eab381111901e7e9d9fc614f440891 = L.map(
+                "map_34eab381111901e7e9d9fc614f440891",
+                {
+                    center: [38.25, 33.65],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 7,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_650cf2979f041031af6e551d9c1c3436 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_650cf2979f041031af6e551d9c1c3436.addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+            var poly_line_f63706bdd2b6e91b23df22fb716a82c0 = L.polyline(
+                [[38.62, 34.865], [38.62, 34.8], [38.6247, 34.7142], [38.6, 34.55], [38.55, 34.35], [38.5, 34.2], [38.45, 34.05], [38.4, 33.9], [38.3687, 33.9997], [38.35, 33.85], [38.32, 33.75], [38.3, 33.65], [38.27, 33.58], [38.25, 33.55], [38.2, 33.45], [38.15, 33.35], [38.1, 33.25], [38.02, 33.1], [37.95, 32.95], [37.9, 32.7], [37.8667, 32.4925]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.9, "smoothFactor": 1.0, "stroke": true, "weight": 5}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+            poly_line_f63706bdd2b6e91b23df22fb716a82c0.bindTooltip(
+                `<div>
+                     Route D-300 → D-330
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_600e2589ed7dec910b84ba910ac86b21 = L.polyline(
+                [[38.62, 34.865], [38.62, 34.8], [38.6247, 34.7142], [38.6, 34.55], [38.55, 34.35], [38.5, 34.2], [38.45, 34.05], [38.4, 33.9], [38.3687, 33.9997], [38.35, 33.85], [38.32, 33.75], [38.3, 33.65], [38.27, 33.58], [38.25, 33.55], [38.2, 33.45], [38.15, 33.35], [38.1, 33.25], [38.02, 33.1], [37.95, 32.95], [37.9, 32.7], [37.8667, 32.4925]],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#e74c3c", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.15, "smoothFactor": 1.0, "stroke": true, "weight": 12}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+            var circle_marker_b8a4acc9baa0ccfe80364f400c4984b5 = L.circleMarker(
+                [38.62, 34.865],
+                {"bubblingMouseEvents": true, "color": "#27ae60", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#27ae60", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+        var popup_6f99b5e4cd48e2e4ecd6f8c3f1bab585 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7c2382530aad68dc6b7521077612e019 = $(`<div id="html_7c2382530aad68dc6b7521077612e019" style="width: 100.0%; height: 100.0%;"><b>Ortahisar — Cappadoce</b></div>`)[0];
+                popup_6f99b5e4cd48e2e4ecd6f8c3f1bab585.setContent(html_7c2382530aad68dc6b7521077612e019);
+            
+        
+
+        circle_marker_b8a4acc9baa0ccfe80364f400c4984b5.bindPopup(popup_6f99b5e4cd48e2e4ecd6f8c3f1bab585)
+        ;
+
+        
+    
+    
+            var marker_869e5a4359c5b6380f009e9e6060070e = L.marker(
+                [38.62, 34.865],
+                {
+}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+            var div_icon_67a5e066a9dbc9295bf0d9f393415266 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eOrtahisar \u2014 Cappadoce\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_869e5a4359c5b6380f009e9e6060070e.setIcon(div_icon_67a5e066a9dbc9295bf0d9f393415266);
+            
+    
+            var circle_marker_edec8bce34db6194bb365a806dd0d1af = L.circleMarker(
+                [38.6247, 34.7142],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+        var popup_6946e446467215ebaa7763fa1ecff10a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d7e9a3c94d7d935471f3fef6a6262461 = $(`<div id="html_d7e9a3c94d7d935471f3fef6a6262461" style="width: 100.0%; height: 100.0%;"><b>Nevşehir</b></div>`)[0];
+                popup_6946e446467215ebaa7763fa1ecff10a.setContent(html_d7e9a3c94d7d935471f3fef6a6262461);
+            
+        
+
+        circle_marker_edec8bce34db6194bb365a806dd0d1af.bindPopup(popup_6946e446467215ebaa7763fa1ecff10a)
+        ;
+
+        
+    
+    
+            var marker_fccbebecc03d9dc5023a2b3fb230469c = L.marker(
+                [38.6247, 34.7142],
+                {
+}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+            var div_icon_22e6bd9af13cdd441c949c66f291b442 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eNev\u015fehir\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_fccbebecc03d9dc5023a2b3fb230469c.setIcon(div_icon_22e6bd9af13cdd441c949c66f291b442);
+            
+    
+            var circle_marker_d5062fb2904406734f6df3ae65a8021e = L.circleMarker(
+                [38.3687, 33.9997],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+        var popup_3c1cd7ada003919d32fc5a139b9caa90 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_4fd3f7358cc265d91a4cfc1a291a7feb = $(`<div id="html_4fd3f7358cc265d91a4cfc1a291a7feb" style="width: 100.0%; height: 100.0%;"><b>Aksaray</b></div>`)[0];
+                popup_3c1cd7ada003919d32fc5a139b9caa90.setContent(html_4fd3f7358cc265d91a4cfc1a291a7feb);
+            
+        
+
+        circle_marker_d5062fb2904406734f6df3ae65a8021e.bindPopup(popup_3c1cd7ada003919d32fc5a139b9caa90)
+        ;
+
+        
+    
+    
+            var marker_dfaa0be279a900ae47e866c27bd3fc66 = L.marker(
+                [38.3687, 33.9997],
+                {
+}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+            var div_icon_01a88f17178f2ff237181137d89bfce5 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eAksaray\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_dfaa0be279a900ae47e866c27bd3fc66.setIcon(div_icon_01a88f17178f2ff237181137d89bfce5);
+            
+    
+            var circle_marker_bf4fafc9f5fc95f215722d3b23b7c7ba = L.circleMarker(
+                [38.25, 33.55],
+                {"bubblingMouseEvents": true, "color": "#333333", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#333333", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+        var popup_f9ec002e2a00962f67f07fa699a54da3 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8db6c96d2e502ae7789820d3e04117e7 = $(`<div id="html_8db6c96d2e502ae7789820d3e04117e7" style="width: 100.0%; height: 100.0%;"><b>Sultanhanı</b></div>`)[0];
+                popup_f9ec002e2a00962f67f07fa699a54da3.setContent(html_8db6c96d2e502ae7789820d3e04117e7);
+            
+        
+
+        circle_marker_bf4fafc9f5fc95f215722d3b23b7c7ba.bindPopup(popup_f9ec002e2a00962f67f07fa699a54da3)
+        ;
+
+        
+    
+    
+            var marker_8df2d99af386b0f3fec2dbf7ac180881 = L.marker(
+                [38.25, 33.55],
+                {
+}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+            var div_icon_622314fa612f741052e7a60c050b9530 = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eSultanhan\u0131\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_8df2d99af386b0f3fec2dbf7ac180881.setIcon(div_icon_622314fa612f741052e7a60c050b9530);
+            
+    
+            var circle_marker_3b9ae9d3e99c9f7eb1a3d5ffc4f7b01d = L.circleMarker(
+                [37.8667, 32.4925],
+                {"bubblingMouseEvents": true, "color": "#e74c3c", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#e74c3c", "fillOpacity": 1, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+        var popup_95a9ba774f062524f1c87bb3396a7228 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_751fc619dce518ed9e683d6de8ac8900 = $(`<div id="html_751fc619dce518ed9e683d6de8ac8900" style="width: 100.0%; height: 100.0%;"><b>Konya</b></div>`)[0];
+                popup_95a9ba774f062524f1c87bb3396a7228.setContent(html_751fc619dce518ed9e683d6de8ac8900);
+            
+        
+
+        circle_marker_3b9ae9d3e99c9f7eb1a3d5ffc4f7b01d.bindPopup(popup_95a9ba774f062524f1c87bb3396a7228)
+        ;
+
+        
+    
+    
+            var marker_2373265787dbcf3d4fbe8c2235f9c414 = L.marker(
+                [37.8667, 32.4925],
+                {
+}
+            ).addTo(map_34eab381111901e7e9d9fc614f440891);
+        
+    
+            var div_icon_7df6abe28b31c7d564a978f6627ae24a = L.divIcon({
+  "html": "\u003cdiv style=\"font-size:11px;font-weight:500;color:#333;margin-top:14px;text-align:center;white-space:nowrap;text-shadow:0 0 3px white,0 0 3px white;\"\u003eKonya\u003c/div\u003e",
+  "className": "empty",
+});
+        
+    
+                marker_2373265787dbcf3d4fbe8c2235f9c414.setIcon(div_icon_7df6abe28b31c7d564a978f6627ae24a);
+            
+</script>
+</html>
