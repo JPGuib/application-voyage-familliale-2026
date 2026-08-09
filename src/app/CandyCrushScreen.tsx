@@ -81,7 +81,14 @@ const SCOPED_CSS = `
 .cc-board { display: grid; width: 100%; height: 100%; gap: 3px; }
 .cc-cell { position: relative; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: var(--cc-surface-raised); cursor: pointer; transition: background 0.1s; }
 .cc-cell:active { background: var(--cc-border); }
-.cc-candy { width: 76%; height: 76%; border-radius: 50%; position: relative; transition: transform 0.18s ease, box-shadow 0.18s ease; will-change: transform; }
+.cc-candy { width: 76%; height: 76%; border-radius: 50%; position: relative; transition: transform 0.18s ease, box-shadow 0.18s ease; will-change: transform; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.3); }
+.cc-candy.cc-c0 { background: var(--cc-c0); }
+.cc-candy.cc-c1 { background: var(--cc-c1); }
+.cc-candy.cc-c2 { background: var(--cc-c2); }
+.cc-candy.cc-c3 { background: var(--cc-c3); }
+.cc-candy.cc-c4 { background: var(--cc-c4); }
+.cc-candy.cc-c5 { background: var(--cc-c5); }
+.cc-candy.cc-c6 { background: var(--cc-c6); }
 .cc-candy::after { content: ''; position: absolute; top: 14%; left: 22%; width: 32%; height: 18%; border-radius: 50%; background: rgba(255,255,255,0.3); transform: rotate(-20deg); }
 .cc-candy.cc-selected { box-shadow: 0 0 0 3px var(--cc-text-primary), 0 0 15px rgba(255,255,255,0.2); transform: scale(1.08); }
 .cc-candy.cc-pop { animation: ccPop 0.28s ease forwards; }
