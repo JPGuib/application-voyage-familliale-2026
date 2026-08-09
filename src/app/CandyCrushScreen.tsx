@@ -49,6 +49,7 @@ const SCOPED_CSS = `
 .cc-screen.cc-active { display: flex; }
 .cc-menu-logo { font-size: 32px; font-weight: 700; letter-spacing: 2px; margin-top: 40px; background: linear-gradient(135deg, var(--cc-c0), var(--cc-c1), var(--cc-c2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .cc-menu-sub { font-size: 14px; color: var(--cc-text-tertiary); margin-top: 8px; margin-bottom: 40px; }
+.cc-copyright { font-size: 11px; color: var(--cc-text-tertiary); margin-top: 24px; letter-spacing: 0.5px; }
 .cc-btn { width: 100%; max-width: 300px; padding: 16px 24px; border-radius: 14px; border: 1px solid var(--cc-border); background: var(--cc-surface-raised); color: var(--cc-text-primary); font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; text-align: center; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 .cc-btn:active { transform: scale(0.96); }
 .cc-btn.cc-primary { background: var(--cc-text-primary); color: var(--cc-bg); border-color: var(--cc-text-primary); }
@@ -58,6 +59,7 @@ const SCOPED_CSS = `
 .cc-settings-sub { font-size: 13px; color: var(--cc-text-tertiary); margin-bottom: 20px; }
 .cc-setting-row { width: 100%; max-width: 300px; display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--cc-border); }
 .cc-setting-row label { font-size: 15px; color: var(--cc-text-secondary); }
+.cc-setting-hint { font-size: 11px; color: var(--cc-text-tertiary); font-weight: 400; }
 .cc-setting-row input[type="number"] { width: 64px; padding: 8px; border-radius: 10px; border: 1px solid var(--cc-border); background: var(--cc-surface); color: var(--cc-text-primary); font-size: 15px; text-align: center; font-weight: 600; }
 .cc-level-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 300px; margin: 16px 0; }
 .cc-level-card { aspect-ratio: 1; border-radius: 16px; border: 1px solid var(--cc-border); background: var(--cc-surface-raised); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; position: relative; overflow: hidden; }
@@ -122,6 +124,7 @@ const MARKUP = `
     <div class="cc-menu-sub">Version mobile &amp; tactile</div>
     <button class="cc-btn cc-primary" data-action="go-settings">Jouer</button>
     <button class="cc-btn cc-secondary" data-action="go-howto">Comment jouer</button>
+    <div class="cc-copyright">(c)Julie@INSA</div>
   </div>
 
   <div class="cc-screen" id="cc-scrSettings">
@@ -129,7 +132,7 @@ const MARKUP = `
     <div class="cc-settings-sub">Personnalise ta partie</div>
     <div class="cc-setting-row"><label>Lignes</label><input type="number" id="cc-setRows" value="8" min="5" max="12"></div>
     <div class="cc-setting-row"><label>Colonnes</label><input type="number" id="cc-setCols" value="8" min="5" max="12"></div>
-    <div class="cc-setting-row"><label>Types de bonbons</label><input type="number" id="cc-setTypes" value="5" min="3" max="7"></div>
+    <div class="cc-setting-row"><label>Couleurs de bonbons<br><span class="cc-setting-hint">Moins = plus facile</span></label><input type="number" id="cc-setTypes" value="5" min="3" max="7"></div>
     <div class="cc-settings-sub" style="margin-top:8px;margin-bottom:4px;">Choisis ton niveau</div>
     <div class="cc-level-grid">
       <div class="cc-level-card cc-selected" data-lvl="1" data-action="select-level"><div class="cc-level-num">1</div><div class="cc-level-label">3 alignés</div></div>
@@ -157,6 +160,10 @@ const MARKUP = `
     <div class="cc-howto-box">
       <h3>Contrôles</h3>
       <p><strong>Tape</strong> un bonbon, puis <strong>tape</strong> un voisin pour échanger. Sur mobile, tu peux aussi <strong>glisser</strong> (swipe) dans la direction voulue.</p>
+    </div>
+    <div class="cc-howto-box">
+      <h3>Régler la difficulté</h3>
+      <p>Dans les paramètres, le nombre de <strong>couleurs de bonbons</strong> change la difficulté : avec 3 couleurs, les alignements sautent aux yeux (facile) ; avec 7 couleurs, la grille est plus dense et les combinaisons plus rares (difficile).</p>
     </div>
     <button class="cc-btn cc-secondary" data-action="go-menu">Retour</button>
   </div>
