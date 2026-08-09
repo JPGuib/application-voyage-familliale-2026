@@ -210,7 +210,7 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       busy = false;
 
     const colorClasses = ["cc-c0", "cc-c1", "cc-c2", "cc-c3", "cc-c4", "cc-c5", "cc-c6"];
-    const candyEmojis = ["🇹🇷", "🕌", "👳", "🍯", "🍬", "🏛️", "☕"];
+    const candyEmojis = ["🇹🇷", "🕌", "👳", "🏛️", "🍯", "🍬", "☕"];
     const candyColorVars = [
       "var(--cc-c0)",
       "var(--cc-c1)",
