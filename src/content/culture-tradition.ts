@@ -189,7 +189,7 @@ export const CULTURE_TRADITION_TOPICS = [
     photos: [
       "/images/Culture/vin turques.webp",
       "/images/Culture/vin turques 2.webp",
-      "/images/Culture/vin turques 3.webp",
+      "/images/Culture/Vin turques 3.webp",
       "/images/Culture/Efes_Pilsener.webp",
       "/images/Culture/Biere.webp",
       "/images/Culture/raki.webp"
