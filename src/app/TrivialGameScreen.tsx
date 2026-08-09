@@ -18,7 +18,7 @@ import { ChevronLeft } from "lucide-react";
  */
 const TRIVIAL_SERVER_URL: string =
   (import.meta as unknown as { env?: Record<string, string | undefined> }).env
-    ?.VITE_TRIVIAL_WS_URL || "wss://your-trivial-server.example.com";
+    ?.VITE_TRIVIAL_WS_URL || "wss://application-voyage-familliale-2026.onrender.com/ws";
 
 const CATEGORY_COLORS: Record<string, string> = {
   histoire: "#0F5257",
