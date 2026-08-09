@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Trivial Turquie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14252B;
+  --teal:#0F5257;
+  --turquoise:#2AA9A2;
+  --tile-red:#C1442D;
+  --gold:#D9A441;
+  --cream:#F3EAD6;
+  --paper:#FBF6EB;
+  --line: rgba(20,37,43,0.12);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:'Inter',sans-serif;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(42,169,162,0.10), transparent 45%),
+    radial-gradient(circle at 90% 85%, rgba(193,68,45,0.08), transparent 40%),
+    var(--paper);
+  color:var(--ink);
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+.screen{width:100%; max-width:520px; padding:20px 18px 40px; display:flex; flex-direction:column; gap:16px; flex:1;}
+.eyebrow{
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); font-weight:600;
+}
+.title{font-size:30px; font-weight:700; color:var(--ink); line-height:1.05;}
+.title em{font-style:normal; color:var(--tile-red);}
+.subtitle{color:#4b5d63; font-size:14.5px; line-height:1.5;}
+
+.card{
+  background:var(--cream);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:18px;
+  box-shadow: 0 1px 0 rgba(20,37,43,0.04);
+}
+
+input[type=text]{
+  width:100%; padding:13px 14px; border-radius:10px; border:1.5px solid var(--line);
+  background:var(--paper); font-size:16px; font-family:'Inter',sans-serif; color:var(--ink);
+}
+input[type=text]:focus{outline:2px solid var(--turquoise); border-color:var(--turquoise);}
+
+button{
+  font-family:'Inter',sans-serif; font-weight:600; font-size:15px; border:none; border-radius:10px;
+  padding:13px 16px; cursor:pointer; transition:transform .08s ease, filter .15s ease;
+}
+button:active{transform:scale(0.97);}
+.btn-primary{background:var(--tile-red); color:white;}
+.btn-primary:hover{filter:brightness(1.06);}
+.btn-secondary{background:transparent; color:var(--teal); border:1.5px solid var(--teal);}
+.btn-block{width:100%;}
+button:disabled{opacity:.45; cursor:not-allowed;}
+
+.row{display:flex; gap:10px;}
+.row > *{flex:1;}
+
+.tabbar{display:flex; gap:6px; background:var(--cream); border-radius:12px; padding:4px; border:1px solid var(--line);}
+.tab{flex:1; text-align:center; padding:9px; border-radius:9px; font-weight:600; font-size:13.5px; color:#5a6c72; cursor:pointer;}
+.tab.active{background:var(--teal); color:white;}
+
+.player-chip{display:flex; align-items:center; gap:10px; padding:9px 4px; border-bottom:1px solid var(--line);}
+.player-chip:last-child{border-bottom:none;}
+.dot{width:13px; height:13px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 2px rgba(255,255,255,0.5) inset;}
+.player-name{font-weight:600; font-size:14.5px;}
+.player-tag{font-size:11px; color:#7a8a8f; margin-left:auto;}
+.wedges{display:flex; gap:3px; margin-left:8px;}
+.wedge{width:9px; height:9px; border-radius:2px; background:var(--line);}
+.wedge.filled{background:var(--gold);}
+
+#error-banner{
+  background:#fdeceb; color:var(--tile-red); border:1px solid rgba(193,68,45,0.3);
+  border-radius:10px; padding:10px 12px; font-size:13.5px; display:none;
+}
+
+/* Board */
+.board-wrap{position:relative; width:100%; aspect-ratio:1/1; max-width:440px; margin:0 auto;}
+svg#board{width:100%; height:100%; overflow:visible;}
+.tile{stroke:var(--paper); stroke-width:2;}
+.tile-label{font-size:8px; font-family:'Inter',sans-serif; fill:rgba(20,37,43,0.55); text-anchor:middle;}
+.pawn{stroke:white; stroke-width:2;}
+.center-info{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  text-align:center; width:150px;
+}
+.center-turn-label{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#5a6c72; font-weight:600;}
+.center-turn-name{font-family:'Fraunces',serif; font-size:20px; font-weight:700; margin-top:2px;}
+
+.legend{display:flex; flex-wrap:wrap; gap:8px; justify-content:center;}
+.legend-item{display:flex; align-items:center; gap:5px; font-size:11.5px; color:#4b5d63;}
+.legend-dot{width:9px; height:9px; border-radius:2px;}
+
+.roll-area{display:flex; flex-direction:column; align-items:center; gap:10px;}
+.dice-result{font-family:'Fraunces',serif; font-size:15px; color:var(--teal); min-height:20px;}
+
+/* Question sheet */
+.sheet-overlay{
+  position:fixed; inset:0; background:rgba(20,37,43,0.45); display:none;
+  align-items:flex-end; justify-content:center; z-index:20;
+}
+.sheet-overlay.open{display:flex;}
+.sheet{
+  background:var(--paper); width:100%; max-width:520px; border-radius:20px 20px 0 0;
+  padding:22px 20px 28px; display:flex; flex-direction:column; gap:14px;
+  box-shadow: 0 -6px 24px rgba(20,37,43,0.18);
+  animation: slideup .25s ease;
+}
+@keyframes slideup{from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+.q-category{font-size:11px; letter-spacing:.12em; text-transform:uppercase; font-weight:700;}
+.q-text{font-family:'Fraunces',serif; font-size:19px; font-weight:600; line-height:1.3;}
+.choices{display:flex; flex-direction:column; gap:9px;}
+.choice-btn{
+  text-align:left; background:var(--cream); color:var(--ink); border:1.5px solid var(--line);
+  font-weight:500; font-size:14.5px; padding:12px 14px;
+}
+.choice-btn.correct{background:#e4f4ee; border-color:#2a9d6f; color:#1c6e4e;}
+.choice-btn.wrong{background:#fdeceb; border-color:var(--tile-red); color:var(--tile-red);}
+.q-feedback{font-weight:600; font-size:14px;}
+
+.winner-banner{
+  background:linear-gradient(135deg, var(--gold), var(--tile-red)); color:white;
+  border-radius:16px; padding:22px; text-align:center;
+}
+.winner-banner h2{font-size:24px;}
+
+.hint{font-size:12px; color:#8a989c; text-align:center;}
+</style>
+</head>
+<body>
+
+<div id="error-banner"></div>
+
+<!-- LOBBY -->
+<div class="screen" id="screen-lobby">
+  <div class="eyebrow">Chacun pour soi · 2 à 5 joueurs</div>
+  <div class="title">Trivial <em>Turquie</em></div>
+  <div class="subtitle">Un tour de plateau, six familles de questions sur la Turquie, et le premier à collectionner toutes les tuiles tente la question finale.</div>
+
+  <div class="card" style="display:flex; flex-direction:column; gap:12px;">
+    <input type="text" id="input-name" placeholder="Votre prénom" maxlength="16">
+
+    <div class="tabbar">
+      <div class="tab active" data-mode="create">Créer une partie</div>
+      <div class="tab" data-mode="join">Rejoindre</div>
+    </div>
+
+    <div id="join-code-row" style="display:none;">
+      <input type="text" id="input-code" placeholder="Code à 4 chiffres" maxlength="4" inputmode="numeric">
+    </div>
+
+    <button class="btn-primary btn-block" id="btn-connect">Créer la partie</button>
+  </div>
+  <div class="hint">Chaque joueur ouvre cette même page sur son téléphone, sur le même réseau, pour rejoindre.</div>
+</div>
+
+<!-- ROOM (lobby d'attente) -->
+<div class="screen" id="screen-room" style="display:none;">
+  <div class="eyebrow">Salon</div>
+  <div class="title" id="room-code-title">----</div>
+  <div class="subtitle">Partagez ce code aux autres joueurs pour qu'ils rejoignent.</div>
+
+  <div class="card">
+    <div id="room-players"></div>
+  </div>
+
+  <button class="btn-primary btn-block" id="btn-start" style="display:none;">Lancer la partie</button>
+  <div class="hint" id="room-wait-hint">En attente que l'hôte lance la partie…</div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="screen-game" style="display:none;">
+  <div class="eyebrow" id="game-code-label">Salon ----</div>
+
+  <div class="board-wrap">
+    <svg id="board" viewBox="0 0 400 400"></svg>
+    <div class="center-info">
+      <div class="center-turn-label">Au tour de</div>
+      <div class="center-turn-name" id="current-turn-name">—</div>
+    </div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="card roll-area">
+    <button class="btn-primary" id="btn-roll">Lancer le dé</button>
+    <div class="dice-result" id="dice-result"></div>
+  </div>
+
+  <div class="card">
+    <div id="game-players"></div>
+  </div>
+</div>
+
+<!-- WINNER -->
+<div class="screen" id="screen-winner" style="display:none;">
+  <div class="winner-banner">
+    <h2 id="winner-name">—</h2>
+    <div>a remporté le Trivial Turquie !</div>
+  </div>
+</div>
+
+<!-- QUESTION SHEET -->
+<div class="sheet-overlay" id="sheet-overlay">
+  <div class="sheet">
+    <div class="q-category" id="q-category"></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="choices" id="q-choices"></div>
+    <div class="q-feedback" id="q-feedback"></div>
+  </div>
+</div>
+
+<script>
+const CATEGORY_COLORS = {
+  histoire: "#0F5257",
+  gastronomie: "#C1442D",
+  langue: "#D9A441",
+  geographie: "#2AA9A2",
+  culture: "#8B5FA3",
+  souvenirs: "#3D5A73",
+};
+
+let ws = null;
+let myPlayerId = null;
+let myName = null;
+let roomState = null;
+let mode = "create";
+let currentQuestion = null;
+
+const el = (id) => document.getElementById(id);
+const showScreen = (id) => {
+  ["screen-lobby","screen-room","screen-game","screen-winner"].forEach(s => {
+    el(s).style.display = (s === id) ? "flex" : "none";
+  });
+};
+function showError(msg){
+  const b = el("error-banner");
+  b.textContent = msg; b.style.display = "block";
+  setTimeout(()=>{ b.style.display="none"; }, 4000);
+}
+
+// --- Lobby tabs ---
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    mode = tab.dataset.mode;
+    el("join-code-row").style.display = mode === "join" ? "block" : "none";
+    el("btn-connect").textContent = mode === "join" ? "Rejoindre la partie" : "Créer la partie";
+  });
+});
+
+el("btn-connect").addEventListener("click", () => {
+  const name = el("input-name").value.trim();
+  if (!name){ showError("Entrez votre prénom."); return; }
+  let code = "NEW";
+  if (mode === "join"){
+    code = el("input-code").value.trim();
+    if (code.length !== 4){ showError("Le code fait 4 chiffres."); return; }
+  }
+  connect(code, name);
+});
+
+function connect(code, name){
+  myName = name;
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  ws = new WebSocket(`${proto}//${location.host}/ws/${code}/${encodeURIComponent(name)}`);
+
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    handleMessage(data);
+  };
+  ws.onclose = () => { /* pourrait afficher une reconnexion ici */ };
+  ws.onerror = () => { showError("Connexion impossible."); };
+}
+
+function handleMessage(data){
+  switch(data.type){
+    case "joined":
+      myPlayerId = data.player_id;
+      break;
+    case "error":
+      showError(data.message);
+      break;
+    case "room_state":
+      roomState = data;
+      renderRoomState();
+      break;
+    case "moved":
+      el("dice-result").textContent = `🎲 ${roomState.players.find(p=>p.id===data.player_id)?.name} a fait ${data.roll}`;
+      break;
+    case "info":
+      el("dice-result").textContent = data.message;
+      break;
+    case "question":
+      openQuestion(data);
+      break;
+    case "answer_result":
+      showAnswerFeedback(data);
+      break;
+    case "answer_public":
+      // pas d'action visuelle obligatoire, room_state suit derriere
+      break;
+  }
+}
+
+function renderRoomState(){
+  if (roomState.state === "lobby"){
+    showScreen("screen-room");
+    el("room-code-title").textContent = roomState.code;
+    el("room-players").innerHTML = roomState.players.map(p => `
+      <div class="player-chip">
+        <div class="dot" style="background:${p.color}"></div>
+        <div class="player-name">${p.name}${p.id===myPlayerId ? " (vous)" : ""}</div>
+        <div class="player-tag">${p.host ? "Hôte" : ""}</div>
+      </div>
+    `).join("");
+    const me = roomState.players.find(p=>p.id===myPlayerId);
+    el("btn-start").style.display = (me && me.host) ? "block" : "none";
+    el("room-wait-hint").style.display = (me && me.host) ? "none" : "block";
+    return;
+  }
+
+  if (roomState.state === "playing"){
+    showScreen("screen-game");
+    el("game-code-label").textContent = "Salon " + roomState.code;
+    drawBoard();
+    drawLegend();
+    renderGamePlayers();
+    const cur = roomState.players.find(p=>p.id===roomState.current_player);
+    el("current-turn-name").textContent = cur ? cur.name : "—";
+    const isMyTurn = roomState.current_player === myPlayerId;
+    el("btn-roll").disabled = !isMyTurn;
+    el("btn-roll").textContent = isMyTurn ? "Lancer le dé" : "En attente…";
+    return;
+  }
+
+  if (roomState.state === "finished"){
+    showScreen("screen-winner");
+    const w = roomState.players.find(p=>p.id===roomState.winner);
+    el("winner-name").textContent = w ? w.name : "Un joueur";
+    return;
+  }
+}
+
+function renderGamePlayers(){
+  el("game-players").innerHTML = roomState.players.map(p => {
+    const wedgesHtml = ["histoire","gastronomie","langue","geographie","culture","souvenirs"].map(c => {
+      const filled = p.wedges.includes(c);
+      return `<div class="wedge${filled?" filled":""}" style="${filled?`background:${CATEGORY_COLORS[c]}`:""}"></div>`;
+    }).join("");
+    return `
+      <div class="player-chip">
+        <div class="dot" style="background:${p.color}${!p.connected?';opacity:.35':''}"></div>
+        <div class="player-name">${p.name}${p.id===myPlayerId?" (vous)":""}${roomState.current_player===p.id?" 👉":""}</div>
+        <div class="wedges">${wedgesHtml}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function drawLegend(){
+  el("legend").innerHTML = Object.entries(roomState.category_labels).map(([key,label]) => `
+    <div class="legend-item"><div class="legend-dot" style="background:${CATEGORY_COLORS[key]}"></div>${label}</div>
+  `).join("");
+}
+
+function drawBoard(){
+  const svg = el("board");
+  const size = 400, cx = 200, cy = 200, ringR = 165, tileR = 15;
+  const n = roomState.board.length;
+  let html = "";
+
+  for (let i=0; i<n; i++){
+    const angle = (i / n) * Math.PI * 2 - Math.PI/2;
+    const x = cx + ringR * Math.cos(angle);
+    const y = cy + ringR * Math.sin(angle);
+    const cat = roomState.board[i];
+    html += `<rect class="tile" x="${x-tileR}" y="${y-tileR}" width="${tileR*2}" height="${tileR*2}" rx="5" fill="${CATEGORY_COLORS[cat]}" transform="rotate(45 ${x} ${y})"></rect>`;
+  }
+
+  // pawns, offset slightly if several players share a cell
+  const byCell = {};
+  roomState.players.forEach(p => {
+    byCell[p.pos] = byCell[p.pos] || [];
+    byCell[p.pos].push(p);
+  });
+  Object.entries(byCell).forEach(([pos, players]) => {
+    const i = parseInt(pos);
+    const angle = (i / n) * Math.PI * 2 - Math.PI/2;
+    const bx = cx + ringR * Math.cos(angle);
+    const by = cy + ringR * Math.sin(angle);
+    players.forEach((p, idx) => {
+      const off = (idx - (players.length-1)/2) * 9;
+      const px = bx + off;
+      const py = by - 24;
+      html += `<circle class="pawn" cx="${px}" cy="${py}" r="7" fill="${p.color}"></circle>`;
+    });
+  });
+
+  svg.innerHTML = html;
+}
+
+el("btn-start").addEventListener("click", () => {
+  ws.send(JSON.stringify({type:"start"}));
+});
+
+el("btn-roll").addEventListener("click", () => {
+  el("dice-result").textContent = "";
+  ws.send(JSON.stringify({type:"roll"}));
+});
+
+function openQuestion(data){
+  currentQuestion = data;
+  el("q-category").textContent = data.label + (data.final ? " · QUESTION FINALE" : "");
+  el("q-category").style.color = CATEGORY_COLORS[data.category] || "var(--teal)";
+  el("q-text").textContent = data.question;
+  el("q-feedback").textContent = "";
+  el("q-choices").innerHTML = data.choices.map((c, idx) => `
+    <button class="choice-btn" data-idx="${idx}">${c}</button>
+  `).join("");
+  document.querySelectorAll(".choice-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".choice-btn").forEach(b=>b.disabled=true);
+      ws.send(JSON.stringify({type:"answer", choice: parseInt(btn.dataset.idx)}));
+      btn.dataset.selected = "1";
+    });
+  });
+  el("sheet-overlay").classList.add("open");
+}
+
+function showAnswerFeedback(data){
+  document.querySelectorAll(".choice-btn").forEach(btn => {
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === data.answer) btn.classList.add("correct");
+    else if (btn.dataset.selected === "1") btn.classList.add("wrong");
+  });
+  el("q-feedback").textContent = data.correct ? "Bonne réponse !" : "Raté cette fois-ci.";
+  el("q-feedback").style.color = data.correct ? "#1c6e4e" : "var(--tile-red)";
+  setTimeout(() => {
+    el("sheet-overlay").classList.remove("open");
+  }, 1600);
+}
+</script>
+</body>
+</html>

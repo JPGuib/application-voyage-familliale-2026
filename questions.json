@@ -1,0 +1,71 @@
+{
+  "histoire": [
+    {"q": "Quelle ville s'appelait Constantinople avant de devenir Istanbul ?", "choices": ["Istanbul elle-même", "Ankara", "Izmir", "Bursa"], "answer": 0},
+    {"q": "Quel empire a régné sur la Turquie pendant environ 600 ans jusqu'en 1922 ?", "choices": ["Empire byzantin", "Empire ottoman", "Empire perse", "Empire romain"], "answer": 1},
+    {"q": "Qui est le fondateur de la République turque moderne en 1923 ?", "choices": ["Recep Erdogan", "Mehmet II", "Mustafa Kemal Atatürk", "Soliman le Magnifique"], "answer": 2},
+    {"q": "En quelle année Constantinople est-elle prise par les Ottomans ?", "choices": ["1453", "1204", "1071", "1600"], "answer": 0},
+    {"q": "Quel détroit sépare l'Europe et l'Asie à Istanbul ?", "choices": ["Bosphore", "Détroit de Gibraltar", "Dardanelles", "Détroit d'Ormuz"], "answer": 0},
+    {"q": "Quel sultan ottoman est surnommé 'le Magnifique' ?", "choices": ["Mehmet II", "Soliman Ier", "Selim Ier", "Osman Ier"], "answer": 1},
+    {"q": "Quelle bataille de 1071 ouvre l'Anatolie aux Turcs seldjoukides ?", "choices": ["Manzikert", "Ankara", "Gallipoli", "Konya"], "answer": 0},
+    {"q": "Quelle ville antique gréco-romaine se trouve près d'Izmir et fut l'une des plus grandes cités du monde antique ?", "choices": ["Éphèse", "Troie", "Pergame", "Milet"], "answer": 0},
+    {"q": "Quelle bataille de la Première Guerre mondiale s'est déroulée sur la péninsule de Gallipoli ?", "choices": ["Bataille des Dardanelles", "Bataille de la Somme", "Bataille de Verdun", "Bataille d'Ypres"], "answer": 0},
+    {"q": "Quelle cité antique aurait inspiré le mythe du cheval de bois ?", "choices": ["Troie", "Éphèse", "Pergame", "Antalya"], "answer": 0},
+    {"q": "Quel est le nom turc de la mosquée Sainte-Sophie ?", "choices": ["Ayasofya", "Sultanahmet Camii", "Süleymaniye", "Rüstem Pasha"], "answer": 0},
+    {"q": "Quelle civilisation a construit les cités souterraines de Cappadoce ?", "choices": ["Hittites et premiers chrétiens", "Ottomans", "Romains uniquement", "Perses"], "answer": 0}
+  ],
+  "gastronomie": [
+    {"q": "Comment s'appelle la brochette de viande grillée typique turque ?", "choices": ["Şiş kebap", "Baklava", "Meze", "Lahmacun"], "answer": 0},
+    {"q": "Qu'est-ce que le 'baklava' ?", "choices": ["Une pâtisserie au miel et aux noix", "Une soupe froide", "Un fromage", "Un plat de riz"], "answer": 0},
+    {"q": "Quelle boisson anisée est souvent appelée 'lait de lion' en Turquie ?", "choices": ["Raki", "Ayran", "Şalgam", "Çay"], "answer": 0},
+    {"q": "Qu'est-ce que l' 'ayran' ?", "choices": ["Une boisson au yaourt salée", "Un dessert au chocolat", "Un pain plat", "Un thé sucré"], "answer": 0},
+    {"q": "Comment s'appelle la 'pizza turque' fine et croustillante à la viande hachée ?", "choices": ["Lahmacun", "Pide", "Simit", "Manti"], "answer": 0},
+    {"q": "Qu'est-ce que le 'simit' vendu dans la rue ?", "choices": ["Un pain rond recouvert de graines de sésame", "Un fromage fumé", "Une soupe de lentilles", "Un dessert glacé"], "answer": 0},
+    {"q": "Qu'est-ce que le 'manti' ?", "choices": ["De petits raviolis servis avec du yaourt", "Un ragoût d'agneau", "Une salade fraîche", "Un poisson grillé"], "answer": 0},
+    {"q": "Quelle boisson chaude, servie dans un petit verre tulipe, est omniprésente en Turquie ?", "choices": ["Le thé (çay)", "Le café filtre", "Le chocolat chaud", "Le vin chaud"], "answer": 0},
+    {"q": "Qu'est-ce que le café turc a de particulier ?", "choices": ["Il est non filtré, avec le marc au fond", "Il est servi glacé", "Il est mélangé au lait", "Il est décaféiné"], "answer": 0},
+    {"q": "Comment s'appelle la soupe de lentilles rouges très populaire en Turquie ?", "choices": ["Mercimek çorbası", "Ezogelin", "Yayla çorbası", "Işkembe"], "answer": 0},
+    {"q": "Qu'est-ce qu'un 'meze' ?", "choices": ["Un assortiment de petites entrées à partager", "Un dessert au miel", "Un plat unique de viande", "Une boisson fermentée"], "answer": 0},
+    {"q": "Quel fruit sec est très utilisé dans la cuisine turque, notamment en dessert ?", "choices": ["L'abricot sec", "La banane séchée", "L'ananas séché", "La pomme séchée"], "answer": 0}
+  ],
+  "langue": [
+    {"q": "Comment dit-on 'merci' en turc ?", "choices": ["Teşekkür ederim", "Lütfen", "Günaydın", "Afiyet olsun"], "answer": 0},
+    {"q": "Comment dit-on 'bonjour' (littéralement 'bon matin') en turc ?", "choices": ["Günaydın", "İyi akşamlar", "Merhaba", "Hoşça kal"], "answer": 0},
+    {"q": "Que signifie 'lütfen' ?", "choices": ["S'il vous plaît", "Merci", "Au revoir", "Pardon"], "answer": 0},
+    {"q": "Que dit-on avant de commencer un repas, équivalent de 'bon appétit' ?", "choices": ["Afiyet olsun", "Şerefe", "Merhaba", "Güle güle"], "answer": 0},
+    {"q": "Comment dit-on 'combien ça coûte ?' en turc ?", "choices": ["Ne kadar?", "Nasılsın?", "Nerede?", "Kaç yaşındasın?"], "answer": 0},
+    {"q": "Que signifie 'evet' ?", "choices": ["Oui", "Non", "Peut-être", "Jamais"], "answer": 0},
+    {"q": "Que signifie 'hayır' ?", "choices": ["Non", "Oui", "Bonjour", "Merci"], "answer": 0},
+    {"q": "Quel alphabet est utilisé pour écrire le turc moderne ?", "choices": ["L'alphabet latin", "L'alphabet arabe", "L'alphabet cyrillique", "Les idéogrammes"], "answer": 0},
+    {"q": "Que signifie 'güle güle', dit à une personne qui part ?", "choices": ["Au revoir", "Bienvenue", "Félicitations", "Bon courage"], "answer": 0},
+    {"q": "Comment dit-on 'je ne comprends pas' en turc ?", "choices": ["Anlamıyorum", "Biliyorum", "Seviyorum", "Görüşürüz"], "answer": 0}
+  ],
+  "geographie": [
+    {"q": "Quelle est la capitale de la Turquie ?", "choices": ["Ankara", "Istanbul", "Izmir", "Antalya"], "answer": 0},
+    {"q": "Quelle région est célèbre pour ses vols en montgolfière au-dessus de cheminées de fées ?", "choices": ["Cappadoce", "Pamukkale", "Antalya", "Trabzon"], "answer": 0},
+    {"q": "Quel site est célèbre pour ses bassins de travertin blancs en terrasses ?", "choices": ["Pamukkale", "Cappadoce", "Ephèse", "Bodrum"], "answer": 0},
+    {"q": "Quelle mer borde la Turquie au nord ?", "choices": ["La mer Noire", "La mer Rouge", "La mer Baltique", "La mer d'Aral"], "answer": 0},
+    {"q": "Quelle chaîne de montagnes traverse une grande partie de la Turquie ?", "choices": ["Les monts Taurus", "Les Alpes", "Les Carpates", "L'Oural"], "answer": 0},
+    {"q": "Quelle ville turque est en partie en Europe et en partie en Asie ?", "choices": ["Istanbul", "Ankara", "Izmir", "Konya"], "answer": 0},
+    {"q": "Sur quel plateau se trouve la majeure partie de l'Anatolie centrale ?", "choices": ["Le plateau anatolien", "Le plateau tibétain", "Le plateau iranien", "Le plateau arménien"], "answer": 0},
+    {"q": "Quelle station balnéaire du sud-ouest est réputée pour ses criques et sa 'côte turquoise' ?", "choices": ["Fethiye/Ölüdeniz", "Trabzon", "Samsun", "Van"], "answer": 0},
+    {"q": "Quel grand lac se trouve à l'est de la Turquie ?", "choices": ["Le lac Van", "Le lac Léman", "Le lac Titicaca", "Le lac Baïkal"], "answer": 0},
+    {"q": "Quel pays ne partage PAS de frontière avec la Turquie ?", "choices": ["Egypte", "Grèce", "Iran", "Syrie"], "answer": 0}
+  ],
+  "culture": [
+    {"q": "Comment s'appelle la danse tournoyante des derviches soufis ?", "choices": ["Sema", "Zeybek", "Halay", "Horon"], "answer": 0},
+    {"q": "Qu'est-ce qu'un 'hamam' ?", "choices": ["Un bain public traditionnel", "Un marché couvert", "Une mosquée", "Un caravansérail"], "answer": 0},
+    {"q": "Qu'est-ce que le 'Grand Bazar' à Istanbul ?", "choices": ["Un des plus grands marchés couverts du monde", "Un palais royal", "Un musée d'art moderne", "Un stade"], "answer": 0},
+    {"q": "Quel objet bleu en forme d'œil est censé porter chance et éloigner le mauvais œil ?", "choices": ["Le nazar boncuğu", "Le tespih", "Le fes", "Le tulipe d'Iznik"], "answer": 0},
+    {"q": "Quel tapis est une spécialité artisanale traditionnelle turque très réputée ?", "choices": ["Le tapis noué à la main", "Le tapis persan uniquement", "La tapisserie française", "Le kilim indien"], "answer": 0},
+    {"q": "Quel sport traditionnel turc oppose des lutteurs enduits d'huile d'olive ?", "choices": ["Yağlı güreş (lutte à l'huile)", "Le judo", "La lutte gréco-romaine olympique", "Le sumo"], "answer": 0},
+    {"q": "Quelle fête religieuse marque la fin du Ramadan en Turquie ?", "choices": ["Şeker Bayramı (fête du sucre)", "Kurban Bayramı uniquement", "Nevruz", "Cumhuriyet Bayramı"], "answer": 0},
+    {"q": "Quel motif décoratif en céramique est typique de la ville d'Iznik ?", "choices": ["Motifs floraux bleus et blancs/rouges", "Motifs géométriques noirs et blancs uniquement", "Portraits", "Paysages marins"], "answer": 0},
+    {"q": "Comment s'appelle le narguilé traditionnel turc ?", "choices": ["Nargile", "Chicha égyptienne", "Hookah indien", "Kalyan persan"], "answer": 0},
+    {"q": "Quel instrument à cordes est emblématique de la musique turque traditionnelle ?", "choices": ["Le saz", "Le sitar", "L'oud égyptien", "Le violon seul"], "answer": 0}
+  ],
+  "souvenirs": [
+    {"q": "Quel a été notre premier repas ensemble en Turquie ?", "choices": ["À compléter avant le départ", "-", "-", "-"], "answer": 0},
+    {"q": "Dans quelle ville avons-nous fait le vol en montgolfière ?", "choices": ["À compléter pendant le voyage", "-", "-", "-"], "answer": 0},
+    {"q": "Qui s'est perdu en premier dans le Grand Bazar ?", "choices": ["À compléter pendant le voyage", "-", "-", "-"], "answer": 0}
+  ]
+}
