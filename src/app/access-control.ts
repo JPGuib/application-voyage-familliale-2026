@@ -34,6 +34,11 @@ export type AppScreen =
   | "culture-topic"
   | "visite-guidee"
   | "game"
+  | "trivial"
+  | "jeux"
+  | "candy-crush"
+  | "ordalie"
+  | "imposteur"
   | "results"
   | "tips"
   | "settings";
@@ -106,6 +111,20 @@ function screenToSection(screen: AppScreen): AccessSection {
 
   if (screen === "culture-topic") {
     return "culture";
+  }
+
+  // Le Trivial Turquie, Candy Crush, l'Ordalie des 5 Sens et l'Imposteur
+  // Turque suivent exactement les mêmes règles d'accès que le jeu du jour :
+  // propriétaire toujours, voyageur (rôle "utilisateur") une fois le séjour
+  // commencé, visiteur jamais. "jeux" est le hub de lancement commun aux 4.
+  if (
+    screen === "trivial" ||
+    screen === "jeux" ||
+    screen === "candy-crush" ||
+    screen === "ordalie" ||
+    screen === "imposteur"
+  ) {
+    return "game";
   }
 
   return screen;

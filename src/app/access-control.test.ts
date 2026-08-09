@@ -116,4 +116,36 @@ describe("access-control policy", () => {
   it("grants visitor access to their own settings screen", () => {
     expect(canAccessSection("visiteur", "during", "settings")).toBe(true);
   });
+
+  // Le Trivial Turquie (screen "trivial"), Candy Crush ("candy-crush") et le
+  // hub "jeux" suivent exactement les mêmes règles que le jeu du jour
+  // ("game"), via leur mapping dans screenToSection.
+  describe.each([
+    ["trivial", "Trivial Turquie"],
+    ["candy-crush", "Candy Crush"],
+    ["jeux", "hub Jeux"],
+    ["ordalie", "Ordalie des 5 Sens"],
+    ["imposteur", "Imposteur Turque"],
+  ] as const)("%s screen (%s)", (screen) => {
+    it("is always accessible to the owner, before and during", () => {
+      expect(canAccessScreen("proprietaire", "before", screen)).toBe(true);
+      expect(canAccessScreen("proprietaire", "during", screen)).toBe(true);
+    });
+
+    it("is accessible to utilisateur only once the trip has started", () => {
+      expect(canAccessScreen("utilisateur", "before", screen)).toBe(false);
+      expect(canAccessScreen("utilisateur", "during", screen)).toBe(true);
+    });
+
+    it("is never accessible to a visiteur, regardless of phase", () => {
+      expect(canAccessScreen("visiteur", "before", screen)).toBe(false);
+      expect(canAccessScreen("visiteur", "during", screen)).toBe(false);
+    });
+
+    it("reuses the same denial message as the daily game for a visiteur", () => {
+      expect(getAccessDeniedMessage("visiteur", "during", screen)).toBe(
+        "Cette rubrique est reservee aux voyageurs."
+      );
+    });
+  });
 });

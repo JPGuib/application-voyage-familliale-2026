@@ -35,6 +35,11 @@ import {
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
 import { OfflineMediaScreen } from "./OfflineMediaScreen";
+import { TrivialGameScreen } from "./TrivialGameScreen";
+import { ArcadeHubScreen } from "./ArcadeHubScreen";
+import { CandyCrushScreen } from "./CandyCrushScreen";
+import { OrdalieScreen } from "./OrdalieScreen";
+import { ImposteurScreen } from "./ImposteurScreen";
 import { TRIP } from "../content/trip";
 import { PLACES } from "../content/places";
 import {
@@ -373,7 +378,7 @@ const MAX_PLACE_COMMENT_LENGTH = 500;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "results" | "tips" | "settings";
+type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "trivial" | "jeux" | "candy-crush" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
 const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
 type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
@@ -4808,6 +4813,8 @@ function GameScreen({
   questions,
   riddle,
   challenge,
+  canPlayArcade,
+  onOpenArcade,
 }: {
   gameState: GameState;
   currentQ: number;
@@ -4834,6 +4841,8 @@ function GameScreen({
   questions: QuizQuestion[];
   riddle: DailyRiddle;
   challenge: DailyChallenge;
+  canPlayArcade?: boolean;
+  onOpenArcade?: () => void;
 }) {
   // Garde-fou défensif : currentQ ne doit jamais dépasser la dernière
   // question (sinon questions[currentQ] est undefined et fait planter tout
@@ -4863,6 +4872,23 @@ function GameScreen({
             Quiz Turquie — Jour {currentDay}
           </p>
         </div>
+        {canPlayArcade && onOpenArcade && (
+          <div className="px-6 pt-5 flex-shrink-0">
+            <button
+              onClick={onOpenArcade}
+              className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left active:scale-[0.98] transition-transform shadow-sm"
+            >
+              <div className="text-3xl">🕹️</div>
+              <div className="flex-1">
+                <div className="font-black text-foreground text-sm">Jeux</div>
+                <div className="text-xs text-muted-foreground">
+                  Trivial Turquie entre voyageurs, ou Candy Crush en solo
+                </div>
+              </div>
+              <ChevronRight size={18} className="text-muted-foreground" />
+            </button>
+          </div>
+        )}
         {isClosedByOwner ? (
           <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
             <div className="text-8xl mb-6">🔒</div>
@@ -9597,6 +9623,12 @@ export default function App() {
       return;
     }
 
+    if (s === "trivial" && !isOnline) {
+      setAccessDeniedMessage("Trivial Turquie indisponible hors ligne. Reconnectez-vous pour rejoindre une partie.");
+      setScreen(getSafeScreen(profile.role, phase));
+      return;
+    }
+
     if (!canAccessScreen(profile.role, phase, s)) {
       setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, s));
       setScreen(getSafeScreen(profile.role, phase));
@@ -12243,8 +12275,33 @@ const resetForProfileSwitch = () => {
             onValidateRiddle={validateRiddle}
             onContinueToChallenge={() => setGameState("challenge")}
             onCompleteChallenge={completeChallengeAndFinishSession}
+            canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
+            onOpenArcade={() => goToScreen("jeux")}
           />
         );
+      case "jeux":
+        return (
+          <ArcadeHubScreen
+            onBack={() => goToScreen("game")}
+            onPlayTrivial={() => goToScreen("trivial")}
+            onPlayCandyCrush={() => goToScreen("candy-crush")}
+            onPlayOrdalie={() => goToScreen("ordalie")}
+            onPlayImposteur={() => goToScreen("imposteur")}
+          />
+        );
+      case "trivial":
+        return (
+          <TrivialGameScreen
+            defaultPlayerName={profile.surname}
+            onBack={() => goToScreen("jeux")}
+          />
+        );
+      case "candy-crush":
+        return <CandyCrushScreen onBack={() => goToScreen("jeux")} />;
+      case "ordalie":
+        return <OrdalieScreen onBack={() => goToScreen("jeux")} />;
+      case "imposteur":
+        return <ImposteurScreen onBack={() => goToScreen("jeux")} />;
       case "results":
         return (
           <ResultsScreen
