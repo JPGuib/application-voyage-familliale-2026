@@ -45,9 +45,9 @@ export function ArcadeHubScreen({
           onClick={onPlayCandyCrush}
           className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left active:scale-[0.98] transition-transform shadow-sm"
         >
-          <div className="text-3xl">🍬</div>
+          <div className="text-3xl">🕌</div>
           <div className="flex-1">
-            <div className="font-black text-foreground text-sm">Bazar Crush</div>
+            <div className="font-black text-foreground text-sm">Bazar Crush - (c)Julie@INSA </div>
             <div className="text-xs text-muted-foreground">
               Solo, 3 niveaux de difficulté, pour passer le temps pendant les trajets
             </div>
