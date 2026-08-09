@@ -27,13 +27,13 @@ const SCOPED_CSS = `
   --cc-danger: #ef4444;
   --cc-positive: #22c55e;
   --cc-warning: #f59e0b;
-  --cc-c0: #3b82f6;
-  --cc-c1: #ef4444;
-  --cc-c2: #22c55e;
-  --cc-c3: #a855f7;
-  --cc-c4: #6b7280;
-  --cc-c5: #06b6d4;
-  --cc-c6: #f97316;
+  --cc-c0: #0F5257;
+  --cc-c1: #C1442D;
+  --cc-c2: #D9A441;
+  --cc-c3: #2AA9A2;
+  --cc-c4: #8B5FA3;
+  --cc-c5: #3D5A73;
+  --cc-c6: #E8875A;
   width: 100%;
   height: 100%;
   background: var(--cc-bg);
@@ -83,7 +83,7 @@ const SCOPED_CSS = `
 .cc-board { display: grid; width: 100%; height: 100%; gap: 3px; }
 .cc-cell { position: relative; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: var(--cc-surface-raised); cursor: pointer; transition: background 0.1s; }
 .cc-cell:active { background: var(--cc-border); }
-.cc-candy { width: 76%; height: 76%; border-radius: 50%; position: relative; transition: transform 0.18s ease, box-shadow 0.18s ease; will-change: transform; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.3); }
+.cc-candy { width: 76%; height: 76%; border-radius: 50%; position: relative; transition: transform 0.18s ease, box-shadow 0.18s ease; will-change: transform; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 60%; line-height: 1; }
 .cc-candy.cc-c0 { background: var(--cc-c0); }
 .cc-candy.cc-c1 { background: var(--cc-c1); }
 .cc-candy.cc-c2 { background: var(--cc-c2); }
@@ -91,7 +91,7 @@ const SCOPED_CSS = `
 .cc-candy.cc-c4 { background: var(--cc-c4); }
 .cc-candy.cc-c5 { background: var(--cc-c5); }
 .cc-candy.cc-c6 { background: var(--cc-c6); }
-.cc-candy::after { content: ''; position: absolute; top: 14%; left: 22%; width: 32%; height: 18%; border-radius: 50%; background: rgba(255,255,255,0.3); transform: rotate(-20deg); }
+.cc-candy::after { content: ''; position: absolute; top: 14%; left: 22%; width: 32%; height: 18%; border-radius: 50%; background: rgba(255,255,255,0.25); transform: rotate(-20deg); z-index: -1; pointer-events: none; }
 .cc-candy.cc-selected { box-shadow: 0 0 0 3px var(--cc-text-primary), 0 0 15px rgba(255,255,255,0.2); transform: scale(1.08); }
 .cc-candy.cc-pop { animation: ccPop 0.28s ease forwards; }
 @keyframes ccPop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(0); opacity: 0; } }
@@ -120,8 +120,8 @@ const MARKUP = `
     <div class="cc-quit-row">
       <button class="cc-hud-back" data-action="quit">&#x2190;</button>
     </div>
-    <div class="cc-menu-logo">CANDY CRUSH</div>
-    <div class="cc-menu-sub">Version mobile &amp; tactile</div>
+    <div class="cc-menu-logo">BAZAR CRUSH</div>
+    <div class="cc-menu-sub">🧿 Édition spéciale Turquie</div>
     <button class="cc-btn cc-primary" data-action="go-settings">Jouer</button>
     <button class="cc-btn cc-secondary" data-action="go-howto">Comment jouer</button>
     <div class="cc-copyright">(c)Julie@INSA</div>
@@ -215,6 +215,7 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       busy = false;
 
     const colorClasses = ["cc-c0", "cc-c1", "cc-c2", "cc-c3", "cc-c4", "cc-c5", "cc-c6"];
+    const candyEmojis = ["🧿", "🍬", "🍯", "🍵", "🌷", "🫒", "☕"];
     const candyColorVars = [
       "var(--cc-c0)",
       "var(--cc-c1)",
@@ -501,6 +502,7 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
           cell.id = "cc-c-" + i + "-" + j;
           const candy = document.createElement("div");
           candy.className = "cc-candy " + colorClasses[grid[i][j] % colorClasses.length];
+          candy.textContent = candyEmojis[grid[i][j] % candyEmojis.length];
           if (animateFall) candy.classList.add("cc-fall");
           candy.dataset.i = String(i);
           candy.dataset.j = String(j);
