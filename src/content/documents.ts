@@ -133,14 +133,19 @@ export const DOCUMENTS: TravelDocument[] = [
     content:
       "Parking aéroport de Nantes Atlantique réservés :",
     details: [
-      "Réservation : numéro de réservation",
-      "Parking : numéro de parking",
+      "Réservation : FLE1300704",
+      "Parking : P7 Eco",
       ],
     links: [
       {
         label: "Accès à la réservation",
-        url: "https://www.nantes.aeroport.fr/parking",
+        url: "https://reservationparking.nantes.aeroport.fr/mon-compte/identification",
       },
+    ],
+    scans: [
+      "/images/Vol/Parking QRCode.webp",
+      "/images/Vol/Parking 1.webp",
+      "/images/Vol/Parking 2.webp",
     ],
   },
   {
