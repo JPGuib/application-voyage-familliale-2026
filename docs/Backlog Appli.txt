@@ -16,6 +16,11 @@ A FAIRE
     - pouvoir saisr quelque lettre et ne pas tout afficher la liste
     - il n'y a plus la possibilité de retrouver mot de passe via la question
 
+JEU 
+* Trivial : possibilité de regénérer des questions ? 
+* Trivial : avoir la Turquie mais pas que avec bcp de questions
+
+
 COntenu : 
 * Revoir tous les quizz ! avec les quides et faire un gros challenge en fin de séjour ?
 * revoir les coordonnées GPS

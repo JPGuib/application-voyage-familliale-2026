@@ -18,7 +18,7 @@ import { ChevronLeft } from "lucide-react";
  */
 const TRIVIAL_SERVER_URL: string =
   (import.meta as unknown as { env?: Record<string, string | undefined> }).env
-    ?.VITE_TRIVIAL_WS_URL || "wss://application-voyage-familliale-2026.onrender.com";
+    ?.VITE_TRIVIAL_WS_URL || "wss://your-trivial-server.example.com";
 
 const CATEGORY_COLORS: Record<string, string> = {
   histoire: "#0F5257",
@@ -43,7 +43,7 @@ type TPlayer = {
 type TRoomState = {
   type: "room_state";
   code: string;
-  state: "lobby" | "playing" | "finished";
+  state: "lobby" | "playing" | "finished" | "cancelled";
   board: string[];
   category_labels: Record<string, string>;
   players: TPlayer[];
@@ -66,6 +66,50 @@ type TAnswerResult = {
   answer: number;
 };
 
+type HostedRoomEntry = {
+  code: string;
+  playerName: string;
+  createdAt: number;
+};
+
+// Garde une trace locale des salons créés depuis cet appareil, pour pouvoir
+// les retrouver après avoir quitté l'écran — le serveur ne connaît que les
+// salons actifs, cette liste vit uniquement dans le navigateur.
+const HOSTED_ROOMS_KEY = "trivial_turquie_hosted_rooms";
+const MAX_HOSTED_ROOMS = 5;
+
+function loadHostedRooms(): HostedRoomEntry[] {
+  try {
+    const raw = localStorage.getItem(HOSTED_ROOMS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHostedRoom(entry: HostedRoomEntry) {
+  try {
+    const current = loadHostedRooms().filter((r) => r.code !== entry.code);
+    const next = [entry, ...current].slice(0, MAX_HOSTED_ROOMS);
+    localStorage.setItem(HOSTED_ROOMS_KEY, JSON.stringify(next));
+    return next;
+  } catch {
+    return loadHostedRooms();
+  }
+}
+
+function removeHostedRoom(code: string) {
+  try {
+    const next = loadHostedRooms().filter((r) => r.code !== code);
+    localStorage.setItem(HOSTED_ROOMS_KEY, JSON.stringify(next));
+    return next;
+  } catch {
+    return loadHostedRooms();
+  }
+}
+
 export function TrivialGameScreen({
   defaultPlayerName,
   onBack,
@@ -73,7 +117,7 @@ export function TrivialGameScreen({
   defaultPlayerName: string;
   onBack: () => void;
 }) {
-  const [step, setStep] = useState<"setup" | "lobby" | "playing" | "finished">("setup");
+  const [step, setStep] = useState<"setup" | "lobby" | "playing" | "finished" | "cancelled">("setup");
   const [mode, setMode] = useState<"create" | "join">("create");
   const [name, setName] = useState(defaultPlayerName || "");
   const [codeInput, setCodeInput] = useState("");
@@ -86,7 +130,12 @@ export function TrivialGameScreen({
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [answerResult, setAnswerResult] = useState<TAnswerResult | null>(null);
   const [diceMessage, setDiceMessage] = useState<string>("");
+  const [hostedRooms, setHostedRooms] = useState<HostedRoomEntry[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    setHostedRooms(loadHostedRooms());
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -167,6 +216,7 @@ export function TrivialGameScreen({
           if (state.state === "lobby") setStep("lobby");
           else if (state.state === "playing") setStep("playing");
           else if (state.state === "finished") setStep("finished");
+          else if (state.state === "cancelled") setStep("cancelled");
           break;
         }
         case "moved":
@@ -197,9 +247,25 @@ export function TrivialGameScreen({
     wsRef.current?.send(JSON.stringify(payload));
   };
 
+  const endGame = () => {
+    if (window.confirm("Terminer la partie pour tout le monde ? Cette action est irréversible.")) {
+      send({ type: "end_game" });
+    }
+  };
+
   const me = room?.players.find((p) => p.id === myPlayerId) || null;
   const isMyTurn = room?.current_player === myPlayerId;
   const currentPlayer = room?.players.find((p) => p.id === room?.current_player) || null;
+
+  useEffect(() => {
+    if (!room || !me?.host) return;
+    if (room.state === "cancelled" || room.state === "finished") {
+      setHostedRooms(removeHostedRoom(room.code));
+      return;
+    }
+    setHostedRooms(saveHostedRoom({ code: room.code, playerName: me.name, createdAt: Date.now() }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room?.code, room?.state, me?.host]);
 
   return (
     <div className="flex flex-col h-full overflow-y-auto bg-background">
@@ -280,6 +346,44 @@ export function TrivialGameScreen({
           <p className="text-xs text-muted-foreground text-center">
             Chaque joueur ouvre cet écran depuis son propre téléphone pour rejoindre le même salon.
           </p>
+
+          {hostedRooms.length > 0 && (
+            <div className="mt-2">
+              <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
+                Vos parties récentes
+              </div>
+              <div className="flex flex-col gap-2">
+                {hostedRooms.map((r) => (
+                  <div
+                    key={r.code}
+                    className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3"
+                  >
+                    <div className="flex-1">
+                      <div className="font-black text-sm">{r.code}</div>
+                      <div className="text-xs text-muted-foreground">Créée par {r.playerName}</div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setMode("join");
+                        setCodeInput(r.code);
+                        connect(r.code);
+                      }}
+                      className="text-xs font-bold text-primary px-3 py-2 rounded-lg border border-primary"
+                    >
+                      Rejoindre
+                    </button>
+                    <button
+                      onClick={() => setHostedRooms(removeHostedRoom(r.code))}
+                      className="text-xs text-muted-foreground px-2"
+                      aria-label="Oublier cette partie"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -319,6 +423,14 @@ export function TrivialGameScreen({
             <p className="text-sm text-muted-foreground text-center">
               En attente que l&apos;hôte lance la partie…
             </p>
+          )}
+          {me?.host && (
+            <button
+              onClick={endGame}
+              className="w-full bg-transparent border border-destructive text-destructive rounded-2xl py-3 font-bold active:scale-95 transition-transform"
+            >
+              Terminer la partie
+            </button>
           )}
         </div>
       )}
@@ -378,6 +490,14 @@ export function TrivialGameScreen({
           {diceMessage && (
             <p className="text-center text-sm font-bold text-muted-foreground">{diceMessage}</p>
           )}
+          {me?.host && (
+            <button
+              onClick={endGame}
+              className="w-full bg-transparent border border-destructive text-destructive rounded-2xl py-3 font-bold active:scale-95 transition-transform mt-2"
+            >
+              Terminer la partie
+            </button>
+          )}
         </div>
       )}
 
@@ -388,6 +508,22 @@ export function TrivialGameScreen({
             {room.players.find((p) => p.id === room.winner)?.name || "Un joueur"}
           </h2>
           <p className="text-muted-foreground">a remporté le Trivial Turquie !</p>
+          <button
+            onClick={onBack}
+            className="mt-4 bg-primary text-primary-foreground rounded-2xl py-3 px-8 font-black active:scale-95 transition-transform"
+          >
+            Retour au jeu
+          </button>
+        </div>
+      )}
+
+      {step === "cancelled" && (
+        <div className="flex-1 px-6 py-10 flex flex-col items-center justify-center text-center gap-3">
+          <div className="text-6xl">🚪</div>
+          <h2 className="text-xl font-black">Partie terminée</h2>
+          <p className="text-muted-foreground">
+            L&apos;hôte a mis fin à la partie, ou elle a été fermée après une longue inactivité.
+          </p>
           <button
             onClick={onBack}
             className="mt-4 bg-primary text-primary-foreground rounded-2xl py-3 px-8 font-black active:scale-95 transition-transform"

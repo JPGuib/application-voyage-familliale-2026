@@ -6,6 +6,7 @@ import json
 import random
 import string
 import asyncio
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -30,6 +31,42 @@ with open(BASE_DIR / "questions.json", encoding="utf-8") as f:
     QUESTIONS = json.load(f)
 
 app = FastAPI()
+
+# Une partie oubliee (personne ne joue plus, onglet ferme sans "Terminer")
+# est fermee automatiquement au bout d'un moment pour ne pas laisser tourner
+# des salons morts indefiniment en memoire.
+ROOM_LOBBY_TIMEOUT_SECONDS = 30 * 60       # 30 min sans demarrer la partie
+ROOM_INACTIVITY_TIMEOUT_SECONDS = 3 * 60 * 60  # 3h sans aucune action
+
+
+@app.on_event("startup")
+async def start_cleanup_task():
+    asyncio.create_task(cleanup_stale_rooms_loop())
+
+
+async def cleanup_stale_rooms_loop():
+    while True:
+        await asyncio.sleep(5 * 60)
+        now = time.monotonic()
+        stale_codes = []
+        for code, room in rooms.items():
+            elapsed = now - room.last_activity
+            timeout = (
+                ROOM_LOBBY_TIMEOUT_SECONDS
+                if room.state == "lobby"
+                else ROOM_INACTIVITY_TIMEOUT_SECONDS
+            )
+            if elapsed > timeout:
+                stale_codes.append(code)
+        for code in stale_codes:
+            room = rooms.pop(code, None)
+            if room is None:
+                continue
+            room.state = "cancelled"
+            try:
+                await broadcast(room, room.public_state())
+            except Exception:
+                pass
 
 
 @app.get("/health")
@@ -80,12 +117,13 @@ class Room:
         self.players: dict[str, Player] = {}
         self.order: list[str] = []
         self.turn_index = 0
-        self.state = "lobby"  # lobby | playing | finished
+        self.state = "lobby"  # lobby | playing | finished | cancelled
         self.board = build_board()
         self.used_questions: dict[str, set[int]] = {c: set() for c in CATEGORIES}
         self.pending_question: Optional[dict] = None  # question en attente de reponse
         self.winner: Optional[str] = None
         self.lock = asyncio.Lock()
+        self.last_activity = time.monotonic()
 
     def add_player(self, name: str) -> Player:
         pid = f"p{len(self.players) + 1}_{random.randint(1000,9999)}"
@@ -122,6 +160,7 @@ class Room:
             "players": [self.players[pid].public() for pid in self.order],
             "current_player": self.order[self.turn_index] if self.order else None,
             "winner": self.winner,
+            "ended_by_host": self.state == "cancelled",
         }
 
     def pick_question(self, category: str):
@@ -230,8 +269,17 @@ async def ws_endpoint(websocket: WebSocket, code: str, player_name: str):
 
 async def handle_message(room: Room, player: Player, data: dict):
     msg_type = data.get("type")
+    room.last_activity = time.monotonic()
 
     async with room.lock:
+        if msg_type == "end_game":
+            if not player.host:
+                await send_to(player, {"type": "error", "message": "Seul l'hote peut terminer la partie."})
+                return
+            room.state = "cancelled"
+            await broadcast(room, room.public_state())
+            return
+
         if msg_type == "start":
             if not player.host:
                 await send_to(player, {"type": "error", "message": "Seul l'hote peut lancer la partie."})
