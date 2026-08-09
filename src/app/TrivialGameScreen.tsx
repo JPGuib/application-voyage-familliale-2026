@@ -18,7 +18,7 @@ import { ChevronLeft } from "lucide-react";
  */
 const TRIVIAL_SERVER_URL: string =
   (import.meta as unknown as { env?: Record<string, string | undefined> }).env
-    ?.VITE_TRIVIAL_WS_URL || "wss://application-voyage-familliale-2026.onrender.com/ws";
+    ?.VITE_TRIVIAL_WS_URL || "wss://your-trivial-server.example.com";
 
 const CATEGORY_COLORS: Record<string, string> = {
   histoire: "#0F5257",
@@ -78,6 +78,8 @@ export function TrivialGameScreen({
   const [name, setName] = useState(defaultPlayerName || "");
   const [codeInput, setCodeInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectingHint, setConnectingHint] = useState<string | null>(null);
   const [room, setRoom] = useState<TRoomState | null>(null);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [question, setQuestion] = useState<TQuestion | null>(null);
@@ -103,22 +105,60 @@ export function TrivialGameScreen({
       setError("Le code fait 4 chiffres.");
       return;
     }
+    if (TRIVIAL_SERVER_URL.includes("your-trivial-server.example.com")) {
+      setError(
+        "Le serveur de jeu n'est pas encore configuré : renseignez TRIVIAL_SERVER_URL dans TrivialGameScreen.tsx (ou VITE_TRIVIAL_WS_URL) avec l'URL de votre déploiement Render."
+      );
+      return;
+    }
 
+    setIsConnecting(true);
+    setDiceMessage("");
     const ws = new WebSocket(`${TRIVIAL_SERVER_URL}/ws/${code}/${encodeURIComponent(trimmedName)}`);
     wsRef.current = ws;
 
+    // Le plan gratuit Render peut mettre jusqu'à ~50s à "réveiller" le
+    // service après une période d'inactivité : on affiche un message
+    // rassurant avant d'abandonner, plutôt qu'une erreur prématurée.
+    const slowNotice = setTimeout(() => {
+      if (wsRef.current === ws && myPlayerId === null) {
+        setConnectingHint("Réveil du serveur, ça peut prendre jusqu'à 50 secondes...");
+      }
+    }, 6000);
+
+    const connectTimeout = setTimeout(() => {
+      if (wsRef.current === ws && myPlayerId === null) {
+        setError("Le serveur ne répond toujours pas après 60 secondes. Vérifiez l'URL configurée, ou réessayez.");
+        setIsConnecting(false);
+        setConnectingHint(null);
+        ws.close();
+      }
+    }, 60000);
+
     ws.onerror = () => {
-      setError("Connexion au serveur de jeu impossible. Réessayez dans un instant.");
+      setError("Connexion au serveur de jeu impossible. Vérifiez l'URL configurée et votre connexion Internet.");
+      setIsConnecting(false);
+      setConnectingHint(null);
+    };
+
+    ws.onclose = () => {
+      setIsConnecting(false);
+      setConnectingHint(null);
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       switch (data.type) {
         case "joined":
+          clearTimeout(connectTimeout);
+          clearTimeout(slowNotice);
+          setIsConnecting(false);
+          setConnectingHint(null);
           setMyPlayerId(data.player_id);
           setStep("lobby");
           break;
         case "error":
+          setIsConnecting(false);
           setError(data.message);
           break;
         case "room_state": {
@@ -226,10 +266,16 @@ export function TrivialGameScreen({
 
           <button
             onClick={() => connect(mode === "create" ? "NEW" : codeInput)}
-            className="w-full bg-primary text-primary-foreground rounded-2xl py-4 font-black active:scale-95 transition-transform"
+            disabled={isConnecting}
+            className="w-full bg-primary text-primary-foreground rounded-2xl py-4 font-black active:scale-95 transition-transform disabled:opacity-60"
           >
-            {mode === "create" ? "Créer la partie" : "Rejoindre la partie"}
+            {isConnecting ? "Connexion..." : mode === "create" ? "Créer la partie" : "Rejoindre la partie"}
           </button>
+          {connectingHint && (
+            <p className="text-xs text-center font-bold" style={{ color: "#0F5257" }}>
+              {connectingHint}
+            </p>
+          )}
 
           <p className="text-xs text-muted-foreground text-center">
             Chaque joueur ouvre cet écran depuis son propre téléphone pour rejoindre le même salon.
