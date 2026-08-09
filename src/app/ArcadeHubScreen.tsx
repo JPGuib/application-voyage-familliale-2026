@@ -47,7 +47,7 @@ export function ArcadeHubScreen({
         >
           <div className="text-3xl">🍬</div>
           <div className="flex-1">
-            <div className="font-black text-foreground text-sm">Candy Crush</div>
+            <div className="font-black text-foreground text-sm">Bazar Crush</div>
             <div className="text-xs text-muted-foreground">
               Solo, 3 niveaux de difficulté, pour passer le temps pendant les trajets
             </div>

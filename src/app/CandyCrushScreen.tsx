@@ -15,18 +15,18 @@ import { useEffect, useRef } from "react";
 
 const SCOPED_CSS = `
 .cc-root {
-  --cc-bg: #0a0a0a;
-  --cc-surface: #141414;
-  --cc-surface-raised: #1c1c1c;
-  --cc-surface-muted: #0e0e0e;
-  --cc-border: #2a2a2a;
-  --cc-text-primary: #f5f5f5;
-  --cc-text-secondary: #a0a0a0;
-  --cc-text-tertiary: #666666;
-  --cc-accent: #3b82f6;
-  --cc-danger: #ef4444;
-  --cc-positive: #22c55e;
-  --cc-warning: #f59e0b;
+  --cc-bg: #FBF6EB;
+  --cc-surface: #F3EAD6;
+  --cc-surface-raised: #FFFFFF;
+  --cc-surface-muted: #F3EAD6;
+  --cc-border: #E2D3AC;
+  --cc-text-primary: #14252B;
+  --cc-text-secondary: #4b5d63;
+  --cc-text-tertiary: #8a989c;
+  --cc-accent: #0F5257;
+  --cc-danger: #C1442D;
+  --cc-positive: #1c8f5f;
+  --cc-warning: #D9A441;
   --cc-c0: #0F5257;
   --cc-c1: #C1442D;
   --cc-c2: #D9A441;
@@ -83,15 +83,10 @@ const SCOPED_CSS = `
 .cc-board { display: grid; width: 100%; height: 100%; gap: 3px; }
 .cc-cell { position: relative; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: var(--cc-surface-raised); cursor: pointer; transition: background 0.1s; }
 .cc-cell:active { background: var(--cc-border); }
-.cc-candy { width: 76%; height: 76%; border-radius: 50%; position: relative; transition: transform 0.18s ease, box-shadow 0.18s ease; will-change: transform; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 60%; line-height: 1; }
-.cc-candy.cc-c0 { background: var(--cc-c0); }
-.cc-candy.cc-c1 { background: var(--cc-c1); }
-.cc-candy.cc-c2 { background: var(--cc-c2); }
-.cc-candy.cc-c3 { background: var(--cc-c3); }
-.cc-candy.cc-c4 { background: var(--cc-c4); }
-.cc-candy.cc-c5 { background: var(--cc-c5); }
-.cc-candy.cc-c6 { background: var(--cc-c6); }
-.cc-candy::after { content: ''; position: absolute; top: 14%; left: 22%; width: 32%; height: 18%; border-radius: 50%; background: rgba(255,255,255,0.25); transform: rotate(-20deg); z-index: -1; pointer-events: none; }
+.cc-candy { width: 80%; height: 80%; border-radius: 50%; position: relative; transition: transform 0.18s ease, box-shadow 0.18s ease; will-change: transform; background: var(--cc-surface-raised); border: 1px solid var(--cc-border); box-shadow: 0 2px 5px rgba(20,37,43,0.12); display: flex; align-items: center; justify-content: center; font-size: var(--cc-emoji-size, 22px); line-height: 1; }
+/* Les pions ne sont plus colorés par type — seul le symbole (emoji) les
+   distingue désormais. --cc-c0..c6 restent définies pour les particules de
+   la routine spawnParticles() lors des combinaisons. */
 .cc-candy.cc-selected { box-shadow: 0 0 0 3px var(--cc-text-primary), 0 0 15px rgba(255,255,255,0.2); transform: scale(1.08); }
 .cc-candy.cc-pop { animation: ccPop 0.28s ease forwards; }
 @keyframes ccPop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(0); opacity: 0; } }
@@ -102,7 +97,7 @@ const SCOPED_CSS = `
 .cc-game-msg { min-height: 20px; font-size: 14px; text-align: center; font-weight: 600; margin: 4px 0; }
 .cc-game-msg.cc-error { color: var(--cc-danger); }
 .cc-game-msg.cc-success { color: var(--cc-positive); }
-.cc-overlay { position: absolute; inset: 0; background: rgba(10,10,10,0.92); backdrop-filter: blur(8px); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 20; border-radius: 18px; }
+.cc-overlay { position: absolute; inset: 0; background: rgba(251,246,235,0.94); backdrop-filter: blur(8px); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 20; border-radius: 18px; }
 .cc-overlay.cc-show { display: flex; }
 .cc-overlay h2 { font-size: 24px; font-weight: 700; color: var(--cc-text-primary); margin: 0; }
 .cc-overlay .cc-final-score { font-size: 44px; font-weight: 700; color: var(--cc-accent); line-height: 1; }
@@ -132,7 +127,7 @@ const MARKUP = `
     <div class="cc-settings-sub">Personnalise ta partie</div>
     <div class="cc-setting-row"><label>Lignes</label><input type="number" id="cc-setRows" value="8" min="5" max="12"></div>
     <div class="cc-setting-row"><label>Colonnes</label><input type="number" id="cc-setCols" value="8" min="5" max="12"></div>
-    <div class="cc-setting-row"><label>Couleurs de bonbons<br><span class="cc-setting-hint">Moins = plus facile</span></label><input type="number" id="cc-setTypes" value="5" min="3" max="7"></div>
+    <div class="cc-setting-row"><label>Types de pions turcs<br><span class="cc-setting-hint">Moins = plus facile</span></label><input type="number" id="cc-setTypes" value="5" min="3" max="7"></div>
     <div class="cc-settings-sub" style="margin-top:8px;margin-bottom:4px;">Choisis ton niveau</div>
     <div class="cc-level-grid">
       <div class="cc-level-card cc-selected" data-lvl="1" data-action="select-level"><div class="cc-level-num">1</div><div class="cc-level-label">3 alignés</div></div>
@@ -147,23 +142,23 @@ const MARKUP = `
     <div class="cc-settings-title">Comment jouer</div>
     <div class="cc-howto-box">
       <h3>But du jeu</h3>
-      <p>Échange deux bonbons adjacents pour créer des alignements de même couleur. Les bonbons alignés disparaissent et de nouveaux tombent du haut.</p>
+      <p>Échange deux pions turcs adjacents pour créer des alignements de même symbole. Les pions alignés disparaissent et de nouveaux tombent du haut.</p>
     </div>
     <div class="cc-howto-box">
       <h3>Les 3 niveaux</h3>
       <ul>
-        <li><strong>Niveau 1</strong> : alignements de 3 bonbons exactement</li>
-        <li><strong>Niveau 2</strong> : alignements de 3+ bonbons</li>
-        <li><strong>Niveau 3</strong> : blocs de bonbons connectés (3+ en ligne)</li>
+        <li><strong>Niveau 1</strong> : alignements de 3 pions exactement</li>
+        <li><strong>Niveau 2</strong> : alignements de 3+ pions</li>
+        <li><strong>Niveau 3</strong> : blocs de pions connectés (3+ en ligne)</li>
       </ul>
     </div>
     <div class="cc-howto-box">
       <h3>Contrôles</h3>
-      <p><strong>Tape</strong> un bonbon, puis <strong>tape</strong> un voisin pour échanger. Sur mobile, tu peux aussi <strong>glisser</strong> (swipe) dans la direction voulue.</p>
+      <p><strong>Tape</strong> un pion, puis <strong>tape</strong> un voisin pour échanger. Sur mobile, tu peux aussi <strong>glisser</strong> (swipe) dans la direction voulue.</p>
     </div>
     <div class="cc-howto-box">
       <h3>Régler la difficulté</h3>
-      <p>Dans les paramètres, le nombre de <strong>couleurs de bonbons</strong> change la difficulté : avec 3 couleurs, les alignements sautent aux yeux (facile) ; avec 7 couleurs, la grille est plus dense et les combinaisons plus rares (difficile).</p>
+      <p>Dans les paramètres, le nombre de <strong>types de pions turcs</strong> change la difficulté : avec 3 symboles, les alignements sautent aux yeux (facile) ; avec 7 symboles, la grille est plus dense et les combinaisons plus rares (difficile).</p>
     </div>
     <button class="cc-btn cc-secondary" data-action="go-menu">Retour</button>
   </div>
@@ -191,7 +186,7 @@ const MARKUP = `
         <button class="cc-btn cc-secondary" data-action="go-menu">Menu</button>
       </div>
     </div>
-    <div class="cc-settings-sub" style="margin-top:8px;font-size:12px;">Tape un bonbon puis un voisin pour échanger</div>
+    <div class="cc-settings-sub" style="margin-top:8px;font-size:12px;">Tape un pion puis un voisin pour échanger</div>
   </div>
 </div>
 `;
@@ -508,6 +503,16 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
           candy.dataset.j = String(j);
           cell.appendChild(candy);
           b.appendChild(cell);
+        }
+      }
+      // Bug corrigé : la taille des emojis était calculée en % de la taille
+      // de police héritée (quelques px, donc quasi invisible) au lieu de la
+      // taille réelle des cases. On la mesure ici et on la fixe en px.
+      const firstCell = b.firstElementChild as HTMLElement | null;
+      if (firstCell) {
+        const cellSize = firstCell.getBoundingClientRect().width;
+        if (cellSize > 0) {
+          b.style.setProperty("--cc-emoji-size", Math.round(cellSize * 0.52) + "px");
         }
       }
       attachCandyEvents();
