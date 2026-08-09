@@ -116,10 +116,10 @@ const MARKUP = `
       <button class="cc-hud-back" data-action="quit">&#x2190;</button>
     </div>
     <div class="cc-menu-logo">BAZAR CRUSH</div>
-    <div class="cc-menu-sub">🧿 Édition spéciale Turquie</div>
+    <div class="cc-menu-sub">🇹🇷 Édition spéciale Turquie</div>
     <button class="cc-btn cc-primary" data-action="go-settings">Jouer</button>
     <button class="cc-btn cc-secondary" data-action="go-howto">Comment jouer</button>
-    <div class="cc-copyright">(c)Julie@INSA</div>
+    <div class="cc-copyright">©Julie@INSA</div>
   </div>
 
   <div class="cc-screen" id="cc-scrSettings">
@@ -186,7 +186,7 @@ const MARKUP = `
         <button class="cc-btn cc-secondary" data-action="go-menu">Menu</button>
       </div>
     </div>
-    <div class="cc-settings-sub" style="margin-top:8px;font-size:12px;">Tape un pion puis un voisin pour échanger</div>
+    <div class="cc-settings-sub" style="margin-top:8px;font-size:12px;">Tape (ou déplace) un pion puis (avec) un voisin pour échanger</div>
   </div>
 </div>
 `;
