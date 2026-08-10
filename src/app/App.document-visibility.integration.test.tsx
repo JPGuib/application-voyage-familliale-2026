@@ -111,7 +111,7 @@ describe("App document visibility integration (story 26.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Documents" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Documents importants/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Documents et informations importants/i })).toBeInTheDocument();
     });
 
     expect(screen.queryByText(/Nantes → Paris/i)).not.toBeInTheDocument();
@@ -141,7 +141,7 @@ describe("App document visibility integration (story 26.3)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Documents" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Documents importants/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Documents et informations importants/i })).toBeInTheDocument();
     });
 
     expect(screen.getByText(/Nantes → Paris/i)).toBeInTheDocument();

@@ -119,7 +119,7 @@ export function loadGlobalTutorialSteps(
       screen: "dashboard",
       element: '[data-tutorial-id="dashboard-quick-documents"]',
       popover: {
-        title: "Ouvrir Documents importants",
+        title: "Ouvrir Documents et informations importants",
         description: "Cliquez ici pour accéder aux documents classés par catégories.",
       },
       interactive: true,
@@ -130,7 +130,7 @@ export function loadGlobalTutorialSteps(
       screen: "documents",
       element: '[data-tutorial-id="documents-title"]',
       popover: {
-        title: "Écran Documents importants",
+        title: "Écran Documents et informations importants",
         description: canOpenScans
           ? "Cet écran regroupe vos vols, hébergements, transports, identité, restaurants et activités."
           : "Cet écran regroupe vos vols, hébergements, transports, identité, restaurants et activités. En profil visiteur, les scans restent non accessibles.",

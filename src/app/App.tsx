@@ -453,7 +453,7 @@ const QUICK_ACTIONS: QuickAction[] = [
   {
     id: "documents",
     emoji: "📄",
-    title: "Documents importants",
+    title: "Documents et informations importants",
     subtitle: "Vols, papiers et réservations",
     colorBg: "bg-[#E8F0FE]",
     colorText: "text-[#1A73E8]",
@@ -3903,7 +3903,7 @@ function DocumentsScreen({
         >
           <ChevronLeft size={18} /> Accueil
         </button>
-        <h1 data-tutorial-id="documents-title" className="relative z-10 text-2xl font-black">Documents importants 📄</h1>
+        <h1 data-tutorial-id="documents-title" className="relative z-10 text-2xl font-black">Documents et informations importants 📄</h1>
         <p className="relative z-10 text-sm opacity-90 mt-1">
           Classez et éditez vos informations de voyage par catégorie
         </p>
