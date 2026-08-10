@@ -71,7 +71,7 @@ const baseSnapshot = {
 };
 
 function fillMandatoryProfileCreationFields() {
-  fireEvent.click(screen.getByRole("button", { name: "🧳 Je voyage avec vous" }));
+  fireEvent.click(screen.getByRole("button", { name: /voyage avec vous/i }));
   fireEvent.change(screen.getByPlaceholderText("Code transmis par le propriétaire"), {
     target: { value: TEST_TRAVELER_CODE },
   });
@@ -94,6 +94,10 @@ function loginWithProfileLabel(profileLabelPattern: RegExp) {
   const matchingProfileButton = screen.getByText(profileLabelPattern);
   fireEvent.click(matchingProfileButton);
   fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
+}
+
+function openCreateProfileDialog() {
+  fireEvent.click(screen.getByRole("button", { name: "Nouveau ici" }));
 }
 
 describe("App cloud login flow", () => {
@@ -120,7 +124,8 @@ describe("App cloud login flow", () => {
   it("prevents duplicate profile creation and suggests existing selection", async () => {
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "maman" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -284,7 +289,8 @@ describe("App cloud login flow", () => {
   it("creates a new profile then completes setup and persists active profile id", async () => {
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Emma" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -310,7 +316,8 @@ describe("App cloud login flow", () => {
   it("blocks profile creation when the mandatory password and recovery fields are missing (story 18.9)", async () => {
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Emma" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -318,7 +325,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "👀 Je veux juste suivre le voyage" }));
+    fireEvent.click(screen.getByRole("button", { name: /suivre le voyage/i }));
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
     await waitFor(() => {
@@ -335,7 +342,8 @@ describe("App cloud login flow", () => {
   it("blocks profile creation with a too-short password", async () => {
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Emma" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -343,7 +351,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "👀 Je veux juste suivre le voyage" }));
+    fireEvent.click(screen.getByRole("button", { name: /suivre le voyage/i }));
     fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
       target: { value: "abc" },
     });
@@ -366,7 +374,8 @@ describe("App cloud login flow", () => {
   it("blocks profile creation with a too-short recovery answer", async () => {
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Emma" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -374,7 +383,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "👀 Je veux juste suivre le voyage" }));
+    fireEvent.click(screen.getByRole("button", { name: /suivre le voyage/i }));
     fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
       target: { value: "new-profile-pw" },
     });
@@ -424,7 +433,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Emma" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -461,7 +471,8 @@ describe("App cloud login flow", () => {
   it("blocks profile creation when neither Voyageur nor Visiteur is chosen (story 24.1)", async () => {
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Emma" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -524,7 +535,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Tonton" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -532,7 +544,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "👀 Je veux juste suivre le voyage" }));
+    fireEvent.click(screen.getByRole("button", { name: /suivre le voyage/i }));
     fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
       target: { value: "new-profile-pw" },
     });
@@ -577,7 +589,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Tonton" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -585,7 +598,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "🧳 Je voyage avec vous" }));
+    fireEvent.click(screen.getByRole("button", { name: /voyage avec vous/i }));
 
     expect(
       screen.getByText("Le propriétaire doit d'abord configurer un code voyageur dans ses paramètres.")
@@ -629,7 +642,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Oncle" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -637,7 +651,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "🧳 Je voyage avec vous" }));
+    fireEvent.click(screen.getByRole("button", { name: /voyage avec vous/i }));
     fireEvent.change(screen.getByPlaceholderText("Code transmis par le propriétaire"), {
       target: { value: "famille2026" },
     });
@@ -684,7 +698,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Oncle" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -692,7 +707,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "🧳 Je voyage avec vous" }));
+    fireEvent.click(screen.getByRole("button", { name: /voyage avec vous/i }));
     fireEvent.change(screen.getByPlaceholderText("Code transmis par le propriétaire"), {
       target: { value: "mauvais-code" },
     });
@@ -814,7 +829,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Emma" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -938,7 +954,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Tonton" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -946,7 +963,7 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "👀 Je veux juste suivre le voyage" }));
+    fireEvent.click(screen.getByRole("button", { name: /suivre le voyage/i }));
     fireEvent.change(screen.getByPlaceholderText("Minimum 4 caractères"), {
       target: { value: "new-profile-pw" },
     });
@@ -1012,7 +1029,8 @@ describe("App cloud login flow", () => {
 
     render(<App />);
 
-    const input = screen.getByPlaceholderText("Ex: Maman, Papa, Léo");
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
     fireEvent.change(input, { target: { value: "Emma" } });
     fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
 
@@ -1793,7 +1811,7 @@ describe("App cloud login flow", () => {
     });
   });
 
-  // ─── Story 10.9: show/hide visibility toggles ────────────────────────────
+  // --- Story 10.9: show/hide visibility toggles ----------------------------
 
   it("defaults password prompt input to masked mode and toggles visibility", async () => {
     const protectedHash = await hashProfilePassword("secret-1234");
@@ -2355,7 +2373,7 @@ describe("App profile deletion (story 18.3)", () => {
   });
 });
 
-// ─── Metadata hydration (story 10.4) ─────────────────────────────────────────
+// --- Metadata hydration (story 10.4) -----------------------------------------
 
 describe("App profile metadata hydration (story 10.4)", () => {
   beforeEach(() => {
@@ -2571,5 +2589,7 @@ describe("App profile recovery question settings (story 10.6)", () => {
     });
   });
 });
+
+
 
 

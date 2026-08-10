@@ -1604,6 +1604,7 @@ function CloudLoginScreen({
   const [localError, setLocalError] = useState<string | null>(null);
   const [profileSearch, setProfileSearch] = useState("");
   const [isProfileListOpen, setIsProfileListOpen] = useState(false);
+  const [isCreateProfileDialogOpen, setIsCreateProfileDialogOpen] = useState(false);
   const [showRecoveryAnswer, setShowRecoveryAnswer] = useState(false);
   const [showRecoveryNewPassword, setShowRecoveryNewPassword] = useState(false);
   const [showRecoveryConfirm, setShowRecoveryConfirm] = useState(false);
@@ -1937,29 +1938,61 @@ function CloudLoginScreen({
               )}
             </div>
 
-            <div className="flex items-center gap-3 my-2">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs font-bold text-gray-400 uppercase">ou</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
-              <p className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
-                Nouveau profil
-              </p>
-              <input
-                value={createSurname}
-                onChange={(e) => onCreateSurnameChange(e.target.value)}
-                placeholder="Ex: Maman, Papa, Léo"
-                className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
-              />
+            <div className="py-3 text-center">
               <button
-                onClick={onCreateAndContinue}
-                className="w-full rounded-xl py-3 text-sm font-black border-2 border-[#FF6B3D] text-[#FF6B3D] hover:bg-[#FFF0EB] active:scale-95 transition-transform"
+                type="button"
+                onClick={() => setIsCreateProfileDialogOpen(true)}
+                className="text-xs font-bold text-gray-500 hover:text-[#FF6B3D] hover:underline underline-offset-2"
               >
-                Créer un nouveau profil
+                Nouveau ici
               </button>
             </div>
+
+            {isCreateProfileDialogOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+                <button
+                  type="button"
+                  aria-label="Fermer la création de profil"
+                  onClick={() => setIsCreateProfileDialogOpen(false)}
+                  className="absolute inset-0 bg-black/35"
+                />
+                <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white border border-gray-100 shadow-xl p-5 space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-extrabold text-gray-700 uppercase tracking-widest">Nouveau profil</p>
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateProfileDialogOpen(false)}
+                      className="text-xs font-bold text-gray-400 hover:text-gray-600"
+                    >
+                      Fermer
+                    </button>
+                  </div>
+                  <input
+                    autoFocus
+                    value={createSurname}
+                    onChange={(e) => onCreateSurnameChange(e.target.value)}
+                    placeholder="Ex: Maman, Papa, Léo"
+                    className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateProfileDialogOpen(false)}
+                      className="rounded-xl py-3 text-sm font-black border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 transition-transform"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onCreateAndContinue}
+                      className="rounded-xl py-3 text-sm font-black border-2 border-[#FF6B3D] text-[#FF6B3D] hover:bg-[#FFF0EB] active:scale-95 transition-transform"
+                    >
+                      Créer un nouveau profil
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

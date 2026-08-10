@@ -9,8 +9,7 @@ A FAIRE
 - joindre tous les points d'un jour avec les coordonnées pour tracer un trajet de fin
 - Tester et revoir la nouvelle mire (qq bugs) 
     - bug à la création d'un visiteur car checklist bloquée
-    - pouvoir saisr quelque lettre et ne pas tout afficher la liste
-    - revoir la logique => guide devrait avoir tout et sinon un filtre ou un mode de recherche (mieux encore) ?
+- revoir la logique => guide devrait avoir tout et sinon un filtre ou un mode de recherche (mieux encore) ?
     
 JEU 
 * Bien tester le trivial !
