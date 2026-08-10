@@ -7,8 +7,6 @@ APRES :
 A FAIRE 
 - Acheter un nom de domaine ?
 - joindre tous les points d'un jour avec les coordonnées pour tracer un trajet de fin
-- Tester et revoir la nouvelle mire (qq bugs) 
-    - bug à la création d'un visiteur car checklist bloquée
 - revoir la logique => guide devrait avoir tout et sinon un filtre ou un mode de recherche (mieux encore) ?
 
 
