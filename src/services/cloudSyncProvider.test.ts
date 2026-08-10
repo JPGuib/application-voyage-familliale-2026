@@ -1112,6 +1112,58 @@ describe("place visibility parsing and sync (story 26.2)", () => {
       "sainte-sophie": "hiddenByOwner",
     });
   });
+
+  it("parses place day overrides when RTDB returns an indexed object", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {},
+      placeDayOverrides: {
+        "sainte-sophie": {
+          0: 2,
+          1: 3,
+        },
+      },
+    });
+
+    expect(snapshot.placeDayOverrides).toEqual({
+      "sainte-sophie": [2, 3],
+    });
+  });
+
+  it("writes owner place day overrides during owner-scoped push", async () => {
+    mockUpdate.mockClear();
+    const db = {} as import("firebase/database").Database;
+
+    await pushCloudSnapshot(db, "famille-test", {
+      actorUid: "owner-uid",
+      canWriteFamilyState: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-1",
+        profiles: [{ id: "profile-1", role: "proprietaire" }],
+      },
+      ownerCodeHash: "sha256:" + "d".repeat(64),
+      profileId: "profile-1",
+      surname: "Owner",
+      role: "proprietaire",
+      checklist: {},
+      profileCustomChecklistItems: [],
+      ownerGlobalChecklistAdditions: [],
+      ownerGlobalChecklistRemovals: {},
+      placeComments: {},
+      placeDayOverrides: {
+        "sainte-sophie": [2, 3],
+      },
+      gameResults: [],
+      gameProgress: null,
+      phase: "during",
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.placeDayOverrides).toEqual({
+      "sainte-sophie": [2, 3],
+    });
+  });
 });
 
 describe("pushGameDayOverride (story 19.1 owner override)", () => {

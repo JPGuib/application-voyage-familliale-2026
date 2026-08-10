@@ -299,13 +299,18 @@ function parsePlaceVisibilityMap(value: unknown): Record<string, PlaceVisibility
 }
 
 function normalizePlaceDays(value: unknown): number[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
+  const rawValues = Array.isArray(value)
+    ? value
+    : value && typeof value === "object"
+      ? Object.entries(value as Record<string, unknown>)
+          .filter(([key]) => /^\d+$/.test(key))
+          .sort(([left], [right]) => Number(left) - Number(right))
+          .map(([, day]) => day)
+      : [];
 
   return Array.from(
     new Set(
-      value
+      rawValues
         .map((day) => (typeof day === "number" && Number.isFinite(day) ? Math.trunc(day) : Number.NaN))
         .filter((day) => Number.isFinite(day) && day > 0)
     )
