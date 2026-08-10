@@ -1072,6 +1072,25 @@ function getPlacePositionInDay(
   return index >= 0 ? index + 1 : 1;
 }
 
+function getDefaultPlacePositionForDay(
+  placeId: string,
+  day: number,
+  placeDayOverrideMap: PlaceDayOverrideMap,
+  placeDayOrderOverrideMap: PlaceDayOrderOverrideMap,
+  fallbackIndexMap: Record<string, number>
+): number {
+  const dayPlaces = PLACES_WITH_AUTO_GPS.filter((place) =>
+    getEffectivePlaceDays(place, placeDayOverrideMap).includes(day)
+  );
+  const sorted = sortPlacesForDay(dayPlaces, day, placeDayOrderOverrideMap, fallbackIndexMap);
+  const existingIndex = sorted.findIndex((entry) => entry.id === placeId);
+  if (existingIndex >= 0) {
+    return existingIndex + 1;
+  }
+  // By default, place newly added to a day goes to the end of that day.
+  return sorted.length + 1;
+}
+
 function isPlaceVisibleForRole(
   role: Role | null,
   placeId: string,
@@ -3971,7 +3990,15 @@ function GuideScreen({
       if (!hasDay) {
         setDraftPlaceDayOrderByDay((previousOrder) => ({
           ...previousOrder,
-          [day]: previousOrder[day] ?? 1,
+          [day]:
+            previousOrder[day] ??
+            getDefaultPlacePositionForDay(
+              editingPlaceId ?? "",
+              day,
+              placeDayOverrideMap,
+              placeDayOrderOverrideMap,
+              fallbackPlaceIndexMap
+            ),
         }));
       } else {
         setDraftPlaceDayOrderByDay((previousOrder) => {

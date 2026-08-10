@@ -270,8 +270,10 @@ describe("App place visibility integration (story 26.2)", () => {
       number[] | null,
       Record<number, number> | null | undefined,
     ];
+    const expectedDay2Position =
+      PLACES.filter((place) => place.jour?.includes(2) && place.id !== editablePlace!.id).length + 1;
     expect(savedDays).toEqual([2]);
-    expect(savedOrderByDay).toEqual({ 2: 1 });
+    expect(savedOrderByDay).toEqual({ 2: expectedDay2Position });
 
     await waitFor(() => {
       expect(document.querySelector(`[data-tutorial-id="guide-place-${editablePlace!.id}"]`)).toBeNull();
