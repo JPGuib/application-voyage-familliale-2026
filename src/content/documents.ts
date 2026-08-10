@@ -23,7 +23,7 @@ export type TravelDocument = {
   title: string;
   content: string;
   tag?: string;
-  day?: number;
+  day?: number | number[];
   details?: string[];
   scans?: string[];
   links?: TravelDocumentLink[];

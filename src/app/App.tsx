@@ -2897,12 +2897,61 @@ function DocumentsScreen({
   const [draftCategory, setDraftCategory] = useState<DocumentCategory>(DOCUMENT_CATEGORIES[0]);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftTag, setDraftTag] = useState("");
-  const [draftDay, setDraftDay] = useState("");
+  const [draftDays, setDraftDays] = useState<number[]>([]);
+  const [draftDayInput, setDraftDayInput] = useState("");
   const [draftContent, setDraftContent] = useState("");
   const [draftDetails, setDraftDetails] = useState("");
   const [draftScans, setDraftScans] = useState("");
   const [draftLinks, setDraftLinks] = useState("");
   const [draftGps, setDraftGps] = useState("");
+
+  function normalizeDocumentDays(value: number | number[] | undefined): number[] {
+    if (Array.isArray(value)) {
+      const uniqueDays = Array.from(
+        new Set(
+          value
+            .map((day) => Number(day))
+            .filter((day) => Number.isFinite(day) && day > 0)
+            .map((day) => Math.trunc(day))
+        )
+      );
+      uniqueDays.sort((a, b) => a - b);
+      return uniqueDays;
+    }
+
+    if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+      return [Math.trunc(value)];
+    }
+
+    return [];
+  }
+
+  function parseDraftDayInput(value: string): number[] {
+    return Array.from(
+      new Set(
+        value
+          .split(/[;,\s]+/)
+          .map((token) => token.trim())
+          .filter((token) => token.length > 0)
+          .map((token) => Number.parseInt(token, 10))
+          .filter((day) => Number.isFinite(day) && day > 0)
+      )
+    ).sort((a, b) => a - b);
+  }
+
+  function addDraftDaysFromInput(): void {
+    const parsed = parseDraftDayInput(draftDayInput);
+    if (parsed.length === 0) return;
+
+    setDraftDays((previous) =>
+      Array.from(new Set([...previous, ...parsed])).sort((a, b) => a - b)
+    );
+    setDraftDayInput("");
+  }
+
+  function removeDraftDay(day: number): void {
+    setDraftDays((previous) => previous.filter((value) => value !== day));
+  }
 
   function mergeDocumentsWithDefaults(persistedDocs: TravelDocument[]): TravelDocument[] {
     const defaultDocsById = new Map(DOCUMENTS.map((doc) => [doc.id, doc]));
@@ -3004,10 +3053,14 @@ function DocumentsScreen({
           content: candidate.content,
           category: category as DocumentCategory,
           tag: typeof candidate.tag === "string" ? candidate.tag : undefined,
-          day:
-            typeof candidate.day === "number" && Number.isFinite(candidate.day)
-              ? candidate.day
-              : undefined,
+          day: (() => {
+            const normalizedDays = normalizeDocumentDays(
+              typeof candidate.day === "number" || Array.isArray(candidate.day)
+                ? (candidate.day as number | number[])
+                : undefined
+            );
+            return normalizedDays.length > 0 ? normalizedDays : undefined;
+          })(),
           details,
           scans: resolvedScans,
           links: resolvedLinks,
@@ -3086,7 +3139,8 @@ function DocumentsScreen({
     setDraftCategory(activeCategory);
     setDraftTitle("");
     setDraftTag("");
-    setDraftDay("");
+    setDraftDays([]);
+    setDraftDayInput("");
     setDraftContent("");
     setDraftDetails("");
     setDraftScans("");
@@ -3106,7 +3160,8 @@ function DocumentsScreen({
     setDraftCategory(item.category);
     setDraftTitle(item.title);
     setDraftTag(item.tag ?? "");
-    setDraftDay(item.day ? String(item.day) : "");
+    setDraftDays(normalizeDocumentDays(item.day));
+    setDraftDayInput("");
     setDraftContent(item.content);
     setDraftDetails((item.details ?? []).join("\n"));
     setDraftScans((item.scans ?? []).join("\n"));
@@ -3124,7 +3179,9 @@ function DocumentsScreen({
       return;
     }
 
-    const parsedDay = Number.parseInt(draftDay.trim(), 10);
+    const parsedDays = Array.from(
+      new Set([...draftDays, ...parseDraftDayInput(draftDayInput)])
+    ).sort((a, b) => a - b);
     const details = draftDetails
       .split("\n")
       .map((line) => line.trim())
@@ -3164,7 +3221,7 @@ function DocumentsScreen({
       title: normalizedTitle,
       content: normalizedContent,
       tag: draftTag.trim() || undefined,
-      day: Number.isFinite(parsedDay) && parsedDay > 0 ? parsedDay : undefined,
+      day: parsedDays.length > 0 ? parsedDays : undefined,
       details: details.length > 0 ? details : undefined,
       scans: scans.length > 0 ? scans : undefined,
       links: links.length > 0 ? links : undefined,
@@ -3266,15 +3323,54 @@ function DocumentsScreen({
             aria-label="Tag du document"
             className="rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
           />
-          <input
-            type="number"
-            min={1}
-            value={draftDay}
-            onChange={(event) => setDraftDay(event.target.value)}
-            placeholder="Jour optionnel"
-            aria-label="Jour du document"
-            className="rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
-          />
+          <div className="rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground">
+            <p className="text-[11px] font-semibold text-muted-foreground mb-2">Dates du document</p>
+            <div className="flex flex-wrap gap-1.5 mb-2 min-h-[1.75rem]">
+              {draftDays.length === 0 ? (
+                <span className="text-xs text-muted-foreground">Aucune date ajoutée</span>
+              ) : (
+                draftDays.map((day) => (
+                  <span
+                    key={`draft-day-${day}`}
+                    className="inline-flex items-center gap-1 rounded-full bg-[#E3F2FD] px-2 py-1 text-[11px] font-black text-[#1565C0]"
+                  >
+                    {formatTripDayLabel(day, tripStartDate)}
+                    <button
+                      type="button"
+                      onClick={() => removeDraftDay(day)}
+                      className="text-[10px] leading-none"
+                      aria-label={`Retirer la date ${formatTripDayLabel(day, tripStartDate)}`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))
+              )}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={draftDayInput}
+                onChange={(event) => setDraftDayInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    addDraftDaysFromInput();
+                  }
+                }}
+                placeholder="Ajouter un jour (ex: 2 ou 2,3,9)"
+                aria-label="Ajouter des jours au document"
+                className="flex-1 rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+              />
+              <button
+                type="button"
+                onClick={addDraftDaysFromInput}
+                className="rounded-xl border border-border px-3 py-2 text-xs font-black uppercase tracking-widest"
+              >
+                Ajouter
+              </button>
+            </div>
+          </div>
         </div>
 
         <textarea
@@ -3330,7 +3426,7 @@ function DocumentsScreen({
         )}
 
         <p className="text-[11px] text-muted-foreground leading-relaxed">
-          Astuce: gras avec **comme ceci**. Liens via Libellé|URL. GPS: lat,lon.
+          Astuce: gras avec **comme ceci**. Ajoutez les dates via le champ ci-dessus. Liens via Libellé|URL. GPS: lat,lon.
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -3514,11 +3610,11 @@ function DocumentsScreen({
                     <div className="flex-1 min-w-[180px]">
                       <h3 className="font-black text-foreground">{item.title}</h3>
                       <div className="mt-1 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest">
-                        {item.day ? (
-                          <span className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[#1565C0]">
-                            {formatTripDayLabel(item.day, tripStartDate)}
+                        {normalizeDocumentDays(item.day).map((day) => (
+                          <span key={`${item.id}-day-${day}`} className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[#1565C0]">
+                            {formatTripDayLabel(day, tripStartDate)}
                           </span>
-                        ) : null}
+                        ))}
                         {item.tag ? (
                           <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{item.tag}</span>
                         ) : null}
