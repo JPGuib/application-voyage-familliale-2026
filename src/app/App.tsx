@@ -1249,6 +1249,7 @@ function ProfileSetupScreen({
   ownerAlreadyConfigured,
   travelerCodeConfigured,
   error,
+  onCancel,
   onSurnameChange,
   onGenderChange,
   onHouseholdRoleChange,
@@ -1258,6 +1259,7 @@ function ProfileSetupScreen({
   ownerAlreadyConfigured: boolean;
   travelerCodeConfigured: boolean;
   error: string | null;
+  onCancel?: () => void;
   onSurnameChange: (v: string) => void;
   onGenderChange: (v: Gender) => void;
   onHouseholdRoleChange: (v: HouseholdRole) => void;
@@ -1282,6 +1284,17 @@ function ProfileSetupScreen({
     <div className="flex flex-col h-full overflow-hidden">
       <div className="relative bg-primary text-primary-foreground px-6 pt-12 pb-8 flex-shrink-0">
         <MemphisDecor />
+        {onCancel && (
+          <div className="relative z-10 mb-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="text-xs font-extrabold uppercase tracking-widest opacity-90 hover:opacity-100"
+            >
+              Retour
+            </button>
+          </div>
+        )}
         <div className="relative z-10">
           <p className="text-xs font-extrabold opacity-80 tracking-widest uppercase mb-1">
             👨‍👩‍👧‍👦 Bienvenue
@@ -1488,20 +1501,31 @@ function ProfileSetupScreen({
       </div>
 
       <div className="flex-shrink-0 px-4 pb-8 pt-3 bg-background border-t border-border">
-        <button
-          onClick={() =>
-            onContinue(
-              password,
-              recoveryQuestion,
-              recoveryAnswer,
-              ownerAlreadyConfigured ? travelerChoice : null,
-              travelerCode
-            )
-          }
-          className="w-full bg-primary text-primary-foreground rounded-2xl py-5 text-lg font-black shadow-lg active:scale-95 transition-transform"
-        >
-          Continuer
-        </button>
+        <div className={onCancel ? "grid grid-cols-2 gap-3" : ""}>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="w-full rounded-2xl py-5 text-base font-black border border-border text-foreground active:scale-95 transition-transform"
+            >
+              Annuler
+            </button>
+          )}
+          <button
+            onClick={() =>
+              onContinue(
+                password,
+                recoveryQuestion,
+                recoveryAnswer,
+                ownerAlreadyConfigured ? travelerChoice : null,
+                travelerCode
+              )
+            }
+            className="w-full bg-primary text-primary-foreground rounded-2xl py-5 text-lg font-black shadow-lg active:scale-95 transition-transform"
+          >
+            Continuer
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -12178,6 +12202,23 @@ const resetForProfileSwitch = () => {
           ownerAlreadyConfigured={Boolean(familyState.ownerProfileId)}
           travelerCodeConfigured={travelerCodeHash.length > 0}
           error={profileError}
+          onCancel={
+            cloudEnabled
+              ? () => {
+                  setProfile({
+                    id: createProfileId(),
+                    surname: "",
+                    role: null,
+                    gender: "unspecified",
+                    householdRole: "member",
+                  });
+                  setProfileError(null);
+                  setAuthError(null);
+                  setCreateProfileSurname("");
+                  setIsAuthenticated(false);
+                }
+              : undefined
+          }
           onSurnameChange={(v) => {
             setProfile((p) => ({ ...p, surname: v }));
             if (profileError) setProfileError(null);

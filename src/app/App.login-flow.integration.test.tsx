@@ -313,6 +313,25 @@ describe("App cloud login flow", () => {
     expect(activeProfileId).toMatch(/^profile-/);
   });
 
+  it("allows canceling profile creation and returns to the login screen", async () => {
+    render(<App />);
+
+    openCreateProfileDialog();
+    const input = screen.getByPlaceholderText(/Ex: Maman, Papa, L.o/);
+    fireEvent.change(input, { target: { value: "Emma" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer un nouveau profil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer votre profil" })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
+    });
+  });
+
   it("blocks profile creation when the mandatory password and recovery fields are missing (story 18.9)", async () => {
     render(<App />);
 

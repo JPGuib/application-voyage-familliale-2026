@@ -45,8 +45,9 @@ export const DOCUMENTS: TravelDocument[] = [
     details: [
       "Petit sac : 40 x 30 x 15 cm",
       "Valise cabine : 55 x 25 x 35 cm",
-      "Bagages à main : 12 kg max",
-      "Bagages soute : 23 kg max",
+      "Valide soute : 158 cm (sommes des 3 dimensions)",
+      "Poids cabine (sac + valise): 12 kg max",
+      "Poids soute : 23 kg max",
     ],
     scans: [
       "/images/Vol/Avion aller JPG.webp",
@@ -74,10 +75,11 @@ export const DOCUMENTS: TravelDocument[] = [
       "Départ depuis Charles de Gaulle terminal **2E**.\n" +
       "**Réservation** : ZT59SQ",
     details: [
-      "Petit sac : 40 x 30 x 15 cm",
+ "Petit sac : 40 x 30 x 15 cm",
       "Valise cabine : 55 x 25 x 35 cm",
-      "Bagages à main : 12 kg max",
-      "Bagages soute : 23 kg max",
+      "Valide soute : 158 cm (sommes des 3 dimensions)",
+      "Poids cabine (sac + valise): 12 kg max",
+      "Poids soute : 23 kg max",
     ],
     scans: [
       "/images/Vol/Avion aller JPG.webp",
@@ -108,8 +110,9 @@ export const DOCUMENTS: TravelDocument[] = [
     details: [
       "Petit sac : 40 x 30 x 20 cm",
       "Valise cabine : 55 x 25 x 40 cm",
-      "Bagages à main : 12 kg max",
-      "Bagages soute : 30 kg max",
+      "Valide soute : 168 cm (sommes des 3 dimensions)",
+      "Poids cabine (sac + valise): 10 kg max",
+      "Poids soute : 30 kg max",
     ],
     links: [
       {
