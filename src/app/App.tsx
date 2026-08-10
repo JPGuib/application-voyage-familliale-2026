@@ -7849,6 +7849,7 @@ export default function App() {
     claimRoleForProfile,
     deleteProfile,
     setGameDayOverride,
+    setPlaceDayOverride,
     resetGameResults,
     resetGameProgress,
     registerAsOwnerDevice,
@@ -10012,7 +10013,7 @@ export default function App() {
     });
   };
 
-  const setPlaceDaysForOwner = (placeId: string, nextDays: number[]) => {
+  const setPlaceDaysForOwner = async (placeId: string, nextDays: number[]) => {
     if (!canUpdateOwnerCode(familyState, profile.id)) {
       return;
     }
@@ -10028,18 +10029,31 @@ export default function App() {
     }
 
     const baseDays = getBasePlaceDays(placeDefinition);
-    setPlaceDayOverrideMap((previous) => {
-      const next = { ...previous };
-      if (JSON.stringify(normalizedNextDays) === JSON.stringify(baseDays)) {
-        delete next[placeId];
-      } else {
-        next[placeId] = normalizedNextDays;
-      }
-      if (cloudEnabled) {
-        pendingPlaceDayOverrideMapRef.current = JSON.stringify(next);
-      }
-      return next;
-    });
+    const shouldClearOverride = JSON.stringify(normalizedNextDays) === JSON.stringify(baseDays);
+    const previousMap = placeDayOverrideMap;
+    const nextMap = { ...previousMap };
+    if (shouldClearOverride) {
+      delete nextMap[placeId];
+    } else {
+      nextMap[placeId] = normalizedNextDays;
+    }
+
+    if (cloudEnabled) {
+      pendingPlaceDayOverrideMapRef.current = JSON.stringify(nextMap);
+    }
+    setPlaceDayOverrideMap(nextMap);
+
+    if (!cloudEnabled) {
+      return;
+    }
+
+    try {
+      await setPlaceDayOverride(placeId, shouldClearOverride ? null : normalizedNextDays);
+    } catch {
+      pendingPlaceDayOverrideMapRef.current = "none";
+      setPlaceDayOverrideMap(previousMap);
+      setAccessDeniedMessage("La modification des jours n'a pas pu être synchronisée.");
+    }
   };
 
   const setDocumentVisibilityForOwner = (documentId: string, nextState: DocumentVisibilityState) => {

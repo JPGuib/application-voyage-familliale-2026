@@ -4,6 +4,7 @@ import {
   parseCloudSnapshot,
   pushCloudSnapshot,
   pushGameDayOverride,
+  pushPlaceDayOverride,
   resetGameProgressInCloud,
   resetGameResultsInCloud,
 } from "./cloudSyncProvider";
@@ -1188,6 +1189,29 @@ describe("pushGameDayOverride (story 19.1 owner override)", () => {
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     expect(updates["gameDayOverrides/3"]).toBeNull();
+  });
+});
+
+describe("pushPlaceDayOverride", () => {
+  const db = {} as import("firebase/database").Database;
+  const familyId = "famille-test";
+
+  it("writes normalized day overrides under placeDayOverrides/{placeId}", async () => {
+    mockUpdate.mockClear();
+
+    await pushPlaceDayOverride(db, familyId, "sainte-sophie", [3, 2, 2]);
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates).toEqual({ "placeDayOverrides/sainte-sophie": [2, 3] });
+  });
+
+  it("writes null to clear an override", async () => {
+    mockUpdate.mockClear();
+
+    await pushPlaceDayOverride(db, familyId, "sainte-sophie", null);
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates).toEqual({ "placeDayOverrides/sainte-sophie": null });
   });
 });
 

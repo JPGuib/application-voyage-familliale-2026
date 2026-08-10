@@ -11,6 +11,7 @@ import {
   pushCloudSnapshot,
   pushFamilyPhaseChange,
   pushGameDayOverride,
+  pushPlaceDayOverride,
   resetGameProgressInCloud,
   resetGameResultsInCloud,
 } from "../services/cloudSyncProvider";
@@ -692,6 +693,18 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  const setPlaceDayOverride = useCallback(
+    async (placeId: string, days: number[] | null): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await ensureOwnerMembership(database, familyId, cloudUserUid);
+      await pushPlaceDayOverride(database, familyId, placeId, days);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   const resetGameResults = useCallback(
     async (day?: number): Promise<void> => {
       if (!isEnabled || !database || !cloudUserUid || !cloudSnapshot) {
@@ -753,6 +766,7 @@ export function useCloudSync() {
     claimRoleForProfile,
     deleteProfile,
     setGameDayOverride,
+    setPlaceDayOverride,
     resetGameResults,
     resetGameProgress,
     registerAsOwnerDevice,

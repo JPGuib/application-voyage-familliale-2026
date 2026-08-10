@@ -789,6 +789,27 @@ export async function pushDestinationSurveyVoteOnly(
   await update(ref(database, familyPath(familyId)), updates);
 }
 
+export async function pushPlaceDayOverride(
+  database: Database,
+  familyId: string,
+  placeId: string,
+  days: number[] | null
+): Promise<void> {
+  const normalizedDays = days
+    ? Array.from(
+        new Set(
+          days
+            .map((day) => (typeof day === "number" && Number.isFinite(day) ? Math.trunc(day) : Number.NaN))
+            .filter((day) => Number.isFinite(day) && day > 0)
+        )
+      ).sort((left, right) => left - right)
+    : null;
+
+  await update(ref(database, familyPath(familyId)), {
+    [`placeDayOverrides/${placeId}`]: normalizedDays,
+  });
+}
+
 export async function pushFamilyPhaseChange(
   database: Database,
   familyId: string,

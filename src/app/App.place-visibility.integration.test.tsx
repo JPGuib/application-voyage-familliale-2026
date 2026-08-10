@@ -113,6 +113,7 @@ describe("App place visibility integration (story 26.2)", () => {
       cloudSnapshot: makeSnapshot("utilisateur", { [hiddenPlace.id]: "hiddenByOwner" }),
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      setPlaceDayOverride: vi.fn().mockResolvedValue(undefined),
       familyId: "famille-voyage-2026",
     });
 
@@ -157,6 +158,7 @@ describe("App place visibility integration (story 26.2)", () => {
       cloudSnapshot: makeSnapshot("proprietaire", { [hiddenPlace.id]: "hiddenByOwner" }),
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      setPlaceDayOverride: vi.fn().mockResolvedValue(undefined),
       familyId: "famille-voyage-2026",
     });
 
@@ -190,6 +192,7 @@ describe("App place visibility integration (story 26.2)", () => {
       cloudSnapshot: makeSnapshotWithDayOverride("proprietaire", {}, { [movedPlace!.id]: [2] }),
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      setPlaceDayOverride: vi.fn().mockResolvedValue(undefined),
       familyId: "famille-voyage-2026",
     });
 
@@ -231,6 +234,7 @@ describe("App place visibility integration (story 26.2)", () => {
       cloudSnapshot: makeSnapshot("proprietaire", {}),
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      setPlaceDayOverride: vi.fn().mockResolvedValue(undefined),
       familyId: "famille-voyage-2026",
     });
 
