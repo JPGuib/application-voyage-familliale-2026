@@ -152,7 +152,8 @@ export const DOCUMENTS: TravelDocument[] = [
     id: "hotel-istanbul-windsor",
     category: "HEBERGEMENT",
     title: "Istanbul - Windsor Hotel & Convention Center",
-    tag: "Jour 2, 3 et 9",
+    tag: "Instanbul",
+    day: [2, 3, 9],
     content:
       "Réservation famille pour le séjour à Istanbul.\n" +
       "**Hôtel** : Windsor Hotel & Convention Center – Bayrampaşa\n" +
@@ -176,7 +177,8 @@ export const DOCUMENTS: TravelDocument[] = [
   id: "hotel-ankara-hiltonsa",
   category: "HEBERGEMENT",
   title: "Ankara - HiltonSA",
-  tag: "Jour 4",
+  tag: "Ankara",
+  day: 4,
   content:
     "Réservation famille pour le séjour à Ankara.\n" +
     "**Hôtel** : Ankara HiltonSA\n" +
@@ -200,7 +202,8 @@ export const DOCUMENTS: TravelDocument[] = [
   id: "hotel-cappadoce-burcu-kaya",
   category: "HEBERGEMENT",
   title: "Cappadoce - Burcu Kaya Hotel",
-  tag: "Jour 5 et 6",
+  tag: "Cappadoce",
+  day: [5, 6],
   content:
     "Réservation famille pour le séjour en Cappadoce.\n" +
     "**Hôtel** : Burcu Kaya Hotel\n" +
@@ -225,7 +228,8 @@ export const DOCUMENTS: TravelDocument[] = [
   id: "hotel-pamukkale-pam-thermal",
   category: "HEBERGEMENT",
   title: "Pamukkale - Pam Thermal Hotel",
-  tag: "Jour 7",
+  tag: "Pamukkale"
+  day:7
   content:
     "Réservation famille pour le séjour à Pamukkale.\n" +
     "**Hôtel** : Pam Thermal Hotel\n" +
@@ -249,8 +253,8 @@ export const DOCUMENTS: TravelDocument[] = [
   id: "hotel-izmir-park-inn",
   category: "HEBERGEMENT",
   title: "Izmir - Park Inn by Radisson",
-  tag: "Jour 8",
-  day: 5,
+  tag: "Izmir",
+  day: 8,
   content:
     "Réservation famille pour le séjour à Izmir.\n" +
     "**Hôtel** : Park Inn by Radisson İzmir\n" +
