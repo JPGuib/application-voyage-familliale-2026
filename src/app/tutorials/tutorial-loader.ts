@@ -1,5 +1,6 @@
 import { ACCUEIL_DRIVER_STEPS, type DriverStepConfig } from "./generated/driver-accueil";
 import type { Role } from "../owner-policy";
+import { formatTripDayLabel } from "../trip-day-format";
 
 export type TutorialScreen =
   | "dashboard"
@@ -35,8 +36,12 @@ function fromAccueil(selector: string): DriverStepConfig {
   };
 }
 
-export function loadGlobalTutorialSteps(role: Role | null = "utilisateur"): GlobalTutorialStep[] {
+export function loadGlobalTutorialSteps(
+  role: Role | null = "utilisateur",
+  tripStartDate: string | null = null
+): GlobalTutorialStep[] {
   const canOpenScans = role !== "visiteur";
+  const guideDay2Label = formatTripDayLabel(2, tripStartDate);
 
   return [
     {
@@ -83,7 +88,7 @@ export function loadGlobalTutorialSteps(role: Role | null = "utilisateur"): Glob
       ...fromAccueil('[data-tutorial-id="dashboard-planning"]'),
       popover: {
         title: "Ouvrir le planning",
-        description: "Cliquez pour accéder au planning complet des journées.",
+        description: "Cliquez pour accéder au planning complet des dates du séjour.",
       },
       interactive: true,
       waitForElement: 2000,
@@ -94,7 +99,7 @@ export function loadGlobalTutorialSteps(role: Role | null = "utilisateur"): Glob
       element: '[data-tutorial-id="planning-title"]',
       popover: {
         title: "Écran Planning",
-        description: "Vous voyez ici tous les jours du séjour dans l'ordre chronologique.",
+        description: "Vous voyez ici toutes les dates du séjour dans l'ordre chronologique.",
       },
       waitForElement: 2000,
     },
@@ -228,7 +233,7 @@ export function loadGlobalTutorialSteps(role: Role | null = "utilisateur"): Glob
       element: '[data-tutorial-id="guide-title"]',
       popover: {
         title: "Écran Guide",
-        description: "Cet écran centralise les lieux à visiter pour la journée sélectionnée.",
+        description: "Cet écran centralise les lieux à visiter pour la date sélectionnée.",
       },
       waitForElement: 2000,
     },
@@ -237,8 +242,8 @@ export function loadGlobalTutorialSteps(role: Role | null = "utilisateur"): Glob
       screen: "guide",
       element: '[data-tutorial-id="guide-day-selector"]',
       popover: {
-        title: "Changer de journée",
-        description: "Cliquez ici pour ouvrir la liste des jours, puis sélectionnez Jour 2.",
+        title: "Changer de date",
+        description: `Cliquez ici pour ouvrir la liste des dates, puis sélectionnez ${guideDay2Label}.`,
       },
       interactive: true,
       waitForElement: 2000,
@@ -248,8 +253,8 @@ export function loadGlobalTutorialSteps(role: Role | null = "utilisateur"): Glob
       screen: "guide",
       element: '[data-tutorial-id="guide-day-option-2"]',
       popover: {
-        title: "Passer au Jour 2",
-        description: "Cliquez sur Jour 2 pour afficher les lieux d'Istanbul, dont Sainte-Sophie.",
+        title: `Passer au ${guideDay2Label}`,
+        description: `Cliquez sur ${guideDay2Label} pour afficher les lieux d'Istanbul, dont Sainte-Sophie.`,
       },
       interactive: true,
       waitForElement: 2500,

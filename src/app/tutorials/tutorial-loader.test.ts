@@ -129,4 +129,15 @@ describe("tutorial-loader global tutorial", () => {
     expect(tipsIndex).toBeLessThan(mapIndex);
     expect(mapIndex).toBeLessThan(polarstepsIndex);
   });
+
+  it("uses a real date label for the guide day-2 step when trip start date is configured", () => {
+    const steps = loadGlobalTutorialSteps("utilisateur", "2026-08-16");
+    const day2Step = steps.find((step) => step.id === "guide-day2");
+
+    expect(day2Step).toBeDefined();
+    expect(day2Step?.popover.title).toContain("Passer au");
+    expect(day2Step?.popover.title).not.toContain("Jour 2");
+    expect(day2Step?.popover.description).toContain("17");
+    expect(day2Step?.popover.description).toContain("août");
+  });
 });

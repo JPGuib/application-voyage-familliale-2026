@@ -80,8 +80,11 @@ export function toDriverSteps(steps: ReturnType<typeof loadGlobalTutorialSteps>)
   }));
 }
 
-export async function startGlobalTutorial(role: Role | null = "utilisateur"): Promise<void> {
-  const rawSteps = loadGlobalTutorialSteps(role);
+export async function startGlobalTutorial(
+  role: Role | null = "utilisateur",
+  tripStartDate: string | null = null
+): Promise<void> {
+  const rawSteps = loadGlobalTutorialSteps(role, tripStartDate);
   const steps = toDriverSteps(rawSteps);
   if (steps.length === 0) return;
 

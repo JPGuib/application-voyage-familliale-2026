@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronDown, MapPin, LocateFixed } from "lucide-react";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
 import { PLACES } from "../content/places";
 import { parseGpsString, useDeviceLocation } from "./weather";
+import { formatTripDayLabel } from "./trip-day-format";
 
 // Fix default Leaflet marker icons broken by Vite asset bundling
 const defaultIcon = L.icon({
@@ -88,10 +89,12 @@ function MapFlyTo({ target }: { target: [number, number] | null }) {
 export function MapScreen({
   onBack,
   currentDay,
+  tripStartDate,
   onNavigateToGuide,
 }: {
   onBack: () => void;
   currentDay: number;
+  tripStartDate?: string | null;
   onNavigateToGuide: (day: number) => void;
 }) {
   const [selectedDay, setSelectedDay] = useState<number | "all">(currentDay);
@@ -107,7 +110,7 @@ export function MapScreen({
   const dayOptions: DayOption[] = [
     ...JOURS_DESTINATIONS.map((d) => ({
       value: d.jour as number | "all",
-      label: `Jour ${d.jour} — ${d.destination}`,
+      label: `${formatTripDayLabel(d.jour, tripStartDate)} — ${d.destination}`,
       isToday: d.jour === currentDay,
     })),
     { value: "all", label: "Tous les jours", isToday: false },
@@ -165,7 +168,7 @@ export function MapScreen({
               <span className="block text-sm font-black">
                 {selectedDay === "all"
                   ? "Tous les jours"
-                  : `Jour ${selectedDay}`}
+                  : formatTripDayLabel(selectedDay, tripStartDate)}
                 {selectedDay !== "all" && selectedDay === currentDay && (
                   <span className="ml-2 text-[10px] font-black uppercase tracking-widest bg-white/25 rounded-full px-2 py-0.5 align-middle">
                     aujourd'hui
@@ -202,7 +205,7 @@ export function MapScreen({
                     }`}
                   >
                     <span className="block font-semibold">
-                      {opt.value === "all" ? "Tous les jours" : `Jour ${opt.value}`}
+                      {opt.value === "all" ? "Tous les jours" : formatTripDayLabel(opt.value, tripStartDate)}
                       {opt.isToday && (
                         <span className="ml-2 text-[10px] font-black uppercase tracking-widest bg-accent/20 text-accent rounded-full px-2 py-0.5 align-middle">
                           aujourd'hui
@@ -246,7 +249,7 @@ export function MapScreen({
               }}
               className="mt-2 px-6 py-3 rounded-2xl bg-accent text-white font-bold text-sm"
             >
-              Voir le guide — Jour {selectedDay}
+              Voir le guide — {formatTripDayLabel(selectedDay, tripStartDate)}
             </button>
           )}
         </div>
@@ -298,7 +301,7 @@ export function MapScreen({
                 <Popup>
                   <div className="text-sm min-w-[160px]">
                     <p className="font-bold mb-1">
-                      Jour {marker.day}
+                      {formatTripDayLabel(marker.day, tripStartDate)}
                       {marker.day === currentDay && (
                         <span className="ml-1 text-[10px] font-black uppercase text-blue-600">
                           · aujourd'hui

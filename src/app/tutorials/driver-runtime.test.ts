@@ -6,9 +6,9 @@ import { loadGlobalTutorialSteps } from "./tutorial-loader";
 describe("driver-runtime", () => {
   it("adds click guidance and hides Next for interactive steps", () => {
     const steps = toDriverSteps(loadGlobalTutorialSteps());
-    const interactiveStep = steps.find(
-      (step) => step.popover.title === "Passer au Jour 2"
-    );
+    const rawSteps = loadGlobalTutorialSteps();
+    const interactiveStepIndex = rawSteps.findIndex((step) => step.id === "guide-day2");
+    const interactiveStep = interactiveStepIndex >= 0 ? steps[interactiveStepIndex] : undefined;
     const passiveStep = steps.find(
       (step) => step.popover.title === "Écran Guide"
     );
@@ -35,7 +35,9 @@ describe("driver-runtime", () => {
     selector?.addEventListener("click", clickSpy);
 
     const steps = toDriverSteps(loadGlobalTutorialSteps());
-    const day2Step = steps.find((step) => step.popover.title === "Passer au Jour 2");
+    const rawSteps = loadGlobalTutorialSteps();
+    const day2StepIndex = rawSteps.findIndex((step) => step.id === "guide-day2");
+    const day2Step = day2StepIndex >= 0 ? steps[day2StepIndex] : undefined;
 
     expect(day2Step).toBeDefined();
     expect(typeof day2Step?.element).toBe("function");

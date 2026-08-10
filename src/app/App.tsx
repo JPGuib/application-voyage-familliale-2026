@@ -145,6 +145,7 @@ import {
   isTripFinished,
   isValidTripStartDate,
 } from "./trip-day";
+import { formatTripDayLabel } from "./trip-day-format";
 import {
   type NotificationPermissionStatus,
   type NotificationPreferences,
@@ -2207,6 +2208,7 @@ function DashboardScreen({
   onNavigate,
   onStartTutorial,
   currentDay,
+  tripStartDate,
   totalDays,
   todayDestination,
   todaySubtitle,
@@ -2221,6 +2223,7 @@ function DashboardScreen({
   onNavigate: (s: Screen) => void;
   onStartTutorial: () => void;
   currentDay: number;
+  tripStartDate: string | null;
   totalDays: number;
   todayDestination: string;
   todaySubtitle: string;
@@ -2276,7 +2279,7 @@ function DashboardScreen({
                   ? `J-${daysUntilStart}`
                   : tripFinished
                   ? "Voyage terminé"
-                  : `Jour ${currentDay}`}
+                  : formatTripDayLabel(currentDay, tripStartDate, { format: "long" })}
               </h1>
               <p className="text-sm opacity-80 font-bold">
                 {daysUntilStart !== null ? "avant le départ" : `sur ${totalDays} jours`}
@@ -2737,6 +2740,7 @@ function PlanningScreen({
   onBack,
   onDaySelect,
   currentDay,
+  tripStartDate,
   tripFinished,
   role,
   placeVisibilityMap,
@@ -2744,6 +2748,7 @@ function PlanningScreen({
   onBack: () => void;
   onDaySelect: (day: number) => void;
   currentDay: number;
+  tripStartDate: string | null;
   tripFinished: boolean;
   role: Role | null;
   placeVisibilityMap: PlaceVisibilityMap;
@@ -2803,7 +2808,7 @@ function PlanningScreen({
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
-                      Jour {dayEntry.jour}
+                      {formatTripDayLabel(dayEntry.jour, tripStartDate)}
                     </span>
                     {isCurrentDay && (
                       <span className="text-[10px] font-black uppercase tracking-widest bg-primary text-primary-foreground rounded-full px-2 py-0.5">
@@ -2851,6 +2856,7 @@ function PlanningScreen({
 
 function DocumentsScreen({
   onBack,
+  tripStartDate,
   role,
   documentVisibilityMap,
   onToggleDocumentVisibility,
@@ -2858,6 +2864,7 @@ function DocumentsScreen({
   isOnline,
 }: {
   onBack: () => void;
+  tripStartDate: string | null;
   role: Role | null;
   documentVisibilityMap: DocumentVisibilityMap;
   onToggleDocumentVisibility: (documentId: string, nextState: DocumentVisibilityState) => void;
@@ -3508,7 +3515,9 @@ function DocumentsScreen({
                       <h3 className="font-black text-foreground">{item.title}</h3>
                       <div className="mt-1 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest">
                         {item.day ? (
-                          <span className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[#1565C0]">Jour {item.day}</span>
+                          <span className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[#1565C0]">
+                            {formatTripDayLabel(item.day, tripStartDate)}
+                          </span>
                         ) : null}
                         {item.tag ? (
                           <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{item.tag}</span>
@@ -3630,6 +3639,7 @@ function GuideScreen({
   onPlaceSelect,
   currentDay,
   selectedDay,
+  tripStartDate,
   onSelectedDayChange,
   commentsByPlace,
   role,
@@ -3642,6 +3652,7 @@ function GuideScreen({
   onPlaceSelect: (id: string) => void;
   currentDay: number;
   selectedDay: number;
+  tripStartDate: string | null;
   onSelectedDayChange: (day: number) => void;
   commentsByPlace: PlaceCommentsByPlace;
   role: Role | null;
@@ -3682,7 +3693,7 @@ function GuideScreen({
           >
             <span className="text-left">
               <span className="block text-sm font-black">
-                Jour {selectedDay}
+                {formatTripDayLabel(selectedDay, tripStartDate)}
                 {selectedDay === currentDay && (
                   <span className="ml-2 text-[10px] font-black uppercase tracking-widest bg-white/25 rounded-full px-2 py-0.5 align-middle">
                     aujourd'hui
@@ -3722,7 +3733,7 @@ function GuideScreen({
                   >
                     <span>
                       <span className="block text-sm font-bold text-foreground">
-                        Jour {entry.jour} — {entry.destination}
+                        {formatTripDayLabel(entry.jour, tripStartDate)} — {entry.destination}
                       </span>
                     </span>
                     {entry.jour === currentDay && (
@@ -4808,6 +4819,7 @@ function GameScreen({
   onContinueToChallenge,
   onCompleteChallenge,
   currentDay,
+  tripStartDate,
   alreadyPlayedToday,
   gameDayOverride,
   questions,
@@ -4836,6 +4848,7 @@ function GameScreen({
   onContinueToChallenge: () => void;
   onCompleteChallenge: () => void;
   currentDay: number;
+  tripStartDate: string | null;
   alreadyPlayedToday: GameHistoryEntry | null;
   gameDayOverride: "open" | "closed" | null;
   questions: QuizQuestion[];
@@ -4869,7 +4882,7 @@ function GameScreen({
             Jeu du jour 🎮
           </h1>
           <p className="relative z-10 text-sm opacity-90 mt-1">
-            Quiz Turquie — Jour {currentDay}
+            Quiz Turquie — {formatTripDayLabel(currentDay, tripStartDate)}
           </p>
         </div>
         {canPlayArcade && onOpenArcade && (
@@ -5184,6 +5197,7 @@ function ResultsScreen({
   history,
   familyMembers,
   currentDay,
+  tripStartDate,
   currentProfileId,
   destinationSurveyDestination,
   destinationSurveyResults,
@@ -5192,6 +5206,7 @@ function ResultsScreen({
   history: GameHistoryEntry[];
   familyMembers: PodiumProfileInput[];
   currentDay: number;
+  tripStartDate: string | null;
   currentProfileId: string;
   destinationSurveyDestination: string;
   destinationSurveyResults: ReturnType<typeof computeDestinationSurveyResults>["rows"];
@@ -5293,7 +5308,7 @@ function ResultsScreen({
         {/* Participation au défi du jour */}
         <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
-            Défi du jour {currentDay} — qui a joué ?
+            Défi du {formatTripDayLabel(currentDay, tripStartDate)} — qui a joué ?
           </p>
           {todayParticipants.length === 0 ? (
             <p className="text-sm text-muted-foreground">
@@ -6655,8 +6670,8 @@ function SettingsScreen({
               Date de début du voyage
             </p>
             <p className="text-xs text-muted-foreground mt-2">
-              Détermine le "Jour 1" affiché à toute la famille. Tant que la date
-              du jour ne dépasse pas cette date, l'application affiche Jour 1.
+              Détermine la date de départ affichée à toute la famille. Les jours du
+              séjour s'affichent ensuite avec leurs vraies dates.
             </p>
             <p className="text-sm font-bold text-foreground mt-3">
               Date actuellement enregistrée :{" "}
@@ -6925,7 +6940,7 @@ function SettingsScreen({
               Journée de jeu
             </p>
             <p className="text-xs text-muted-foreground mt-2">
-              Jour {currentDay} —{" "}
+              {formatTripDayLabel(currentDay, tripStartDate)} —{" "}
               {gameDayOverride === "open"
                 ? "ouverte manuellement (rejouable)"
                 : gameDayOverride === "closed"
@@ -6944,7 +6959,7 @@ function SettingsScreen({
                 disabled={settingsWriteActionsDisabled || gameDayOverride === "open"}
                 className={`w-full rounded-xl py-3 text-sm font-black border border-border text-foreground ${settingsDisabledButtonClass}`}
               >
-                Forcer l&apos;ouverture du jour {currentDay}
+                Forcer l&apos;ouverture ({formatTripDayLabel(currentDay, tripStartDate)})
               </button>
               <button
                 onClick={() => {
@@ -6957,7 +6972,7 @@ function SettingsScreen({
                 disabled={settingsWriteActionsDisabled || gameDayOverride === "closed"}
                 className={`w-full rounded-xl py-3 text-sm font-black border border-border text-foreground ${settingsDisabledButtonClass}`}
               >
-                Forcer la fermeture du jour {currentDay}
+                Forcer la fermeture ({formatTripDayLabel(currentDay, tripStartDate)})
               </button>
               <button
                 onClick={() => {
@@ -6983,9 +6998,9 @@ function SettingsScreen({
               <p className="text-xs text-muted-foreground mt-1">
                 Entrez le code propriétaire pour{" "}
                 {pendingDayOverrideAction === "open"
-                  ? `forcer l'ouverture du jour ${currentDay}`
+                  ? `forcer l'ouverture (${formatTripDayLabel(currentDay, tripStartDate)})`
                   : pendingDayOverrideAction === "closed"
-                    ? `forcer la fermeture du jour ${currentDay}`
+                    ? `forcer la fermeture (${formatTripDayLabel(currentDay, tripStartDate)})`
                     : "revenir à l'automatique"}
                 .
               </p>
@@ -7083,7 +7098,7 @@ function SettingsScreen({
                   (_, i) => i + 1
                 ).map((day) => (
                   <option key={day} value={day}>
-                    Jour {day}
+                    {formatTripDayLabel(day, tripStartDate)}
                   </option>
                 ))}
               </select>
@@ -7224,7 +7239,7 @@ function SettingsScreen({
                 Entrez le code propriétaire pour confirmer{" "}
                 {pendingScoreResetAction.kind === "all"
                   ? "la réinitialisation de tous les scores"
-                  : `la réinitialisation des scores du jour ${pendingScoreResetAction.day}`}
+                  : `la réinitialisation des scores du ${formatTripDayLabel(pendingScoreResetAction.day, tripStartDate)}`}
                 . Cette action est irréversible.
               </p>
 
@@ -10276,10 +10291,10 @@ const resetForProfileSwitch = () => {
       ok: true,
       message:
         value === "open"
-          ? `Jour ${currentDay} ouvert manuellement.`
+          ? `${formatTripDayLabel(currentDay, tripStartDate)} ouvert manuellement.`
           : value === "closed"
-            ? `Jour ${currentDay} fermé manuellement.`
-            : `Jour ${currentDay} repassé en automatique.`,
+            ? `${formatTripDayLabel(currentDay, tripStartDate)} fermé manuellement.`
+            : `${formatTripDayLabel(currentDay, tripStartDate)} repassé en automatique.`,
     };
   };
 
@@ -10346,7 +10361,7 @@ const resetForProfileSwitch = () => {
       message:
         action.kind === "all"
           ? "Tous les scores ont été réinitialisés."
-          : `Les scores du jour ${action.day} ont été réinitialisés.`,
+          : `Les scores du ${formatTripDayLabel(action.day, tripStartDate)} ont été réinitialisés.`,
     };
   };
 
@@ -10967,7 +10982,7 @@ const resetForProfileSwitch = () => {
   };
 
   const startAccueilTutorial = () => {
-    void startGlobalTutorial(profile.role);
+    void startGlobalTutorial(profile.role, tripStartDate);
   };
 
   const renderScreen = () => {
@@ -11726,6 +11741,7 @@ const resetForProfileSwitch = () => {
             onNavigate={goToScreen}
             onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             totalDays={totalDays}
             todayDestination={todayDestination}
             todaySubtitle={todaySubtitle}
@@ -11742,6 +11758,7 @@ const resetForProfileSwitch = () => {
             onPlaceSelect={openPlace}
             currentDay={currentDay}
             selectedDay={guideSelectedDay ?? currentDay}
+            tripStartDate={tripStartDate}
             onSelectedDayChange={setGuideSelectedDay}
             commentsByPlace={placeCommentsByPlace}
             role={profile.role}
@@ -11762,6 +11779,7 @@ const resetForProfileSwitch = () => {
               goToScreen("guide");
             }}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             tripFinished={tripFinished}
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
@@ -11773,6 +11791,7 @@ const resetForProfileSwitch = () => {
         return (
           <DocumentsScreen
             onBack={() => goToScreen("dashboard")}
+            tripStartDate={tripStartDate}
             role={profile.role}
             documentVisibilityMap={documentVisibilityMap}
             onToggleDocumentVisibility={setDocumentVisibilityForOwner}
@@ -11787,6 +11806,7 @@ const resetForProfileSwitch = () => {
           <MapScreen
             onBack={() => goToScreen("dashboard")}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             onNavigateToGuide={(day) => {
               setGuideSelectedDay(day);
               goToScreen("guide");
@@ -11898,6 +11918,7 @@ const resetForProfileSwitch = () => {
             riddleSolved={riddleSolved}
             challengeDone={challengeDone}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             alreadyPlayedToday={alreadyPlayedToday}
             gameDayOverride={gameDayOverride}
             questions={todaysQuestions}
@@ -11937,6 +11958,7 @@ const resetForProfileSwitch = () => {
             history={gameHistory}
             familyMembers={familyMembersForPodium}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             currentProfileId={profile.id}
             destinationSurveyDestination={todayDestination}
             destinationSurveyResults={destinationSurveyResults.rows}
@@ -12101,6 +12123,7 @@ const resetForProfileSwitch = () => {
             onNavigate={goToScreen}
             onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             totalDays={totalDays}
             todayDestination={todayDestination}
             todaySubtitle={todaySubtitle}
@@ -12115,6 +12138,7 @@ const resetForProfileSwitch = () => {
             onPlaceSelect={openPlace}
             currentDay={currentDay}
             selectedDay={guideSelectedDay ?? currentDay}
+            tripStartDate={tripStartDate}
             onSelectedDayChange={setGuideSelectedDay}
             commentsByPlace={placeCommentsByPlace}
             role={profile.role}
@@ -12133,6 +12157,7 @@ const resetForProfileSwitch = () => {
               goToScreen("guide");
             }}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             tripFinished={tripFinished}
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
@@ -12142,6 +12167,7 @@ const resetForProfileSwitch = () => {
         return (
           <DocumentsScreen
             onBack={() => goToScreen("dashboard")}
+            tripStartDate={tripStartDate}
             role={profile.role}
             documentVisibilityMap={documentVisibilityMap}
             onToggleDocumentVisibility={setDocumentVisibilityForOwner}
@@ -12154,6 +12180,7 @@ const resetForProfileSwitch = () => {
           <MapScreen
             onBack={() => goToScreen("dashboard")}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             onNavigateToGuide={(day) => {
               setGuideSelectedDay(day);
               goToScreen("guide");
@@ -12247,6 +12274,7 @@ const resetForProfileSwitch = () => {
             riddleSolved={riddleSolved}
             challengeDone={challengeDone}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             alreadyPlayedToday={alreadyPlayedToday}
             gameDayOverride={gameDayOverride}
             questions={todaysQuestions}
@@ -12309,6 +12337,7 @@ const resetForProfileSwitch = () => {
             history={gameHistory}
             familyMembers={familyMembersForPodium}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             destinationSurveyDestination={todayDestination}
             destinationSurveyResults={destinationSurveyResults.rows}
             currentProfileId={profile.id}
@@ -12505,6 +12534,7 @@ const resetForProfileSwitch = () => {
             onNavigate={goToScreen}
           onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
+            tripStartDate={tripStartDate}
             totalDays={totalDays}
             todayDestination={todayDestination}
             todaySubtitle={todaySubtitle}
