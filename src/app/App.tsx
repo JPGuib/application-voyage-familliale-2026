@@ -10071,9 +10071,16 @@ export default function App() {
       });
       return true;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       pendingPlaceDayOverrideMapRef.current = "none";
       setPlaceDayOverrideMap(previousMap);
-      setAccessDeniedMessage("La modification des jours n'a pas pu être synchronisée.");
+      setAccessDeniedMessage(
+        errorMessage.includes("auth-required")
+          ? "Synchronisation impossible: session cloud indisponible."
+          : errorMessage.toUpperCase().includes("PERMISSION_DENIED")
+            ? "Synchronisation refusée par Firebase pour ce profil propriétaire."
+            : "La modification des jours n'a pas pu être synchronisée."
+      );
       console.error("[place-day-override] sync failed", {
         placeId,
         days: shouldClearOverride ? null : normalizedNextDays,
@@ -10081,6 +10088,7 @@ export default function App() {
         actorRole: profile.role,
         familyOwnerProfileId: familyState.ownerProfileId,
         cloudActorUid,
+        errorMessage,
         error,
       });
       return false;

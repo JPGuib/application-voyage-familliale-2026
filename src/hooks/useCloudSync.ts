@@ -698,9 +698,56 @@ export function useCloudSync() {
       if (!isEnabled || !database || !cloudUserUid) {
         throw new Error("auth-required");
       }
-      await ensureFamilyMembership(database, familyId, cloudUserUid);
-      await ensureOwnerMembership(database, familyId, cloudUserUid);
-      await pushPlaceDayOverride(database, familyId, placeId, days);
+
+      const runtimeProjectId =
+        (database.app.options as { projectId?: string })?.projectId ?? null;
+      const runtimeDatabaseUrl =
+        (database.app.options as { databaseURL?: string })?.databaseURL
+        ?? ((import.meta.env.VITE_FIREBASE_DATABASE_URL as string | undefined) ?? null);
+
+      console.info("[place-day-override] cloud write start", {
+        familyId,
+        placeId,
+        days,
+        actorUid: cloudUserUid,
+        projectId: runtimeProjectId,
+        databaseURL: runtimeDatabaseUrl,
+      });
+
+      try {
+        await ensureFamilyMembership(database, familyId, cloudUserUid);
+        console.info("[place-day-override] family membership ok", {
+          familyId,
+          actorUid: cloudUserUid,
+        });
+
+        await ensureOwnerMembership(database, familyId, cloudUserUid);
+        console.info("[place-day-override] owner membership ok", {
+          familyId,
+          actorUid: cloudUserUid,
+        });
+
+        await pushPlaceDayOverride(database, familyId, placeId, days);
+        console.info("[place-day-override] cloud write committed", {
+          familyId,
+          placeId,
+          days,
+          actorUid: cloudUserUid,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error("[place-day-override] cloud write failed", {
+          familyId,
+          placeId,
+          days,
+          actorUid: cloudUserUid,
+          projectId: runtimeProjectId,
+          databaseURL: runtimeDatabaseUrl,
+          errorMessage,
+          error,
+        });
+        throw error;
+      }
     },
     [cloudUserUid, database, familyId, isEnabled]
   );
