@@ -66,6 +66,7 @@ type TAnswerPublic = {
   final: boolean;
   chosen_index: number;
   correct_index: number;
+  bonus_replay: boolean;
 };
 
 type HostedRoomEntry = {
@@ -130,11 +131,15 @@ export function TrivialGameScreen({
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [question, setQuestion] = useState<TQuestion | null>(null);
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
-  const [answerResult, setAnswerResult] = useState<{ correct: boolean; chosenIndex: number; correctIndex: number } | null>(
-    null
-  );
+  const [answerResult, setAnswerResult] = useState<{
+    correct: boolean;
+    chosenIndex: number;
+    correctIndex: number;
+    bonusReplay: boolean;
+  } | null>(null);
   const [diceMessage, setDiceMessage] = useState<string>("");
   const [hostedRooms, setHostedRooms] = useState<HostedRoomEntry[]>([]);
+  const [showRules, setShowRules] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -240,6 +245,7 @@ export function TrivialGameScreen({
             correct: payload.correct,
             chosenIndex: payload.chosen_index,
             correctIndex: payload.correct_index,
+            bonusReplay: payload.bonus_replay,
           });
           setTimeout(() => {
             setQuestion(null);
@@ -280,12 +286,17 @@ export function TrivialGameScreen({
   return (
     <div className="flex flex-col h-full overflow-y-auto bg-background">
       <div className="relative bg-[#0F5257] text-white px-6 pt-12 pb-6 flex-shrink-0">
-        <button
-          onClick={onBack}
-          className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
-        >
-          <ChevronLeft size={18} /> Jeu
-        </button>
+        <div className="relative z-10 flex items-center justify-between mb-3">
+          <button onClick={onBack} className="flex items-center gap-1 text-white/80 text-sm font-bold">
+            <ChevronLeft size={18} /> Jeu
+          </button>
+          <button
+            onClick={() => setShowRules(true)}
+            className="flex items-center gap-1 text-white/80 text-sm font-bold border border-white/30 rounded-full px-3 py-1"
+          >
+            ❓ Règles
+          </button>
+        </div>
         <h1 className="relative z-10 text-2xl font-black">Trivial Turquie 🎲</h1>
         <p className="relative z-10 text-sm opacity-90 mt-1">
           {room ? `Salon ${room.code}` : "Chacun pour soi · 2 à 5 joueurs"}
@@ -593,12 +604,101 @@ export function TrivialGameScreen({
                   answerResult.correct ? "text-[#1c6e4e]" : "text-destructive"
                 }`}
               >
-                {answerResult.correct ? "✅ Bonne réponse !" : "❌ Mauvaise réponse."}
+                {answerResult.correct
+                  ? answerResult.bonusReplay
+                    ? "✅ Bonne réponse ! Bonus : rejoue 🎲"
+                    : "✅ Bonne réponse !"
+                  : "❌ Mauvaise réponse."}
               </div>
             )}
             {!answerResult && question.player_id !== myPlayerId && (
               <div className="text-center text-xs text-muted-foreground">En attente de sa réponse…</div>
             )}
+          </div>
+        </div>
+      )}
+
+      {showRules && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center">
+          <div className="w-full max-w-[420px] max-h-[85vh] overflow-y-auto bg-background rounded-t-3xl p-6 flex flex-col gap-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-black">Règles du jeu</h2>
+              <button
+                onClick={() => setShowRules(false)}
+                className="text-sm font-bold text-muted-foreground border border-border rounded-full px-3 py-1"
+              >
+                Fermer
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4 text-sm">
+              <div>
+                <div className="font-black mb-1">🎯 But du jeu</div>
+                <p className="text-muted-foreground">
+                  Chacun pour soi, de 2 à 5 joueurs. Soyez le premier à collecter les 6 tuiles de
+                  catégorie, puis à réussir une question finale pour gagner la partie.
+                </p>
+              </div>
+
+              <div>
+                <div className="font-black mb-1">🎲 Déroulement d'un tour</div>
+                <p className="text-muted-foreground">
+                  À votre tour, lancez le dé : vous avancez sur le plateau et atterrissez sur une
+                  case liée à l'une des 6 catégories. Une question de cette catégorie s'affiche —
+                  chez vous en version cliquable, chez les autres joueurs en lecture seule, pour
+                  suivre la partie en direct.
+                </p>
+              </div>
+
+              <div>
+                <div className="font-black mb-1">🏅 Catégorie pas encore acquise</div>
+                <p className="text-muted-foreground">
+                  <strong>Bonne réponse</strong> → vous gagnez la tuile de cette catégorie, le tour
+                  passe au joueur suivant.
+                  <br />
+                  <strong>Mauvaise réponse</strong> → pas de tuile, le tour passe au joueur suivant.
+                  Vous aurez d'autres occasions d'y retomber.
+                </p>
+              </div>
+
+              <div>
+                <div className="font-black mb-1">🎁 Catégorie déjà acquise</div>
+                <p className="text-muted-foreground">
+                  Retomber sur une catégorie que vous avez déjà validée vous repose quand même une
+                  question (différente de la précédente) :
+                  <br />
+                  <strong>Bonne réponse</strong> → bonus, vous rejouez immédiatement !
+                  <br />
+                  <strong>Mauvaise réponse</strong> → le tour passe normalement au joueur suivant.
+                </p>
+              </div>
+
+              <div>
+                <div className="font-black mb-1">🏆 Question finale</div>
+                <p className="text-muted-foreground">
+                  Une fois les 6 tuiles obtenues, votre prochain lancer de dé déclenche directement
+                  une question finale dans une catégorie tirée au sort. Bonne réponse = victoire.
+                  Mauvaise réponse = vous continuez à jouer normalement, et retenterez au prochain
+                  tour.
+                </p>
+              </div>
+
+              <div>
+                <div className="font-black mb-1">🚪 Terminer une partie</div>
+                <p className="text-muted-foreground">
+                  L'hôte peut à tout moment mettre fin à la partie pour tout le monde via le bouton
+                  "Terminer la partie". Une partie oubliée se ferme aussi automatiquement après un
+                  moment d'inactivité.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowRules(false)}
+              className="w-full bg-primary text-primary-foreground rounded-2xl py-3 font-black active:scale-95 transition-transform mt-2"
+            >
+              Compris !
+            </button>
           </div>
         </div>
       )}

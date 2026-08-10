@@ -371,6 +371,7 @@ const PROFILE_RECOVERY_ANSWER_STORAGE_KEY = "jp-profile-recovery-answers";
 const PLACE_COMMENTS_STORAGE_KEY = "jp-place-comments";
 const PLACE_VISIBILITY_STORAGE_KEY = "jp-place-visibility-map";
 const PLACE_DAY_OVERRIDES_STORAGE_KEY = "jp-place-day-overrides";
+const PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY = "jp-place-day-order-overrides";
 const DOCUMENT_VISIBILITY_STORAGE_KEY = "jp-document-visibility-map";
 const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
 const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
@@ -410,6 +411,7 @@ type PlaceCommentsByPlace = Record<string, Record<string, PlaceComment>>;
 type PlaceVisibilityState = "visible" | "hiddenByOwner";
 type PlaceVisibilityMap = Record<string, PlaceVisibilityState>;
 type PlaceDayOverrideMap = Record<string, number[]>;
+type PlaceDayOrderOverrideMap = Record<string, Record<number, number>>;
 type DocumentVisibilityState = "visible" | "hiddenByOwner";
 type DocumentVisibilityMap = Record<string, DocumentVisibilityState>;
 
@@ -951,9 +953,59 @@ function parsePlaceDayOverrideMap(raw: unknown): PlaceDayOverrideMap {
 
   const next: PlaceDayOverrideMap = {};
   for (const [placeId, value] of Object.entries(raw as Record<string, unknown>)) {
-    const normalizedDays = normalizePlaceDays(value);
+    const valueRecord = value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : null;
+    const normalizedDays = normalizePlaceDays(valueRecord?.days ?? value);
     if (normalizedDays.length > 0) {
       next[placeId] = normalizedDays;
+    }
+  }
+
+  return next;
+}
+
+function parsePlaceDayOrderOverrideMap(raw: unknown): PlaceDayOrderOverrideMap {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  const next: PlaceDayOrderOverrideMap = {};
+  for (const [placeId, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!value || typeof value !== "object") {
+      continue;
+    }
+
+    const valueRecord = value as Record<string, unknown>;
+    const effectiveDays = normalizePlaceDays(valueRecord.days ?? []);
+    const allowedDays = new Set(effectiveDays);
+    const orderRecord =
+      valueRecord.orderByDay && typeof valueRecord.orderByDay === "object"
+        ? (valueRecord.orderByDay as Record<string, unknown>)
+        : valueRecord;
+
+    const normalizedOrderByDay: Record<number, number> = {};
+    for (const [dayKey, positionCandidate] of Object.entries(orderRecord)) {
+      const day = Number(dayKey);
+      if (!Number.isFinite(day)) {
+        continue;
+      }
+      const normalizedDay = Math.trunc(day);
+      if (allowedDays.size > 0 && !allowedDays.has(normalizedDay)) {
+        continue;
+      }
+      if (typeof positionCandidate !== "number" || !Number.isFinite(positionCandidate)) {
+        continue;
+      }
+      const normalizedPosition = Math.trunc(positionCandidate);
+      if (normalizedPosition <= 0) {
+        continue;
+      }
+      normalizedOrderByDay[normalizedDay] = normalizedPosition;
+    }
+
+    if (Object.keys(normalizedOrderByDay).length > 0) {
+      next[placeId] = normalizedOrderByDay;
     }
   }
 
@@ -970,6 +1022,54 @@ function getEffectivePlaceDays(
 ): number[] {
   const overrideDays = overrideMap[place.id];
   return overrideDays && overrideDays.length > 0 ? overrideDays : getBasePlaceDays(place);
+}
+
+function getPlaceOrderPositionForDay(
+  placeId: string,
+  day: number,
+  orderMap: PlaceDayOrderOverrideMap
+): number | null {
+  const perDay = orderMap[placeId];
+  if (!perDay) {
+    return null;
+  }
+  const value = perDay[day];
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+  const normalized = Math.trunc(value);
+  return normalized > 0 ? normalized : null;
+}
+
+function sortPlacesForDay<T extends { id: string }>(
+  places: T[],
+  day: number,
+  orderMap: PlaceDayOrderOverrideMap,
+  fallbackIndexMap: Record<string, number>
+): T[] {
+  return [...places].sort((left, right) => {
+    const leftPosition = getPlaceOrderPositionForDay(left.id, day, orderMap) ?? Number.POSITIVE_INFINITY;
+    const rightPosition = getPlaceOrderPositionForDay(right.id, day, orderMap) ?? Number.POSITIVE_INFINITY;
+    if (leftPosition !== rightPosition) {
+      return leftPosition - rightPosition;
+    }
+    return (fallbackIndexMap[left.id] ?? Number.MAX_SAFE_INTEGER) -
+      (fallbackIndexMap[right.id] ?? Number.MAX_SAFE_INTEGER);
+  });
+}
+
+function getPlacePositionInDay(
+  placeId: string,
+  day: number,
+  placeDayOverrideMap: PlaceDayOverrideMap,
+  placeDayOrderOverrideMap: PlaceDayOrderOverrideMap,
+  fallbackIndexMap: Record<string, number>
+): number {
+  const dayPlaces = PLACES_WITH_AUTO_GPS
+    .filter((place) => getEffectivePlaceDays(place, placeDayOverrideMap).includes(day));
+  const sorted = sortPlacesForDay(dayPlaces, day, placeDayOrderOverrideMap, fallbackIndexMap);
+  const index = sorted.findIndex((entry) => entry.id === placeId);
+  return index >= 0 ? index + 1 : 1;
 }
 
 function isPlaceVisibleForRole(
@@ -989,6 +1089,13 @@ function arePlaceVisibilityMapsEqual(left: PlaceVisibilityMap, right: PlaceVisib
 }
 
 function arePlaceDayOverrideMapsEqual(left: PlaceDayOverrideMap, right: PlaceDayOverrideMap): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function arePlaceDayOrderOverrideMapsEqual(
+  left: PlaceDayOrderOverrideMap,
+  right: PlaceDayOrderOverrideMap
+): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
@@ -2798,6 +2905,7 @@ function PlanningScreen({
   role,
   placeVisibilityMap,
   placeDayOverrideMap,
+  placeDayOrderOverrideMap,
 }: {
   onBack: () => void;
   onDaySelect: (day: number) => void;
@@ -2807,7 +2915,12 @@ function PlanningScreen({
   role: Role | null;
   placeVisibilityMap: PlaceVisibilityMap;
   placeDayOverrideMap: PlaceDayOverrideMap;
+  placeDayOrderOverrideMap: PlaceDayOrderOverrideMap;
 }) {
+  const fallbackPlaceIndexMap = useMemo(
+    () => Object.fromEntries(PLACES.map((place, index) => [place.id, index])),
+    []
+  );
   const dayPlaces = PLACES.reduce(
     (acc, place) => {
       const daysForPlace = getEffectivePlaceDays(place, placeDayOverrideMap);
@@ -2822,10 +2935,16 @@ function PlanningScreen({
     {} as Record<number, typeof PLACES>
   );
   const visiblePlacesByDay = Object.fromEntries(
-    Object.entries(dayPlaces).map(([day, places]) => [
-      Number(day),
-      places.filter((place) => isPlaceVisibleForRole(role, place.id, placeVisibilityMap)),
-    ])
+    Object.entries(dayPlaces).map(([dayKey, places]) => {
+      const day = Number(dayKey);
+      const visiblePlaces = places.filter((place) =>
+        isPlaceVisibleForRole(role, place.id, placeVisibilityMap)
+      );
+      return [
+        day,
+        sortPlacesForDay(visiblePlaces, day, placeDayOrderOverrideMap, fallbackPlaceIndexMap),
+      ];
+    })
   );
 
   return (
@@ -3796,6 +3915,7 @@ function GuideScreen({
   role,
   placeVisibilityMap,
   placeDayOverrideMap,
+  placeDayOrderOverrideMap,
   onTogglePlaceVisibility,
   onSetPlaceDays,
   canManagePlaceVisibility,
@@ -3811,28 +3931,65 @@ function GuideScreen({
   role: Role | null;
   placeVisibilityMap: PlaceVisibilityMap;
   placeDayOverrideMap: PlaceDayOverrideMap;
+  placeDayOrderOverrideMap: PlaceDayOrderOverrideMap;
   onTogglePlaceVisibility: (placeId: string, nextState: PlaceVisibilityState) => void;
-  onSetPlaceDays: (placeId: string, nextDays: number[]) => Promise<boolean>;
+  onSetPlaceDays: (
+    placeId: string,
+    nextDays: number[],
+    dayOrderByDay: Record<number, number>
+  ) => Promise<boolean>;
   canManagePlaceVisibility: boolean;
   isOnline: boolean;
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [editingPlaceId, setEditingPlaceId] = useState<string | null>(null);
   const [draftPlaceDays, setDraftPlaceDays] = useState<number[]>([]);
+  const [draftPlaceDayOrderByDay, setDraftPlaceDayOrderByDay] = useState<Record<number, number>>({});
   const [savingPlaceDaysForId, setSavingPlaceDaysForId] = useState<string | null>(null);
+  const fallbackPlaceIndexMap = useMemo(
+    () => Object.fromEntries(PLACES_WITH_AUTO_GPS.map((place, index) => [place.id, index])),
+    []
+  );
 
-  const dayPlaces = PLACES_WITH_AUTO_GPS
+  const dayPlaces = sortPlacesForDay(
+    PLACES_WITH_AUTO_GPS
     .filter((place) => getEffectivePlaceDays(place, placeDayOverrideMap).includes(selectedDay))
-    .filter((place) => isPlaceVisibleForRole(role, place.id, placeVisibilityMap));
+    .filter((place) => isPlaceVisibleForRole(role, place.id, placeVisibilityMap)),
+    selectedDay,
+    placeDayOrderOverrideMap,
+    fallbackPlaceIndexMap
+  );
   const realDurations = useAudioDurations(dayPlaces);
   const selectedEntry = JOURS_DESTINATIONS.find((d) => d.jour === selectedDay) ?? null;
 
   const toggleDraftPlaceDay = (day: number) => {
-    setDraftPlaceDays((previous) =>
-      previous.includes(day)
+    setDraftPlaceDays((previous) => {
+      const hasDay = previous.includes(day);
+      const nextDays = hasDay
         ? previous.filter((value) => value !== day)
-        : [...previous, day].sort((left, right) => left - right)
-    );
+        : [...previous, day].sort((left, right) => left - right);
+      if (!hasDay) {
+        setDraftPlaceDayOrderByDay((previousOrder) => ({
+          ...previousOrder,
+          [day]: previousOrder[day] ?? 1,
+        }));
+      } else {
+        setDraftPlaceDayOrderByDay((previousOrder) => {
+          const nextOrder = { ...previousOrder };
+          delete nextOrder[day];
+          return nextOrder;
+        });
+      }
+      return nextDays;
+    });
+  };
+
+  const updateDraftDayPosition = (day: number, nextPosition: number) => {
+    const normalized = Math.max(1, Math.trunc(nextPosition));
+    setDraftPlaceDayOrderByDay((previous) => ({
+      ...previous,
+      [day]: normalized,
+    }));
   };
 
   return (
@@ -3934,6 +4091,11 @@ function GuideScreen({
           const isHiddenByOwner = visibilityState === "hiddenByOwner";
           const canToggleVisibility = canManagePlaceVisibility;
           const effectiveDays = getEffectivePlaceDays(item, placeDayOverrideMap);
+          const effectiveOrderForSelectedDay = getPlaceOrderPositionForDay(
+            item.id,
+            selectedDay,
+            placeDayOrderOverrideMap
+          );
           const baseDays = getBasePlaceDays(item);
           const hasDayOverride = JSON.stringify(effectiveDays) !== JSON.stringify(baseDays);
           const isEditingDays = editingPlaceId === item.id;
@@ -3984,6 +4146,11 @@ function GuideScreen({
                               Jour modifié
                             </span>
                           )}
+                          {effectiveOrderForSelectedDay !== null && (
+                            <span className="rounded-full bg-[#E8F5E9] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#2E7D32]">
+                              Position jour {selectedDay}: {effectiveOrderForSelectedDay}
+                            </span>
+                          )}
                         </div>
                       )}
                       <div className="mt-3 flex items-center justify-between gap-2">
@@ -4029,10 +4196,24 @@ function GuideScreen({
                       if (isEditingDays) {
                         setEditingPlaceId(null);
                         setDraftPlaceDays([]);
+                        setDraftPlaceDayOrderByDay({});
                         return;
                       }
                       setEditingPlaceId(item.id);
                       setDraftPlaceDays(effectiveDays);
+                      const nextOrderByDay: Record<number, number> = {};
+                      for (const day of effectiveDays) {
+                        nextOrderByDay[day] =
+                          getPlaceOrderPositionForDay(item.id, day, placeDayOrderOverrideMap) ??
+                          getPlacePositionInDay(
+                            item.id,
+                            day,
+                            placeDayOverrideMap,
+                            placeDayOrderOverrideMap,
+                            fallbackPlaceIndexMap
+                          );
+                      }
+                      setDraftPlaceDayOrderByDay(nextOrderByDay);
                     }}
                     className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
                     aria-label={`Changer les jours de ${item.name}`}
@@ -4066,6 +4247,55 @@ function GuideScreen({
                       );
                     })}
                   </div>
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-[#1565C0]">
+                      Position dans chaque jour
+                    </p>
+                    {draftPlaceDays.map((day) => {
+                      const dayLabel = formatTripDayLabel(day, tripStartDate);
+                      const dayPosition = Math.max(1, Math.trunc(draftPlaceDayOrderByDay[day] ?? 1));
+                      return (
+                        <div key={`${item.id}-order-${day}`} className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 border border-[#BFDBFE]">
+                          <span className="text-xs font-bold text-foreground">{dayLabel}</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateDraftDayPosition(day, dayPosition - 1)}
+                              className="w-7 h-7 rounded-full border border-border text-xs font-black"
+                              aria-label={`Monter ${item.name} le ${dayLabel}`}
+                            >
+                              -
+                            </button>
+                            <input
+                              type="number"
+                              min={1}
+                              value={dayPosition}
+                              onChange={(event) => {
+                                const parsed = Number.parseInt(event.target.value, 10);
+                                if (!Number.isFinite(parsed)) {
+                                  return;
+                                }
+                                updateDraftDayPosition(day, parsed);
+                              }}
+                              className="w-16 rounded-lg border border-border px-2 py-1 text-xs font-black text-center"
+                              aria-label={`Position de ${item.name} le ${dayLabel}`}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => updateDraftDayPosition(day, dayPosition + 1)}
+                              className="w-7 h-7 rounded-full border border-border text-xs font-black"
+                              aria-label={`Descendre ${item.name} le ${dayLabel}`}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {draftPlaceDays.length === 0 && (
+                      <p className="text-xs text-muted-foreground">Sélectionnez au moins un jour pour régler sa position.</p>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
@@ -4074,13 +4304,14 @@ function GuideScreen({
                           return;
                         }
                         setSavingPlaceDaysForId(item.id);
-                        const saved = await onSetPlaceDays(item.id, draftPlaceDays);
+                        const saved = await onSetPlaceDays(item.id, draftPlaceDays, draftPlaceDayOrderByDay);
                         setSavingPlaceDaysForId(null);
                         if (!saved) {
                           return;
                         }
                         setEditingPlaceId(null);
                         setDraftPlaceDays([]);
+                        setDraftPlaceDayOrderByDay({});
                       }}
                       data-tutorial-id={`guide-day-override-save-${item.id}`}
                       disabled={draftPlaceDays.length === 0 || savingPlaceDaysForId === item.id}
@@ -4092,13 +4323,14 @@ function GuideScreen({
                       type="button"
                       onClick={async () => {
                         setSavingPlaceDaysForId(item.id);
-                        const saved = await onSetPlaceDays(item.id, baseDays);
+                        const saved = await onSetPlaceDays(item.id, baseDays, {});
                         setSavingPlaceDaysForId(null);
                         if (!saved) {
                           return;
                         }
                         setEditingPlaceId(null);
                         setDraftPlaceDays([]);
+                        setDraftPlaceDayOrderByDay({});
                       }}
                       disabled={savingPlaceDaysForId === item.id}
                       className="rounded-full border border-[#BFDBFE] bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
@@ -8122,6 +8354,18 @@ export default function App() {
       return {};
     }
   });
+  const [placeDayOrderOverrideMap, setPlaceDayOrderOverrideMap] = useState<PlaceDayOrderOverrideMap>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY) || "{}");
+      return parsePlaceDayOrderOverrideMap(parsed);
+    } catch {
+      return {};
+    }
+  });
   const [documentVisibilityMap, setDocumentVisibilityMap] = useState<DocumentVisibilityMap>(() => {
     if (cloudEnabled) {
       return {};
@@ -8674,6 +8918,7 @@ export default function App() {
         localStorage.removeItem("jp-game-progress");
         localStorage.removeItem(PLACE_VISIBILITY_STORAGE_KEY);
         localStorage.removeItem(PLACE_DAY_OVERRIDES_STORAGE_KEY);
+        localStorage.removeItem(PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY);
         localStorage.removeItem(DOCUMENT_VISIBILITY_STORAGE_KEY);
         localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
@@ -8746,6 +8991,10 @@ export default function App() {
             JSON.stringify(placeDayOverrideMap)
           );
           localStorage.setItem(
+            PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY,
+            JSON.stringify(placeDayOrderOverrideMap)
+          );
+          localStorage.setItem(
             DOCUMENT_VISIBILITY_STORAGE_KEY,
             JSON.stringify(documentVisibilityMap)
           );
@@ -8811,6 +9060,7 @@ export default function App() {
     placeCommentsByPlace,
     placeVisibilityMap,
     placeDayOverrideMap,
+    placeDayOrderOverrideMap,
     documentVisibilityMap,
     destinationSurveyVotes,
     launchGateCycle,
@@ -9099,6 +9349,20 @@ export default function App() {
       }
       return arePlaceDayOverrideMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
     });
+    setPlaceDayOrderOverrideMap((previous) => {
+      const nextFromCloud = cloudSnapshot.placeDayOrderOverrides ?? {};
+      const pending = pendingPlaceDayOrderOverrideMapRef.current;
+      if (pending !== "none") {
+        const serializedCloud = JSON.stringify(nextFromCloud);
+        if (serializedCloud !== pending) {
+          return previous;
+        }
+        pendingPlaceDayOrderOverrideMapRef.current = "none";
+      }
+      return arePlaceDayOrderOverrideMapsEqual(previous, nextFromCloud)
+        ? previous
+        : nextFromCloud;
+    });
     setDocumentVisibilityMap((previous) => {
       const nextFromCloud = cloudSnapshot.documentVisibilityMap ?? {};
       const pending = pendingDocumentVisibilityMapRef.current;
@@ -9292,6 +9556,7 @@ export default function App() {
   // après un toggle local propriétaire.
   const pendingPlaceVisibilityMapRef = useRef<string | "none">("none");
   const pendingPlaceDayOverrideMapRef = useRef<string | "none">("none");
+  const pendingPlaceDayOrderOverrideMapRef = useRef<string | "none">("none");
   // Même principe que pendingPlaceVisibilityMapRef, appliqué à la visibilité
   // des documents importants.
   const pendingDocumentVisibilityMapRef = useRef<string | "none">("none");
@@ -9408,6 +9673,7 @@ export default function App() {
       placeCommentsByPlace,
       placeVisibilityMap,
       placeDayOverrides: placeDayOverrideMap,
+      placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
       destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       launchGateCycle,
@@ -9452,6 +9718,7 @@ export default function App() {
       placeComments: placeCommentsByPlace,
       placeVisibilityMap,
       placeDayOverrides: placeDayOverrideMap,
+      placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
       profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       launchGateCycle,
@@ -9493,6 +9760,7 @@ export default function App() {
     placeCommentsByPlace,
     placeVisibilityMap,
     placeDayOverrideMap,
+    placeDayOrderOverrideMap,
     documentVisibilityMap,
     destinationSurveyVotes,
     launchGateCycle,
@@ -10025,7 +10293,11 @@ export default function App() {
     });
   };
 
-  const setPlaceDaysForOwner = async (placeId: string, nextDays: number[]): Promise<boolean> => {
+  const setPlaceDaysForOwner = async (
+    placeId: string,
+    nextDays: number[],
+    dayOrderByDay: Record<number, number>
+  ): Promise<boolean> => {
     if (!canUpdateOwnerCode(familyState, profile.id)) {
       return false;
     }
@@ -10041,29 +10313,61 @@ export default function App() {
     }
 
     const baseDays = getBasePlaceDays(placeDefinition);
-    const shouldClearOverride = JSON.stringify(normalizedNextDays) === JSON.stringify(baseDays);
     const previousMap = placeDayOverrideMap;
+    const previousOrderMap = placeDayOrderOverrideMap;
     const nextMap = { ...previousMap };
+    const nextOrderMap = { ...previousOrderMap };
+
+    const normalizedOrderByDay = Object.fromEntries(
+      Object.entries(dayOrderByDay)
+        .map(([dayKey, value]) => [Number(dayKey), value])
+        .filter(
+          ([day, value]) =>
+            Number.isFinite(day) &&
+            normalizedNextDays.includes(Math.trunc(day)) &&
+            typeof value === "number" &&
+            Number.isFinite(value) &&
+            Math.trunc(value) > 0
+        )
+        .map(([day, value]) => [Math.trunc(day), Math.trunc(value as number)])
+    );
+
+    const hasOrderOverride = Object.keys(normalizedOrderByDay).length > 0;
+    const shouldClearOverride =
+      !hasOrderOverride && JSON.stringify(normalizedNextDays) === JSON.stringify(baseDays);
+
     if (shouldClearOverride) {
       delete nextMap[placeId];
     } else {
       nextMap[placeId] = normalizedNextDays;
     }
+    if (Object.keys(normalizedOrderByDay).length > 0) {
+      nextOrderMap[placeId] = normalizedOrderByDay;
+    } else {
+      delete nextOrderMap[placeId];
+    }
 
     if (cloudEnabled) {
       pendingPlaceDayOverrideMapRef.current = JSON.stringify(nextMap);
+      pendingPlaceDayOrderOverrideMapRef.current = JSON.stringify(nextOrderMap);
     }
     setPlaceDayOverrideMap(nextMap);
+    setPlaceDayOrderOverrideMap(nextOrderMap);
 
     if (!cloudEnabled) {
       return true;
     }
 
     try {
-      await setPlaceDayOverride(placeId, shouldClearOverride ? null : normalizedNextDays);
+      await setPlaceDayOverride(
+        placeId,
+        shouldClearOverride ? null : normalizedNextDays,
+        hasOrderOverride ? normalizedOrderByDay : null
+      );
       console.info("[place-day-override] sync ok", {
         placeId,
         days: shouldClearOverride ? null : normalizedNextDays,
+        dayOrderByDay: hasOrderOverride ? normalizedOrderByDay : null,
         actorProfileId: profile.id,
         actorRole: profile.role,
         familyOwnerProfileId: familyState.ownerProfileId,
@@ -10073,7 +10377,9 @@ export default function App() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       pendingPlaceDayOverrideMapRef.current = "none";
+      pendingPlaceDayOrderOverrideMapRef.current = "none";
       setPlaceDayOverrideMap(previousMap);
+      setPlaceDayOrderOverrideMap(previousOrderMap);
       setAccessDeniedMessage(
         errorMessage.includes("auth-required")
           ? "Synchronisation impossible: session cloud indisponible."
@@ -10084,6 +10390,7 @@ export default function App() {
       console.error("[place-day-override] sync failed", {
         placeId,
         days: shouldClearOverride ? null : normalizedNextDays,
+        dayOrderByDay: hasOrderOverride ? normalizedOrderByDay : null,
         actorProfileId: profile.id,
         actorRole: profile.role,
         familyOwnerProfileId: familyState.ownerProfileId,
@@ -12142,6 +12449,7 @@ const resetForProfileSwitch = () => {
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
             placeDayOverrideMap={placeDayOverrideMap}
+            placeDayOrderOverrideMap={placeDayOrderOverrideMap}
             onTogglePlaceVisibility={setPlaceVisibilityForOwner}
             onSetPlaceDays={setPlaceDaysForOwner}
             canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
@@ -12164,6 +12472,7 @@ const resetForProfileSwitch = () => {
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
             placeDayOverrideMap={placeDayOverrideMap}
+            placeDayOrderOverrideMap={placeDayOrderOverrideMap}
           />
         );
       }
@@ -12526,6 +12835,7 @@ const resetForProfileSwitch = () => {
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
             placeDayOverrideMap={placeDayOverrideMap}
+            placeDayOrderOverrideMap={placeDayOrderOverrideMap}
             onTogglePlaceVisibility={setPlaceVisibilityForOwner}
             onSetPlaceDays={setPlaceDaysForOwner}
             canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
@@ -12546,6 +12856,7 @@ const resetForProfileSwitch = () => {
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
             placeDayOverrideMap={placeDayOverrideMap}
+            placeDayOrderOverrideMap={placeDayOrderOverrideMap}
           />
         );
       case "documents":

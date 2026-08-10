@@ -144,9 +144,19 @@
         "placeDayOverrides": {
           ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           "$placeId": {
-            ".validate": "newData.val() === null || newData.child('0').isNumber()",
+            ".validate": "newData.val() === null || newData.child('0').isNumber() || newData.child('days/0').isNumber()",
             "$index": {
               ".validate": "$index.matches(/^[0-9]+$/) && newData.isNumber() && newData.val() > 0 && newData.val() <= 31"
+            },
+            "days": {
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.isNumber() && newData.val() > 0 && newData.val() <= 31"
+              }
+            },
+            "orderByDay": {
+              "$day": {
+                ".validate": "$day.matches(/^[0-9]+$/) && newData.isNumber() && newData.val() > 0 && newData.val() <= 99"
+              }
             }
           }
         },

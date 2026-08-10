@@ -1131,6 +1131,29 @@ describe("place visibility parsing and sync (story 26.2)", () => {
     });
   });
 
+  it("parses place day order overrides when present", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {},
+      placeDayOverrides: {
+        "sainte-sophie": {
+          days: [2, 3],
+          orderByDay: {
+            2: 5,
+            3: 1,
+          },
+        },
+      },
+    });
+
+    expect(snapshot.placeDayOrderOverrides).toEqual({
+      "sainte-sophie": {
+        2: 5,
+        3: 1,
+      },
+    });
+  });
+
   it("writes owner place day overrides during owner-scoped push", async () => {
     mockUpdate.mockClear();
     const db = {} as import("firebase/database").Database;
@@ -1164,6 +1187,44 @@ describe("place visibility parsing and sync (story 26.2)", () => {
     expect(updates.placeDayOverrides).toEqual({
       "sainte-sophie": [2, 3],
     });
+  });
+
+  it("writes owner place day order overrides during owner-scoped push", async () => {
+    mockUpdate.mockClear();
+    const db = {} as import("firebase/database").Database;
+
+    await pushCloudSnapshot(db, "famille-test", {
+      actorUid: "owner-uid",
+      canWriteFamilyState: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-1",
+        profiles: [{ id: "profile-1", role: "proprietaire" }],
+      },
+      ownerCodeHash: "sha256:" + "d".repeat(64),
+      profileId: "profile-1",
+      surname: "Owner",
+      role: "proprietaire",
+      checklist: {},
+      profileCustomChecklistItems: [],
+      ownerGlobalChecklistAdditions: [],
+      ownerGlobalChecklistRemovals: {},
+      placeComments: {},
+      placeDayOverrides: {
+        "sainte-sophie": [2, 3],
+      },
+      placeDayOrderOverrides: {
+        "sainte-sophie": {
+          2: 5,
+        },
+      },
+      gameResults: [],
+      gameProgress: null,
+      phase: "during",
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["placeDayOverrides/sainte-sophie/orderByDay"]).toEqual({ 2: 5 });
   });
 });
 
@@ -1202,7 +1263,32 @@ describe("pushPlaceDayOverride", () => {
     await pushPlaceDayOverride(db, familyId, "sainte-sophie", [3, 2, 2]);
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
-    expect(updates).toEqual({ "placeDayOverrides/sainte-sophie": [2, 3] });
+    expect(updates).toEqual({
+      "placeDayOverrides/sainte-sophie": {
+        days: [2, 3],
+      },
+    });
+  });
+
+  it("writes normalized day order alongside day overrides", async () => {
+    mockUpdate.mockClear();
+
+    await pushPlaceDayOverride(db, familyId, "sainte-sophie", [3, 2], {
+      2: 5,
+      3: 1,
+      9: 4,
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates).toEqual({
+      "placeDayOverrides/sainte-sophie": {
+        days: [2, 3],
+        orderByDay: {
+          2: 5,
+          3: 1,
+        },
+      },
+    });
   });
 
   it("writes null to clear an override", async () => {

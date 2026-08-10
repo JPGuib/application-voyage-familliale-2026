@@ -28,6 +28,7 @@ import type {
   CloudSyncWritePayload,
   GameDayOverride,
   PlaceDayOverrideMap,
+  PlaceDayOrderOverrideMap,
   PlaceVisibilityState,
   PlaceCommentReaction,
   ProfileGender,
@@ -322,9 +323,52 @@ function parsePlaceDayOverrides(value: unknown): PlaceDayOverrideMap {
   const next: PlaceDayOverrideMap = {};
 
   for (const [placeId, candidate] of Object.entries(raw)) {
-    const days = normalizePlaceDays(candidate);
+    const valueRecord = asRecord(candidate);
+    const days = normalizePlaceDays(valueRecord.days ?? candidate);
     if (days.length > 0) {
       next[placeId] = days;
+    }
+  }
+
+  return next;
+}
+
+function normalizeDayOrderByDay(value: unknown, allowedDays: number[]): Record<number, number> {
+  const raw = asRecord(value);
+  const allowedDaySet = new Set(allowedDays);
+  const next: Record<number, number> = {};
+
+  for (const [dayKey, positionCandidate] of Object.entries(raw)) {
+    const day = Number(dayKey);
+    if (!Number.isFinite(day) || !allowedDaySet.has(day)) {
+      continue;
+    }
+    if (typeof positionCandidate !== "number" || !Number.isFinite(positionCandidate)) {
+      continue;
+    }
+    const normalizedPosition = Math.trunc(positionCandidate);
+    if (normalizedPosition <= 0) {
+      continue;
+    }
+    next[Math.trunc(day)] = normalizedPosition;
+  }
+
+  return next;
+}
+
+function parsePlaceDayOrderOverrides(value: unknown): PlaceDayOrderOverrideMap {
+  const raw = asRecord(value);
+  const next: PlaceDayOrderOverrideMap = {};
+
+  for (const [placeId, candidate] of Object.entries(raw)) {
+    const candidateRecord = asRecord(candidate);
+    const days = normalizePlaceDays(candidateRecord.days ?? candidate);
+    const orderByDay = normalizeDayOrderByDay(
+      candidateRecord.orderByDay ?? candidateRecord.dayOrderByDay,
+      days
+    );
+    if (Object.keys(orderByDay).length > 0) {
+      next[placeId] = orderByDay;
     }
   }
 
@@ -515,6 +559,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     placeComments: parsePlaceComments(placeCommentRecords),
     placeVisibilityMap: parsePlaceVisibilityMap(root.placeVisibilityMap),
     placeDayOverrides: parsePlaceDayOverrides(root.placeDayOverrides),
+    placeDayOrderOverrides: parsePlaceDayOrderOverrides(root.placeDayOverrides),
     documentVisibilityMap: parseDocumentVisibilityMap(root.documentVisibilityMap),
     destinationSurvey: destinationSurveyRecords,
     gameDayOverrides: parseGameDayOverrides(root.gameDayOverrides),
@@ -751,6 +796,11 @@ export async function pushCloudSnapshot(
     if (payload.placeDayOverrides) {
       updates.placeDayOverrides = payload.placeDayOverrides;
     }
+    if (payload.placeDayOrderOverrides) {
+      for (const [placeId, dayOrder] of Object.entries(payload.placeDayOrderOverrides)) {
+        updates[`placeDayOverrides/${placeId}/orderByDay`] = dayOrder;
+      }
+    }
     if (payload.documentVisibilityMap) {
       updates.documentVisibilityMap = payload.documentVisibilityMap;
     }
@@ -793,7 +843,8 @@ export async function pushPlaceDayOverride(
   database: Database,
   familyId: string,
   placeId: string,
-  days: number[] | null
+  days: number[] | null,
+  dayOrderByDay?: Record<number, number> | null
 ): Promise<void> {
   const normalizedDays = days
     ? Array.from(
@@ -805,8 +856,33 @@ export async function pushPlaceDayOverride(
       ).sort((left, right) => left - right)
     : null;
 
+  const normalizedDayOrderByDay = normalizedDays
+    ? Object.fromEntries(
+        Object.entries(dayOrderByDay ?? {})
+          .map(([dayKey, position]) => [Number(dayKey), position])
+          .filter(
+            ([day, position]) =>
+              Number.isFinite(day) &&
+              normalizedDays.includes(Math.trunc(day)) &&
+              typeof position === "number" &&
+              Number.isFinite(position) &&
+              Math.trunc(position) > 0
+          )
+          .map(([day, position]) => [Math.trunc(day), Math.trunc(position as number)])
+      )
+    : {};
+
+  const placeOverrideValue = normalizedDays
+    ? {
+        days: normalizedDays,
+        ...(Object.keys(normalizedDayOrderByDay).length > 0
+          ? { orderByDay: normalizedDayOrderByDay }
+          : {}),
+      }
+    : null;
+
   await update(ref(database, familyPath(familyId)), {
-    [`placeDayOverrides/${placeId}`]: normalizedDays,
+    [`placeDayOverrides/${placeId}`]: placeOverrideValue,
   });
 }
 

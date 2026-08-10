@@ -321,12 +321,6 @@ async def handle_message(room: Room, player: Player, data: dict):
             category = room.board[player.pos]
             await broadcast(room, {"type": "moved", "player_id": player.id, "roll": roll, "pos": player.pos, "category": category})
 
-            if category in player.wedges:
-                # deja la part -> pas de nouvelle question, tour suivant
-                room.advance_turn()
-                await broadcast(room, room.public_state())
-                return
-
             q = room.pick_question(category)
             room.pending_question = {"player_id": player.id, "final": False, **q}
             await broadcast(room, {
@@ -342,8 +336,15 @@ async def handle_message(room: Room, player: Player, data: dict):
                 return
             choice = data.get("choice")
             correct = choice == pq["answer"]
+            already_had_wedge = pq["category"] in player.wedges
+            bonus_replay = False
             if correct and not pq["final"]:
                 player.wedges.add(pq["category"])
+                if already_had_wedge:
+                    # Bonus : la tuile est deja acquise, une bonne reponse
+                    # supplementaire fait rejouer le meme joueur au lieu de
+                    # passer la main.
+                    bonus_replay = True
             if correct and pq["final"]:
                 player.finished = True
                 room.winner = player.id
@@ -353,6 +354,7 @@ async def handle_message(room: Room, player: Player, data: dict):
                 "type": "answer_public", "player_id": player.id, "category": pq["category"],
                 "correct": correct, "final": pq["final"],
                 "chosen_index": choice, "correct_index": pq["answer"],
+                "bonus_replay": bonus_replay,
             })
 
             room.pending_question = None
@@ -361,7 +363,8 @@ async def handle_message(room: Room, player: Player, data: dict):
                 await broadcast(room, room.public_state())
                 return
 
-            room.advance_turn()
+            if not bonus_replay:
+                room.advance_turn()
             await broadcast(room, room.public_state())
             return
 

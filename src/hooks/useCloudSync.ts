@@ -35,6 +35,7 @@ import type {
   DocumentVisibilityState,
   GameDayOverride,
   PlaceDayOverrideMap,
+  PlaceDayOrderOverrideMap,
   PlaceVisibilityState,
   ProfileGender,
   ProfileHouseholdRole,
@@ -73,6 +74,7 @@ type PushSnapshotInput = {
   placeComments: CloudPlaceCommentsByPlace;
   placeVisibilityMap?: Record<string, PlaceVisibilityState>;
   placeDayOverrides?: PlaceDayOverrideMap;
+  placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   launchGateCycle?: number;
@@ -452,6 +454,7 @@ export function useCloudSync() {
         placeComments: snapshot.placeComments,
         placeVisibilityMap: snapshot.placeVisibilityMap,
         placeDayOverrides: snapshot.placeDayOverrides,
+        placeDayOrderOverrides: snapshot.placeDayOrderOverrides,
         documentVisibilityMap: snapshot.documentVisibilityMap,
         profileDestinationSurveyVote: snapshot.profileDestinationSurveyVote,
         launchGateCycle: snapshot.launchGateCycle,
@@ -694,7 +697,11 @@ export function useCloudSync() {
   );
 
   const setPlaceDayOverride = useCallback(
-    async (placeId: string, days: number[] | null): Promise<void> => {
+    async (
+      placeId: string,
+      days: number[] | null,
+      dayOrderByDay?: Record<number, number> | null
+    ): Promise<void> => {
       if (!isEnabled || !database || !cloudUserUid) {
         throw new Error("auth-required");
       }
@@ -709,6 +716,7 @@ export function useCloudSync() {
         familyId,
         placeId,
         days,
+        dayOrderByDay,
         actorUid: cloudUserUid,
         projectId: runtimeProjectId,
         databaseURL: runtimeDatabaseUrl,
@@ -727,11 +735,12 @@ export function useCloudSync() {
           actorUid: cloudUserUid,
         });
 
-        await pushPlaceDayOverride(database, familyId, placeId, days);
+        await pushPlaceDayOverride(database, familyId, placeId, days, dayOrderByDay);
         console.info("[place-day-override] cloud write committed", {
           familyId,
           placeId,
           days,
+          dayOrderByDay,
           actorUid: cloudUserUid,
         });
       } catch (error) {
@@ -740,6 +749,7 @@ export function useCloudSync() {
           familyId,
           placeId,
           days,
+          dayOrderByDay,
           actorUid: cloudUserUid,
           projectId: runtimeProjectId,
           databaseURL: runtimeDatabaseUrl,

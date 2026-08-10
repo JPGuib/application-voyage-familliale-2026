@@ -4,6 +4,7 @@ import App from "./App";
 import { PLACES } from "../content/places";
 
 const cloudSyncMock = vi.fn();
+const setPlaceDayOverrideMock = vi.fn();
 
 vi.mock("../hooks/useCloudSync", () => ({
   useCloudSync: () => cloudSyncMock(),
@@ -99,6 +100,8 @@ describe("App place visibility integration (story 26.2)", () => {
   beforeEach(() => {
     localStorage.clear();
     cloudSyncMock.mockReset();
+    setPlaceDayOverrideMock.mockReset();
+    setPlaceDayOverrideMock.mockResolvedValue(undefined);
   });
 
   it("hides owner-marked places from non-owner guide and planning", async () => {
@@ -113,7 +116,7 @@ describe("App place visibility integration (story 26.2)", () => {
       cloudSnapshot: makeSnapshot("utilisateur", { [hiddenPlace.id]: "hiddenByOwner" }),
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
-      setPlaceDayOverride: vi.fn().mockResolvedValue(undefined),
+      setPlaceDayOverride: setPlaceDayOverrideMock,
       familyId: "famille-voyage-2026",
     });
 
@@ -158,7 +161,7 @@ describe("App place visibility integration (story 26.2)", () => {
       cloudSnapshot: makeSnapshot("proprietaire", { [hiddenPlace.id]: "hiddenByOwner" }),
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
-      setPlaceDayOverride: vi.fn().mockResolvedValue(undefined),
+      setPlaceDayOverride: setPlaceDayOverrideMock,
       familyId: "famille-voyage-2026",
     });
 
@@ -183,6 +186,7 @@ describe("App place visibility integration (story 26.2)", () => {
 
     const movedPlace = PLACES.find((place) => place.jour?.includes(1));
     expect(movedPlace).toBeDefined();
+    const setPlaceDayOverrideMock = vi.fn().mockResolvedValue(undefined);
 
     cloudSyncMock.mockReturnValue({
       cloudEnabled: true,
@@ -192,7 +196,7 @@ describe("App place visibility integration (story 26.2)", () => {
       cloudSnapshot: makeSnapshotWithDayOverride("proprietaire", {}, { [movedPlace!.id]: [2] }),
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
-      setPlaceDayOverride: vi.fn().mockResolvedValue(undefined),
+      setPlaceDayOverride: setPlaceDayOverrideMock,
       familyId: "famille-voyage-2026",
     });
 
@@ -225,6 +229,7 @@ describe("App place visibility integration (story 26.2)", () => {
 
     const editablePlace = PLACES.find((place) => place.jour?.includes(1));
     expect(editablePlace).toBeDefined();
+    const setPlaceDayOverrideMock = vi.fn().mockResolvedValue(undefined);
 
     cloudSyncMock.mockReturnValue({
       cloudEnabled: true,
@@ -234,7 +239,7 @@ describe("App place visibility integration (story 26.2)", () => {
       cloudSnapshot: makeSnapshot("proprietaire", {}),
       pushSnapshot: vi.fn().mockResolvedValue(undefined),
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
-      setPlaceDayOverride: vi.fn().mockResolvedValue(undefined),
+      setPlaceDayOverride: setPlaceDayOverrideMock,
       familyId: "famille-voyage-2026",
     });
 
@@ -256,6 +261,17 @@ describe("App place visibility integration (story 26.2)", () => {
     fireEvent.click(document.querySelector(`[data-tutorial-id="guide-day-override-${editablePlace!.id}-2"]`) as Element);
     fireEvent.click(document.querySelector(`[data-tutorial-id="guide-day-override-${editablePlace!.id}-1"]`) as Element);
     fireEvent.click(document.querySelector(`[data-tutorial-id="guide-day-override-save-${editablePlace!.id}"]`) as Element);
+
+    await waitFor(() => {
+      expect(setPlaceDayOverrideMock).toHaveBeenCalled();
+    });
+    const [, savedDays, savedOrderByDay] = setPlaceDayOverrideMock.mock.calls.at(-1) as [
+      string,
+      number[] | null,
+      Record<number, number> | null | undefined,
+    ];
+    expect(savedDays).toEqual([2]);
+    expect(savedOrderByDay).toEqual({ 2: 1 });
 
     await waitFor(() => {
       expect(document.querySelector(`[data-tutorial-id="guide-place-${editablePlace!.id}"]`)).toBeNull();

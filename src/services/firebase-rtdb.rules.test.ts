@@ -207,6 +207,19 @@ suite("firebase rtdb rules owner phase guard", () => {
     );
   });
 
+  it("allows owner to set per-day place ordering with object payload", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb.ref(`families/${FAMILY_ID}/placeDayOverrides/sainte-sophie`).set({
+        days: [3],
+        orderByDay: {
+          3: 5,
+        },
+      })
+    );
+  });
+
   it("denies non-owner from writing place day overrides", async () => {
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
 
@@ -220,6 +233,19 @@ suite("firebase rtdb rules owner phase guard", () => {
 
     await assertFails(
       ownerDb.ref(`families/${FAMILY_ID}/placeDayOverrides/sainte-sophie`).set([0, "foo"])
+    );
+  });
+
+  it("denies invalid per-day order values in place day overrides", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb.ref(`families/${FAMILY_ID}/placeDayOverrides/sainte-sophie`).set({
+        days: [3],
+        orderByDay: {
+          3: 0,
+        },
+      })
     );
   });
 
