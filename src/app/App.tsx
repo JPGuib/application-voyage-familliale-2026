@@ -1416,14 +1416,14 @@ function CloudLoginScreen({
       setLocalError("Veuillez sélectionner un profil.");
       return;
     }
-    if (isProtected && !password.trim()) {
-      setLocalError("Veuillez saisir votre mot de passe.");
-      return;
-    }
 
     if (onSubmitLogin) {
       onSubmitLogin(selectedProfileId, password);
     } else {
+      if (isProtected && !password.trim()) {
+        setLocalError("Veuillez saisir votre mot de passe.");
+        return;
+      }
       onLoginWithSelected();
       if (isProtected) {
         onPasswordPromptValueChange(password);
@@ -1488,12 +1488,13 @@ function CloudLoginScreen({
                 type={showRecoveryAnswer ? "text" : "password"}
                 value={profileRecoveryAnswerInput}
                 onChange={(e) => onProfileRecoveryAnswerChange(e.target.value)}
-                placeholder="Votre réponse"
+                placeholder="Réponse"
                 className="mt-2 w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
               />
               <button
                 type="button"
                 onClick={() => setShowRecoveryAnswer((p) => !p)}
+                aria-label={showRecoveryAnswer ? "Masquer la réponse saisie" : "Afficher la réponse saisie"}
                 className="absolute right-3 top-[38px] text-gray-400"
               >
                 {showRecoveryAnswer ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -1508,12 +1509,13 @@ function CloudLoginScreen({
                 type={showRecoveryNewPassword ? "text" : "password"}
                 value={profileRecoveryNewPasswordInput}
                 onChange={(e) => onProfileRecoveryNewPasswordChange(e.target.value)}
-                placeholder="Minimum 4 caractères"
+                placeholder="Nouveau mot de passe"
                 className="mt-2 w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
               />
               <button
                 type="button"
                 onClick={() => setShowRecoveryNewPassword((p) => !p)}
+                aria-label={showRecoveryNewPassword ? "Masquer le nouveau mot de passe saisi" : "Afficher le nouveau mot de passe saisi"}
                 className="absolute right-3 top-[38px] text-gray-400"
               >
                 {showRecoveryNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -1528,12 +1530,13 @@ function CloudLoginScreen({
                 type={showRecoveryConfirm ? "text" : "password"}
                 value={profileRecoveryNewPasswordConfirmInput}
                 onChange={(e) => onProfileRecoveryNewPasswordConfirmChange(e.target.value)}
-                placeholder="Confirmez votre mot de passe"
+                placeholder="Confirmer le nouveau mot de passe"
                 className="mt-2 w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
               />
               <button
                 type="button"
                 onClick={() => setShowRecoveryConfirm((p) => !p)}
+                aria-label={showRecoveryConfirm ? "Masquer la confirmation saisie" : "Afficher la confirmation saisie"}
                 className="absolute right-3 top-[38px] text-gray-400"
               >
                 {showRecoveryConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -1592,6 +1595,7 @@ function CloudLoginScreen({
 
                   {selectedProfileId && isProtected && (
                     <div className="relative">
+                      <p className="text-xs font-bold text-[#FF6B3D] mb-1">Profil protégé</p>
                       <label className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
                         Mot de passe
                       </label>
@@ -1609,7 +1613,8 @@ function CloudLoginScreen({
                       <button
                         type="button"
                         onClick={() => setShowPassword((p) => !p)}
-                        className="absolute right-3 top-[38px] text-gray-400"
+                        aria-label={showPassword ? "Masquer le mot de passe saisi" : "Afficher le mot de passe saisi"}
+                        className="absolute right-3 top-[46px] text-gray-400"
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
@@ -10034,7 +10039,7 @@ export default function App() {
       if (!verified) {
         setPasswordPromptProfileId(selected.profileId);
         setPasswordPromptInput("");
-        setPasswordPromptError("Mot de passe incorrect.");
+        setPasswordPromptError("Authentification impossible. Vérifiez les informations saisies.");
         setProfileRecoveryStep("none");
         return;
       }
@@ -11107,9 +11112,10 @@ const resetForProfileSwitch = () => {
           }
           profileRecoveryStep={profileRecoveryStep}
           profileRecoveryQuestion={
-            passwordPromptProfileId
-              ? cloudSnapshot?.profiles[passwordPromptProfileId]?.recoveryQuestion ?? null
-              : null
+            (() => {
+              const targetId = passwordPromptProfileId ?? selectedLoginProfileId;
+              return targetId ? (cloudSnapshot?.profiles[targetId]?.recoveryQuestion ?? null) : null;
+            })()
           }
           profileRecoveryAnswerInput={profileRecoveryAnswerInput}
           profileRecoveryNewPasswordInput={profileRecoveryNewPasswordInput}
@@ -11199,7 +11205,7 @@ const resetForProfileSwitch = () => {
           }}
           onConfirmProfileRecoveryReset={() => {
             const genericError = "Authentification impossible. Vérifiez les informations saisies.";
-            const targetProfileId = passwordPromptProfileId;
+            const targetProfileId = passwordPromptProfileId ?? selectedLoginProfileId;
             if (!cloudSnapshot || !targetProfileId || !cloudActorUid) {
               setProfileRecoveryError(genericError);
               return;

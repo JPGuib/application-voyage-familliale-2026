@@ -27,7 +27,3 @@ COntenu :
 
 TESTER TOUTE L'APPLICATION
 * tester le mode offline
-* Tester nouvelle mire (qq bugs) 
-    - bug à la création d'un visiteur car checklist bloquée
-    - pouvoir saisr quelque lettre et ne pas tout afficher la liste
-    - il n'y a plus la possibilité de retrouver mot de passe via la question
