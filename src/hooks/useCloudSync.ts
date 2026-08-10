@@ -450,6 +450,7 @@ export function useCloudSync() {
         ownerGlobalChecklistRemovals: snapshot.ownerGlobalChecklistRemovals,
         placeComments: snapshot.placeComments,
         placeVisibilityMap: snapshot.placeVisibilityMap,
+        placeDayOverrides: snapshot.placeDayOverrides,
         documentVisibilityMap: snapshot.documentVisibilityMap,
         profileDestinationSurveyVote: snapshot.profileDestinationSurveyVote,
         launchGateCycle: snapshot.launchGateCycle,

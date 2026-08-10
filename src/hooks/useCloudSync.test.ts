@@ -36,7 +36,7 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
     pushCloudSnapshotMock.mockClear();
   });
 
-  it("forwards travelerCodeHash/travelerCodePlain and launch-gate cycle fields", async () => {
+  it("forwards travelerCodeHash/travelerCodePlain, placeDayOverrides and launch-gate cycle fields", async () => {
     const { result } = renderHook(() => useCloudSync());
 
     await waitFor(() => {
@@ -62,6 +62,9 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
       ownerGlobalChecklistAdditions: [],
       ownerGlobalChecklistRemovals: {},
       placeComments: {},
+      placeDayOverrides: {
+        "sainte-sophie": [2, 3],
+      },
       launchGateCycle: 3,
       launchGateCompletedCycleForProfile: 2,
       gameResults: [],
@@ -73,11 +76,15 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
     const mutation = pushCloudSnapshotMock.mock.calls[0][2] as {
       travelerCodeHash?: string;
       travelerCodePlain?: string;
+      placeDayOverrides?: Record<string, number[]>;
       launchGateCycle?: number;
       launchGateCompletedCycleForProfile?: number | null;
     };
     expect(mutation.travelerCodeHash).toBe(`sha256:${"b".repeat(64)}`);
     expect(mutation.travelerCodePlain).toBe("1234");
+    expect(mutation.placeDayOverrides).toEqual({
+      "sainte-sophie": [2, 3],
+    });
     expect(mutation.launchGateCycle).toBe(3);
     expect(mutation.launchGateCompletedCycleForProfile).toBe(2);
   });
