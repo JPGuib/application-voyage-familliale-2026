@@ -94,16 +94,12 @@ function mockCloudSync(snapshot: Snapshot) {
 }
 
 function loginWithProfileLabel(profileLabelPattern: RegExp) {
-  const select = screen.getByRole("combobox") as HTMLSelectElement;
-  const matchingOption = screen
-    .getAllByRole("option")
-    .find((option) => profileLabelPattern.test(option.textContent ?? ""));
+  const input = screen.getByPlaceholderText("Sélectionnez un profil");
+  const typedPrefix = profileLabelPattern.source.replace(/[^\p{L}\p{N}]/gu, "").slice(0, 3);
+  fireEvent.change(input, { target: { value: typedPrefix } });
 
-  expect(matchingOption).toBeDefined();
-
-  fireEvent.change(select, {
-    target: { value: (matchingOption as HTMLOptionElement).value },
-  });
+  const matchingProfileButton = screen.getByText(profileLabelPattern);
+  fireEvent.click(matchingProfileButton);
   fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 }
 

@@ -1602,12 +1602,26 @@ function CloudLoginScreen({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [profileSearch, setProfileSearch] = useState("");
+  const [isProfileListOpen, setIsProfileListOpen] = useState(false);
   const [showRecoveryAnswer, setShowRecoveryAnswer] = useState(false);
   const [showRecoveryNewPassword, setShowRecoveryNewPassword] = useState(false);
   const [showRecoveryConfirm, setShowRecoveryConfirm] = useState(false);
+  const profilePickerRef = useRef<HTMLDivElement | null>(null);
 
   const selectedProfile = profiles.find((p) => p.id === selectedProfileId);
   const isProtected = Boolean(selectedProfile?.passwordHash);
+
+  const formatProfileLabel = (candidate: LoginCandidate) =>
+    `${candidate.surname} ${candidate.role === "proprietaire" ? "(Propriétaire)" : candidate.role === "visiteur" ? "(Visiteur)" : "(Voyageur)"}`;
+
+  const normalizedProfileSearch = profileSearch.trim().toLocaleLowerCase("fr-FR");
+  const filteredProfiles = profiles.filter((candidate) => {
+    if (!normalizedProfileSearch) return true;
+    const surname = candidate.surname.trim().toLocaleLowerCase("fr-FR");
+    const fullLabel = formatProfileLabel(candidate).toLocaleLowerCase("fr-FR");
+    return surname.startsWith(normalizedProfileSearch) || fullLabel.startsWith(normalizedProfileSearch);
+  });
 
   const handleLogin = () => {
     setLocalError(null);
@@ -1642,6 +1656,28 @@ function CloudLoginScreen({
     setPassword("");
     setLocalError(null);
   }, [selectedProfileId]);
+
+  useEffect(() => {
+    if (!selectedProfileId) return;
+    const nextSelected = profiles.find((candidate) => candidate.id === selectedProfileId);
+    if (!nextSelected) return;
+    setProfileSearch(formatProfileLabel(nextSelected));
+  }, [selectedProfileId, profiles]);
+
+  useEffect(() => {
+    if (!isProfileListOpen) return;
+
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (!profilePickerRef.current) return;
+      if (event.target instanceof Node && profilePickerRef.current.contains(event.target)) return;
+      setIsProfileListOpen(false);
+    };
+
+    document.addEventListener("mousedown", handleDocumentClick);
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentClick);
+    };
+  }, [isProfileListOpen]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-[#FFF8F5]">
@@ -1770,25 +1806,69 @@ function CloudLoginScreen({
                     <label className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
                       Nom d&apos;utilisateur
                     </label>
-                    <div className="relative mt-2">
-                      <select
-                        value={selectedProfileId ?? ""}
+                    <div ref={profilePickerRef} className="relative mt-2">
+                      <input
+                        type="text"
+                        value={profileSearch}
                         onChange={(e) => {
-                          onSelectProfile(e.target.value);
+                          const nextValue = e.target.value;
+                          setProfileSearch(nextValue);
+                          setIsProfileListOpen(true);
                           setLocalError(null);
+
+                          if (selectedProfileId) {
+                            onSelectProfile("");
+                          }
                         }}
-                        className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D] appearance-none"
+                        onFocus={() => setIsProfileListOpen(true)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Escape") {
+                            setIsProfileListOpen(false);
+                          }
+                        }}
+                        placeholder="Sélectionnez un profil"
+                        className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setIsProfileListOpen((previous) => !previous)}
+                        aria-label="Afficher les profils disponibles"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                       >
-                        <option value="" disabled>
-                          Sélectionnez un profil
-                        </option>
-                        {profiles.map((candidate) => (
-                          <option key={candidate.id} value={candidate.id}>
-                            {candidate.surname} {candidate.role === "proprietaire" ? "(Propriétaire)" : candidate.role === "visiteur" ? "(Visiteur)" : "(Voyageur)"}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        <ChevronDown
+                          size={18}
+                          className={`transition-transform ${isProfileListOpen ? "rotate-180" : ""}`}
+                        />
+                      </button>
+
+                      {isProfileListOpen && (
+                        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                          <ul className="max-h-56 overflow-y-auto py-1">
+                            {filteredProfiles.length > 0 ? (
+                              filteredProfiles.map((candidate) => (
+                                <li key={candidate.id}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      onSelectProfile(candidate.id);
+                                      setProfileSearch(formatProfileLabel(candidate));
+                                      setIsProfileListOpen(false);
+                                      setLocalError(null);
+                                    }}
+                                    className="w-full px-3 py-2 text-left text-sm font-semibold text-gray-900 hover:bg-[#FFF0EB]"
+                                  >
+                                    {formatProfileLabel(candidate)}
+                                  </button>
+                                </li>
+                              ))
+                            ) : (
+                              <li className="px-3 py-2 text-sm font-semibold text-gray-400">
+                                Aucun profil ne commence par cette saisie.
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1813,7 +1893,7 @@ function CloudLoginScreen({
                         type="button"
                         onClick={() => setShowPassword((p) => !p)}
                         aria-label={showPassword ? "Masquer le mot de passe saisi" : "Afficher le mot de passe saisi"}
-                        className="absolute right-3 top-[46px] text-gray-400"
+                        className="absolute right-3 top-[54px] text-gray-400"
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>

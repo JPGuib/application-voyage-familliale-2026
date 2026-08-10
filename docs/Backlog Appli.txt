@@ -10,9 +10,8 @@ A FAIRE
 - Tester et revoir la nouvelle mire (qq bugs) 
     - bug à la création d'un visiteur car checklist bloquée
     - pouvoir saisr quelque lettre et ne pas tout afficher la liste
-    - il n'y a plus la possibilité de retrouver mot de passe via la question
-* petit bug : je me déplace sur la journée 8 et là je vais en arriere je clique sur "En route vers la Turquie" et ca me remet sur jour 3 par sur le jour en cours
-
+    - revoir la logique => guide devrait avoir tout et sinon un filtre ou un mode de recherche (mieux encore) ?
+    
 JEU 
 * Bien tester le trivial !
 * Trivial : possibilité de regénérer des questions ? 

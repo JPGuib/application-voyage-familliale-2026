@@ -87,16 +87,12 @@ function fillMandatoryProfileCreationFields() {
 }
 
 function loginWithProfileLabel(profileLabelPattern: RegExp) {
-  const select = screen.getByRole("combobox") as HTMLSelectElement;
-  const matchingOption = screen
-    .getAllByRole("option")
-    .find((option) => profileLabelPattern.test(option.textContent ?? ""));
+  const input = screen.getByPlaceholderText("Sélectionnez un profil");
+  const typedPrefix = profileLabelPattern.source.replace(/[^\p{L}\p{N}]/gu, "").slice(0, 3);
+  fireEvent.change(input, { target: { value: typedPrefix } });
 
-  expect(matchingOption).toBeDefined();
-
-  fireEvent.change(select, {
-    target: { value: (matchingOption as HTMLOptionElement).value },
-  });
+  const matchingProfileButton = screen.getByText(profileLabelPattern);
+  fireEvent.click(matchingProfileButton);
   fireEvent.click(screen.getByRole("button", { name: "Se connecter" }));
 }
 
@@ -158,7 +154,9 @@ describe("App cloud login flow", () => {
       expect(screen.getByRole("heading", { name: "Se connecter" })).toBeInTheDocument();
     });
 
-    expect(screen.getByRole("option", { name: /Maman/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Sélectionnez un profil")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Afficher les profils disponibles" }));
+    expect(screen.getByText(/Maman/i)).toBeInTheDocument();
   });
 
   it("lands on home screen after login when travel is already unlocked", async () => {
@@ -278,7 +276,9 @@ describe("App cloud login flow", () => {
 
     expect(screen.queryByRole("heading", { name: "Préparation des bagages" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Paramètres" })).not.toBeInTheDocument();
-    expect(screen.getByRole("option", { name: /Maman/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Sélectionnez un profil")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Afficher les profils disponibles" }));
+    expect(screen.getByText(/Maman/i)).toBeInTheDocument();
   });
 
   it("creates a new profile then completes setup and persists active profile id", async () => {
@@ -2270,7 +2270,8 @@ describe("App profile deletion (story 18.3)", () => {
     });
 
     // Maman (owner) should still appear in the profile selection list
-    expect(screen.getByRole("option", { name: /Maman/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Afficher les profils disponibles" }));
+    expect(screen.getByText(/Maman/i)).toBeInTheDocument();
   });
 
   it("does not resurrect the deleted profile if the cloud snapshot echoes the deletion before local state resets", async () => {
