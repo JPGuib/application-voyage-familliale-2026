@@ -228,8 +228,8 @@ export const DOCUMENTS: TravelDocument[] = [
   id: "hotel-pamukkale-pam-thermal",
   category: "HEBERGEMENT",
   title: "Pamukkale - Pam Thermal Hotel",
-  tag: "Pamukkale"
-  day:7
+  tag: "Pamukkale",
+  day:7,
   content:
     "Réservation famille pour le séjour à Pamukkale.\n" +
     "**Hôtel** : Pam Thermal Hotel\n" +
