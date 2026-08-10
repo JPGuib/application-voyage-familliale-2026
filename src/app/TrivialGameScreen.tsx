@@ -9,12 +9,9 @@ import { ChevronLeft } from "lucide-react";
  * PAS par la synchronisation cloud famille (useCloudSync) : c'est une connexion
  * temps réel indépendante, propre à une partie.
  *
- * ⚠️ À CONFIGURER avant mise en prod : le serveur doit être hébergé quelque part
- * d'accessible en HTTPS (Render, Fly.io, Railway...) pour pouvoir ouvrir une
- * connexion "wss://" depuis l'application, servie elle-même en HTTPS — un
- * navigateur mobile bloque les connexions "ws://" non sécurisées depuis une
- * page HTTPS (contenu mixte). Renseignez l'URL ci-dessous, ou définissez la
- * variable d'environnement Vite VITE_TRIVIAL_WS_URL.
+ * URL du serveur déployé sur Render. Peut être surchargée par la variable
+ * d'environnement Vite VITE_TRIVIAL_WS_URL si besoin (ex. pour tester en
+ * local contre un autre serveur).
  */
 const TRIVIAL_SERVER_URL: string =
   (import.meta as unknown as { env?: Record<string, string | undefined> }).env
@@ -53,6 +50,7 @@ type TRoomState = {
 
 type TQuestion = {
   type: "question";
+  player_id: string;
   category: string;
   label: string;
   question: string;
@@ -60,10 +58,14 @@ type TQuestion = {
   final: boolean;
 };
 
-type TAnswerResult = {
-  type: "answer_result";
+type TAnswerPublic = {
+  type: "answer_public";
+  player_id: string;
+  category: string;
   correct: boolean;
-  answer: number;
+  final: boolean;
+  chosen_index: number;
+  correct_index: number;
 };
 
 type HostedRoomEntry = {
@@ -128,7 +130,9 @@ export function TrivialGameScreen({
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [question, setQuestion] = useState<TQuestion | null>(null);
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
-  const [answerResult, setAnswerResult] = useState<TAnswerResult | null>(null);
+  const [answerResult, setAnswerResult] = useState<{ correct: boolean; chosenIndex: number; correctIndex: number } | null>(
+    null
+  );
   const [diceMessage, setDiceMessage] = useState<string>("");
   const [hostedRooms, setHostedRooms] = useState<HostedRoomEntry[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
@@ -230,13 +234,19 @@ export function TrivialGameScreen({
           setSelectedChoice(null);
           setAnswerResult(null);
           break;
-        case "answer_result":
-          setAnswerResult(data as TAnswerResult);
+        case "answer_public": {
+          const payload = data as TAnswerPublic;
+          setAnswerResult({
+            correct: payload.correct,
+            chosenIndex: payload.chosen_index,
+            correctIndex: payload.correct_index,
+          });
           setTimeout(() => {
             setQuestion(null);
             setAnswerResult(null);
-          }, 1600);
+          }, 1800);
           break;
+        }
         default:
           break;
       }
@@ -536,23 +546,30 @@ export function TrivialGameScreen({
       {question && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center">
           <div className="w-full max-w-[420px] bg-background rounded-t-3xl p-6 flex flex-col gap-4 shadow-2xl">
-            <div
-              className="text-xs font-black uppercase tracking-widest"
-              style={{ color: CATEGORY_COLORS[question.category] }}
-            >
-              {question.label}
-              {question.final ? " · QUESTION FINALE" : ""}
+            <div className="flex items-center justify-between">
+              <div
+                className="text-xs font-black uppercase tracking-widest"
+                style={{ color: CATEGORY_COLORS[question.category] }}
+              >
+                {question.label}
+                {question.final ? " · QUESTION FINALE" : ""}
+              </div>
+              {question.player_id !== myPlayerId && (
+                <div className="text-xs font-bold text-muted-foreground">
+                  👀 {room?.players.find((p) => p.id === question.player_id)?.name || "..."}
+                </div>
+              )}
             </div>
             <div className="text-lg font-black leading-snug">{question.question}</div>
             <div className="flex flex-col gap-2">
               {question.choices.map((choice, idx) => {
-                const isCorrect = answerResult && idx === answerResult.answer;
-                const isWrongSelected =
-                  answerResult && idx === selectedChoice && !answerResult.correct && idx !== answerResult.answer;
+                const isCorrect = answerResult && idx === answerResult.correctIndex;
+                const isChosenWrong = answerResult && idx === answerResult.chosenIndex && !answerResult.correct;
+                const isMyTurnToAnswer = question.player_id === myPlayerId;
                 return (
                   <button
                     key={idx}
-                    disabled={selectedChoice !== null}
+                    disabled={!isMyTurnToAnswer || selectedChoice !== null}
                     onClick={() => {
                       setSelectedChoice(idx);
                       send({ type: "answer", choice: idx });
@@ -560,10 +577,10 @@ export function TrivialGameScreen({
                     className={`text-left rounded-xl border px-4 py-3 text-sm font-bold transition-colors ${
                       isCorrect
                         ? "bg-[#e4f4ee] border-[#2a9d6f] text-[#1c6e4e]"
-                        : isWrongSelected
+                        : isChosenWrong
                         ? "bg-destructive/10 border-destructive text-destructive"
                         : "bg-card border-border"
-                    }`}
+                    } ${!isMyTurnToAnswer ? "opacity-90" : ""}`}
                   >
                     {choice}
                   </button>
@@ -576,8 +593,11 @@ export function TrivialGameScreen({
                   answerResult.correct ? "text-[#1c6e4e]" : "text-destructive"
                 }`}
               >
-                {answerResult.correct ? "Bonne réponse !" : "Raté cette fois-ci."}
+                {answerResult.correct ? "✅ Bonne réponse !" : "❌ Mauvaise réponse."}
               </div>
+            )}
+            {!answerResult && question.player_id !== myPlayerId && (
+              <div className="text-center text-xs text-muted-foreground">En attente de sa réponse…</div>
             )}
           </div>
         </div>
