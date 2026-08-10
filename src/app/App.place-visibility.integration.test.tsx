@@ -84,6 +84,17 @@ function makeSnapshot(activeRole: AppRole, visibility: Record<string, "visible" 
   };
 }
 
+function makeSnapshotWithDayOverride(
+  activeRole: AppRole,
+  visibility: Record<string, "visible" | "hiddenByOwner">,
+  placeDayOverrides: Record<string, number[]>
+) {
+  return {
+    ...makeSnapshot(activeRole, visibility),
+    placeDayOverrides,
+  };
+}
+
 describe("App place visibility integration (story 26.2)", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -163,5 +174,96 @@ describe("App place visibility integration (story 26.2)", () => {
 
     expect(screen.getAllByRole("button", { name: new RegExp(hiddenPlace.name, "i") }).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Masqué par le propriétaire/i).length).toBeGreaterThan(0);
+  });
+
+  it("shows an owner-moved place on its overridden day", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const movedPlace = PLACES.find((place) => place.jour?.includes(1));
+    expect(movedPlace).toBeDefined();
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-owner",
+      cloudSnapshot: makeSnapshotWithDayOverride("proprietaire", {}, { [movedPlace!.id]: [2] }),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Séjour" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("button", { name: new RegExp(movedPlace!.name, "i") })).not.toBeInTheDocument();
+
+    const daySelector = document.querySelector('[data-tutorial-id="guide-day-selector"]');
+    expect(daySelector).not.toBeNull();
+    fireEvent.click(daySelector as Element);
+    fireEvent.click(screen.getByRole("button", { name: /Jour\s+2/i }));
+
+    await waitFor(() => {
+      expect(document.querySelector(`[data-tutorial-id="guide-place-${movedPlace!.id}"]`)).not.toBeNull();
+    });
+  });
+
+  it("lets owner move a place from one day to another in the guide UI", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const editablePlace = PLACES.find((place) => place.jour?.includes(1));
+    expect(editablePlace).toBeDefined();
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-owner",
+      cloudSnapshot: makeSnapshot("proprietaire", {}),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Séjour" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
+    });
+
+    expect(document.querySelector(`[data-tutorial-id="guide-place-${editablePlace!.id}"]`)).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(`Changer les jours de ${editablePlace!.name}`, "i") }));
+    fireEvent.click(document.querySelector(`[data-tutorial-id="guide-day-override-${editablePlace!.id}-2"]`) as Element);
+    fireEvent.click(document.querySelector(`[data-tutorial-id="guide-day-override-${editablePlace!.id}-1"]`) as Element);
+    fireEvent.click(document.querySelector(`[data-tutorial-id="guide-day-override-save-${editablePlace!.id}"]`) as Element);
+
+    await waitFor(() => {
+      expect(document.querySelector(`[data-tutorial-id="guide-place-${editablePlace!.id}"]`)).toBeNull();
+    });
+
+    const daySelector = document.querySelector('[data-tutorial-id="guide-day-selector"]');
+    expect(daySelector).not.toBeNull();
+    fireEvent.click(daySelector as Element);
+    fireEvent.click(screen.getByRole("button", { name: /Jour\s+2/i }));
+
+    await waitFor(() => {
+      expect(document.querySelector(`[data-tutorial-id="guide-place-${editablePlace!.id}"]`)).not.toBeNull();
+    });
   });
 });

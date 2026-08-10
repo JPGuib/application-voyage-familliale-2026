@@ -141,6 +141,15 @@
             ".validate": "newData.val() === 'visible' || newData.val() === 'hiddenByOwner'"
           }
         },
+        "placeDayOverrides": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          "$placeId": {
+            ".validate": "newData.val() === null || newData.child('0').isNumber()",
+            "$index": {
+              ".validate": "$index.matches(/^[0-9]+$/) && newData.isNumber() && newData.val() > 0 && newData.val() <= 31"
+            }
+          }
+        },
         "documentVisibilityMap": {
           ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           "$documentId": {

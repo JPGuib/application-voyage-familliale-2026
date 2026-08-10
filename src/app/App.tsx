@@ -370,6 +370,7 @@ const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 const PROFILE_RECOVERY_ANSWER_STORAGE_KEY = "jp-profile-recovery-answers";
 const PLACE_COMMENTS_STORAGE_KEY = "jp-place-comments";
 const PLACE_VISIBILITY_STORAGE_KEY = "jp-place-visibility-map";
+const PLACE_DAY_OVERRIDES_STORAGE_KEY = "jp-place-day-overrides";
 const DOCUMENT_VISIBILITY_STORAGE_KEY = "jp-document-visibility-map";
 const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
 const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
@@ -408,6 +409,7 @@ type PlaceComment = {
 type PlaceCommentsByPlace = Record<string, Record<string, PlaceComment>>;
 type PlaceVisibilityState = "visible" | "hiddenByOwner";
 type PlaceVisibilityMap = Record<string, PlaceVisibilityState>;
+type PlaceDayOverrideMap = Record<string, number[]>;
 type DocumentVisibilityState = "visible" | "hiddenByOwner";
 type DocumentVisibilityMap = Record<string, DocumentVisibilityState>;
 
@@ -928,6 +930,48 @@ function parsePlaceVisibilityMap(raw: unknown): PlaceVisibilityMap {
   return next;
 }
 
+function normalizePlaceDays(raw: unknown): number[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      raw
+        .map((day) => (typeof day === "number" && Number.isFinite(day) ? Math.trunc(day) : Number.NaN))
+        .filter((day) => Number.isFinite(day) && day > 0)
+    )
+  ).sort((left, right) => left - right);
+}
+
+function parsePlaceDayOverrideMap(raw: unknown): PlaceDayOverrideMap {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  const next: PlaceDayOverrideMap = {};
+  for (const [placeId, value] of Object.entries(raw as Record<string, unknown>)) {
+    const normalizedDays = normalizePlaceDays(value);
+    if (normalizedDays.length > 0) {
+      next[placeId] = normalizedDays;
+    }
+  }
+
+  return next;
+}
+
+function getBasePlaceDays(place: { jour?: number[] }): number[] {
+  return normalizePlaceDays(place.jour ?? []);
+}
+
+function getEffectivePlaceDays(
+  place: { id: string; jour?: number[] },
+  overrideMap: PlaceDayOverrideMap
+): number[] {
+  const overrideDays = overrideMap[place.id];
+  return overrideDays && overrideDays.length > 0 ? overrideDays : getBasePlaceDays(place);
+}
+
 function isPlaceVisibleForRole(
   role: Role | null,
   placeId: string,
@@ -941,6 +985,10 @@ function isPlaceVisibleForRole(
 }
 
 function arePlaceVisibilityMapsEqual(left: PlaceVisibilityMap, right: PlaceVisibilityMap): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function arePlaceDayOverrideMapsEqual(left: PlaceDayOverrideMap, right: PlaceDayOverrideMap): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
@@ -2749,6 +2797,7 @@ function PlanningScreen({
   tripFinished,
   role,
   placeVisibilityMap,
+  placeDayOverrideMap,
 }: {
   onBack: () => void;
   onDaySelect: (day: number) => void;
@@ -2757,10 +2806,11 @@ function PlanningScreen({
   tripFinished: boolean;
   role: Role | null;
   placeVisibilityMap: PlaceVisibilityMap;
+  placeDayOverrideMap: PlaceDayOverrideMap;
 }) {
   const dayPlaces = PLACES.reduce(
     (acc, place) => {
-      const daysForPlace = (place as { jour?: number[] }).jour || [];
+      const daysForPlace = getEffectivePlaceDays(place, placeDayOverrideMap);
       daysForPlace.forEach((day) => {
         if (!acc[day]) {
           acc[day] = [];
@@ -3745,7 +3795,9 @@ function GuideScreen({
   commentsByPlace,
   role,
   placeVisibilityMap,
+  placeDayOverrideMap,
   onTogglePlaceVisibility,
+  onSetPlaceDays,
   canManagePlaceVisibility,
   isOnline,
 }: {
@@ -3758,17 +3810,29 @@ function GuideScreen({
   commentsByPlace: PlaceCommentsByPlace;
   role: Role | null;
   placeVisibilityMap: PlaceVisibilityMap;
+  placeDayOverrideMap: PlaceDayOverrideMap;
   onTogglePlaceVisibility: (placeId: string, nextState: PlaceVisibilityState) => void;
+  onSetPlaceDays: (placeId: string, nextDays: number[]) => void;
   canManagePlaceVisibility: boolean;
   isOnline: boolean;
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
+  const [editingPlaceId, setEditingPlaceId] = useState<string | null>(null);
+  const [draftPlaceDays, setDraftPlaceDays] = useState<number[]>([]);
 
   const dayPlaces = PLACES_WITH_AUTO_GPS
-    .filter((place) => (place as { jour?: number[] }).jour?.includes(selectedDay))
+    .filter((place) => getEffectivePlaceDays(place, placeDayOverrideMap).includes(selectedDay))
     .filter((place) => isPlaceVisibleForRole(role, place.id, placeVisibilityMap));
   const realDurations = useAudioDurations(dayPlaces);
   const selectedEntry = JOURS_DESTINATIONS.find((d) => d.jour === selectedDay) ?? null;
+
+  const toggleDraftPlaceDay = (day: number) => {
+    setDraftPlaceDays((previous) =>
+      previous.includes(day)
+        ? previous.filter((value) => value !== day)
+        : [...previous, day].sort((left, right) => left - right)
+    );
+  };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -3868,6 +3932,10 @@ function GuideScreen({
           const visibilityState = placeVisibilityMap[item.id] ?? "visible";
           const isHiddenByOwner = visibilityState === "hiddenByOwner";
           const canToggleVisibility = canManagePlaceVisibility;
+          const effectiveDays = getEffectivePlaceDays(item, placeDayOverrideMap);
+          const baseDays = getBasePlaceDays(item);
+          const hasDayOverride = JSON.stringify(effectiveDays) !== JSON.stringify(baseDays);
+          const isEditingDays = editingPlaceId === item.id;
 
           return (
             <div key={item.id} className="space-y-2">
@@ -3900,6 +3968,23 @@ function GuideScreen({
                       <p className="text-sm text-muted-foreground mt-1">
                         {item.shortDesc}
                       </p>
+                      {canManagePlaceVisibility && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {effectiveDays.map((day) => (
+                            <span
+                              key={`${item.id}-day-${day}`}
+                              className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
+                            >
+                              {formatTripDayLabel(day, tripStartDate)}
+                            </span>
+                          ))}
+                          {hasDayOverride && (
+                            <span className="rounded-full bg-[#FFF3E0] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#EF6C00]">
+                              Jour modifié
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <div className="mt-3 flex items-center justify-between gap-2">
                         <div className="flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
                           <span className="rounded-full bg-muted px-2.5 py-1">
@@ -3924,18 +4009,92 @@ function GuideScreen({
                 </div>
               </button>
               {canToggleVisibility && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onTogglePlaceVisibility(item.id, isHiddenByOwner ? "visible" : "hiddenByOwner");
-                  }}
-                  className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${
-                    isHiddenByOwner ? "bg-[#FDECEA] text-[#B71C1C]" : "bg-[#E8F5E9] text-[#1B5E20]"
-                  }`}
-                  aria-label={`Basculer visibilité de ${item.name}`}
-                >
-                  {isHiddenByOwner ? "Rendre visible" : "Masquer pour non-propriétaires"}
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onTogglePlaceVisibility(item.id, isHiddenByOwner ? "visible" : "hiddenByOwner");
+                    }}
+                    className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${
+                      isHiddenByOwner ? "bg-[#FDECEA] text-[#B71C1C]" : "bg-[#E8F5E9] text-[#1B5E20]"
+                    }`}
+                    aria-label={`Basculer visibilité de ${item.name}`}
+                  >
+                    {isHiddenByOwner ? "Rendre visible" : "Masquer pour non-propriétaires"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isEditingDays) {
+                        setEditingPlaceId(null);
+                        setDraftPlaceDays([]);
+                        return;
+                      }
+                      setEditingPlaceId(item.id);
+                      setDraftPlaceDays(effectiveDays);
+                    }}
+                    className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
+                    aria-label={`Changer les jours de ${item.name}`}
+                  >
+                    {isEditingDays ? "Annuler" : "Changer les jours"}
+                  </button>
+                </div>
+              )}
+              {canManagePlaceVisibility && isEditingDays && (
+                <div className="rounded-2xl border border-[#BFDBFE] bg-[#EFF6FF] p-3 space-y-3">
+                  <p className="text-xs font-black uppercase tracking-widest text-[#1565C0]">
+                    Jours affichés pour ce lieu
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {JOURS_DESTINATIONS.map((entry) => {
+                      const isSelected = draftPlaceDays.includes(entry.jour);
+                      return (
+                        <button
+                          key={`${item.id}-override-day-${entry.jour}`}
+                          type="button"
+                          onClick={() => toggleDraftPlaceDay(entry.jour)}
+                          data-tutorial-id={`guide-day-override-${item.id}-${entry.jour}`}
+                          className={`rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-widest ${
+                            isSelected
+                              ? "bg-[#1565C0] text-white"
+                              : "bg-background text-muted-foreground border border-border"
+                          }`}
+                        >
+                          {formatTripDayLabel(entry.jour, tripStartDate)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (draftPlaceDays.length === 0) {
+                          return;
+                        }
+                        onSetPlaceDays(item.id, draftPlaceDays);
+                        setEditingPlaceId(null);
+                        setDraftPlaceDays([]);
+                      }}
+                      data-tutorial-id={`guide-day-override-save-${item.id}`}
+                      disabled={draftPlaceDays.length === 0}
+                      className="rounded-full bg-[#1565C0] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Enregistrer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSetPlaceDays(item.id, baseDays);
+                        setEditingPlaceId(null);
+                        setDraftPlaceDays([]);
+                      }}
+                      className="rounded-full border border-[#BFDBFE] bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
+                    >
+                      Réinitialiser
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           );
@@ -7938,6 +8097,18 @@ export default function App() {
       return {};
     }
   });
+  const [placeDayOverrideMap, setPlaceDayOverrideMap] = useState<PlaceDayOverrideMap>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(PLACE_DAY_OVERRIDES_STORAGE_KEY) || "{}");
+      return parsePlaceDayOverrideMap(parsed);
+    } catch {
+      return {};
+    }
+  });
   const [documentVisibilityMap, setDocumentVisibilityMap] = useState<DocumentVisibilityMap>(() => {
     if (cloudEnabled) {
       return {};
@@ -8489,6 +8660,7 @@ export default function App() {
         localStorage.removeItem("jp-game-history");
         localStorage.removeItem("jp-game-progress");
         localStorage.removeItem(PLACE_VISIBILITY_STORAGE_KEY);
+        localStorage.removeItem(PLACE_DAY_OVERRIDES_STORAGE_KEY);
         localStorage.removeItem(DOCUMENT_VISIBILITY_STORAGE_KEY);
         localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
@@ -8557,6 +8729,10 @@ export default function App() {
             JSON.stringify(placeVisibilityMap)
           );
           localStorage.setItem(
+            PLACE_DAY_OVERRIDES_STORAGE_KEY,
+            JSON.stringify(placeDayOverrideMap)
+          );
+          localStorage.setItem(
             DOCUMENT_VISIBILITY_STORAGE_KEY,
             JSON.stringify(documentVisibilityMap)
           );
@@ -8621,6 +8797,7 @@ export default function App() {
     ownerGlobalChecklistRemovals,
     placeCommentsByPlace,
     placeVisibilityMap,
+    placeDayOverrideMap,
     documentVisibilityMap,
     destinationSurveyVotes,
     launchGateCycle,
@@ -8897,6 +9074,18 @@ export default function App() {
       }
       return arePlaceVisibilityMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
     });
+    setPlaceDayOverrideMap((previous) => {
+      const nextFromCloud = cloudSnapshot.placeDayOverrides ?? {};
+      const pending = pendingPlaceDayOverrideMapRef.current;
+      if (pending !== "none") {
+        const serializedCloud = JSON.stringify(nextFromCloud);
+        if (serializedCloud !== pending) {
+          return previous;
+        }
+        pendingPlaceDayOverrideMapRef.current = "none";
+      }
+      return arePlaceDayOverrideMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
+    });
     setDocumentVisibilityMap((previous) => {
       const nextFromCloud = cloudSnapshot.documentVisibilityMap ?? {};
       const pending = pendingDocumentVisibilityMapRef.current;
@@ -9089,6 +9278,7 @@ export default function App() {
   // lieux: évite le clignotement quand un snapshot cloud ancien revient juste
   // après un toggle local propriétaire.
   const pendingPlaceVisibilityMapRef = useRef<string | "none">("none");
+  const pendingPlaceDayOverrideMapRef = useRef<string | "none">("none");
   // Même principe que pendingPlaceVisibilityMapRef, appliqué à la visibilité
   // des documents importants.
   const pendingDocumentVisibilityMapRef = useRef<string | "none">("none");
@@ -9204,6 +9394,7 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       placeCommentsByPlace,
       placeVisibilityMap,
+      placeDayOverrides: placeDayOverrideMap,
       documentVisibilityMap,
       destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       launchGateCycle,
@@ -9247,6 +9438,7 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       placeComments: placeCommentsByPlace,
       placeVisibilityMap,
+      placeDayOverrides: placeDayOverrideMap,
       documentVisibilityMap,
       profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       launchGateCycle,
@@ -9287,6 +9479,7 @@ export default function App() {
     ownerGlobalChecklistRemovals,
     placeCommentsByPlace,
     placeVisibilityMap,
+    placeDayOverrideMap,
     documentVisibilityMap,
     destinationSurveyVotes,
     launchGateCycle,
@@ -9814,6 +10007,36 @@ export default function App() {
       }
       if (cloudEnabled) {
         pendingPlaceVisibilityMapRef.current = JSON.stringify(next);
+      }
+      return next;
+    });
+  };
+
+  const setPlaceDaysForOwner = (placeId: string, nextDays: number[]) => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return;
+    }
+
+    const normalizedNextDays = normalizePlaceDays(nextDays);
+    if (normalizedNextDays.length === 0) {
+      return;
+    }
+
+    const placeDefinition = PLACES_WITH_AUTO_GPS.find((candidate) => candidate.id === placeId);
+    if (!placeDefinition) {
+      return;
+    }
+
+    const baseDays = getBasePlaceDays(placeDefinition);
+    setPlaceDayOverrideMap((previous) => {
+      const next = { ...previous };
+      if (JSON.stringify(normalizedNextDays) === JSON.stringify(baseDays)) {
+        delete next[placeId];
+      } else {
+        next[placeId] = normalizedNextDays;
+      }
+      if (cloudEnabled) {
+        pendingPlaceDayOverrideMapRef.current = JSON.stringify(next);
       }
       return next;
     });
@@ -11865,7 +12088,9 @@ const resetForProfileSwitch = () => {
             commentsByPlace={placeCommentsByPlace}
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
+            placeDayOverrideMap={placeDayOverrideMap}
             onTogglePlaceVisibility={setPlaceVisibilityForOwner}
+            onSetPlaceDays={setPlaceDaysForOwner}
             canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
             isOnline={isOnline}
           />
@@ -11885,6 +12110,7 @@ const resetForProfileSwitch = () => {
             tripFinished={tripFinished}
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
+            placeDayOverrideMap={placeDayOverrideMap}
           />
         );
       }
@@ -11909,6 +12135,7 @@ const resetForProfileSwitch = () => {
             onBack={() => goToScreen("dashboard")}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
+            placeDayOverrideMap={placeDayOverrideMap}
             onNavigateToGuide={(day) => {
               setGuideSelectedDay(day);
               goToScreen("guide");
@@ -12245,7 +12472,9 @@ const resetForProfileSwitch = () => {
             commentsByPlace={placeCommentsByPlace}
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
+            placeDayOverrideMap={placeDayOverrideMap}
             onTogglePlaceVisibility={setPlaceVisibilityForOwner}
+            onSetPlaceDays={setPlaceDaysForOwner}
             canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
             isOnline={isOnline}
           />
@@ -12263,6 +12492,7 @@ const resetForProfileSwitch = () => {
             tripFinished={tripFinished}
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
+            placeDayOverrideMap={placeDayOverrideMap}
           />
         );
       case "documents":
@@ -12283,6 +12513,7 @@ const resetForProfileSwitch = () => {
             onBack={() => goToScreen("dashboard")}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
+            placeDayOverrideMap={placeDayOverrideMap}
             onNavigateToGuide={(day) => {
               setGuideSelectedDay(day);
               goToScreen("guide");

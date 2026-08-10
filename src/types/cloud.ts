@@ -46,6 +46,7 @@ export type CloudGameProgress = {
 export type PlaceCommentReaction = "like" | "dislike";
 
 export type PlaceVisibilityState = "visible" | "hiddenByOwner";
+export type PlaceDayOverrideMap = Record<string, number[]>;
 export type DocumentVisibilityState = "visible" | "hiddenByOwner";
 
 export type CloudPlaceComment = {
@@ -126,6 +127,7 @@ export type CloudSyncSnapshot = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
   placeVisibilityMap: Record<string, PlaceVisibilityState>;
+  placeDayOverrides?: PlaceDayOverrideMap;
   documentVisibilityMap: Record<string, DocumentVisibilityState>;
   destinationSurvey: CloudDestinationSurveyByProfile;
   gameDayOverrides: Record<number, GameDayOverride>;
@@ -161,6 +163,7 @@ export type CloudSyncWritePayload = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
   placeVisibilityMap?: Record<string, PlaceVisibilityState>;
+  placeDayOverrides?: PlaceDayOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   launchGateCycle?: number;

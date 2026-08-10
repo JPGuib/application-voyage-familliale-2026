@@ -27,6 +27,7 @@ import type {
   CloudSyncSnapshot,
   CloudSyncWritePayload,
   GameDayOverride,
+  PlaceDayOverrideMap,
   PlaceVisibilityState,
   PlaceCommentReaction,
   ProfileGender,
@@ -297,6 +298,34 @@ function parsePlaceVisibilityMap(value: unknown): Record<string, PlaceVisibility
   return next;
 }
 
+function normalizePlaceDays(value: unknown): number[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      value
+        .map((day) => (typeof day === "number" && Number.isFinite(day) ? Math.trunc(day) : Number.NaN))
+        .filter((day) => Number.isFinite(day) && day > 0)
+    )
+  ).sort((left, right) => left - right);
+}
+
+function parsePlaceDayOverrides(value: unknown): PlaceDayOverrideMap {
+  const raw = asRecord(value);
+  const next: PlaceDayOverrideMap = {};
+
+  for (const [placeId, candidate] of Object.entries(raw)) {
+    const days = normalizePlaceDays(candidate);
+    if (days.length > 0) {
+      next[placeId] = days;
+    }
+  }
+
+  return next;
+}
+
 function parseDocumentVisibilityMap(value: unknown): Record<string, DocumentVisibilityState> {
   const raw = asRecord(value);
   const next: Record<string, DocumentVisibilityState> = {};
@@ -480,6 +509,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     ownerGlobalChecklistRemovals: parseChecklistRemovals(ownerGlobalRemovalRecords),
     placeComments: parsePlaceComments(placeCommentRecords),
     placeVisibilityMap: parsePlaceVisibilityMap(root.placeVisibilityMap),
+    placeDayOverrides: parsePlaceDayOverrides(root.placeDayOverrides),
     documentVisibilityMap: parseDocumentVisibilityMap(root.documentVisibilityMap),
     destinationSurvey: destinationSurveyRecords,
     gameDayOverrides: parseGameDayOverrides(root.gameDayOverrides),
@@ -712,6 +742,9 @@ export async function pushCloudSnapshot(
     updates.checklistCatalogRemovals = payload.ownerGlobalChecklistRemovals;
     if (payload.placeVisibilityMap) {
       updates.placeVisibilityMap = payload.placeVisibilityMap;
+    }
+    if (payload.placeDayOverrides) {
+      updates.placeDayOverrides = payload.placeDayOverrides;
     }
     if (payload.documentVisibilityMap) {
       updates.documentVisibilityMap = payload.documentVisibilityMap;

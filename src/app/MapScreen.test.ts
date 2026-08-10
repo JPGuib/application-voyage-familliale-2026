@@ -70,6 +70,17 @@ describe("buildMarkers", () => {
     expect(markers.every((m) => m.placeCount === 2)).toBe(true);
   });
 
+  it("compte les lieux selon les jours surchargés par le propriétaire", () => {
+    const markers = buildMarkers([1, 2], { "place-1": [2] });
+    const day1Markers = markers.filter((marker) => marker.day === 1);
+    const day2Markers = markers.filter((marker) => marker.day === 2);
+
+    expect(day1Markers).toHaveLength(2);
+    expect(day1Markers.every((marker) => marker.placeCount === 1)).toBe(true);
+    expect(day2Markers).toHaveLength(1);
+    expect(day2Markers[0].placeCount).toBe(2);
+  });
+
   it("retourne tous les marqueurs de plusieurs jours en mode all-days", () => {
     // Jour 1 : 2 markers, Jour 2 : 1 marker (toutes les slots identiques)
     const markers = buildMarkers([1, 2]);

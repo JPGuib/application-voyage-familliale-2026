@@ -33,6 +33,7 @@ import type {
   CloudSyncWritePayload,
   DocumentVisibilityState,
   GameDayOverride,
+  PlaceDayOverrideMap,
   PlaceVisibilityState,
   ProfileGender,
   ProfileHouseholdRole,
@@ -70,6 +71,7 @@ type PushSnapshotInput = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
   placeVisibilityMap?: Record<string, PlaceVisibilityState>;
+  placeDayOverrides?: PlaceDayOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   launchGateCycle?: number;

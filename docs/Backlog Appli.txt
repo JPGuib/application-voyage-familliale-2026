@@ -15,6 +15,7 @@ A FAIRE
     - il n'y a plus la possibilité de retrouver mot de passe via la question
 
 JEU 
+* Bien tester le trivial !
 * Trivial : possibilité de regénérer des questions ? 
 * Trivial : avoir la Turquie mais pas que avec bcp de questions
 

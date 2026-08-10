@@ -199,6 +199,30 @@ suite("firebase rtdb rules owner phase guard", () => {
     );
   });
 
+  it("allows owner to move a place to another day", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb.ref(`families/${FAMILY_ID}/placeDayOverrides/sainte-sophie`).set([3])
+    );
+  });
+
+  it("denies non-owner from writing place day overrides", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/placeDayOverrides/sainte-sophie`).set([3])
+    );
+  });
+
+  it("denies invalid place day override values", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb.ref(`families/${FAMILY_ID}/placeDayOverrides/sainte-sophie`).set([0, "foo"])
+    );
+  });
+
   it("allows non-owner to write profile-scoped checklist", async () => {
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
 
