@@ -301,9 +301,10 @@ describe("App cloud login flow", () => {
     fillMandatoryProfileCreationFields();
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
-    await waitFor(() => {
-      expect(claimRoleForProfileMock).toHaveBeenCalledTimes(1);
-    });
+    // claimRoleForProfile is no longer called in cloud mode: the auto-push
+    // handles the Firebase write, avoiding the transaction-failure re-sync
+    // that was triggering resetForProfileSwitch.
+    expect(claimRoleForProfileMock).not.toHaveBeenCalled();
 
     await waitFor(() => {
       expect(localStorage.getItem("jp-active-profile-id")).toMatch(/^profile-/);
@@ -994,19 +995,23 @@ describe("App cloud login flow", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Continuer" }));
 
-    // Un visiteur atterrit sur le Dashboard (accès indépendant de la phase),
-    // jamais sur la Checklist (réservée aux voyageurs) : ce landing screen
-    // confirme que le rôle final est bien resté "visiteur".
+    // claimRoleForProfile n'est plus appelé en mode cloud (supprimé pour éviter
+    // le reset via re-sync Firebase). La vérification porte sur le rôle poussé
+    // par l'auto-push, pas sur l'écho de la transaction.
+    expect(claimRoleForProfileMock).not.toHaveBeenCalled();
+
+    // Le visiteur atterrit sur la LaunchGateScreen ("On est parti !") puisque
+    // son cycle launch gate n'est pas encore marqué complété.
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /Jour\s+1/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "On est parti !" })).toBeInTheDocument();
     });
 
     const activeProfileId = localStorage.getItem("jp-active-profile-id")!;
     await waitFor(() => {
-      const finalProfile = currentSnapshot.profiles[
-        activeProfileId as keyof typeof currentSnapshot.profiles
-      ] as unknown as { role?: string } | undefined;
-      expect(finalProfile?.role).toBe("visiteur");
+      const matchingCall = pushSnapshotMock.mock.calls.find(
+        (call) => (call[0] as { profileId: string }).profileId === activeProfileId
+      );
+      expect((matchingCall?.[0] as { role?: string })?.role).toBe("visiteur");
     });
   });
 

@@ -12384,16 +12384,17 @@ const resetForProfileSwitch = () => {
                 setScreen(getSafeScreen("visiteur", phase));
               } else {
                 // Pre-set the locally-computed role so profileReady becomes true
-                // immediately. claimRoleForProfile below runs a Firebase transaction
-                // on the whole family root, which security rules structurally deny
-                // (no ancestor write granted), causing Firebase to retry forever
-                // without settling. Without this pre-set the user would be stuck on
-                // ProfileSetupScreen until the transaction eventually resolves.
+                // immediately. claimRoleForProfile is intentionally NOT called for
+                // cloud mode: its root-level Firebase transaction is denied by
+                // security rules, causing a re-sync that temporarily removes the
+                // new profile from the snapshot and triggers resetForProfileSwitch.
+                // The auto-push handles the actual Firebase write instead.
                 setProfile((current) => ({ ...current, surname: normalizedSurname, role: assignedRole }));
                 setScreen(getSafeScreen(assignedRole, phase));
               }
 
-              if (cloudEnabled) {
+              if (!cloudEnabled) {
+                // Offline mode: claim the role atomically via the local transaction.
                 const result = await claimRoleForProfile(profile.id, normalizedSurname);
                 if (result) {
                   nextFamilyState = isVisitorOverride
