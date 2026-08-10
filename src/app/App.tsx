@@ -12376,6 +12376,18 @@ const resetForProfileSwitch = () => {
                 assignedRole = "visiteur";
                 pendingProfileRoleRef.current = { profileId: profile.id, role: "visiteur" };
                 setProfile((current) => ({ ...current, surname: normalizedSurname, role: "visiteur" }));
+                // Navigate away from checklist immediately so the access guard
+                // doesn't flash "réservée aux voyageurs" on the visitor's screen.
+                setScreen(getSafeScreen("visiteur", phase));
+              } else {
+                // Pre-set the locally-computed role so profileReady becomes true
+                // immediately. claimRoleForProfile below runs a Firebase transaction
+                // on the whole family root, which security rules structurally deny
+                // (no ancestor write granted), causing Firebase to retry forever
+                // without settling. Without this pre-set the user would be stuck on
+                // ProfileSetupScreen until the transaction eventually resolves.
+                setProfile((current) => ({ ...current, surname: normalizedSurname, role: assignedRole }));
+                setScreen(getSafeScreen(assignedRole, phase));
               }
 
               if (cloudEnabled) {

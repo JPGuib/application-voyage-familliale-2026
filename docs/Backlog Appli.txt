@@ -10,7 +10,8 @@ A FAIRE
 - Tester et revoir la nouvelle mire (qq bugs) 
     - bug à la création d'un visiteur car checklist bloquée
 - revoir la logique => guide devrait avoir tout et sinon un filtre ou un mode de recherche (mieux encore) ?
-    
+
+
 JEU 
 * Bien tester le trivial !
 * Trivial : possibilité de regénérer des questions ? 
@@ -20,7 +21,6 @@ JEU
 COntenu : 
 * Revoir tous les quizz ! avec les quides et faire un gros challenge en fin de séjour ?
 * revoir les coordonnées GPS
-* Quelque chose sur le vin et la bière -> visite guidée non vue dans culture !
 * revoir les textes et mettre en gras
 
 TESTER TOUTE L'APPLICATION
