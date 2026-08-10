@@ -9399,6 +9399,7 @@ export default function App() {
       // once the deletion completes, so skip here to avoid racing it).
       // If we were previously hydrated with this profile, fail closed to profile selection.
       if (hydratedProfileId === profile.id && !isDeletingProfileRef.current) {
+        console.warn(`[diag] resetForProfileSwitch via hydration — profileId=${profile.id} hydratedId=${hydratedProfileId}`);
         resetForProfileSwitch();
       }
       return;
@@ -10853,6 +10854,7 @@ export default function App() {
   };
 
 const resetForProfileSwitch = () => {
+    console.warn(`[diag] resetForProfileSwitch called — isAuthenticated=${String(isAuthenticated)} profileId=${profile.id}`);
     try {
       localStorage.removeItem(ACTIVE_PROFILE_ID_KEY);
       localStorage.removeItem("jp-screen");
@@ -12205,6 +12207,7 @@ const resetForProfileSwitch = () => {
           onCancel={
             cloudEnabled
               ? () => {
+                  console.warn(`[diag] ProfileSetupScreen onCancel — profileId=${profile.id}`);
                   setProfile({
                     id: createProfileId(),
                     surname: "",
