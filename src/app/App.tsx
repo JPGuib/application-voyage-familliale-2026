@@ -2410,6 +2410,7 @@ function DashboardScreen({
   canAccessOfflineMedia,
   isOnline,
   onNavigate,
+  onNavigateToTodayGuide,
   onStartTutorial,
   currentDay,
   tripStartDate,
@@ -2425,6 +2426,7 @@ function DashboardScreen({
   canAccessOfflineMedia: boolean;
   isOnline: boolean;
   onNavigate: (s: Screen) => void;
+  onNavigateToTodayGuide: () => void;
   onStartTutorial: () => void;
   currentDay: number;
   tripStartDate: string | null;
@@ -2511,7 +2513,7 @@ function DashboardScreen({
       {/* Today card */}
       <div className="px-4 -mt-4 relative z-10">
         <button
-          onClick={() => onNavigate("guide")}
+          onClick={onNavigateToTodayGuide}
           data-tutorial-id="dashboard-today-card"
           className="w-full text-left bg-card rounded-2xl shadow-md p-4 border border-border active:scale-95 transition-transform"
         >
@@ -12486,6 +12488,10 @@ const resetForProfileSwitch = () => {
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
           isOnline={isOnline}
             onNavigate={goToScreen}
+            onNavigateToTodayGuide={() => {
+              setGuideSelectedDay(currentDay);
+              goToScreen("guide");
+            }}
             onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
@@ -12874,6 +12880,10 @@ const resetForProfileSwitch = () => {
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
           isOnline={isOnline}
             onNavigate={goToScreen}
+            onNavigateToTodayGuide={() => {
+              setGuideSelectedDay(currentDay);
+              goToScreen("guide");
+            }}
             onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
             tripStartDate={tripStartDate}

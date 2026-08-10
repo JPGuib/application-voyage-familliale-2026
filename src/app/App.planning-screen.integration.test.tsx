@@ -391,4 +391,61 @@ describe("App Planning Screen integration", () => {
       expect(screen.queryByRole("heading", { name: /Planning complet/ })).not.toBeInTheDocument();
     });
   });
+
+  it("resets guide day to current day from dashboard destination card", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const snapshot = makeSnapshot("during");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    const { container } = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Jour 1/ })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Séjour" }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
+    });
+
+    const selectorButton = container.querySelector('[data-tutorial-id="guide-day-selector"]');
+    expect(selectorButton).not.toBeNull();
+    fireEvent.click(selectorButton as Element);
+
+    const nonCurrentDayOption =
+      container.querySelector('[data-tutorial-id="guide-day-option-3"]') ??
+      container.querySelector('[data-tutorial-id="guide-day-option-2"]');
+    expect(nonCurrentDayOption).not.toBeNull();
+    fireEvent.click(nonCurrentDayOption as Element);
+
+    const guideBack = container.querySelector('[data-tutorial-id="guide-back"]');
+    expect(guideBack).not.toBeNull();
+    fireEvent.click(guideBack as Element);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Jour 1/ })).toBeInTheDocument();
+    });
+
+    const todayCard = container.querySelector('[data-tutorial-id="dashboard-today-card"]');
+    expect(todayCard).not.toBeNull();
+    fireEvent.click(todayCard as Element);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
+    });
+
+    const selectorButtonAfterReturn = container.querySelector('[data-tutorial-id="guide-day-selector"]');
+    expect(selectorButtonAfterReturn).not.toBeNull();
+    expect(selectorButtonAfterReturn?.textContent).toMatch(/Jour\s+1/i);
+  });
 });
