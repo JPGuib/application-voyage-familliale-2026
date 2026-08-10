@@ -545,7 +545,7 @@ export function TrivialGameScreen({
 
       {question && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center">
-          <div className="w-full max-w-[420px] bg-background rounded-t-3xl p-6 flex flex-col gap-4 shadow-2xl">
+          <div className="w-full max-w-[420px] max-h-[85vh] overflow-y-auto bg-background rounded-t-3xl p-6 flex flex-col gap-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div
                 className="text-xs font-black uppercase tracking-widest"
