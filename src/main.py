@@ -308,8 +308,8 @@ async def handle_message(room: Room, player: Player, data: dict):
                 category = random.choice(CATEGORIES)
                 q = room.pick_question(category)
                 room.pending_question = {"player_id": player.id, "final": True, **q}
-                await send_to(player, {
-                    "type": "question", "category": q["category"],
+                await broadcast(room, {
+                    "type": "question", "player_id": player.id, "category": q["category"],
                     "label": CATEGORY_LABELS[q["category"]],
                     "question": q["question"], "choices": q["choices"], "final": True,
                 })
@@ -329,8 +329,8 @@ async def handle_message(room: Room, player: Player, data: dict):
 
             q = room.pick_question(category)
             room.pending_question = {"player_id": player.id, "final": False, **q}
-            await send_to(player, {
-                "type": "question", "category": q["category"],
+            await broadcast(room, {
+                "type": "question", "player_id": player.id, "category": q["category"],
                 "label": CATEGORY_LABELS[q["category"]],
                 "question": q["question"], "choices": q["choices"], "final": False,
             })
@@ -349,10 +349,10 @@ async def handle_message(room: Room, player: Player, data: dict):
                 room.winner = player.id
                 room.state = "finished"
 
-            await send_to(player, {"type": "answer_result", "correct": correct, "answer": pq["answer"]})
             await broadcast(room, {
                 "type": "answer_public", "player_id": player.id, "category": pq["category"],
                 "correct": correct, "final": pq["final"],
+                "chosen_index": choice, "correct_index": pq["answer"],
             })
 
             room.pending_question = None
