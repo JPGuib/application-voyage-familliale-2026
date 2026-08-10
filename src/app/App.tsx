@@ -1878,25 +1878,27 @@ function CloudLoginScreen({
                       <label className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
                         Mot de passe
                       </label>
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => {
-                          setPassword(e.target.value);
-                          setLocalError(null);
-                        }}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Votre mot de passe"
-                        className="mt-2 w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((p) => !p)}
-                        aria-label={showPassword ? "Masquer le mot de passe saisi" : "Afficher le mot de passe saisi"}
-                        className="absolute right-3 top-[54px] text-gray-400"
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
+                      <div className="relative mt-2">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            setLocalError(null);
+                          }}
+                          onKeyDown={handleKeyDown}
+                          placeholder="Votre mot de passe"
+                          className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-3 pr-10 text-sm font-semibold text-gray-900 outline-none focus:border-[#FF6B3D] focus:ring-1 focus:ring-[#FF6B3D]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((p) => !p)}
+                          aria-label={showPassword ? "Masquer le mot de passe saisi" : "Afficher le mot de passe saisi"}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
 
                       {profileRecoveryQuestion && (
                         <div className="mt-2 text-right">
