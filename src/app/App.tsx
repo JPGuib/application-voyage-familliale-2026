@@ -1047,15 +1047,40 @@ function sortPlacesForDay<T extends { id: string }>(
   orderMap: PlaceDayOrderOverrideMap,
   fallbackIndexMap: Record<string, number>
 ): T[] {
-  return [...places].sort((left, right) => {
-    const leftPosition = getPlaceOrderPositionForDay(left.id, day, orderMap) ?? Number.POSITIVE_INFINITY;
-    const rightPosition = getPlaceOrderPositionForDay(right.id, day, orderMap) ?? Number.POSITIVE_INFINITY;
-    if (leftPosition !== rightPosition) {
-      return leftPosition - rightPosition;
+  const base = [...places].sort(
+    (left, right) =>
+      (fallbackIndexMap[left.id] ?? Number.MAX_SAFE_INTEGER) -
+      (fallbackIndexMap[right.id] ?? Number.MAX_SAFE_INTEGER)
+  );
+
+  const positioned = base
+    .map((item) => ({
+      item,
+      desiredPosition: getPlaceOrderPositionForDay(item.id, day, orderMap),
+      fallbackIndex: fallbackIndexMap[item.id] ?? Number.MAX_SAFE_INTEGER,
+    }))
+    .filter((entry): entry is { item: T; desiredPosition: number; fallbackIndex: number } =>
+      entry.desiredPosition !== null
+    )
+    .sort((left, right) => {
+      if (left.desiredPosition !== right.desiredPosition) {
+        return left.desiredPosition - right.desiredPosition;
+      }
+      return left.fallbackIndex - right.fallbackIndex;
+    });
+
+  const ordered = [...base];
+  for (const entry of positioned) {
+    const currentIndex = ordered.findIndex((item) => item.id === entry.item.id);
+    if (currentIndex === -1) {
+      continue;
     }
-    return (fallbackIndexMap[left.id] ?? Number.MAX_SAFE_INTEGER) -
-      (fallbackIndexMap[right.id] ?? Number.MAX_SAFE_INTEGER);
-  });
+    const [moved] = ordered.splice(currentIndex, 1);
+    const targetIndex = Math.max(0, Math.min(entry.desiredPosition - 1, ordered.length));
+    ordered.splice(targetIndex, 0, moved);
+  }
+
+  return ordered;
 }
 
 function getPlacePositionInDay(
@@ -4118,11 +4143,21 @@ function GuideScreen({
           const isHiddenByOwner = visibilityState === "hiddenByOwner";
           const canToggleVisibility = canManagePlaceVisibility;
           const effectiveDays = getEffectivePlaceDays(item, placeDayOverrideMap);
-          const effectiveOrderForSelectedDay = getPlaceOrderPositionForDay(
+          const hasOrderOverrideForSelectedDay = getPlaceOrderPositionForDay(
             item.id,
             selectedDay,
             placeDayOrderOverrideMap
           );
+          const effectiveOrderForSelectedDay =
+            hasOrderOverrideForSelectedDay !== null
+              ? getPlacePositionInDay(
+                  item.id,
+                  selectedDay,
+                  placeDayOverrideMap,
+                  placeDayOrderOverrideMap,
+                  fallbackPlaceIndexMap
+                )
+              : null;
           const baseDays = getBasePlaceDays(item);
           const hasDayOverride = JSON.stringify(effectiveDays) !== JSON.stringify(baseDays);
           const isEditingDays = editingPlaceId === item.id;
