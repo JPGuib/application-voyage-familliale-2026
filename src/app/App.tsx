@@ -3812,13 +3812,14 @@ function GuideScreen({
   placeVisibilityMap: PlaceVisibilityMap;
   placeDayOverrideMap: PlaceDayOverrideMap;
   onTogglePlaceVisibility: (placeId: string, nextState: PlaceVisibilityState) => void;
-  onSetPlaceDays: (placeId: string, nextDays: number[]) => void;
+  onSetPlaceDays: (placeId: string, nextDays: number[]) => Promise<boolean>;
   canManagePlaceVisibility: boolean;
   isOnline: boolean;
 }) {
   const [selectorOpen, setSelectorOpen] = useState(false);
   const [editingPlaceId, setEditingPlaceId] = useState<string | null>(null);
   const [draftPlaceDays, setDraftPlaceDays] = useState<number[]>([]);
+  const [savingPlaceDaysForId, setSavingPlaceDaysForId] = useState<string | null>(null);
 
   const dayPlaces = PLACES_WITH_AUTO_GPS
     .filter((place) => getEffectivePlaceDays(place, placeDayOverrideMap).includes(selectedDay))
@@ -4068,27 +4069,38 @@ function GuideScreen({
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={async () => {
                         if (draftPlaceDays.length === 0) {
                           return;
                         }
-                        onSetPlaceDays(item.id, draftPlaceDays);
+                        setSavingPlaceDaysForId(item.id);
+                        const saved = await onSetPlaceDays(item.id, draftPlaceDays);
+                        setSavingPlaceDaysForId(null);
+                        if (!saved) {
+                          return;
+                        }
                         setEditingPlaceId(null);
                         setDraftPlaceDays([]);
                       }}
                       data-tutorial-id={`guide-day-override-save-${item.id}`}
-                      disabled={draftPlaceDays.length === 0}
+                      disabled={draftPlaceDays.length === 0 || savingPlaceDaysForId === item.id}
                       className="rounded-full bg-[#1565C0] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Enregistrer
+                      {savingPlaceDaysForId === item.id ? "Enregistrement..." : "Enregistrer"}
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        onSetPlaceDays(item.id, baseDays);
+                      onClick={async () => {
+                        setSavingPlaceDaysForId(item.id);
+                        const saved = await onSetPlaceDays(item.id, baseDays);
+                        setSavingPlaceDaysForId(null);
+                        if (!saved) {
+                          return;
+                        }
                         setEditingPlaceId(null);
                         setDraftPlaceDays([]);
                       }}
+                      disabled={savingPlaceDaysForId === item.id}
                       className="rounded-full border border-[#BFDBFE] bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
                     >
                       Réinitialiser
@@ -10013,19 +10025,19 @@ export default function App() {
     });
   };
 
-  const setPlaceDaysForOwner = async (placeId: string, nextDays: number[]) => {
+  const setPlaceDaysForOwner = async (placeId: string, nextDays: number[]): Promise<boolean> => {
     if (!canUpdateOwnerCode(familyState, profile.id)) {
-      return;
+      return false;
     }
 
     const normalizedNextDays = normalizePlaceDays(nextDays);
     if (normalizedNextDays.length === 0) {
-      return;
+      return false;
     }
 
     const placeDefinition = PLACES_WITH_AUTO_GPS.find((candidate) => candidate.id === placeId);
     if (!placeDefinition) {
-      return;
+      return false;
     }
 
     const baseDays = getBasePlaceDays(placeDefinition);
@@ -10044,15 +10056,34 @@ export default function App() {
     setPlaceDayOverrideMap(nextMap);
 
     if (!cloudEnabled) {
-      return;
+      return true;
     }
 
     try {
       await setPlaceDayOverride(placeId, shouldClearOverride ? null : normalizedNextDays);
-    } catch {
+      console.info("[place-day-override] sync ok", {
+        placeId,
+        days: shouldClearOverride ? null : normalizedNextDays,
+        actorProfileId: profile.id,
+        actorRole: profile.role,
+        familyOwnerProfileId: familyState.ownerProfileId,
+        cloudActorUid,
+      });
+      return true;
+    } catch (error) {
       pendingPlaceDayOverrideMapRef.current = "none";
       setPlaceDayOverrideMap(previousMap);
       setAccessDeniedMessage("La modification des jours n'a pas pu être synchronisée.");
+      console.error("[place-day-override] sync failed", {
+        placeId,
+        days: shouldClearOverride ? null : normalizedNextDays,
+        actorProfileId: profile.id,
+        actorRole: profile.role,
+        familyOwnerProfileId: familyState.ownerProfileId,
+        cloudActorUid,
+        error,
+      });
+      return false;
     }
   };
 
