@@ -622,7 +622,9 @@ export function useCloudSync() {
         setCloudAuthError(null);
         return result;
       } catch {
-        setCloudAuthError("permission-denied");
+        // The root-level transaction is structurally denied by Firebase security
+        // rules, so this failure is expected and handled locally via auto-push.
+        // Do NOT propagate a fatal auth error here.
         return null;
       }
     },
