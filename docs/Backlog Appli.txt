@@ -2,11 +2,9 @@ Backlog
 -----------
 Evolutions : 
 - préparer l'application pour un autre voyage ! 
-A FAIRE 
-- faire une fichier d'installation à donner
-- revoir la suite logique des touches raccourcies en base
 
-COntenu : 
+
+Contenu : 
 * Revoir tous les quizz ! avec les guides et faire un gros challenge en fin de séjour ?
 * revoir les coordonnées GPS
 * revoir les textes et mettre en gras

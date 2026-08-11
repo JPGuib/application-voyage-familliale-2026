@@ -525,11 +525,11 @@ const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> =
   { id: "map", icon: MapIcon, label: "Carte" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
   { id: "tips", icon: Lightbulb, label: "Conseils" },
-  { id: "offline-media", icon: Download, label: "Offline" },
   { id: "histoire", icon: Scroll, label: "Histoire" },
   { id: "geographie", icon: Globe, label: "Géographie" },
   { id: "culture", icon: Theater, label: "Culture" },
   { id: "results", icon: Trophy, label: "Résultats" },
+  { id: "offline-media", icon: Download, label: "Offline" },
 ];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
