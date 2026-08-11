@@ -386,6 +386,125 @@ const MAX_PLACE_COMMENT_LENGTH = 500;
 type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "trivial" | "jeux" | "candy-crush" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
 const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
 type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
+
+const INTERNAL_DOCUMENT_LINK_PREFIX = "app://document/";
+
+const PLACE_DOCUMENT_LINKS: Record<string, string[]> = {
+  "Découverte de la Turquie": [
+    "programme-sejour",
+    "information-sejour",
+    "eSIM-gratuire",
+    "Pourboire",
+    "assurance-voyage-famille",
+    "passeports-famille",
+    "LCL",
+  ],
+  "Nante-Paris": ["vol-nantes-paris-af7507"],
+  "Paris-istanbul": ["vol-paris-istanbul-af1390", "reservation-transfert-aeroport"],
+  "Istanbul-Nantes": ["vol-istanbul-nantes-to3421"],
+  istanbul: ["information-sejour"],
+  kadikoy: ["Navettes-Bateau-Istanbul"],
+  "croisiere-bosphore": ["Navettes-Bateau-Istanbul"],
+  "nuit-hotel-windsoer": ["hotel-istanbul-windsor"],
+  "nuit-hotel-windsoer-2": ["hotel-istanbul-windsor"],
+  "nuit-HILTONSA-ANKARA": ["hotel-ankara-hiltonsa"],
+  "restaurant-jour3": ["restaurant-tershane", "restaurant-muutto"],
+  "nuit-BURCU-KAYA-CAPPADOCE": ["hotel-cappadoce-burcu-kaya"],
+  "nuit-BURCU-KAYA-CAPPADOCE-2": ["hotel-cappadoce-burcu-kaya"],
+  "hotel-pam-thermal": ["hotel-pamukkale-pam-thermal"],
+  "hotel-park-inn-radisson-izmir": ["hotel-izmir-park-inn"],
+  "restaurant-happena": ["restaurant-happena"],
+  "restaurant-vina-garden": ["restaurant-vina-garden"],
+  "restaurant-kaira-rooftop": ["restaurant-kaira-rooftop"],
+  "restaurant-sky-rooftop": ["restaurant-sky-rooftop"],
+  "restaurant-nana-cappadocia": ["restaurant-nana-cappadocia"],
+  "restaurant-numero-10-ortahisar": ["restaurant-numero-10-ortahisar"],
+  "montgolfiere-cappadoce": [
+    "Montgolfiere-rainbow-balloons",
+    "Montgolfiere-discovery-balloons",
+    "Montgolfiere-Nazar-balloons",
+  ],
+};
+
+function buildInternalDocumentLink(documentId: string): string {
+  return `${INTERNAL_DOCUMENT_LINK_PREFIX}${encodeURIComponent(documentId)}`;
+}
+
+function normalizeForMatch(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function hasDayOverlap(placeDays: number[], documentDay: number | number[] | undefined): boolean {
+  const documentDays = normalizeDocumentDays(documentDay);
+  if (documentDays.length === 0 || placeDays.length === 0) {
+    return false;
+  }
+  return documentDays.some((day) => placeDays.includes(day));
+}
+
+function getAutomaticallyMatchedDocumentIds(placeId: string): string[] {
+  const place = PLACES.find((entry) => entry.id === placeId);
+  if (!place) {
+    return [];
+  }
+
+  const placeDays = Array.isArray((place as { jour?: number[] }).jour)
+    ? ((place as { jour?: number[] }).jour ?? [])
+    : [];
+  const normalizedTag = normalizeForMatch((place as { tag?: string }).tag ?? "");
+  const matchesByRules = DOCUMENTS.filter((document) => {
+    if (document.id === placeId) {
+      return true;
+    }
+
+    if (normalizedTag.includes("vol") && document.category === "VOLS") {
+      return hasDayOverlap(placeDays, document.day);
+    }
+
+    if (normalizedTag.includes("hotel") && document.category === "HEBERGEMENT") {
+      return hasDayOverlap(placeDays, document.day);
+    }
+
+    if (normalizedTag.includes("restaurant") && document.category === "RESTAURANT") {
+      return hasDayOverlap(placeDays, document.day);
+    }
+
+    if (normalizedTag.includes("activite") && normalizeForMatch(place.name).includes("montgolfiere")) {
+      return document.category === "ACTIVITES" && normalizeForMatch(document.title).includes("montgolfiere");
+    }
+
+    return false;
+  });
+
+  return matchesByRules.map((document) => document.id);
+}
+
+function getAutoReservationLinksForPlace(placeId: string): Array<{ label: string; url: string }> {
+  const documentIds = Array.from(
+    new Set([...(PLACE_DOCUMENT_LINKS[placeId] ?? []), ...getAutomaticallyMatchedDocumentIds(placeId)])
+  );
+
+  return documentIds
+    .map((documentId) => {
+      const document = DOCUMENTS.find((entry) => entry.id === documentId);
+      if (!document) return null;
+      return {
+        label: `Voir la reservation: ${document.title}`,
+        url: buildInternalDocumentLink(document.id),
+      };
+    })
+    .filter((entry): entry is { label: string; url: string } => Boolean(entry));
+}
+
+type DocumentsDeepLinkTarget = {
+  documentId: string;
+  requestKey: number;
+};
 type GameState = "intro" | "playing" | "done" | "riddle" | "challenge";
 type Profile = {
   id: string;
@@ -3738,12 +3857,61 @@ function DocumentsScreen({
               <button
                 type="button"
                 onClick={addDraftDaysFromInput}
+                    const [highlightedDocumentId, setHighlightedDocumentId] = useState<string | null>(null);
                 className="rounded-xl border border-border px-3 py-2 text-xs font-black uppercase tracking-widest"
               >
                 Ajouter
               </button>
+                    useEffect(() => {
+                      if (!deepLinkTarget) {
+                        return;
+                      }
+
+                      const visibleTarget = visibleDocuments.find((document) => document.id === deepLinkTarget.documentId);
+                      const fallbackTarget = allDocuments.find((document) => document.id === deepLinkTarget.documentId);
+                      const target = visibleTarget ?? fallbackTarget;
+
+                      if (!target) {
+                        onDeepLinkHandled();
+                        return;
+                      }
+
+                      setActiveCategory(target.category);
+                      setDocumentFilterName(target.title);
+                      setDocumentFilterDays([]);
+                      setDocumentDayDropdownOpen(false);
+                      setFilterOpen(true);
+                      setHighlightedDocumentId(target.id);
+
+                      requestAnimationFrame(() => {
+                        const targetElement = document.getElementById(`document-card-${target.id}`);
+                        targetElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      });
+
+                      onDeepLinkHandled();
+                    }, [allDocuments, deepLinkTarget, onDeepLinkHandled, visibleDocuments]);
+
+                    useEffect(() => {
+                      if (!highlightedDocumentId) {
+                        return;
+                      }
+
+                      const timeout = window.setTimeout(() => {
+                        setHighlightedDocumentId(null);
+                      }, 2200);
+
+                      return () => window.clearTimeout(timeout);
+                    }, [highlightedDocumentId]);
             </div>
-          </div>
+                              <article
+                                id={`document-card-${item.id}`}
+                                key={item.id}
+                                className={`rounded-2xl bg-card border p-4 transition-shadow ${
+                                  highlightedDocumentId === item.id
+                                    ? "border-[#1565C0] ring-2 ring-[#1565C0]/30"
+                                    : "border-border"
+                                }`}
+                              >
         </div>
 
         <textarea
@@ -5175,27 +5343,44 @@ function ContentDetailScreen({
   isOnline: boolean;
 }) {
   const visiteGuidee = VISITES_GUIDEES[item.id];
+  const autoReservationLinks = useMemo(() => getAutoReservationLinksForPlace(item.id), [item.id]);
+  const usefulLinks = useMemo(() => {
+    const merged = [...(item.links ?? []), ...autoReservationLinks];
+    const byUrl = new Map<string, { label: string; url: string }>();
+    for (const link of merged) {
+      if (!byUrl.has(link.url)) {
+        byUrl.set(link.url, link);
+      }
+    }
+    return Array.from(byUrl.values());
+  }, [autoReservationLinks, item.links]);
   const photos = item.photos?.length ? item.photos : [item.image];
   const heroPhoto = photos[0] ?? item.image;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  const openUsefulLink = (url: string) => {
+    if (onOpenInternalLink?.(url)) {
+      return;
+    }
+    openExternalWindow(url);
+  };
   const [audioError, setAudioError] = useState<string | null>(null);
-  const [isMuted, setIsMuted] = useState(false);
+        {usefulLinks.length > 0 ? (
   const [realDuration, setRealDuration] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { coords: deviceCoords } = useDeviceLocation();
-  const destinationCoords = item.gps ? parseGpsString(item.gps) : null;
-  const canPlayAudio = Boolean(item.audioSrc);
+              {usefulLinks.map((link, index) => (
+                <button
 
-  useEffect(() => {
-    const audio = new Audio(item.audioSrc ?? "");
-    audio.muted = isMuted;
+                  type="button"
+                  onClick={() => openUsefulLink(link.url)}
     audioRef.current = audio;
     setIsPlaying(false);
     setProgress(0);
     setAudioError(null);
-    setRealDuration(null);
+                </button>
 
     const handleLoadedMetadata = () => {
       const formatted = formatDuration(audio.duration);
@@ -5798,6 +5983,7 @@ function PlaceScreen({
 
 // ─── HISTOIRE TOPIC DETAIL SCREEN ────────────────────────────────────────────
 
+      onOpenInternalLink={onOpenInternalLink}
 function HistoireTopicScreen({
   topic,
   onBack,
@@ -8892,6 +9078,7 @@ export default function App() {
   const [pendingScreen, setPendingScreen] = useState<Screen | null>(null);
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
+  const [documentsDeepLinkTarget, setDocumentsDeepLinkTarget] = useState<DocumentsDeepLinkTarget | null>(null);
   const [selectedVisiteGuideeId, setSelectedVisiteGuideeId] = useState<string | null>(null);
   const [selectedVisiteGuideeTitle, setSelectedVisiteGuideeTitle] = useState<string>("");
   const [visiteGuideeBackScreen, setVisiteGuideeBackScreen] = useState<Screen>("place");
@@ -11220,6 +11407,34 @@ export default function App() {
     setScreen("histoire-topic");
   };
 
+  const openInternalLink = (url: string): boolean => {
+    if (!url.startsWith(INTERNAL_DOCUMENT_LINK_PREFIX)) {
+      return false;
+    }
+
+    const documentId = decodeURIComponent(url.slice(INTERNAL_DOCUMENT_LINK_PREFIX.length));
+    if (!documentId) {
+      return false;
+    }
+
+    if (!canAccessScreen(profile.role, phase, "documents")) {
+      setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, "documents"));
+      setScreen(getSafeScreen(profile.role, phase));
+      return true;
+    }
+
+    if (!isDocumentVisibleForRole(profile.role, documentId, documentVisibilityMap)) {
+      setAccessDeniedMessage("Ce document est masqué par le propriétaire.");
+      setScreen("documents");
+      return true;
+    }
+
+    setAccessDeniedMessage(null);
+    setDocumentsDeepLinkTarget({ documentId, requestKey: Date.now() });
+    setScreen("documents");
+    return true;
+  };
+
   const histoireTopic = HISTOIRE_TOPICS.find((t) => t.id === selectedTopicId);
 
   const openGeographieTopic = (id: string) => {
@@ -11229,6 +11444,8 @@ export default function App() {
       return;
     }
 
+            deepLinkTarget={documentsDeepLinkTarget}
+            onDeepLinkHandled={() => setDocumentsDeepLinkTarget(null)}
     setAccessDeniedMessage(null);
     setSelectedGeographieTopicId(id);
     setScreen("geographie-topic");
@@ -13204,6 +13421,7 @@ const resetForProfileSwitch = () => {
             onUpsertComment={upsertPlaceComment}
             onBack={() => goToScreen("guide")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
+            onOpenInternalLink={openInternalLink}
             isOnline={isOnline}
           />
         ) : null;
@@ -13560,6 +13778,8 @@ const resetForProfileSwitch = () => {
             documentVisibilityMap={documentVisibilityMap}
             onToggleDocumentVisibility={setDocumentVisibilityForOwner}
             canManageDocumentVisibility={canUpdateOwnerCode(familyState, profile.id)}
+            deepLinkTarget={documentsDeepLinkTarget}
+            onDeepLinkHandled={() => setDocumentsDeepLinkTarget(null)}
             isOnline={isOnline}
           />
         );
@@ -13586,6 +13806,7 @@ const resetForProfileSwitch = () => {
             onUpsertComment={upsertPlaceComment}
             onBack={() => goToScreen("guide")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
+            onOpenInternalLink={openInternalLink}
             isOnline={isOnline}
           />
         ) : null;
