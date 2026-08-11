@@ -457,7 +457,7 @@ export const DOCUMENTS: TravelDocument[] = [
       "**Description** : Situé au cœur de Galataport, Muutto Anatolian Tapas Bar propose une cuisine originale inspirée des tapas espagnoles et revisitée avec les saveurs, les produits et les traditions culinaires de l'Anatolie. L'adresse offre un cadre moderne et animé, avec une terrasse donnant directement sur le front de mer et les bateaux du Bosphore.\n" +
       "**Adresse** : Kılıçali Paşa, Meclis-i Mebusan Caddesi No:8, Galataport, Beyoğlu, Istanbul, Turquie",
     details: [
-      "Réservation confirmée pour le dîner.",
+      "Réservation confirmée pour le dîner pour 21h.",
       "Restaurant situé au cœur de Galataport, facilement accessible depuis le quartier de Karaköy.",
       "La cuisine mélange l'esprit des tapas avec des ingrédients et des recettes inspirés de différentes régions d'Anatolie.",
       "Le concept est particulièrement adapté au partage : plusieurs plats peuvent être commandés au milieu de la table.",
