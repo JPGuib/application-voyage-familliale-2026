@@ -493,8 +493,8 @@ const QUICK_ACTIONS: QuickAction[] = [
   {
     id: "game",
     emoji: "🎮",
-    title: "Jeu du jour",
-    subtitle: "Quiz Turquie",
+    title: "Jeux",
+    subtitle: "Jeu du jour et autres",
     colorBg: "bg-[#FFF3E0]",
     colorText: "text-[#E65100]",
   },

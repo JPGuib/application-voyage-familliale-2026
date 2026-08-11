@@ -18,6 +18,7 @@ COntenu :
 * revoir les textes et mettre en gras
 * compléter avec les réservations
 * supprimer les lieux en double et mettre 2 fois les dates
+* nettoyer les points du jeu
 
 TESTER TOUTE L'APPLICATION
 * tester le mode offline
