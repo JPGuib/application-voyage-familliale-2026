@@ -391,7 +391,7 @@ export const DOCUMENTS: TravelDocument[] = [
       "**Description** : Situé dans le quartier historique de Sultanahmet, La Vina Garden 1864 propose une cuisine raffinée dans un cadre élégant. C'est une adresse à réserver pour profiter d'un dîner de qualité au cœur de la vieille ville.\n" +
       "**Adresse** : Sultanahmet, Istanbul, Turquie",
     details: [
-      "Réservation confirmée à 19h30/20h.",
+      "Réservation confirmée à 19h30/20h via whatsapp.",
       "Situé à Sultanahmet, à proximité des principaux monuments.",
       "Le restaurant propose une carte mêlant cuisine turque traditionnelle et créations modernes.",
       "Idéal pour aller ensuite se promener dans le quartier de Sultanahmet après le dîner.",
@@ -407,6 +407,117 @@ export const DOCUMENTS: TravelDocument[] = [
       }
     ],
     gps: "41.0040927,28.9787788",
+    scans: [
+      "/images/guide/VinaGarden resa.webp",
+    ]
+  },
+  {
+    id: "restaurant-tershane",
+    category: "RESTAURANT",
+    title: "Karaköy - Tershane Restaurant",
+    tag: "Réservé",
+    day: 3,
+    content:
+      "**Nom** : Tershane Restaurant\n" +
+      "**Description** : Installé au 8ᵉ étage de l'Hotel Momento, dans le quartier de Karaköy, Tershane propose une cuisine turque contemporaine autour des mezzés, des kebabs et des grillades de viande. L'établissement bénéficie du Bib Gourmand du Guide Michelin et offre une belle vue sur les toits et les monuments historiques d'Istanbul. La terrasse située au 9ᵉ étage permet de profiter encore davantage de la vue.\n" +
+      "**Adresse** : Arap Cami Mahallesi, Tersane Caddesi No:24, Hotel Momento, Karaköy/Beyoğlu, Istanbul, Turquie",
+    details: [
+      "Réservation confirmée pour le dîner.", 
+      "Restaurant situé au 8ᵉ étage de l'Hotel Momento, dans le quartier de Karaköy.",
+      "Le restaurant possède un Bib Gourmand du Guide Michelin, récompensant une cuisine de qualité à bon rapport qualité-prix.",
+      "La carte met notamment à l'honneur les mezzés, les kebabs et les grillades d'agneau préparées au feu.",
+      "Les grandes baies vitrées offrent une vue sur le panorama historique d'Istanbul.",
+      "La terrasse du 9ᵉ étage offre une vue encore plus spectaculaire et permet de prendre un verre avant ou après le repas.",
+      "La cuisine ouverte permet d'observer les chefs préparer les plats.",
+    ],
+    links: [
+      {
+        label: "Guide Michelin",
+        url: "https://guide.michelin.com/fr/fr/istanbul-province/istanbul/restaurant/tershane",
+      },
+      {
+        label: "Avis Tripadvisor restaurant",
+        url: "https://www.tripadvisor.fr/Restaurant_Review-g293974-d15222680-Reviews-Tershane_Karakoy-Istanbul.html",
+      }
+    ],
+    gps: "41.0252,28.9744",
+    scans: [
+      "/images/Jour 3/Tershane - 1.webp",
+      "/images/Jour 3/Tershane - 2.webp",
+    ]
+  },
+  {
+    id: "restaurant-muutto",
+    category: "RESTAURANT",
+    title: "Galataport - Muutto Anatolian Tapas Bar",
+    tag: "Réservé",
+    day: 3,
+    content:
+      "**Nom** : Muutto Anatolian Tapas Bar\n" +
+      "**Description** : Situé au cœur de Galataport, Muutto Anatolian Tapas Bar propose une cuisine originale inspirée des tapas espagnoles et revisitée avec les saveurs, les produits et les traditions culinaires de l'Anatolie. L'adresse offre un cadre moderne et animé, avec une terrasse donnant directement sur le front de mer et les bateaux du Bosphore.\n" +
+      "**Adresse** : Kılıçali Paşa, Meclis-i Mebusan Caddesi No:8, Galataport, Beyoğlu, Istanbul, Turquie",
+    details: [
+      "Réservation confirmée pour le dîner.",
+      "Restaurant situé au cœur de Galataport, facilement accessible depuis le quartier de Karaköy.",
+      "La cuisine mélange l'esprit des tapas avec des ingrédients et des recettes inspirés de différentes régions d'Anatolie.",
+      "Le concept est particulièrement adapté au partage : plusieurs plats peuvent être commandés au milieu de la table.",
+      "Parmi les spécialités proposées : assortiment de mezzés anatoliens, tapas végétariennes, tapas de poisson ou de viande, pide, brochettes et poissons grillés.",
+      "La terrasse située côté mer est particulièrement agréable pour profiter de l'ambiance de Galataport et de la vue sur les bateaux.",
+      "Le restaurant est également recommandé par le Guide Michelin, qui souligne notamment son travail de réinterprétation des tapas à travers la cuisine turque.",
+      ],
+    links: [
+      {
+        label: "Site du restaurant",
+        url: "https://www.muutto.com.tr/",
+      },
+      {
+        label: "Menu Galataport",
+        url: "https://www.muutto.com.tr/en/menu?menu=galataport",
+      },
+      {
+        label: "Guide Michelin",
+        url: "https://guide.michelin.com/gb/en/istanbul-province/istanbul/restaurant/muutto-anatolian-tapas-bar",
+      },
+      ],
+      gps: "41.0278,28.9821",
+      scans: [
+        "/images/Jour 3/Muutto - 1.webp",
+      ],
+  },
+  {
+    id: "restaurant-happena",
+    category: "RESTAURANT",
+    title: "Göreme - Happena Restaurant",
+    tag: "Réservé",
+    day: 5,
+    content:  
+      "**Description** : Installé dans le Kelebek Special Cave Hotel, Happena propose une cuisine turque inspirée des traditions anciennes de l'Anatolie et notamment de la civilisation hittite. Les recettes s'appuient sur des textes anciens et mettent à l'honneur les épices traditionnelles, les viandes grillées et les cuissons au feu de bois. Le restaurant bénéficie d'un Bib Gourmand du Guide Michelin et ses terrasses offrent une magnifique vue panoramique sur Göreme.\n" +
+      "**Adresse** : Aydınlı Mahallesi, Yavuz Sokak No:1, Göreme, Nevşehir, Turquie",
+    details: [
+      "Réservation confirmée pour le dîner.",
+      "Restaurant situé dans le Kelebek Special Cave Hotel, sur les hauteurs de Göreme.",
+      "Le restaurant possède un Bib Gourmand du Guide Michelin, récompensant une cuisine de qualité à bon rapport qualité-prix.",
+      "La cuisine s'inspire de la gastronomie des Hittites et des anciennes traditions culinaires anatoliennes.",
+      "Les plats utilisent notamment des épices traditionnelles et des viandes grillées ou cuites au feu de bois.",
+      "Une des spécialités mises en avant est l'agneau cuit au feu de bois, accompagné de pain pita, d'une sauce au miel et au gingembre et de pickles et raisins fermentés.",
+      "Les terrasses du restaurant offrent une vue spectaculaire sur Göreme et ses paysages de Cappadoce.",
+      "Le cadre troglodytique et traditionnel du Kelebek Special Cave Hotel renforce le caractère particulièrement dépaysant du restaurant.",
+      ],
+    links: [
+    {
+      label: "Guide Michelin",
+      url: "https://guide.michelin.com/fr/fr/nevsehir/nevsehir-merkez_2821449/restaurant/happena",
+    },
+    {
+      label: "Avis Tripadvisor restaurant",
+      url: "https://www.tripadvisor.fr/Restaurant_Review-g297983-d25448629-Reviews-Happena_Cappadocia-Goreme_Nevsehir_Province_Cappadocia.html",
+    },
+    ],
+    gps: "38.6446,34.8272",
+    scans: [
+      "/images/Jour 5/Happena - 1.webp",
+      "/images/Jour 5/Happena - 2.webp",
+      ]
   },
   {
     id: "restaurant-kaira-rooftop",
@@ -516,13 +627,60 @@ export const DOCUMENTS: TravelDocument[] = [
     gps: "38.6177,34.8719",
   },
   {
-    id: "activites-a-completer",
+    id: "Montgolfiere-rainbow-balloons",
     category: "ACTIVITES",
-    title: "Activités réservées",
-    tag: "À compléter",
+    title: "Tour en montgolfière",
+    day: 5,
+    tag: "Résevé",
     content:
-      "Ajoutez ici vos activités (billets, horaires, points de rendez-vous).\n" +
-      "Exemple : **Croisière Bosphore** - départ 18h30.",
+      "Vol en montgolfière au lever du soleil à Göreme.\n" +
+      "Départ vers 4h30 pour une durée de 3h30 environ.",
+    details: [
+      "Réservation via Getyourguide (réf : GYGVN276568A)",
+      "Pin: GLLjwTcr",
+      "ANNULER VIA APPLI GETYOURGUIDE sur le téléphone AVANT LE 19 AOÜT POUR AVOIR REMBOURSEMENT TOTAL ET AVANT LE 17 AOUT POUR NE RIEN PAYER DU TOUT",
+    ],
+    scans: [
+      "/images/Guide/Montgolfière jour 5 - 1.webp",
+      "/images/Guide/Montgolfière jour 5 - 2.webp",
+    ]
+  },
+  {
+    id: "Montgolfiere-discovery-balloons",
+    category: "ACTIVITES",
+    title: "Tour en montgolfière",
+    day: 6,
+    tag: "Résevé",
+    content:
+      "Vol en montgolfière au lever du soleil à Göreme.\n" +
+      "Départ vers 4h30 pour une durée de 3h30 environ.",
+    details: [
+      "Réservation via Tripadvisor (réf : 1408043143)",
+      "ANNULER VIA APPLI TRIPADVISOR sur site internet avec ordinateur ou appli AVANT LE 19 AOÜT POUR NE RIEN PAYER DU TOUT",
+    ],
+    scans: [
+      "/images/Guide/Montgolfière jour 6 - 1.webp",
+      "/images/Guide/Montgolfière jour 6 - 2.webp",
+    ]
+  },
+  {
+    id: "Montgolfiere-Nazar-balloons",
+    category: "ACTIVITES",
+    title: "Tour en montgolfière",
+    day: 7,
+    tag: "Résevé",
+    content:
+      "Vol en montgolfière au lever du soleil à Göreme.\n" +
+      "Départ vers 4h30 pour une durée de 3h30 environ.",
+    details: [
+      "Réservation via Getyourguide (réf : GYGVN28H76B3)",
+      "adresse hôtel envoyée par whatsapp"
+      "ANNULER VIA APPLI GETYOURGUIDE sur site internet avec ordinateur ou appli AVANT LE 19 AOÜT POUR NE RIEN PAYER DU TOUT",
+    ],
+    scans: [
+      "/images/Guide/Montgolfière jour 7 - 1.webp",
+      "/images/Guide/Montgolfière jour 7 - 2.webp",
+    ]
   },
   {
     id: "programme-sejour",
