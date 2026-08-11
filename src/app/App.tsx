@@ -4159,18 +4159,6 @@ function GuideScreen({
       })).filter((g) => g.places.length > 0)
     : [];
 
-  const allDisplayedPlaces = selectedDay !== null
-    ? dayPlaces
-    : (() => {
-        const seen = new Set<string>();
-        return allDayGroups.flatMap((g) => g.places).filter((p) => {
-          if (seen.has(p.id)) return false;
-          seen.add(p.id);
-          return true;
-        });
-      })();
-
-  const realDurations = useAudioDurations(allDisplayedPlaces);
   const selectedEntry = selectedDay !== null ? (JOURS_DESTINATIONS.find((d) => d.jour === selectedDay) ?? null) : null;
 
   const toggleDraftPlaceDay = (day: number) => {
@@ -4290,12 +4278,6 @@ function GuideScreen({
                 )}
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <div className="flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
-                    <span className="rounded-full bg-muted px-2.5 py-1">
-                      {item.photos?.length ?? 1} photos
-                    </span>
-                    <span className="rounded-full bg-muted px-2.5 py-1">
-                      {realDurations[item.id] ?? item.audioDuration ?? "Audio à venir"}
-                    </span>
                     {effectiveDays.map((day) => (
                       <span key={`date-tag-${day}`} className="rounded-full bg-primary/10 px-2.5 py-1 text-primary">
                         {formatTripDayLabel(day, tripStartDate)}

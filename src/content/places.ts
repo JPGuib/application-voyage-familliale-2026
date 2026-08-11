@@ -31,6 +31,7 @@
     name: "Nantes - Paris",
     shortDesc: "Vol AF7507 - 19h45 -> 20h55",
     tag: "Vol",
+    ville: "Nantes",
     image: "/images/Vol/Nantes Paris.webp",
     photos: [
       "/images/Vol/Nantes Paris.webp",
@@ -55,6 +56,7 @@
     name: "Paris - Istanbul",
     shortDesc: "Vol AF1390 - 22h55 -> 03h30",
     tag: "Vol",
+    ville: "Paris",
     image: "/images/Vol/Paris Istanbul.webp",
     photos: [
       "/images/Vol/Paris Istanbul.webp",
@@ -79,6 +81,7 @@
     name: "Istanbul",
     shortDesc: "La ville-pont entre l'Europe et l'Asie",
     tag: "Ville",
+    ville: "Istanbul",
     image: "/images/guide/Istanbul photo 1.webp",
     photos: [
       "/images/guide/Istanbul photo 1.webp",
@@ -103,6 +106,7 @@
     name: "Sainte-Sophie",
     shortDesc: "Chef-d'œuvre byzantin aux mille histoires",
     tag: "Monument",
+    ville: "Istanbul",
     image: "/images/Jour 2/Sainte-Sophie.webp",
     photos: [
       "/images/Jour 2/Sainte-Sophie.webp",
@@ -126,6 +130,7 @@
     name: "Citerne Basilique",
     shortDesc: "Un palais souterrain aux colonnes mystérieuses",
     tag: "Monument",
+    ville: "Istanbul",
     image: "/images/Jour 2/citerne-basilique 1.webp",
     photos: [
       "/images/Jour 2/citerne-basilique 1.webp",
@@ -149,6 +154,7 @@
     name: "Mosquée Süleymaniye",
     shortDesc: "La mosquée de Soliman le Magnifique",
     tag: "Monument",
+    ville: "Istanbul",  
     image: "/images/Jour 2/suleymaniye 1.webp",
     photos: [
       "/images/Jour 2/suleymaniye 1.webp",
@@ -172,6 +178,7 @@
     name: "Palais de Dolmabahçe",
     shortDesc: "Le palais baroque des sultans",
     tag: "Monument",
+    ville: "Istanbul",
     image: "/images/Jour 2/Dolmabahce 1.webp",
     photos: [
       "/images/Jour 2/Dolmabahce 1.webp",
@@ -194,6 +201,7 @@
     name: "Mosquée Büyük Mecidiye d'Ortaköy",
     shortDesc: "La mosquée de la photo iconique",
     tag: "Monument",
+    ville: "Istanbul",
     image: "/images/Jour 2/Mosquée Buyuk 1.webp",
     photos: [
       "/images/Jour 2/Mosquée Buyuk 1.webp",
@@ -217,6 +225,7 @@
     name: "Promenade et achats quartier de Kadıköy",
     shortDesc: "Le cœur branché de la rive asiatique",
     tag: "Quartier",
+    ville: "Istanbul",
     image: "/images/Jour 2/Kadikoy 1.webp",
     photos: [
       "/images/Jour 2/Kadikoy 2.webp",
@@ -244,6 +253,7 @@
     name: "Croisière sur le Bosphore",
     shortDesc: "Entre deux continents, entre deux mondes",
     tag: "Activité",
+    ville: "Istanbul",
     image: "/images/Jour 2/croisiere bosphore 1.webp",
     photos: [
       "/images/Jour 2/croisiere bosphore 1.webp",
@@ -266,6 +276,7 @@
     name: "Saint-Sauveur in Chora",
     shortDesc: "Un trésor de mosaïques byzantines",
     tag: "Monument",
+    ville: "Istanbul",
     image: "/images/Jour 2/Sainte-sauveur in chora 1.webp",
     photos: [
       "/images/Jour 2/Sainte-sauveur in chora 1.webp",
@@ -296,6 +307,7 @@
     name: "Quartier de Balat",
     shortDesc: "Ruelles colorées entre Corne d'Or et collines historiques",
     tag: "Quartier",
+    ville: "Istanbul",
     image: "/images/Jour 2/Balat 1.webp",
     photos: [
       "/images/Jour 2/Balat 2.webp",
@@ -324,6 +336,7 @@
     name: "Croisière nocturne",
     shortDesc: "Istanbul illuminée depuis l'eau",
     tag: "Activité",
+    ville: "Istanbul",
     image: "/images/Jour 2/croisiere nocturne 2.webp",
     photos: [
       "/images/Jour 2/croisiere nocturne 2.webp",
@@ -345,6 +358,7 @@
     name: "La Vina Garden 1864 Restaurant",
     shortDesc: "Une table à réserver à Sultanahmet",
     tag: "Restaurant",
+    ville: "Istanbul",
     image: "/images/Jour 2/Vina Garden 1.webp",
     photos: [
       "/images/Jour 2/Vina Garden 1.webp",
@@ -372,6 +386,7 @@
     name: "hôtel WINDSOR HOTEL & CONVENTION CENTER 5*",
     shortDesc: "Nuit à l'hôtel Windsor",
     tag: "hotel",
+    ville: "Istanbul",
     image: "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
     photos: [
       "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
@@ -398,6 +413,7 @@
     name: "Palais de Topkapi",
     shortDesc: "Le cœur du pouvoir des sultans ottomans pendant près de quatre siècles",
     tag: "Monument",
+    ville: "Istanbul",
     image: "/images/Jour 3/Topkapi/Topkapi 2.webp",
     photos: [
       "/images/Jour 3/Topkapi/Topkapi 0.webp",
@@ -425,6 +441,7 @@
     jour: [3],
     name: "Mosquée Bleue",
     shortDesc: "La mosquée aux six minarets et 21 403 faïences",
+    ville: "Istanbul",
     tag: "Monument",
     image: "/images/Jour 3/Mosquee bleue 1.webp",
     photos: [
@@ -450,6 +467,7 @@
     name: "Hippodrome byzantin",
     shortDesc: "Le cœur antique de Constantinople",
     tag: "Monument",
+    ville: "Istanbul",
     image: "/images/Jour 3/Hippodrome 1.webp",
     photos: [
       "/images/Jour 3/Hippodrome 1.webp",
@@ -471,6 +489,7 @@
     jour: [3],
     name: "Place de Taksim",
     shortDesc: "Le cœur battant de l'Istanbul moderne",
+    ville: "Istanbul",
     tag: "Quartier",
     image: "/images/Jour 3/Taksim 1.webp",
     photos: [
@@ -494,6 +513,7 @@
     jour: [3],
     name: "Quartier de Péra",
     shortDesc: "L'élégance d'antan au cœur de Beyoğlu",
+    ville: "Istanbul",
     tag: "Quartier",
     image: "/images/Jour 3/Pera Galata 1.webp",
     photos: [
@@ -516,6 +536,7 @@
     name: "Tour de Galata",
     shortDesc: "Un emblème médiéval dominant Istanbul depuis près de 700 ans",
     tag: "Monument",
+    ville: "Istanbul",
     image: "/images/Jour 3/Tour Galata 1.webp",
     photos: [
       "/images/Jour 3/Tour Galata 1.webp",
@@ -539,6 +560,7 @@
     name: "Restaurant à réserver (Taksim ou rooftop hôtel)",
     shortDesc: "Dîner avec vue sur la ville",
     tag: "Restaurant",
+    ville: "Istanbul",
     image: "/images/Jour 3/Restau Jour 3.webp",
     photos: [
       "/images/Jour 3/Restau Jour 3.webp",
@@ -559,7 +581,8 @@
     jour: [3],
     name: "hôtel WINDSOR HOTEL & CONVENTION CENTER 5*",
     shortDesc: "Nuit à l'hôtel Windsor",
-    tag: "hotel",
+    tag: "Hôtel",
+    ville: "Istanbul",
     image: "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
     photos: [
       "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
@@ -586,6 +609,7 @@
     name: "Grand Bazar",
     shortDesc: "Le plus célèbre marché couvert d'Istanbul",
     tag: "Marché",
+    ville: "Istanbul",
     image: "/images/Jour 4/Grand_bazar 1.webp",
     photos: [
       "/images/Jour 4/Grand_bazar 1.webp",
@@ -623,6 +647,7 @@
     name: "Trajet en bus Istanbul – Ankara",
     shortDesc: "Traversée de l'Anatolie, entre deux capitales",
     tag: "Trajet",
+    ville: "Istanbul",
     image: "/images/Bus.webp",
     photos: [
       "/images/Bus.webp",
@@ -655,6 +680,7 @@
     name: "Ankara",
     shortDesc: "La capitale moderne au cœur de la Turquie",
     tag: "Ville",
+    ville: "Ankara",
     image: "/images/Jour 4/Ankara 1.webp",
     photos: [
       "/images/Jour 4/Ankara 1.webp",
@@ -680,6 +706,7 @@
     name: "hôtel HILTONSA ANKARA 5*",
     shortDesc: "Diner et nuit à l'hôtel HILTONSA ANKARA",
     tag: "hotel",
+    ville: "Ankara",
     image: "/images/Jour 4/Nuit hotel jour 3 - 1.webp",
     photos: [
       "/images/Jour 4/Nuit hotel jour 3 - 1.webp",
@@ -702,22 +729,23 @@
     ],
   },
    {
-    "id": "anitkabir",
-    "jour": [5],
-    "name": "Mausolée d'Atatürk",
-    "shortDesc": "Le monument national de la République turque",
-    "tag": "Monument",
-    "image": "/images/Jour 5/Anitkabir_1.webp",
-    "photos": [
-	"/images/Jour 5/Anitkabir_1.webp",
-	"/images/Jour 5/Anitkabir_2.webp",
-	"/images/Jour 5/Anitkabir_3.webp"
-    ],
-    "audioTitle": "Anitkabir, la mémoire d'une nation",
-    "audioDuration": "3 min 50 sec",
-    "audioSrc": "/audio/places/Mausolee_d_Ataturk.mp3",
-    "history": "Anıtkabir est le mausolée de Mustafa Kemal Atatürk, fondateur et premier président de la République de Turquie. Situé à Ankara sur la colline d'Anıttepe, ce monument monumental fut construit entre 1944 et 1953. Le complexe de 750 000 m² comprend le mausolée, le Parc de la Paix, l'allée des Lions et plusieurs tours symboliques. Les pierres et marbres proviennent de toutes les régions de Turquie, symbolisant l'unité nationale. C'est un lieu de pèlerinage où des millions de visiteurs viennent chaque année rendre hommage au Père de la Nation.",
-    "anecdotes": [
+    id: "anitkabir",
+    jour: [5],
+    name: "Mausolée d'Atatürk",
+    shortDesc: "Le monument national de la République turque",
+    tag: "Monument",
+    ville: "Ankara",
+    image: "/images/Jour 5/Anitkabir_1.webp",
+    photos: [
+      "/images/Jour 5/Anitkabir_1.webp",
+      "/images/Jour 5/Anitkabir_2.webp",
+      "/images/Jour 5/Anitkabir_3.webp"
+      ],
+    audioTitle: "Anitkabir, la mémoire d'une nation",
+    audioDuration: "3 min 50 sec",
+    audioSrc: "/audio/places/Mausolee_d_Ataturk.mp3",
+    history: "Anıtkabir est le mausolée de Mustafa Kemal Atatürk, fondateur et premier président de la République de Turquie. Situé à Ankara sur la colline d'Anıttepe, ce monument monumental fut construit entre 1944 et 1953. Le complexe de 750 000 m² comprend le mausolée, le Parc de la Paix, l'allée des Lions et plusieurs tours symboliques. Les pierres et marbres proviennent de toutes les régions de Turquie, symbolisant l'unité nationale. C'est un lieu de pèlerinage où des millions de visiteurs viennent chaque année rendre hommage au Père de la Nation.",
+    anecdotes: [
       "Le drapeau turque flotte sur un mât de 33,53 m, le plus haut mât d'un seul tenant d'Europe.",
       "Les soldats de la garde d'honneur sont sélectionnés pour leur taille (minimum 1m80) et leur allure impeccable.",
       "Le sarcophage d'Atatürk pèse 40 tonnes et est fait d'un seul bloc de pierre."
@@ -729,7 +757,8 @@
   name: "D'Ankara à la Cappadoce",
   shortDesc: "En route vers les paysages les plus étonnants de Turquie",
   tag: "Trajet",
-  image: "/images//Bus.webp",
+  ville: "Ankara",
+  image: "/images/Jour 5/Bus.webp",
   photos: [
     "/images/Jour 5/chemin vers Cappadoce 1.webp",
     "/images/Jour 5/chemin vers Cappadoce 2.webp",
@@ -771,6 +800,7 @@
     name: "Lac salé (Tuz Gölü)",
     shortDesc: "Une étendue salée scintillante au cœur de l'Anatolie",
     tag: "Nature",
+    ville: "Cappadoce",
     image: "/images/Jour 5/Lac_Sale_1.webp",
     photos: [
       "/images/Jour 5/Lac_Sale_1.webp",
@@ -797,6 +827,7 @@
     name: "Ville souterraine byzantine",
     shortDesc: "Refuge souterrain creusé dans la roche volcanique",
     tag: "Histoire",
+    ville: "Cappadoce",
     image: "/images/Jour 5/Ville_souterraine_1.webp",
     photos: [
       "/images/Jour 5/Ville_souterraine_1.webp",
@@ -822,6 +853,7 @@
   name: "Kaira Rooftop Bar & Restaurant",
   shortDesc: "Un dîner avec vue sur les cheminées de fées",
   tag: "Restaurant",
+  ville: "Cappadoce",
   image: "/images/Jour 5/Kaira Rooftop 1.webp",
   photos: [
     "/images/Jour 5/Kaira Rooftop 1.webp",
@@ -847,6 +879,7 @@
   name: "Sky Cappadocia Rooftop & Restaurant",
   shortDesc: "Une vue imprenable sur Göreme au coucher du soleil",
   tag: "Restaurant",
+  ville: "Cappadoce",
   image: "/images/Jour 5/Sky rooftop restaurant 1.webp",
   photos: [
     "/images/Jour 5/Sky rooftop restaurant 1.webp",
@@ -872,6 +905,7 @@
     name: "hôtel BURCU KAYA - CAPPADOCE 4*",
     shortDesc: "Nuit (et diner?) à l'hôtel BURCU KAYA - CAPPADOCE",
     tag: "hotel",
+    ville: "Cappadoce",
     image: "/images/Jour 5/Nuit hotel jour 5 - 1.webp",
     photos: [
       "/images/Jour 5/Nuit hotel jour 5 - 1.webp",
@@ -900,6 +934,7 @@
     name: "Vol en montgolfière",
     shortDesc: "Survoler les cheminées de fées au lever du jour",
     tag: "Activité",
+    ville: "Cappadoce",
     image: "/images/Jour 6/Montgolfiere_1.webp",
     photos: [
       "/images/Jour 6/Montgolfiere_1.webp",
@@ -927,6 +962,7 @@
     name: "Cappadoce",
     shortDesc: "Un paysage lunaire aux cheminées de fées",
     tag: "Nature",
+    ville: "Cappadoce",
     image: "/images/Jour 6/Cappadoce_1.webp",
     photos: [
       "/images/Jour 6/Cappadoce_1.webp",
@@ -954,6 +990,7 @@
     name: "Musée en plein air de Göreme",
     shortDesc: "Églises rupestres et fresques byzantines — UNESCO",
     tag: "Patrimoine",
+    ville: "Göreme",
     image: "/images/Jour 6/Goreme_1.webp",
     photos: [
       "/images/Jour 6/Goreme_1.webp",
@@ -981,6 +1018,7 @@
     name: "Vallées d'Avcilar et Güvercinlik",
     shortDesc: "Cheminées de fées aux formes étonnantes",
     tag: "Nature",
+    ville: "Cappadoce",
     image: "/images/Jour 6/Vallee_1.webp",
     photos: [
       "/images/Jour 6/Vallee_1.webp",
@@ -1004,6 +1042,7 @@
   name: "NANA Cappadocia Restaurant",
   shortDesc: "Un dîner en terrasse au cœur de Göreme",
   tag: "Restaurant",
+  ville: "Cappadoce",
   image: "/images/Jour 6/NANA Cappadocia 1.webp",
   photos: [
     "/images/Jour 6/NANA Cappadocia 1.webp",
@@ -1035,6 +1074,7 @@
   jour: [6],
   name: "Restaurant N°10",
   shortDesc: "Une soirée conviviale au cœur d'Ortahisar",
+  ville: "Cappadoce",
   tag: "Restaurant",
   image: "/images/Jour 6/no-10-restaurant 1.webp",
   photos: [
@@ -1062,6 +1102,7 @@
   name: "Kaira Rooftop Bar & Restaurant",
   shortDesc: "Un dîner avec vue sur les cheminées de fées",
   tag: "Restaurant",
+  ville: "Cappadoce",
   image: "/images/Jour 5/Kaira Rooftop 1.webp",
   photos: [
     "/images/Jour 5/Kaira Rooftop 1.webp",
@@ -1087,6 +1128,7 @@
   name: "Sky Cappadocia Rooftop & Restaurant",
   shortDesc: "Une vue imprenable sur Göreme au coucher du soleil",
   tag: "Restaurant",
+  ville: "Cappadoce",
   image: "/images/Jour 5/Sky rooftop restaurant 1.webp",
   photos: [
     "/images/Jour 5/Sky rooftop restaurant 1.webp",
@@ -1117,6 +1159,7 @@
       "/images/Jour 5/Nuit hotel jour 5 - 1.webp",
       "/images/Jour 5/Nuit hotel jour 5 - 2.webp",
     ],
+    ville: "Cappadoce",
     gps: "37.8746,32.4932",
     history: "Konya est l'une des plus anciennes villes d'Anatolie et une étape majeure de la Route de la Soie. Fief des Seldjoukides puis centre spirituel des derviches tourneurs, elle fut un carrefour commercial et culturel où les caravanes venaient échanger soie, épices et marchandises précieuses entre l'Orient et l'Occident.",
     anecdotes: [
@@ -1137,6 +1180,7 @@
     name: "Vol en montgolfière",
     shortDesc: "Survoler les cheminées de fées au lever du jour",
     tag: "Activité",
+    ville: "Cappadoce",
     image: "/images/Jour 6/Montgolfiere_1.webp",
     photos: [
       "/images/Jour 6/Montgolfiere_1.webp",
@@ -1164,6 +1208,7 @@
     name: "De la Cappadoce à Konya",
     shortDesc: "Des paysages de Cappadoce aux terres spirituelles de Konya",
     tag: "Trajet",
+    ville: "Cappadoce",
     image: "/images/Bus.webp",
     photos: [
       "/images/Jour 7/Cappadoce - Konya 1.webp",
@@ -1208,6 +1253,7 @@
     name: "Caravansérail Seldjoukide",
     shortDesc: "Ancien relais de caravanes sur la Route de la Soie",
     tag: "Histoire",
+    ville: "Konya",
     image: "/images/Jour 7/Caravanserai_1.webp",
     photos: [
       "/images/Jour 7/Caravanserai_1.webp",
@@ -1234,6 +1280,7 @@
     name: "De Konya à Pamukkale",
     shortDesc: "Des grandes plaines d'Anatolie aux terrasses blanches de Pamukkale",
     tag: "Trajet",
+    ville: "Konya",
     image: "/images/Bus.webp",
     photos: [
       "/images/Jour 7/Konya Pamukkale 1.webp",
@@ -1276,6 +1323,7 @@
     name: "Pamukkale",
     shortDesc: "Les Châteaux de Coton, merveille naturelle — UNESCO",
     tag: "Nature",
+    ville: "Pamukkale",
     image: "/images/Jour 7/Pamukkale_1.webp",
     photos: [
       "/images/Jour 7/Pamukkale_1.webp",
@@ -1300,6 +1348,7 @@
     name: "PAM Thermal Hotel Pamukkale",
     shortDesc: "Une parenthèse thermale au cœur de Pamukkale",
     tag: "Hôtel",
+    ville: "Pamukkale",
     image: "/images/Jour 7/Hotel jour 7 - 1.webp",
     photos: [
       "/images/Jour 7/Hotel jour 7 - 1.webp",
@@ -1329,6 +1378,7 @@
     name: "De Pamukkale à Éphèse",
     shortDesc: "Des sources thermales de Pamukkale aux vestiges de la cité d'Éphèse",
     tag: "Trajet",
+    ville: "Pamukkale",
     image: "/images/Bus.webp",
     photos: [
       "/images/Jour 8/Pamukkale Ephese 1.webp",
@@ -1371,6 +1421,7 @@
     name: "Ephèse",
     shortDesc: "La cité d'Artémis, joyau antique de Turquie",
     tag: "Patrimoine",
+    ville: "Éphèse",
     image: "/images/Jour 8/Ephese_1.webp",
     photos: [
       "/images/Jour 8/Ephese_1.webp",
@@ -1395,6 +1446,7 @@
     name: "D'Éphèse à Izmir",
     shortDesc: "Des vestiges antiques d'Éphèse aux rives de la mer Égée",
     tag: "Trajet",
+    ville: "Éphèse",
     image: "/images/Bus.webp",
     photos: [
       "/images/Jour 8/Ephese Izmir 1.webp",
@@ -1442,6 +1494,7 @@
     name: "Izmir",
     shortDesc: "La perle de la côte égéenne",
     tag: "Ville / Bord de mer",
+    ville: "Izmir",
     image: "/images/Jour 7/Izmir_1.webp",
     photos: [
       "/images/Jour 7/Izmir_1.webp",
@@ -1465,6 +1518,7 @@
     name: "Park Inn by Radisson İzmir",
     shortDesc: "Un hôtel moderne face à la baie d'Izmir",
     tag: "Hôtel",
+    ville: "Izmir",
     image: "/images/Jour 8/Hotel jour 8 - 1.webp",
     photos: [
       "/images/Jour 8/Hotel jour 8 - 1.webp",
@@ -1495,6 +1549,7 @@
     name: "D'Izmir à Bursa",
     shortDesc: "De la mer Égée aux premières capitales ottomanes",
     tag: "Trajet",
+    ville: "Izmir",
     image: "/images/Bus.webp",
     photos: [
       "/images/Jour 9/Izmir - Bursa 1.webp",
@@ -1544,6 +1599,7 @@
     name: "Bursa",
     shortDesc: "Première capitale de l'Empire ottoman",
     tag: "Patrimoine",
+    ville: "Bursa",
     image: "/images/Jour 9/Bursa_1.webp",
     photos: [
       "/images/Jour 9/Bursa_1.webp",
@@ -1568,6 +1624,7 @@
     name: "Mosquée et Mausolée verts de Bursa",
     shortDesc: "Le remarquable complexe de Mehmed Ier, joyau de l'architecture ottomane primitive",
     tag: "Monument",
+    ville: "Bursa",
     image: "/images/Jour 9/Mosquee verte 1.webp",
     photos: [
     "/images/Jour 9/Mosquee verte 1.webp",
@@ -1602,6 +1659,7 @@
     name: "De Bursa à Istanbul par le pont Osmangazi",
     shortDesc: "Dernière traversée avant le retour à Istanbul",
     tag: "Trajet",
+    ville: "Bursa",
     image: "/images/Bus.webp",
     photos: [
       "/images/Jour 9/Bursa Istanbul 1.webp",
@@ -1655,6 +1713,7 @@
     name: "Pont d'Osmangazi",
     shortDesc: "Le géant des eaux turques",
     tag: "Monument / Infrastructures",
+    ville: "Bursa",
     image: "/images/Jour 9/Osmangazi_1.webp",
     photos: [
       "/images/Jour 9/Osmangazi_1.webp",
@@ -1678,6 +1737,7 @@
     name: "hôtel WINDSOR HOTEL & CONVENTION CENTER 5*",
     shortDesc: "Nuit à l'hôtel Windsor",
     tag: "hotel",
+    ville: "Istanbul",
     image: "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
     photos: [
       "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
@@ -1704,6 +1764,7 @@
     name: "Istanbul - Nantes",
     shortDesc: "Vol TO3421 - 14h00 -> 17h10",
     tag: "Vol",
+    ville: "Istanbul",
     image: "/images/Vol/Istanbul Nantes.webp",
     photos: [
     ],

@@ -1,25 +1,24 @@
-
 Backlog
 -----------
 Evolutions : 
-APRES : 
 - préparer l'application pour un autre voyage ! 
 A FAIRE 
 - Acheter un nom de domaine ?
-- joindre tous les points d'un jour avec les coordonnées pour tracer un trajet de fin
-- revoir la logique => guide devrait avoir tout et sinon un filtre ou un mode de recherche (mieux encore) ?
-- Dans le guide : pouvoir filtrer par nom, date ou lieu (=> rajouter un tag lieu)
+- attention revoir le tutoriel à la fin, voire le compléter
+- faire une fichier d'installation à donner
+- supprimer les lieux en double et mettre 2 fois les dates
+
 
 JEU 
 * Bien tester le trivial !
 * Trivial : possibilité de regénérer des questions ? 
 * Trivial : avoir la Turquie mais pas que avec bcp de questions
 
-
 COntenu : 
-* Revoir tous les quizz ! avec les quides et faire un gros challenge en fin de séjour ?
+* Revoir tous les quizz ! avec les guides et faire un gros challenge en fin de séjour ?
 * revoir les coordonnées GPS
 * revoir les textes et mettre en gras
+* compléter avec les réservations
 
 TESTER TOUTE L'APPLICATION
 * tester le mode offline

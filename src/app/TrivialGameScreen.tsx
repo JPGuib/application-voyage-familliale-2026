@@ -17,6 +17,10 @@ const TRIVIAL_SERVER_URL: string =
   (import.meta as unknown as { env?: Record<string, string | undefined> }).env
     ?.VITE_TRIVIAL_WS_URL || "wss://application-voyage-familliale-2026.onrender.com";
 
+// Dérive l'URL HTTP(S) à partir de l'URL WebSocket, pour l'appel REST /packs
+// (ex. wss://mon-serveur.onrender.com -> https://mon-serveur.onrender.com)
+const TRIVIAL_HTTP_URL = TRIVIAL_SERVER_URL.replace(/^wss:\/\//, "https://").replace(/^ws:\/\//, "http://");
+
 const CATEGORY_COLORS: Record<string, string> = {
   histoire: "#0F5257",
   gastronomie: "#C1442D",
@@ -24,6 +28,10 @@ const CATEGORY_COLORS: Record<string, string> = {
   geographie: "#2AA9A2",
   culture: "#8B5FA3",
   souvenirs: "#3D5A73",
+  sciences: "#2E7D6B",
+  divertissement: "#D4711E",
+  sports: "#3D6B99",
+  litterature: "#7A5195",
 };
 
 type TPlayer = {
@@ -40,6 +48,8 @@ type TPlayer = {
 type TRoomState = {
   type: "room_state";
   code: string;
+  pack_id: string;
+  pack_label: string;
   state: "lobby" | "playing" | "finished" | "cancelled";
   board: string[];
   category_labels: Record<string, string>;
@@ -74,6 +84,12 @@ type HostedRoomEntry = {
   playerName: string;
   createdAt: number;
 };
+
+type TPackInfo = { id: string; label: string };
+
+// Utilisée si l'appel réseau à /packs échoue (serveur en train de démarrer,
+// pas encore de connexion...) — évite un écran de création vide.
+const FALLBACK_PACKS: TPackInfo[] = [{ id: "turquie", label: "Trivial Turquie 🇹🇷" }];
 
 // Garde une trace locale des salons créés depuis cet appareil, pour pouvoir
 // les retrouver après avoir quitté l'écran — le serveur ne connaît que les
@@ -140,10 +156,28 @@ export function TrivialGameScreen({
   const [diceMessage, setDiceMessage] = useState<string>("");
   const [hostedRooms, setHostedRooms] = useState<HostedRoomEntry[]>([]);
   const [showRules, setShowRules] = useState(false);
+  const [availablePacks, setAvailablePacks] = useState<TPackInfo[]>(FALLBACK_PACKS);
+  const [selectedPack, setSelectedPack] = useState<string>("turquie");
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     setHostedRooms(loadHostedRooms());
+  }, []);
+
+  useEffect(() => {
+    fetch(`${TRIVIAL_HTTP_URL}/packs`)
+      .then((res) => res.json())
+      .then((packs: TPackInfo[]) => {
+        if (Array.isArray(packs) && packs.length > 0) {
+          setAvailablePacks(packs);
+          setSelectedPack(packs[0].id);
+        }
+      })
+      .catch(() => {
+        // Le serveur n'est pas joignable pour l'instant : on garde la liste
+        // de secours (pack Turquie), l'erreur réelle apparaîtra de toute
+        // façon à la tentative de connexion.
+      });
   }, []);
 
   useEffect(() => {
@@ -172,7 +206,8 @@ export function TrivialGameScreen({
 
     setIsConnecting(true);
     setDiceMessage("");
-    const ws = new WebSocket(`${TRIVIAL_SERVER_URL}/ws/${code}/${encodeURIComponent(trimmedName)}`);
+    const packQuery = code === "NEW" ? `?pack=${encodeURIComponent(selectedPack)}` : "";
+    const ws = new WebSocket(`${TRIVIAL_SERVER_URL}/ws/${code}/${encodeURIComponent(trimmedName)}${packQuery}`);
     wsRef.current = ws;
 
     // Le plan gratuit Render peut mettre jusqu'à ~50s à "réveiller" le
@@ -297,7 +332,7 @@ export function TrivialGameScreen({
             ❓ Règles
           </button>
         </div>
-        <h1 className="relative z-10 text-2xl font-black">Trivial Turquie 🎲</h1>
+        <h1 className="relative z-10 text-2xl font-black">{room?.pack_label ?? "Trivial Turquie 🎲"}</h1>
         <p className="relative z-10 text-sm opacity-90 mt-1">
           {room ? `Salon ${room.code}` : "Chacun pour soi · 2 à 5 joueurs"}
         </p>
@@ -349,6 +384,29 @@ export function TrivialGameScreen({
               placeholder="Code à 4 chiffres"
               className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm tracking-widest"
             />
+          )}
+
+          {mode === "create" && (
+            <div>
+              <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
+                Rubrique
+              </div>
+              <div className="flex flex-col gap-2">
+                {availablePacks.map((pack) => (
+                  <button
+                    key={pack.id}
+                    onClick={() => setSelectedPack(pack.id)}
+                    className={`text-left rounded-xl border px-4 py-3 text-sm font-bold transition-colors ${
+                      selectedPack === pack.id
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card border-border text-foreground"
+                    }`}
+                  >
+                    {pack.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
 
           <button
@@ -528,7 +586,7 @@ export function TrivialGameScreen({
           <h2 className="text-2xl font-black">
             {room.players.find((p) => p.id === room.winner)?.name || "Un joueur"}
           </h2>
-          <p className="text-muted-foreground">a remporté le Trivial Turquie !</p>
+          <p className="text-muted-foreground">a remporté {room.pack_label} !</p>
           <button
             onClick={onBack}
             className="mt-4 bg-primary text-primary-foreground rounded-2xl py-3 px-8 font-black active:scale-95 transition-transform"

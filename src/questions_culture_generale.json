@@ -1,0 +1,78 @@
+{
+  "histoire": [
+    {"q": "En quelle année a eu lieu la chute du mur de Berlin ?", "choices": ["1989", "1975", "1991", "1985"], "answer": 0},
+    {"q": "Quel explorateur est crédité d'avoir atteint l'Amérique en 1492 ?", "choices": ["Christophe Colomb", "Vasco de Gama", "Magellan", "Marco Polo"], "answer": 0},
+    {"q": "Quelle civilisation a construit les pyramides de Gizeh ?", "choices": ["Les Égyptiens", "Les Mayas", "Les Romains", "Les Babyloniens"], "answer": 0},
+    {"q": "Quel événement a déclenché la Première Guerre mondiale ?", "choices": ["L'assassinat de l'archiduc François-Ferdinand", "L'invasion de la Pologne", "La crise de Cuba", "Le traité de Versailles"], "answer": 0},
+    {"q": "Quel empereur romain a légalisé le christianisme au IVe siècle ?", "choices": ["Constantin", "Néron", "Jules César", "Auguste"], "answer": 0},
+    {"q": "Quelle reine d'Égypte est connue pour sa relation avec Marc Antoine ?", "choices": ["Cléopâtre", "Néfertiti", "Hatchepsout", "Nefertari"], "answer": 0},
+    {"q": "Quel mur séparait Berlin-Est de Berlin-Ouest pendant la Guerre froide ?", "choices": ["Le mur de Berlin", "La ligne Maginot", "Le mur d'Hadrien", "Le rideau de fer (mur physique)"], "answer": 0},
+    {"q": "Quelle révolution a débuté en France en 1789 ?", "choices": ["La Révolution française", "La révolution industrielle", "La révolution russe", "La révolution américaine"], "answer": 0},
+    {"q": "Quel traité a mis fin à la Première Guerre mondiale ?", "choices": ["Le traité de Versailles", "Le traité de Rome", "Le traité de Vienne", "Le traité de Yalta"], "answer": 0},
+    {"q": "Quel roi de France est surnommé le 'Roi Soleil' ?", "choices": ["Louis XIV", "Louis XVI", "François Ier", "Henri IV"], "answer": 0},
+    {"q": "Quelle expédition militaire a été menée par Napoléon Bonaparte en Égypte ?", "choices": ["La campagne d'Égypte", "La campagne de Russie", "La campagne d'Italie", "La campagne d'Espagne"], "answer": 0},
+    {"q": "En quelle année l'homme a-t-il marché sur la Lune pour la première fois ?", "choices": ["1969", "1965", "1972", "1959"], "answer": 0}
+  ],
+  "geographie": [
+    {"q": "Quel est le plus grand désert chaud du monde ?", "choices": ["Le Sahara", "Le désert de Gobi", "Le Kalahari", "Le désert d'Atacama"], "answer": 0},
+    {"q": "Quel est le fleuve le plus long du monde ?", "choices": ["Le Nil", "L'Amazone", "Le Yangtsé", "Le Mississippi"], "answer": 0},
+    {"q": "Quelle est la capitale de l'Australie ?", "choices": ["Canberra", "Sydney", "Melbourne", "Perth"], "answer": 0},
+    {"q": "Quel est le plus haut sommet du monde ?", "choices": ["L'Everest", "Le K2", "Le Kilimandjaro", "Le Mont Blanc"], "answer": 0},
+    {"q": "Quel pays compte le plus grand nombre d'habitants au monde en 2024 ?", "choices": ["L'Inde", "La Chine", "Les États-Unis", "L'Indonésie"], "answer": 0},
+    {"q": "Quel océan est le plus vaste ?", "choices": ["L'océan Pacifique", "L'océan Atlantique", "L'océan Indien", "L'océan Arctique"], "answer": 0},
+    {"q": "Dans quel pays se trouve le Machu Picchu ?", "choices": ["Le Pérou", "Le Chili", "La Bolivie", "L'Équateur"], "answer": 0},
+    {"q": "Quel est le plus petit pays du monde ?", "choices": ["Le Vatican", "Monaco", "Nauru", "Saint-Marin"], "answer": 0},
+    {"q": "Quelle chaîne de montagnes sépare l'Europe de l'Asie ?", "choices": ["L'Oural", "Les Alpes", "Les Carpates", "Le Caucase"], "answer": 0},
+    {"q": "Quel pays possède le plus grand nombre de fuseaux horaires ?", "choices": ["La France (via ses territoires)", "La Russie", "Les États-Unis", "Le Royaume-Uni"], "answer": 0},
+    {"q": "Quelle mer borde l'Égypte à l'est ?", "choices": ["La mer Rouge", "La mer Noire", "La mer Baltique", "La mer Caspienne"], "answer": 0}
+  ],
+  "sciences": [
+    {"q": "Quelle planète est surnommée la 'planète rouge' ?", "choices": ["Mars", "Vénus", "Jupiter", "Saturne"], "answer": 0},
+    {"q": "Quel est l'organe principal du système circulatoire ?", "choices": ["Le cœur", "Le foie", "Les poumons", "Les reins"], "answer": 0},
+    {"q": "Quel gaz les plantes absorbent-elles principalement lors de la photosynthèse ?", "choices": ["Le dioxyde de carbone", "L'oxygène", "L'azote", "L'hydrogène"], "answer": 0},
+    {"q": "Quel scientifique a formulé la théorie de la relativité ?", "choices": ["Albert Einstein", "Isaac Newton", "Niels Bohr", "Galilée"], "answer": 0},
+    {"q": "Combien d'os compte le corps humain adulte, environ ?", "choices": ["206", "150", "300", "250"], "answer": 0},
+    {"q": "Quel animal est le plus grand mammifère du monde ?", "choices": ["La baleine bleue", "L'éléphant d'Afrique", "Le rhinocéros blanc", "La girafe"], "answer": 0},
+    {"q": "Quelle est l'unité de mesure de la force en physique ?", "choices": ["Le newton", "Le watt", "Le joule", "Le pascal"], "answer": 0},
+    {"q": "Quel est l'élément chimique le plus abondant dans l'univers ?", "choices": ["L'hydrogène", "L'hélium", "L'oxygène", "Le carbone"], "answer": 0},
+    {"q": "Quelle partie de la cellule contient l'ADN ?", "choices": ["Le noyau", "La mitochondrie", "Le cytoplasme", "La membrane"], "answer": 0},
+    {"q": "Quel naturaliste est à l'origine de la théorie de l'évolution ?", "choices": ["Charles Darwin", "Gregor Mendel", "Louis Pasteur", "Carl Linné"], "answer": 0},
+    {"q": "Quelle est la vitesse approximative de la lumière dans le vide ?", "choices": ["300 000 km/s", "150 000 km/s", "1 000 000 km/s", "30 000 km/s"], "answer": 0}
+  ],
+  "divertissement": [
+    {"q": "Quel film d'animation met en scène un lion nommé Simba ?", "choices": ["Le Roi Lion", "Madagascar", "Zootopie", "Kung Fu Panda"], "answer": 0},
+    {"q": "Quel instrument de musique compte generalement 88 touches ?", "choices": ["Le piano", "L'accordéon", "L'orgue", "Le clavecin"], "answer": 0},
+    {"q": "Quelle série met en scène des dragons et sept familles rivales dans un royaume fictif ?", "choices": ["Game of Thrones", "The Witcher", "Vikings", "Merlin"], "answer": 0},
+    {"q": "Quel groupe britannique a interprété la chanson 'Bohemian Rhapsody' ?", "choices": ["Queen", "The Beatles", "Pink Floyd", "The Rolling Stones"], "answer": 0},
+    {"q": "Dans quel jeu vidéo dirige-t-on un plombier moustachu nommé Mario ?", "choices": ["Super Mario Bros", "Sonic", "Donkey Kong", "Zelda"], "answer": 0},
+    {"q": "Quel est le nom du réalisateur de la trilogie cinématographique 'Le Seigneur des Anneaux' ?", "choices": ["Peter Jackson", "James Cameron", "Steven Spielberg", "Christopher Nolan"], "answer": 0},
+    {"q": "Quelle discipline artistique regroupe la peinture, la sculpture et le dessin ?", "choices": ["Les arts visuels", "Les arts du spectacle", "La littérature", "La musique"], "answer": 0},
+    {"q": "Quel super-héros de comics s'appelle aussi Bruce Wayne ?", "choices": ["Batman", "Superman", "Iron Man", "Spider-Man"], "answer": 0},
+    {"q": "Quel pays a inventé le genre musical du reggae ?", "choices": ["La Jamaïque", "Cuba", "Le Brésil", "Le Nigeria"], "answer": 0},
+    {"q": "Comment s'appelle la statuette remise aux lauréats des Oscars ?", "choices": ["Oscar", "Palme", "César", "Globe"], "answer": 0}
+  ],
+  "sports": [
+    {"q": "Tous les combien d'années ont lieu les Jeux olympiques d'été ?", "choices": ["4 ans", "2 ans", "3 ans", "5 ans"], "answer": 0},
+    {"q": "Combien de joueurs compte une équipe de football sur le terrain (hors remplaçants) ?", "choices": ["11", "10", "9", "12"], "answer": 0},
+    {"q": "Dans quel sport utilise-t-on un club pour envoyer une balle dans un trou ?", "choices": ["Le golf", "Le hockey", "Le cricket", "Le croquet"], "answer": 0},
+    {"q": "Quel pays a remporté la Coupe du monde de football en 2018 ?", "choices": ["La France", "L'Allemagne", "Le Brésil", "La Croatie"], "answer": 0},
+    {"q": "Combien de sets faut-il gagner pour remporter un match de tennis en 3 sets gagnants ?", "choices": ["2", "3", "1", "4"], "answer": 0},
+    {"q": "Quel sport se pratique sur une table avec une petite balle et des raquettes ?", "choices": ["Le tennis de table", "Le badminton", "Le squash", "Le padel"], "answer": 0},
+    {"q": "Dans quel sport peut-on marquer un 'ace' ?", "choices": ["Le tennis", "Le football", "Le rugby", "Le basketball"], "answer": 0},
+    {"q": "Combien de joueurs compte une équipe de basketball sur le terrain ?", "choices": ["5", "6", "7", "4"], "answer": 0},
+    {"q": "Quel évènement cycliste célèbre se déroule chaque année en France en juillet ?", "choices": ["Le Tour de France", "Le Giro", "La Vuelta", "Paris-Roubaix"], "answer": 0},
+    {"q": "Quel art martial japonais signifie littéralement 'voie de la souplesse' ?", "choices": ["Le judo", "Le karaté", "L'aïkido", "Le kendo"], "answer": 0}
+  ],
+  "litterature": [
+    {"q": "Qui a écrit 'Les Misérables' ?", "choices": ["Victor Hugo", "Émile Zola", "Honoré de Balzac", "Gustave Flaubert"], "answer": 0},
+    {"q": "Quel auteur britannique a créé le détective Sherlock Holmes ?", "choices": ["Arthur Conan Doyle", "Agatha Christie", "Charles Dickens", "Oscar Wilde"], "answer": 0},
+    {"q": "Dans quel roman de Jules Verne des personnages font un tour du monde en 80 jours ?", "choices": ["Le Tour du monde en 80 jours", "Vingt mille lieues sous les mers", "Voyage au centre de la Terre", "De la Terre à la Lune"], "answer": 0},
+    {"q": "Qui est l'auteur de la saga 'Harry Potter' ?", "choices": ["J.K. Rowling", "J.R.R. Tolkien", "C.S. Lewis", "Philip Pullman"], "answer": 0},
+    {"q": "Quel écrivain russe est l'auteur de 'Guerre et Paix' ?", "choices": ["Léon Tolstoï", "Fiodor Dostoïevski", "Anton Tchekhov", "Nicolas Gogol"], "answer": 0},
+    {"q": "Quel poète et dramaturge anglais a écrit 'Roméo et Juliette' ?", "choices": ["William Shakespeare", "Christopher Marlowe", "John Milton", "Lord Byron"], "answer": 0},
+    {"q": "Quel auteur français a écrit 'Le Petit Prince' ?", "choices": ["Antoine de Saint-Exupéry", "Albert Camus", "Jean-Paul Sartre", "Marcel Proust"], "answer": 0},
+    {"q": "Dans quelle langue Homère a-t-il écrit l'Iliade et l'Odyssée ?", "choices": ["Le grec ancien", "Le latin", "L'araméen", "Le sanskrit"], "answer": 0},
+    {"q": "Quel roman de George Orwell décrit une société sous surveillance totale menée par 'Big Brother' ?", "choices": ["1984", "La Ferme des animaux", "Le Meilleur des mondes", "Fahrenheit 451"], "answer": 0},
+    {"q": "Quel auteur colombien a écrit 'Cent ans de solitude' ?", "choices": ["Gabriel García Márquez", "Mario Vargas Llosa", "Jorge Luis Borges", "Pablo Neruda"], "answer": 0}
+  ]
+}
