@@ -4109,9 +4109,9 @@ function GuideScreen({
   onBack: () => void;
   onPlaceSelect: (id: string) => void;
   currentDay: number;
-  selectedDay: number;
+  selectedDay: number | null;
   tripStartDate: string | null;
-  onSelectedDayChange: (day: number) => void;
+  onSelectedDayChange: (day: number | null) => void;
   commentsByPlace: PlaceCommentsByPlace;
   role: Role | null;
   placeVisibilityMap: PlaceVisibilityMap;
@@ -4136,16 +4136,42 @@ function GuideScreen({
     []
   );
 
-  const dayPlaces = sortPlacesForDay(
+  const dayPlaces = selectedDay !== null ? sortPlacesForDay(
     PLACES_WITH_AUTO_GPS
     .filter((place) => getEffectivePlaceDays(place, placeDayOverrideMap).includes(selectedDay))
     .filter((place) => isPlaceVisibleForRole(role, place.id, placeVisibilityMap)),
     selectedDay,
     placeDayOrderOverrideMap,
     fallbackPlaceIndexMap
-  );
-  const realDurations = useAudioDurations(dayPlaces);
-  const selectedEntry = JOURS_DESTINATIONS.find((d) => d.jour === selectedDay) ?? null;
+  ) : [];
+
+  const allDayGroups = selectedDay === null
+    ? JOURS_DESTINATIONS.map((entry) => ({
+        entry,
+        places: sortPlacesForDay(
+          PLACES_WITH_AUTO_GPS
+            .filter((place) => getEffectivePlaceDays(place, placeDayOverrideMap).includes(entry.jour))
+            .filter((place) => isPlaceVisibleForRole(role, place.id, placeVisibilityMap)),
+          entry.jour,
+          placeDayOrderOverrideMap,
+          fallbackPlaceIndexMap
+        ),
+      })).filter((g) => g.places.length > 0)
+    : [];
+
+  const allDisplayedPlaces = selectedDay !== null
+    ? dayPlaces
+    : (() => {
+        const seen = new Set<string>();
+        return allDayGroups.flatMap((g) => g.places).filter((p) => {
+          if (seen.has(p.id)) return false;
+          seen.add(p.id);
+          return true;
+        });
+      })();
+
+  const realDurations = useAudioDurations(allDisplayedPlaces);
+  const selectedEntry = selectedDay !== null ? (JOURS_DESTINATIONS.find((d) => d.jour === selectedDay) ?? null) : null;
 
   const toggleDraftPlaceDay = (day: number) => {
     setDraftPlaceDays((previous) => {
@@ -4185,6 +4211,279 @@ function GuideScreen({
     }));
   };
 
+  const renderPlaceCard = (
+    item: (typeof PLACES_WITH_AUTO_GPS)[number],
+    dayForCard: number,
+    keyPrefix = ""
+  ) => {
+    const counts = getPlaceReactionCounts(commentsByPlace[item.id]);
+    const visibilityState = placeVisibilityMap[item.id] ?? "visible";
+    const isHiddenByOwner = visibilityState === "hiddenByOwner";
+    const canToggleVisibility = canManagePlaceVisibility;
+    const effectiveDays = getEffectivePlaceDays(item, placeDayOverrideMap);
+    const hasOrderOverride = getPlaceOrderPositionForDay(item.id, dayForCard, placeDayOrderOverrideMap);
+    const effectiveOrder =
+      hasOrderOverride !== null
+        ? getPlacePositionInDay(
+            item.id,
+            dayForCard,
+            placeDayOverrideMap,
+            placeDayOrderOverrideMap,
+            fallbackPlaceIndexMap
+          )
+        : null;
+    const baseDays = getBasePlaceDays(item);
+    const hasDayOverride = JSON.stringify(effectiveDays) !== JSON.stringify(baseDays);
+    const isEditingDays = editingPlaceId === item.id;
+    return (
+      <div key={keyPrefix + item.id} className="space-y-2">
+        <button
+          onClick={() => onPlaceSelect(item.id)}
+          data-tutorial-id={`guide-place-${item.id}`}
+          className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
+        >
+          <div className="relative h-40 bg-muted overflow-hidden">
+            <img
+              src={item.image}
+              alt={item.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="p-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <span className="text-xs font-extrabold text-accent uppercase tracking-widest">
+                  {item.tag}
+                </span>
+                <h3 className="font-black text-foreground mt-0.5">
+                  {item.name}
+                </h3>
+                {isHiddenByOwner && canManagePlaceVisibility && (
+                  <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-[#B71C1C]">
+                    Masqué par le propriétaire
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground mt-1">
+                  {item.shortDesc}
+                </p>
+                {canManagePlaceVisibility && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {effectiveDays.map((day) => (
+                      <span
+                        key={`${item.id}-day-${day}`}
+                        className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
+                      >
+                        {formatTripDayLabel(day, tripStartDate)}
+                      </span>
+                    ))}
+                    {hasDayOverride && (
+                      <span className="rounded-full bg-[#FFF3E0] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#EF6C00]">
+                        Jour modifié
+                      </span>
+                    )}
+                    {effectiveOrder !== null && (
+                      <span className="rounded-full bg-[#E8F5E9] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#2E7D32]">
+                        Position jour {dayForCard}: {effectiveOrder}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
+                    <span className="rounded-full bg-muted px-2.5 py-1">
+                      {item.photos?.length ?? 1} photos
+                    </span>
+                    <span className="rounded-full bg-muted px-2.5 py-1">
+                      {realDurations[item.id] ?? item.audioDuration ?? "Audio à venir"}
+                    </span>
+                    {effectiveDays.map((day) => (
+                      <span key={`date-tag-${day}`} className="rounded-full bg-primary/10 px-2.5 py-1 text-primary">
+                        {formatTripDayLabel(day, tripStartDate)}
+                      </span>
+                    ))}
+                  </div>
+                  <ReactionCountersBadge
+                    likes={counts.likes}
+                    dislikes={counts.dislikes}
+                    className="!bg-white !text-black border border-black/15 [&>span]:text-[10px] [&>span]:font-normal"
+                  />
+                </div>
+              </div>
+              <ChevronRight
+                size={20}
+                className="text-muted-foreground mt-1 flex-shrink-0"
+              />
+            </div>
+          </div>
+        </button>
+        {canToggleVisibility && (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onTogglePlaceVisibility(item.id, isHiddenByOwner ? "visible" : "hiddenByOwner");
+              }}
+              className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${
+                isHiddenByOwner ? "bg-[#FDECEA] text-[#B71C1C]" : "bg-[#E8F5E9] text-[#1B5E20]"
+              }`}
+              aria-label={`Basculer visibilité de ${item.name}`}
+            >
+              {isHiddenByOwner ? "Rendre visible" : "Masquer pour non-propriétaires"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (isEditingDays) {
+                  setEditingPlaceId(null);
+                  setDraftPlaceDays([]);
+                  setDraftPlaceDayOrderByDay({});
+                  return;
+                }
+                setEditingPlaceId(item.id);
+                setDraftPlaceDays(effectiveDays);
+                const nextOrderByDay: Record<number, number> = {};
+                for (const day of effectiveDays) {
+                  nextOrderByDay[day] =
+                    getPlaceOrderPositionForDay(item.id, day, placeDayOrderOverrideMap) ??
+                    getPlacePositionInDay(
+                      item.id,
+                      day,
+                      placeDayOverrideMap,
+                      placeDayOrderOverrideMap,
+                      fallbackPlaceIndexMap
+                    );
+                }
+                setDraftPlaceDayOrderByDay(nextOrderByDay);
+              }}
+              className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
+              aria-label={`Changer les jours de ${item.name}`}
+            >
+              {isEditingDays ? "Annuler" : "Changer les jours"}
+            </button>
+          </div>
+        )}
+        {canManagePlaceVisibility && isEditingDays && (
+          <div className="rounded-2xl border border-[#BFDBFE] bg-[#EFF6FF] p-3 space-y-3">
+            <p className="text-xs font-black uppercase tracking-widest text-[#1565C0]">
+              Jours affichés pour ce lieu
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {JOURS_DESTINATIONS.map((entry) => {
+                const isSelected = draftPlaceDays.includes(entry.jour);
+                return (
+                  <button
+                    key={`${item.id}-override-day-${entry.jour}`}
+                    type="button"
+                    onClick={() => toggleDraftPlaceDay(entry.jour)}
+                    data-tutorial-id={`guide-day-override-${item.id}-${entry.jour}`}
+                    className={`rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-widest ${
+                      isSelected
+                        ? "bg-[#1565C0] text-white"
+                        : "bg-background text-muted-foreground border border-border"
+                    }`}
+                  >
+                    {formatTripDayLabel(entry.jour, tripStartDate)}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="space-y-2">
+              <p className="text-[11px] font-black uppercase tracking-widest text-[#1565C0]">
+                Position dans chaque jour
+              </p>
+              {draftPlaceDays.map((day) => {
+                const dayLabel = formatTripDayLabel(day, tripStartDate);
+                const dayPosition = Math.max(1, Math.trunc(draftPlaceDayOrderByDay[day] ?? 1));
+                return (
+                  <div key={`${item.id}-order-${day}`} className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 border border-[#BFDBFE]">
+                    <span className="text-xs font-bold text-foreground">{dayLabel}</span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => updateDraftDayPosition(day, dayPosition - 1)}
+                        className="w-7 h-7 rounded-full border border-border text-xs font-black"
+                        aria-label={`Monter ${item.name} le ${dayLabel}`}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min={1}
+                        value={dayPosition}
+                        onChange={(event) => {
+                          const parsed = Number.parseInt(event.target.value, 10);
+                          if (!Number.isFinite(parsed)) {
+                            return;
+                          }
+                          updateDraftDayPosition(day, parsed);
+                        }}
+                        className="w-16 rounded-lg border border-border px-2 py-1 text-xs font-black text-center"
+                        aria-label={`Position de ${item.name} le ${dayLabel}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateDraftDayPosition(day, dayPosition + 1)}
+                        className="w-7 h-7 rounded-full border border-border text-xs font-black"
+                        aria-label={`Descendre ${item.name} le ${dayLabel}`}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {draftPlaceDays.length === 0 && (
+                <p className="text-xs text-muted-foreground">Sélectionnez au moins un jour pour régler sa position.</p>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (draftPlaceDays.length === 0) {
+                    return;
+                  }
+                  setSavingPlaceDaysForId(item.id);
+                  const saved = await onSetPlaceDays(item.id, draftPlaceDays, draftPlaceDayOrderByDay);
+                  setSavingPlaceDaysForId(null);
+                  if (!saved) {
+                    return;
+                  }
+                  setEditingPlaceId(null);
+                  setDraftPlaceDays([]);
+                  setDraftPlaceDayOrderByDay({});
+                }}
+                data-tutorial-id={`guide-day-override-save-${item.id}`}
+                disabled={draftPlaceDays.length === 0 || savingPlaceDaysForId === item.id}
+                className="rounded-full bg-[#1565C0] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {savingPlaceDaysForId === item.id ? "Enregistrement..." : "Enregistrer"}
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setSavingPlaceDaysForId(item.id);
+                  const saved = await onSetPlaceDays(item.id, baseDays, {});
+                  setSavingPlaceDaysForId(null);
+                  if (!saved) {
+                    return;
+                  }
+                  setEditingPlaceId(null);
+                  setDraftPlaceDays([]);
+                  setDraftPlaceDayOrderByDay({});
+                }}
+                disabled={savingPlaceDaysForId === item.id}
+                className="rounded-full border border-[#BFDBFE] bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
+              >
+                Réinitialiser
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="relative bg-accent text-accent-foreground px-6 pt-12 pb-6 flex-shrink-0">
@@ -4209,18 +4508,24 @@ function GuideScreen({
           >
             <span className="text-left">
               <span className="block text-sm font-black">
-                {formatTripDayLabel(selectedDay, tripStartDate)}
-                {selectedDay === currentDay && (
+                {selectedDay === null
+                  ? "Tous les jours"
+                  : formatTripDayLabel(selectedDay, tripStartDate)}
+                {selectedDay !== null && selectedDay === currentDay && (
                   <span className="ml-2 text-[10px] font-black uppercase tracking-widest bg-white/25 rounded-full px-2 py-0.5 align-middle">
                     aujourd'hui
                   </span>
                 )}
               </span>
-              {selectedEntry && (
+              {selectedDay === null ? (
+                <span className="block text-xs opacity-80 mt-0.5">
+                  Filtrer par jour
+                </span>
+              ) : selectedEntry ? (
                 <span className="block text-xs opacity-80 mt-0.5">
                   {selectedEntry.destination}
                 </span>
-              )}
+              ) : null}
             </span>
             <ChevronDown
               size={18}
@@ -4235,6 +4540,17 @@ function GuideScreen({
                 onClick={() => setSelectorOpen(false)}
               />
               <div className="absolute left-0 right-0 mt-2 z-20 bg-card text-foreground rounded-2xl border border-border shadow-lg overflow-hidden max-h-72 overflow-y-auto">
+                <button
+                  onClick={() => {
+                    onSelectedDayChange(null);
+                    setSelectorOpen(false);
+                  }}
+                  className={`w-full flex items-center px-4 py-3 text-left active:bg-muted transition-colors border-b border-border/60 ${
+                    selectedDay === null ? "bg-muted" : ""
+                  }`}
+                >
+                  <span className="block text-sm font-bold text-foreground">Tous les jours</span>
+                </button>
                 {JOURS_DESTINATIONS.map((entry) => (
                   <button
                     key={entry.jour}
@@ -4270,282 +4586,44 @@ function GuideScreen({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {dayPlaces.length === 0 && (
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        {selectedDay !== null ? (
+          <div className="space-y-4">
+            {dayPlaces.length === 0 && (
+              <div className="px-2 py-10 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Pas de visite prévue ce jour.
+                </p>
+              </div>
+            )}
+            {dayPlaces.map((item) => renderPlaceCard(item, selectedDay))}
+          </div>
+        ) : allDayGroups.length === 0 ? (
           <div className="px-2 py-10 text-center">
             <p className="text-sm text-muted-foreground">
-              Pas de visite prévue ce jour.
+              Aucune visite prévue.
             </p>
           </div>
+        ) : (
+          <div className="space-y-8">
+            {allDayGroups.map(({ entry, places }) => (
+              <div key={`section-${entry.jour}`} className="space-y-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-sm font-black uppercase tracking-widest text-accent">
+                    {formatTripDayLabel(entry.jour, tripStartDate)}
+                  </h2>
+                  <span className="text-sm font-semibold text-muted-foreground">— {entry.destination}</span>
+                  {entry.jour === currentDay && (
+                    <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                      aujourd'hui
+                    </span>
+                  )}
+                </div>
+                {places.map((item) => renderPlaceCard(item, entry.jour, `day${entry.jour}-`))}
+              </div>
+            ))}
+          </div>
         )}
-        {dayPlaces.map((item) => {
-          const counts = getPlaceReactionCounts(commentsByPlace[item.id]);
-          const visibilityState = placeVisibilityMap[item.id] ?? "visible";
-          const isHiddenByOwner = visibilityState === "hiddenByOwner";
-          const canToggleVisibility = canManagePlaceVisibility;
-          const effectiveDays = getEffectivePlaceDays(item, placeDayOverrideMap);
-          const hasOrderOverrideForSelectedDay = getPlaceOrderPositionForDay(
-            item.id,
-            selectedDay,
-            placeDayOrderOverrideMap
-          );
-          const effectiveOrderForSelectedDay =
-            hasOrderOverrideForSelectedDay !== null
-              ? getPlacePositionInDay(
-                  item.id,
-                  selectedDay,
-                  placeDayOverrideMap,
-                  placeDayOrderOverrideMap,
-                  fallbackPlaceIndexMap
-                )
-              : null;
-          const baseDays = getBasePlaceDays(item);
-          const hasDayOverride = JSON.stringify(effectiveDays) !== JSON.stringify(baseDays);
-          const isEditingDays = editingPlaceId === item.id;
-
-          return (
-            <div key={item.id} className="space-y-2">
-              <button
-                onClick={() => onPlaceSelect(item.id)}
-                data-tutorial-id={`guide-place-${item.id}`}
-                className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
-              >
-                <div className="relative h-40 bg-muted overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <span className="text-xs font-extrabold text-accent uppercase tracking-widest">
-                        {item.tag}
-                      </span>
-                      <h3 className="font-black text-foreground mt-0.5">
-                        {item.name}
-                      </h3>
-                      {isHiddenByOwner && canManagePlaceVisibility && (
-                        <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-[#B71C1C]">
-                          Masqué par le propriétaire
-                        </p>
-                      )}
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {item.shortDesc}
-                      </p>
-                      {canManagePlaceVisibility && (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {effectiveDays.map((day) => (
-                            <span
-                              key={`${item.id}-day-${day}`}
-                              className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
-                            >
-                              {formatTripDayLabel(day, tripStartDate)}
-                            </span>
-                          ))}
-                          {hasDayOverride && (
-                            <span className="rounded-full bg-[#FFF3E0] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#EF6C00]">
-                              Jour modifié
-                            </span>
-                          )}
-                          {effectiveOrderForSelectedDay !== null && (
-                            <span className="rounded-full bg-[#E8F5E9] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#2E7D32]">
-                              Position jour {selectedDay}: {effectiveOrderForSelectedDay}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      <div className="mt-3 flex items-center justify-between gap-2">
-                        <div className="flex flex-wrap gap-2 text-[10px] font-bold text-muted-foreground">
-                          <span className="rounded-full bg-muted px-2.5 py-1">
-                            {item.photos?.length ?? 1} photos
-                          </span>
-                          <span className="rounded-full bg-muted px-2.5 py-1">
-                            {realDurations[item.id] ?? item.audioDuration ?? "Audio à venir"}
-                          </span>
-                        </div>
-                        <ReactionCountersBadge
-                          likes={counts.likes}
-                          dislikes={counts.dislikes}
-                          className="!bg-white !text-black border border-black/15 [&>span]:text-[10px] [&>span]:font-normal"
-                        />
-                      </div>
-                    </div>
-                    <ChevronRight
-                      size={20}
-                      className="text-muted-foreground mt-1 flex-shrink-0"
-                    />
-                  </div>
-                </div>
-              </button>
-              {canToggleVisibility && (
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onTogglePlaceVisibility(item.id, isHiddenByOwner ? "visible" : "hiddenByOwner");
-                    }}
-                    className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${
-                      isHiddenByOwner ? "bg-[#FDECEA] text-[#B71C1C]" : "bg-[#E8F5E9] text-[#1B5E20]"
-                    }`}
-                    aria-label={`Basculer visibilité de ${item.name}`}
-                  >
-                    {isHiddenByOwner ? "Rendre visible" : "Masquer pour non-propriétaires"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isEditingDays) {
-                        setEditingPlaceId(null);
-                        setDraftPlaceDays([]);
-                        setDraftPlaceDayOrderByDay({});
-                        return;
-                      }
-                      setEditingPlaceId(item.id);
-                      setDraftPlaceDays(effectiveDays);
-                      const nextOrderByDay: Record<number, number> = {};
-                      for (const day of effectiveDays) {
-                        nextOrderByDay[day] =
-                          getPlaceOrderPositionForDay(item.id, day, placeDayOrderOverrideMap) ??
-                          getPlacePositionInDay(
-                            item.id,
-                            day,
-                            placeDayOverrideMap,
-                            placeDayOrderOverrideMap,
-                            fallbackPlaceIndexMap
-                          );
-                      }
-                      setDraftPlaceDayOrderByDay(nextOrderByDay);
-                    }}
-                    className="rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
-                    aria-label={`Changer les jours de ${item.name}`}
-                  >
-                    {isEditingDays ? "Annuler" : "Changer les jours"}
-                  </button>
-                </div>
-              )}
-              {canManagePlaceVisibility && isEditingDays && (
-                <div className="rounded-2xl border border-[#BFDBFE] bg-[#EFF6FF] p-3 space-y-3">
-                  <p className="text-xs font-black uppercase tracking-widest text-[#1565C0]">
-                    Jours affichés pour ce lieu
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {JOURS_DESTINATIONS.map((entry) => {
-                      const isSelected = draftPlaceDays.includes(entry.jour);
-                      return (
-                        <button
-                          key={`${item.id}-override-day-${entry.jour}`}
-                          type="button"
-                          onClick={() => toggleDraftPlaceDay(entry.jour)}
-                          data-tutorial-id={`guide-day-override-${item.id}-${entry.jour}`}
-                          className={`rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-widest ${
-                            isSelected
-                              ? "bg-[#1565C0] text-white"
-                              : "bg-background text-muted-foreground border border-border"
-                          }`}
-                        >
-                          {formatTripDayLabel(entry.jour, tripStartDate)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-[#1565C0]">
-                      Position dans chaque jour
-                    </p>
-                    {draftPlaceDays.map((day) => {
-                      const dayLabel = formatTripDayLabel(day, tripStartDate);
-                      const dayPosition = Math.max(1, Math.trunc(draftPlaceDayOrderByDay[day] ?? 1));
-                      return (
-                        <div key={`${item.id}-order-${day}`} className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 border border-[#BFDBFE]">
-                          <span className="text-xs font-bold text-foreground">{dayLabel}</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => updateDraftDayPosition(day, dayPosition - 1)}
-                              className="w-7 h-7 rounded-full border border-border text-xs font-black"
-                              aria-label={`Monter ${item.name} le ${dayLabel}`}
-                            >
-                              -
-                            </button>
-                            <input
-                              type="number"
-                              min={1}
-                              value={dayPosition}
-                              onChange={(event) => {
-                                const parsed = Number.parseInt(event.target.value, 10);
-                                if (!Number.isFinite(parsed)) {
-                                  return;
-                                }
-                                updateDraftDayPosition(day, parsed);
-                              }}
-                              className="w-16 rounded-lg border border-border px-2 py-1 text-xs font-black text-center"
-                              aria-label={`Position de ${item.name} le ${dayLabel}`}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => updateDraftDayPosition(day, dayPosition + 1)}
-                              className="w-7 h-7 rounded-full border border-border text-xs font-black"
-                              aria-label={`Descendre ${item.name} le ${dayLabel}`}
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {draftPlaceDays.length === 0 && (
-                      <p className="text-xs text-muted-foreground">Sélectionnez au moins un jour pour régler sa position.</p>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (draftPlaceDays.length === 0) {
-                          return;
-                        }
-                        setSavingPlaceDaysForId(item.id);
-                        const saved = await onSetPlaceDays(item.id, draftPlaceDays, draftPlaceDayOrderByDay);
-                        setSavingPlaceDaysForId(null);
-                        if (!saved) {
-                          return;
-                        }
-                        setEditingPlaceId(null);
-                        setDraftPlaceDays([]);
-                        setDraftPlaceDayOrderByDay({});
-                      }}
-                      data-tutorial-id={`guide-day-override-save-${item.id}`}
-                      disabled={draftPlaceDays.length === 0 || savingPlaceDaysForId === item.id}
-                      className="rounded-full bg-[#1565C0] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {savingPlaceDaysForId === item.id ? "Enregistrement..." : "Enregistrer"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setSavingPlaceDaysForId(item.id);
-                        const saved = await onSetPlaceDays(item.id, baseDays, {});
-                        setSavingPlaceDaysForId(null);
-                        if (!saved) {
-                          return;
-                        }
-                        setEditingPlaceId(null);
-                        setDraftPlaceDays([]);
-                        setDraftPlaceDayOrderByDay({});
-                      }}
-                      disabled={savingPlaceDaysForId === item.id}
-                      className="rounded-full border border-[#BFDBFE] bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
-                    >
-                      Réinitialiser
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
         <div className="h-2" />
       </div>
     </div>
@@ -12679,7 +12757,7 @@ const resetForProfileSwitch = () => {
             onBack={() => goToScreen("dashboard")}
             onPlaceSelect={openPlace}
             currentDay={currentDay}
-            selectedDay={guideSelectedDay ?? currentDay}
+            selectedDay={guideSelectedDay}
             tripStartDate={tripStartDate}
             onSelectedDayChange={setGuideSelectedDay}
             commentsByPlace={placeCommentsByPlace}
@@ -13069,7 +13147,7 @@ const resetForProfileSwitch = () => {
             onBack={() => goToScreen("dashboard")}
             onPlaceSelect={openPlace}
             currentDay={currentDay}
-            selectedDay={guideSelectedDay ?? currentDay}
+            selectedDay={guideSelectedDay}
             tripStartDate={tripStartDate}
             onSelectedDayChange={setGuideSelectedDay}
             commentsByPlace={placeCommentsByPlace}

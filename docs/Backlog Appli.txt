@@ -8,7 +8,7 @@ A FAIRE
 - Acheter un nom de domaine ?
 - joindre tous les points d'un jour avec les coordonnées pour tracer un trajet de fin
 - revoir la logique => guide devrait avoir tout et sinon un filtre ou un mode de recherche (mieux encore) ?
-
+- Dans le guide : pouvoir filtrer par nom, date ou lieu (=> rajouter un tag lieu)
 
 JEU 
 * Bien tester le trivial !
