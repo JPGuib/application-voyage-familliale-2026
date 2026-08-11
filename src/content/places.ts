@@ -758,7 +758,7 @@
   shortDesc: "En route vers les paysages les plus étonnants de Turquie",
   tag: "Trajet",
   ville: "Ankara",
-  image: "/images/Jour 5/Bus.webp",
+  image: "/images/Bus.webp",
   photos: [
     "/images/Jour 5/chemin vers Cappadoce 1.webp",
     "/images/Jour 5/chemin vers Cappadoce 2.webp",

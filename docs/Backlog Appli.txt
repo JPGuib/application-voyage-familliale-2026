@@ -4,13 +4,7 @@ Evolutions :
 - préparer l'application pour un autre voyage ! 
 A FAIRE 
 - Acheter un nom de domaine ?
-- attention revoir le tutoriel à la fin, voire le compléter
 - faire une fichier d'installation à donner
-
-JEU 
-* Bien tester le trivial !
-* Trivial : possibilité de regénérer des questions ? 
-* Trivial : avoir la Turquie mais pas que avec bcp de questions
 
 COntenu : 
 * Revoir tous les quizz ! avec les guides et faire un gros challenge en fin de séjour ?

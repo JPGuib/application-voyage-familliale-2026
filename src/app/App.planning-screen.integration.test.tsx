@@ -422,6 +422,11 @@ describe("App Planning Screen integration", () => {
     expect(selectorButton).not.toBeNull();
     fireEvent.click(selectorButton as Element);
 
+    // After clicking the day selector, open the date dropdown to access day options
+    const dateDropdown = container.querySelector('[data-tutorial-id="guide-date-dropdown"]');
+    expect(dateDropdown).not.toBeNull();
+    fireEvent.click(dateDropdown as Element);
+
     const nonCurrentDayOption =
       container.querySelector('[data-tutorial-id="guide-day-option-3"]') ??
       container.querySelector('[data-tutorial-id="guide-day-option-2"]');
@@ -436,8 +441,12 @@ describe("App Planning Screen integration", () => {
       expect(screen.getByRole("heading", { name: /Jour 1/ })).toBeInTheDocument();
     });
 
+    await waitFor(() => {
+      const todayCard = container.querySelector('[data-tutorial-id="dashboard-today-card"]');
+      expect(todayCard).not.toBeNull();
+    });
+
     const todayCard = container.querySelector('[data-tutorial-id="dashboard-today-card"]');
-    expect(todayCard).not.toBeNull();
     fireEvent.click(todayCard as Element);
 
     await waitFor(() => {
