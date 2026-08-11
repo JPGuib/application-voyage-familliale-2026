@@ -5908,9 +5908,9 @@ function GameScreen({
             >
               <div className="text-3xl">🕹️</div>
               <div className="flex-1">
-                <div className="font-black text-foreground text-sm">Jeux</div>
+                <div className="font-black text-foreground text-sm">Espace ludique pour passer le temps</div>
                 <div className="text-xs text-muted-foreground">
-                  Trivial Turquie entre voyageurs, ou Candy Crush en solo
+                  Petits jeux en solo ou en équipe
                 </div>
               </div>
               <ChevronRight size={18} className="text-muted-foreground" />

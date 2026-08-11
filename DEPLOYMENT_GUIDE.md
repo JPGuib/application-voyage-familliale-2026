@@ -67,10 +67,10 @@ Appliquez au minimum à `Production` et `Preview`, puis redéployez.
 #### 1.4 Déploiement
 1. Cliquez **"Deploy"**
 2. Attendez ~1-2 min
-3. Vercel fournit une URL `https://[project].vercel.app`
+3. Vercel déploie l'application ; la production doit pointer sur `https://voyagefamilial.com`
 
 #### 1.5 Accès en production
-- **URL publique** : `https://[project].vercel.app`
+- **URL publique** : `https://voyagefamilial.com`
 - **Historique de déploiement** : Dashboard Vercel
 - **Mise à jour** : git push déclenche automatiquement un redéploiement
 
@@ -81,7 +81,7 @@ Appliquez au minimum à `Production` et `Preview`, puis redéployez.
 ## 2. Déploiement sur iOS 17+
 
 ### Prérequis
-- Application accessible via HTTPS (URL Vercel valide)
+- Application accessible via HTTPS (`https://voyagefamilial.com`)
 - iPhone / iPad avec iOS 17+
 - Safari (navigateur intégré)
 
@@ -89,7 +89,7 @@ Appliquez au minimum à `Production` et `Preview`, puis redéployez.
 
 #### 2.1 Depuis Safari
 1. Ouvrez Safari
-2. Naviguez vers `https://[project].vercel.app`
+2. Naviguez vers `https://voyagefamilial.com`
 3. **Menu (3 points)** → **Partager** (share icon)
 4. Descendez → **"Sur l'écran d'accueil"** (Add to Home Screen)
 5. Nommez l'app (ex: "Voyage 2026")
@@ -103,7 +103,7 @@ Appliquez au minimum à `Production` et `Preview`, puis redéployez.
 - Fond : couleur thème "#FFF8F1" (depuis vite.config.ts)
 
 ### 2.3 Mode opératoire famille (iOS)
-1. Vérifiez que l'URL Vercel est bien la version de production
+1. Vérifiez que l'URL est bien `https://voyagefamilial.com`
 2. Vérifiez que `VITE_FAMILY_SYNC_ID` est la même que sur Android/desktop
 3. Le premier membre crée son profil et devient Propriétaire
 4. Les autres membres créent leur profil: ils sont automatiquement Utilisateur
@@ -131,13 +131,13 @@ Appliquez au minimum à `Production` et `Preview`, puis redéployez.
 ### Prérequis
 - Samsung Galaxy A53 avec Android 16 + One UI 8.0
 - Chrome 130+ (ou tout navigateur Chromium)
-- Application accessible via HTTPS (URL Vercel)
+- Application accessible via HTTPS (`https://voyagefamilial.com`)
 
 ### Installation sur écran d'accueil
 
 #### 3.1 Depuis Chrome
 1. Ouvrez Chrome
-2. Naviguez vers `https://[project].vercel.app`
+2. Naviguez vers `https://voyagefamilial.com`
 3. **Menu (3 points)** → **Installer l'app** (ou "Install app")
 4. Tapez **"Installer"** dans la confirmation
 5. L'app s'ajoute à l'écran d'accueil
@@ -152,7 +152,7 @@ Appliquez au minimum à `Production` et `Preview`, puis redéployez.
 - Fond splash : couleur thème "#B8A898"
 
 ### 3.3 Mode opératoire famille (Android)
-1. Ouvrez exactement la même URL Vercel que sur iOS
+1. Ouvrez exactement la même URL que sur iOS: `https://voyagefamilial.com`
 2. Installez l'app via Chrome
 3. Vérifiez que le premier profil Android n'essaie pas de devenir propriétaire si owner déjà créé
 4. Si besoin, videz cache/site data Chrome et relancez l'app
@@ -259,7 +259,7 @@ git push origin main
 # 3. Tester en production
 # - iOS : Ajouter à l'écran d'accueil depuis Safari
 # - Android : Installer via Chrome
-# - Bureau : https://[project].vercel.app
+# - Bureau : https://voyagefamilial.com
 ```
 
 Vérification post-déploiement (owner global):
@@ -423,7 +423,7 @@ Option la plus lisible: 2 projets Vercel relies au meme repository.
 
 1. Projet `application-voyage-test`
 - Production Branch: `test-env`
-- URL stable de test (ex: `test-...vercel.app`)
+- URL stable de test (ex: `test.voyagefamilial.com`)
 - Variables d'environnement: valeurs de test (Firebase test si possible)
 
 2. Projet `application-voyage-prod`

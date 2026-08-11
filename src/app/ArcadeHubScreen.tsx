@@ -33,7 +33,7 @@ export function ArcadeHubScreen({
         >
           <div className="text-3xl">🎲</div>
           <div className="flex-1">
-            <div className="font-black text-foreground text-sm">Trivial Turquie</div>
+            <div className="font-black text-foreground text-sm">Trivial Turquie mais pas que</div>
             <div className="text-xs text-muted-foreground">
               Multijoueur en direct, chacun pour soi, 2 à 5 joueurs
             </div>
