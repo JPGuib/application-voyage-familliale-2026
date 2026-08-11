@@ -1123,34 +1123,6 @@
     ],
   },
   {
-    id: "montgolfiere-cappadoce",
-    jour: [7],
-    name: "Vol en montgolfière",
-    shortDesc: "Survoler les cheminées de fées au lever du jour",
-    tag: "Activité",
-    ville: "Cappadoce",
-    image: "/images/Jour 6/Montgolfiere_1.webp",
-    photos: [
-      "/images/Jour 6/Montgolfiere_1.webp",
-      "/images/Jour 6/Montgolfiere_2.webp",
-      "/images/Jour 6/Montgolfiere_3.webp",
-      "/images/Jour 6/Montgolfiere_4.webp"
-    ],
-    audioTitle: "Cappadoce vue du ciel",
-    audioDuration: "2 min 50 sec",
-    audioSrc: "/audio/places/vol_en_montgolfiere.mp3",
-    gps: "38.6431,34.8287",
-    historyLabel: "Le vol en montgolfière",
-    history: "Le vol en montgolfière au-dessus de Cappadoce est considéré comme l'une des plus belles expériences aériennes au monde. Chaque année, des centaines de ballons s'élèvent à l'aube pour offrir une vue panoramique sur les vallées, vignobles et cheminées de fées. Cette tradition a commencé dans les années 1990 et attire désormais des visiteurs du monde entier.",
-    anecdotesLabel: "Présentation et conseils",
-    anecdotes: [
-      "Les vols ont lieu très tôt le matin pour profiter des vents les plus calmes.",
-      "Prise en charge à l'hôtel à 4h du matin, horaire à confirmer",
-      "On peut parfois apercevoir des renards et des lièvres depuis le ciel.",
-      "La Cappadoce est l'un des sites de montgolfière les plus fréquentés au monde, aux côtés de Bagan et du Serengeti."
-    ]
-  },
-  {
     id: "trajet-cappadoce-konya",
     jour: [7],
     name: "De la Cappadoce à Konya",

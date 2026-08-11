@@ -2,15 +2,18 @@ Backlog
 -----------
 Evolutions : 
 - préparer l'application pour un autre voyage ! 
-- rajouter une possibilité de filtrage dans documents
+- voir réservation à partir d'un lieu ?
+
 
 Contenu : 
 * Revoir tous les quizz ! avec les guides et faire un gros challenge en fin de séjour ?
-* revoir les coordonnées GPS
 * revoir les textes et mettre en gras
+* nettoyer les points du jeu
+
+En cours
 * compléter avec les réservations
 * supprimer les lieux en double et mettre 2 fois les dates
-* nettoyer les points du jeu
+
 
 TESTER TOUTE L'APPLICATION
 * tester le mode offline
