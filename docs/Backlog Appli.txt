@@ -2,7 +2,7 @@ Backlog
 -----------
 Evolutions : 
 - préparer l'application pour un autre voyage ! 
-- voir réservation à partir d'un lieu ?
+- Attention refaire un passage de tutoriel
 
 
 Contenu : 

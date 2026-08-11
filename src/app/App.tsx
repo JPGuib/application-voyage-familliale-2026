@@ -3341,6 +3341,8 @@ function DocumentsScreen({
   documentVisibilityMap,
   onToggleDocumentVisibility,
   canManageDocumentVisibility,
+  deepLinkTarget,
+  onDeepLinkHandled,
   isOnline,
 }: {
   onBack: () => void;
@@ -3349,6 +3351,8 @@ function DocumentsScreen({
   documentVisibilityMap: DocumentVisibilityMap;
   onToggleDocumentVisibility: (documentId: string, nextState: DocumentVisibilityState) => void;
   canManageDocumentVisibility: boolean;
+  deepLinkTarget: DocumentsDeepLinkTarget | null;
+  onDeepLinkHandled: () => void;
   isOnline: boolean;
 }) {
   const DOCUMENTS_STORAGE_KEY = "jp-documents-v4";
@@ -3377,6 +3381,7 @@ function DocumentsScreen({
   const [documentFilterDays, setDocumentFilterDays] = useState<number[]>([]);
   const [documentFilterName, setDocumentFilterName] = useState("");
   const [documentDayDropdownOpen, setDocumentDayDropdownOpen] = useState(false);
+  const [highlightedDocumentId, setHighlightedDocumentId] = useState<string | null>(null);
 
   const [draftCategory, setDraftCategory] = useState<DocumentCategory>(DOCUMENT_CATEGORIES[0]);
   const [draftTitle, setDraftTitle] = useState("");
@@ -3618,6 +3623,47 @@ function DocumentsScreen({
     : null;
 
   useEffect(() => {
+    if (!deepLinkTarget) {
+      return;
+    }
+
+    const visibleTarget = visibleDocuments.find((document) => document.id === deepLinkTarget.documentId);
+    const fallbackTarget = allDocuments.find((document) => document.id === deepLinkTarget.documentId);
+    const target = visibleTarget ?? fallbackTarget;
+
+    if (!target) {
+      onDeepLinkHandled();
+      return;
+    }
+
+    setActiveCategory(target.category);
+    setDocumentFilterName(target.title);
+    setDocumentFilterDays([]);
+    setDocumentDayDropdownOpen(false);
+    setFilterOpen(true);
+    setHighlightedDocumentId(target.id);
+
+    requestAnimationFrame(() => {
+      const targetElement = document.getElementById(`document-card-${target.id}`);
+      targetElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    onDeepLinkHandled();
+  }, [allDocuments, deepLinkTarget, onDeepLinkHandled, visibleDocuments]);
+
+  useEffect(() => {
+    if (!highlightedDocumentId) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setHighlightedDocumentId(null);
+    }, 2200);
+
+    return () => window.clearTimeout(timeout);
+  }, [highlightedDocumentId]);
+
+  useEffect(() => {
     setDocumentFilterDays((previous) => {
       const next = previous.filter((day) => availableDocumentDays.includes(day));
       if (next.length === previous.length && next.every((day, index) => day === previous[index])) {
@@ -3857,61 +3903,12 @@ function DocumentsScreen({
               <button
                 type="button"
                 onClick={addDraftDaysFromInput}
-                    const [highlightedDocumentId, setHighlightedDocumentId] = useState<string | null>(null);
                 className="rounded-xl border border-border px-3 py-2 text-xs font-black uppercase tracking-widest"
               >
                 Ajouter
               </button>
-                    useEffect(() => {
-                      if (!deepLinkTarget) {
-                        return;
-                      }
-
-                      const visibleTarget = visibleDocuments.find((document) => document.id === deepLinkTarget.documentId);
-                      const fallbackTarget = allDocuments.find((document) => document.id === deepLinkTarget.documentId);
-                      const target = visibleTarget ?? fallbackTarget;
-
-                      if (!target) {
-                        onDeepLinkHandled();
-                        return;
-                      }
-
-                      setActiveCategory(target.category);
-                      setDocumentFilterName(target.title);
-                      setDocumentFilterDays([]);
-                      setDocumentDayDropdownOpen(false);
-                      setFilterOpen(true);
-                      setHighlightedDocumentId(target.id);
-
-                      requestAnimationFrame(() => {
-                        const targetElement = document.getElementById(`document-card-${target.id}`);
-                        targetElement?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      });
-
-                      onDeepLinkHandled();
-                    }, [allDocuments, deepLinkTarget, onDeepLinkHandled, visibleDocuments]);
-
-                    useEffect(() => {
-                      if (!highlightedDocumentId) {
-                        return;
-                      }
-
-                      const timeout = window.setTimeout(() => {
-                        setHighlightedDocumentId(null);
-                      }, 2200);
-
-                      return () => window.clearTimeout(timeout);
-                    }, [highlightedDocumentId]);
             </div>
-                              <article
-                                id={`document-card-${item.id}`}
-                                key={item.id}
-                                className={`rounded-2xl bg-card border p-4 transition-shadow ${
-                                  highlightedDocumentId === item.id
-                                    ? "border-[#1565C0] ring-2 ring-[#1565C0]/30"
-                                    : "border-border"
-                                }`}
-                              >
+          </div>
         </div>
 
         <textarea
@@ -4271,7 +4268,15 @@ function DocumentsScreen({
             const visibilityState = documentVisibilityMap[item.id] ?? "visible";
             const isHiddenByOwner = visibilityState === "hiddenByOwner";
             return (
-            <article key={item.id} className="rounded-2xl bg-card border border-border p-4">
+            <article
+              id={`document-card-${item.id}`}
+              key={item.id}
+              className={`rounded-2xl bg-card border p-4 transition-shadow ${
+                highlightedDocumentId === item.id
+                  ? "border-[#1565C0] ring-2 ring-[#1565C0]/30"
+                  : "border-border"
+              }`}
+            >
               {editingId === item.id ? (
                 renderDocumentEditor(item.id)
               ) : (
@@ -5325,6 +5330,7 @@ function ContentDetailScreen({
   item,
   onBack,
   onOpenVisiteGuidee,
+  onOpenInternalLink,
   visiteGuideeCtaText = "Voir le guide de visite complet",
   visiteGuideeCtaSubtext = "Histoire détaillée, salle par salle",
   extraSection,
@@ -5335,6 +5341,7 @@ function ContentDetailScreen({
   item: ContentTopic;
   onBack: () => void;
   onOpenVisiteGuidee?: (item: ContentTopic) => void;
+  onOpenInternalLink?: (url: string) => boolean;
   visiteGuideeCtaText?: string;
   visiteGuideeCtaSubtext?: string;
   extraSection?: ReactNode;
@@ -5359,6 +5366,13 @@ function ContentDetailScreen({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [realDuration, setRealDuration] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const { coords: deviceCoords } = useDeviceLocation();
+  const destinationCoords = item.gps ? parseGpsString(item.gps) : null;
+  const canPlayAudio = Boolean(item.audioSrc);
 
   const openUsefulLink = (url: string) => {
     if (onOpenInternalLink?.(url)) {
@@ -5366,21 +5380,15 @@ function ContentDetailScreen({
     }
     openExternalWindow(url);
   };
-  const [audioError, setAudioError] = useState<string | null>(null);
-        {usefulLinks.length > 0 ? (
-  const [realDuration, setRealDuration] = useState<string | null>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const { coords: deviceCoords } = useDeviceLocation();
-              {usefulLinks.map((link, index) => (
-                <button
 
-                  type="button"
-                  onClick={() => openUsefulLink(link.url)}
+  useEffect(() => {
+    const audio = new Audio(item.audioSrc ?? "");
+    audio.muted = isMuted;
     audioRef.current = audio;
     setIsPlaying(false);
     setProgress(0);
     setAudioError(null);
-                </button>
+    setRealDuration(null);
 
     const handleLoadedMetadata = () => {
       const formatted = formatDuration(audio.duration);
@@ -5418,7 +5426,7 @@ function ContentDetailScreen({
       audio.removeEventListener("error", handleError);
       audioRef.current = null;
     };
-  }, [item.audioSrc, item.id]);
+  }, [item.audioSrc, item.id, isMuted]);
 
   const handleTogglePlay = async () => {
     if (!canPlayAudio || !audioRef.current) {
@@ -5674,21 +5682,20 @@ function ContentDetailScreen({
           </div>
         </div>
 
-        {item.links?.length ? (
+        {usefulLinks.length > 0 ? (
           <div className="px-4 mb-6">
             <h2 className="text-base font-black text-foreground mb-3">🌐 Liens utiles</h2>
             <div className="space-y-2">
-              {item.links.map((link, index) => (
-                <a
+              {usefulLinks.map((link, index) => (
+                <button
                   key={`${item.id}-link-${index}`}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  type="button"
+                  onClick={() => openUsefulLink(link.url)}
                   className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 active:scale-95 transition-transform"
                 >
                   <span className="text-sm font-semibold text-foreground/90">{link.label}</span>
                   <ExternalLink size={16} className="text-muted-foreground flex-shrink-0" />
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -5947,6 +5954,7 @@ function PlaceScreen({
   onUpsertComment,
   onBack,
   onOpenVisiteGuidee,
+  onOpenInternalLink,
   isOnline,
 }: {
   place: (typeof PLACES)[0];
@@ -5956,6 +5964,7 @@ function PlaceScreen({
   onUpsertComment: (input: { placeId: string; reaction: PlaceCommentReaction | null; text: string }) => void;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
+  onOpenInternalLink: (url: string) => boolean;
   isOnline: boolean;
 }) {
   const reactionCounts = getPlaceReactionCounts(comments);
@@ -5965,6 +5974,7 @@ function PlaceScreen({
       item={place}
       onBack={onBack}
       onOpenVisiteGuidee={onOpenVisiteGuidee}
+      onOpenInternalLink={onOpenInternalLink}
       heroReactionCounts={reactionCounts}
       offlineSection="stay-guide"
       isOnline={isOnline}
@@ -5983,7 +5993,6 @@ function PlaceScreen({
 
 // ─── HISTOIRE TOPIC DETAIL SCREEN ────────────────────────────────────────────
 
-      onOpenInternalLink={onOpenInternalLink}
 function HistoireTopicScreen({
   topic,
   onBack,
@@ -11444,8 +11453,6 @@ export default function App() {
       return;
     }
 
-            deepLinkTarget={documentsDeepLinkTarget}
-            onDeepLinkHandled={() => setDocumentsDeepLinkTarget(null)}
     setAccessDeniedMessage(null);
     setSelectedGeographieTopicId(id);
     setScreen("geographie-topic");
