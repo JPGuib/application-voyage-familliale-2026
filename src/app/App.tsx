@@ -4130,9 +4130,12 @@ function GuideScreen({
   const [filterDays, setFilterDays] = useState<number[]>(() =>
     selectedDay !== null ? [selectedDay] : []
   );
-  const [filterVille, setFilterVille] = useState<string | null>(null);
-  const [filterTag, setFilterTag] = useState<string | null>(null);
+  const [filterTags, setFilterTags] = useState<string[]>([]);
+  const [filterVilles, setFilterVilles] = useState<string[]>([]);
   const [filterName, setFilterName] = useState("");
+  const [dayDropdownOpen, setDayDropdownOpen] = useState(false);
+  const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
+  const [villeDropdownOpen, setVilleDropdownOpen] = useState(false);
   const [editingPlaceId, setEditingPlaceId] = useState<string | null>(null);
   const [draftPlaceDays, setDraftPlaceDays] = useState<number[]>([]);
   const [draftPlaceDayOrderByDay, setDraftPlaceDayOrderByDay] = useState<Record<number, number>>({});
@@ -4145,10 +4148,13 @@ function GuideScreen({
   // Reset filters when navigation sets a specific day context
   useEffect(() => {
     setFilterDays(selectedDay !== null ? [selectedDay] : []);
-    setFilterVille(null);
-    setFilterTag(null);
+    setFilterTags([]);
+    setFilterVilles([]);
     setFilterName("");
     setFilterOpen(false);
+    setDayDropdownOpen(false);
+    setTagDropdownOpen(false);
+    setVilleDropdownOpen(false);
   }, [selectedDay]);
 
   const availableTags = useMemo(
@@ -4183,11 +4189,14 @@ function GuideScreen({
             getEffectivePlaceDays(p, placeDayOverrideMap).includes(entry.jour)
           )
             .filter((p) => isPlaceVisibleForRole(role, p.id, placeVisibilityMap))
-            .filter((p) => !filterTag || p.tag === filterTag)
+            .filter((p) => filterTags.length === 0 || filterTags.includes(p.tag))
             .filter(
               (p) =>
-                !filterVille ||
-                ("ville" in p && (p as { ville?: string }).ville === filterVille)
+                filterVilles.length === 0 ||
+                ("ville" in p &&
+                  filterVilles.includes(
+                    (p as { ville?: string }).ville ?? ""
+                  ))
             )
             .filter(
               (p) =>
@@ -4202,8 +4211,8 @@ function GuideScreen({
       .filter((g) => g.places.length > 0);
   }, [
     filterDays,
-    filterTag,
-    filterVille,
+    filterTags,
+    filterVilles,
     filterName,
     placeDayOverrideMap,
     placeVisibilityMap,
@@ -4214,15 +4223,15 @@ function GuideScreen({
 
   const activeFilterCount =
     filterDays.length +
-    (filterVille ? 1 : 0) +
-    (filterTag ? 1 : 0) +
+    filterTags.length +
+    filterVilles.length +
     (filterName.trim() ? 1 : 0);
   const hasFilters = activeFilterCount > 0;
 
   const clearFilters = () => {
     setFilterDays([]);
-    setFilterVille(null);
-    setFilterTag(null);
+    setFilterTags([]);
+    setFilterVilles([]);
     setFilterName("");
     onSelectedDayChange(null);
   };
@@ -4568,8 +4577,8 @@ function GuideScreen({
                   {[
                     filterDays.length > 0 &&
                       filterDays.map((d) => formatTripDayLabel(d, tripStartDate)).join(", "),
-                    filterTag,
-                    filterVille,
+                    filterTags.length > 0 && filterTags.join(", "),
+                    filterVilles.length > 0 && filterVilles.join(", "),
                     filterName.trim() && `"${filterName.trim()}"`,
                   ]
                     .filter(Boolean)
@@ -4595,83 +4604,159 @@ function GuideScreen({
       </div>
 
       {filterOpen && (
-        <div className="flex-shrink-0 bg-card border-b border-border px-4 pt-4 pb-4 space-y-4 overflow-y-auto max-h-[50vh]">
+        <div className="flex-shrink-0 bg-card border-b border-border px-4 pt-4 pb-4 space-y-3 overflow-y-auto max-h-[50vh]">
+
+          {/* Jour */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Jour</p>
-            <div className="flex flex-wrap gap-2">
-              {JOURS_DESTINATIONS.map((entry) => {
-                const active = filterDays.includes(entry.jour);
-                return (
-                  <button
-                    key={entry.jour}
-                    type="button"
-                    onClick={() =>
-                      setFilterDays((prev) =>
-                        active
-                          ? prev.filter((d) => d !== entry.jour)
-                          : [...prev, entry.jour].sort((a, b) => a - b)
-                      )
-                    }
-                    className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${
-                      active
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-muted text-foreground"
-                    }`}
-                  >
-                    {formatTripDayLabel(entry.jour, tripStartDate)}
-                    {entry.jour === currentDay && (
-                      <span className="ml-1 opacity-60">· auj.</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Jour</p>
+            <button
+              type="button"
+              onClick={() => setDayDropdownOpen((p) => !p)}
+              className={`w-full flex items-center justify-between rounded-xl border px-3 py-2.5 text-sm text-left transition-colors ${
+                filterDays.length > 0
+                  ? "border-accent bg-accent/5 text-accent font-bold"
+                  : "border-border bg-muted text-foreground"
+              }`}
+            >
+              <span className="truncate">
+                {filterDays.length === 0
+                  ? "Tous les jours"
+                  : filterDays.length <= 2
+                  ? filterDays.map((d) => formatTripDayLabel(d, tripStartDate)).join(", ")
+                  : `${filterDays.length} jours sélectionnés`}
+              </span>
+              <ChevronDown size={15} className={`flex-shrink-0 ml-2 transition-transform ${dayDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+            {dayDropdownOpen && (
+              <div className="mt-1 border border-border rounded-xl overflow-hidden">
+                {JOURS_DESTINATIONS.map((entry) => {
+                  const active = filterDays.includes(entry.jour);
+                  return (
+                    <button
+                      key={entry.jour}
+                      type="button"
+                      onClick={() =>
+                        setFilterDays((prev) =>
+                          active
+                            ? prev.filter((d) => d !== entry.jour)
+                            : [...prev, entry.jour].sort((a, b) => a - b)
+                        )
+                      }
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left border-b border-border/40 last:border-b-0 active:bg-muted"
+                    >
+                      <span className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center ${active ? "bg-accent border-accent" : "border-border"}`}>
+                        {active && <Check size={10} className="text-accent-foreground" />}
+                      </span>
+                      <span className={active ? "font-bold text-foreground" : "text-muted-foreground"}>
+                        {formatTripDayLabel(entry.jour, tripStartDate)}
+                        {entry.jour === currentDay && <span className="ml-1 text-[10px] text-primary font-bold">· auj.</span>}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
+          {/* Type */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Type</p>
-            <div className="flex flex-wrap gap-2">
-              {availableTags.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => setFilterTag((prev) => (prev === tag ? null : tag))}
-                  className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${
-                    filterTag === tag
-                      ? "bg-accent text-accent-foreground"
-                      : "bg-muted text-foreground"
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Type</p>
+            <button
+              type="button"
+              onClick={() => setTagDropdownOpen((p) => !p)}
+              className={`w-full flex items-center justify-between rounded-xl border px-3 py-2.5 text-sm text-left transition-colors ${
+                filterTags.length > 0
+                  ? "border-accent bg-accent/5 text-accent font-bold"
+                  : "border-border bg-muted text-foreground"
+              }`}
+            >
+              <span className="truncate">
+                {filterTags.length === 0
+                  ? "Tous les types"
+                  : filterTags.length <= 2
+                  ? filterTags.join(", ")
+                  : `${filterTags.length} types sélectionnés`}
+              </span>
+              <ChevronDown size={15} className={`flex-shrink-0 ml-2 transition-transform ${tagDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+            {tagDropdownOpen && (
+              <div className="mt-1 border border-border rounded-xl overflow-hidden">
+                {availableTags.map((tag) => {
+                  const active = filterTags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() =>
+                        setFilterTags((prev) =>
+                          active ? prev.filter((t) => t !== tag) : [...prev, tag].sort()
+                        )
+                      }
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left border-b border-border/40 last:border-b-0 active:bg-muted"
+                    >
+                      <span className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center ${active ? "bg-accent border-accent" : "border-border"}`}>
+                        {active && <Check size={10} className="text-accent-foreground" />}
+                      </span>
+                      <span className={active ? "font-bold text-foreground" : "text-muted-foreground"}>{tag}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
+          {/* Ville */}
           {availableVilles.length > 0 && (
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Ville</p>
-              <div className="flex flex-wrap gap-2">
-                {availableVilles.map((ville) => (
-                  <button
-                    key={ville}
-                    type="button"
-                    onClick={() => setFilterVille((prev) => (prev === ville ? null : ville))}
-                    className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${
-                      filterVille === ville
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-muted text-foreground"
-                    }`}
-                  >
-                    {ville}
-                  </button>
-                ))}
-              </div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Ville</p>
+              <button
+                type="button"
+                onClick={() => setVilleDropdownOpen((p) => !p)}
+                className={`w-full flex items-center justify-between rounded-xl border px-3 py-2.5 text-sm text-left transition-colors ${
+                  filterVilles.length > 0
+                    ? "border-accent bg-accent/5 text-accent font-bold"
+                    : "border-border bg-muted text-foreground"
+                }`}
+              >
+                <span className="truncate">
+                  {filterVilles.length === 0
+                    ? "Toutes les villes"
+                    : filterVilles.length <= 2
+                    ? filterVilles.join(", ")
+                    : `${filterVilles.length} villes sélectionnées`}
+                </span>
+                <ChevronDown size={15} className={`flex-shrink-0 ml-2 transition-transform ${villeDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+              {villeDropdownOpen && (
+                <div className="mt-1 border border-border rounded-xl overflow-hidden">
+                  {availableVilles.map((ville) => {
+                    const active = filterVilles.includes(ville);
+                    return (
+                      <button
+                        key={ville}
+                        type="button"
+                        onClick={() =>
+                          setFilterVilles((prev) =>
+                            active ? prev.filter((v) => v !== ville) : [...prev, ville].sort()
+                          )
+                        }
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left border-b border-border/40 last:border-b-0 active:bg-muted"
+                      >
+                        <span className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center ${active ? "bg-accent border-accent" : "border-border"}`}>
+                          {active && <Check size={10} className="text-accent-foreground" />}
+                        </span>
+                        <span className={active ? "font-bold text-foreground" : "text-muted-foreground"}>{ville}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
+          {/* Recherche par nom */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Recherche</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Recherche</p>
             <input
               type="text"
               value={filterName}
