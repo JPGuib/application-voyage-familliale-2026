@@ -27,6 +27,7 @@
   },
   {
     id: "Nante-Paris",
+    reservationDocumentIds: ["vol-nantes-paris-af7507"],
     jour: [1],
     name: "Nantes - Paris",
     shortDesc: "Vol AF7507 - 19h45 -> 20h55",
@@ -52,6 +53,7 @@
   },
   {
     id: "Paris-istanbul",
+    reservationDocumentIds: ["vol-paris-istanbul-af1390"],
     jour: [1],
     name: "Paris - Istanbul",
     shortDesc: "Vol AF1390 - 22h55 -> 03h30",
@@ -354,6 +356,7 @@
   },
   {
     id: "restaurant-vina-garden",
+    reservationDocumentIds: ["restaurant-vina-garden"],
     jour: [2],
     name: "La Vina Garden 1864 Restaurant",
     shortDesc: "Une table à réserver à Sultanahmet",
@@ -382,6 +385,7 @@
   },
     {
     id: "nuit-hotel-windsoer",
+    reservationDocumentIds: ["hotel-istanbul-windsor"],
     jour: [2],
     name: "hôtel WINDSOR HOTEL & CONVENTION CENTER 5*",
     shortDesc: "Nuit à l'hôtel Windsor",
@@ -556,6 +560,7 @@
   },
   {
     id: "restaurant-tershane",
+    reservationDocumentIds: ["restaurant-tershane"],
     jour: [3],
     name: "Tershane",
     shortDesc: "Une table Bib Gourmand avec vue sur Istanbul",
@@ -582,6 +587,7 @@
   },
   {
     id: "restaurant-muutto-anatolian-tapas",
+    reservationDocumentIds: ["restaurant-muutto-anatolian-tapas"],
     jour: [3],
     name: "Muutto Anatolian Tapas Bar",
     shortDesc: "La cuisine anatolienne revisitée façon tapas à Galataport",
@@ -608,6 +614,7 @@
   },
   {
     id: "nuit-hotel-windsoer-2",
+    reservationDocumentIds: ["hotel-istanbul-windsor"],
     jour: [3],
     name: "hôtel WINDSOR HOTEL & CONVENTION CENTER 5*",
     shortDesc: "Nuit à l'hôtel Windsor",
@@ -732,6 +739,7 @@
   },
   {
     id: "nuit-HILTONSA-ANKARA",
+    reservationDocumentIds: ["hotel-ankara-hiltonsa"],
     jour: [4],
     name: "hôtel HILTONSA ANKARA 5*",
     shortDesc: "Diner et nuit à l'hôtel HILTONSA ANKARA",
@@ -879,6 +887,7 @@
   },
     {
     id: "restaurant-happena",
+    reservationDocumentIds: ["restaurant-happena"],
     jour: [5],
     name: "Happena Restaurant",
     shortDesc: "Un dîner aux saveurs de l'Anatolie ancienne à Göreme",
@@ -905,6 +914,7 @@
   },
   {
   id: "restaurant-kaira-rooftop",
+  reservationDocumentIds: ["restaurant-kaira-rooftop"],
   jour: [5],
   name: "Kaira Rooftop Bar & Restaurant",
   shortDesc: "Un dîner avec vue sur les cheminées de fées",
@@ -931,6 +941,7 @@
 },
 {
   id: "restaurant-sky-rooftop",
+  reservationDocumentIds: ["restaurant-sky-rooftop"],
   jour: [5],
   name: "Sky Cappadocia Rooftop & Restaurant",
   shortDesc: "Une vue imprenable sur Göreme au coucher du soleil",
@@ -957,6 +968,7 @@
 },
 {
     id: "nuit-BURCU-KAYA-CAPPADOCE",
+  reservationDocumentIds: ["hotel-cappadoce-burcu-kaya"],
     jour: [5],
     name: "hôtel BURCU KAYA - CAPPADOCE 4*",
     shortDesc: "Nuit (et diner?) à l'hôtel BURCU KAYA - CAPPADOCE",
@@ -986,6 +998,11 @@
   },
   {
     id: "montgolfiere-cappadoce",
+    reservationDocumentIds: [
+      "Montgolfiere-rainbow-balloons",
+      "Montgolfiere-discovery-balloons",
+      "Montgolfiere-Nazar-balloons",
+    ],
     jour: [6],
     name: "Vol en montgolfière",
     shortDesc: "Survoler les cheminées de fées au lever du jour",
@@ -1093,6 +1110,7 @@
   },
 {
   id: "restaurant-nana-cappadocia",
+  reservationDocumentIds: ["restaurant-nana-cappadocia"],
   jour: [6],
   name: "NANA Cappadocia Restaurant",
   shortDesc: "Un dîner en terrasse au cœur de Göreme",
@@ -1126,6 +1144,7 @@
 },
 {
   id: "restaurant-numero-10-ortahisar",
+  reservationDocumentIds: ["restaurant-numero-10-ortahisar"],
   jour: [6],
   name: "Restaurant N°10",
   shortDesc: "Une soirée conviviale au cœur d'Ortahisar",
@@ -1153,6 +1172,7 @@
 },
 {
     id: "nuit-BURCU-KAYA-CAPPADOCE-2",
+  reservationDocumentIds: ["hotel-cappadoce-burcu-kaya"],
     jour: [6],
     name: "hôtel BURCU KAYA - CAPPADOCE 4*",
     shortDesc: "Nuit (et diner?) à l'hôtel BURCU KAYA - CAPPADOCE",
@@ -1319,6 +1339,7 @@
   },
   {
     id: "hotel-pam-thermal",
+    reservationDocumentIds: ["hotel-pamukkale-pam-thermal"],
     jour: [7],
     name: "PAM Thermal Hotel Pamukkale",
     shortDesc: "Une parenthèse thermale au cœur de Pamukkale",
@@ -1489,6 +1510,7 @@
   },
   {
     id: "hotel-park-inn-radisson-izmir",
+    reservationDocumentIds: ["hotel-izmir-park-inn"],
     jour: [8],
     name: "Park Inn by Radisson İzmir",
     shortDesc: "Un hôtel moderne face à la baie d'Izmir",
@@ -1708,6 +1730,7 @@
   },
  {
     id: "nuit-hotel-windsoer-2",
+   reservationDocumentIds: ["hotel-istanbul-windsor"],
     jour: [9],
     name: "hôtel WINDSOR HOTEL & CONVENTION CENTER 5*",
     shortDesc: "Nuit à l'hôtel Windsor",
@@ -1735,6 +1758,7 @@
   },
   {
     id: "Istanbul-Nantes",
+    reservationDocumentIds: ["vol-istanbul-nantes-to3421"],
     jour: [10],
     name: "Istanbul - Nantes",
     shortDesc: "Vol TO3421 - 14h00 -> 17h10",

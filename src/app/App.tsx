@@ -389,43 +389,6 @@ type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture"
 
 const INTERNAL_DOCUMENT_LINK_PREFIX = "app://document/";
 
-const PLACE_DOCUMENT_LINKS: Record<string, string[]> = {
-  "Découverte de la Turquie": [
-    "programme-sejour",
-    "information-sejour",
-    "eSIM-gratuire",
-    "Pourboire",
-    "assurance-voyage-famille",
-    "passeports-famille",
-    "LCL",
-  ],
-  "Nante-Paris": ["vol-nantes-paris-af7507"],
-  "Paris-istanbul": ["vol-paris-istanbul-af1390", "reservation-transfert-aeroport"],
-  "Istanbul-Nantes": ["vol-istanbul-nantes-to3421"],
-  istanbul: ["information-sejour"],
-  kadikoy: ["Navettes-Bateau-Istanbul"],
-  "croisiere-bosphore": ["Navettes-Bateau-Istanbul"],
-  "nuit-hotel-windsoer": ["hotel-istanbul-windsor"],
-  "nuit-hotel-windsoer-2": ["hotel-istanbul-windsor"],
-  "nuit-HILTONSA-ANKARA": ["hotel-ankara-hiltonsa"],
-  "restaurant-jour3": ["restaurant-tershane", "restaurant-muutto"],
-  "nuit-BURCU-KAYA-CAPPADOCE": ["hotel-cappadoce-burcu-kaya"],
-  "nuit-BURCU-KAYA-CAPPADOCE-2": ["hotel-cappadoce-burcu-kaya"],
-  "hotel-pam-thermal": ["hotel-pamukkale-pam-thermal"],
-  "hotel-park-inn-radisson-izmir": ["hotel-izmir-park-inn"],
-  "restaurant-happena": ["restaurant-happena"],
-  "restaurant-vina-garden": ["restaurant-vina-garden"],
-  "restaurant-kaira-rooftop": ["restaurant-kaira-rooftop"],
-  "restaurant-sky-rooftop": ["restaurant-sky-rooftop"],
-  "restaurant-nana-cappadocia": ["restaurant-nana-cappadocia"],
-  "restaurant-numero-10-ortahisar": ["restaurant-numero-10-ortahisar"],
-  "montgolfiere-cappadoce": [
-    "Montgolfiere-rainbow-balloons",
-    "Montgolfiere-discovery-balloons",
-    "Montgolfiere-Nazar-balloons",
-  ],
-};
-
 function buildInternalDocumentLink(documentId: string): string {
   return `${INTERNAL_DOCUMENT_LINK_PREFIX}${encodeURIComponent(documentId)}`;
 }
@@ -485,9 +448,27 @@ function getAutomaticallyMatchedDocumentIds(placeId: string): string[] {
 }
 
 function getAutoReservationLinksForPlace(placeId: string): Array<{ label: string; url: string }> {
-  const documentIds = Array.from(
-    new Set([...(PLACE_DOCUMENT_LINKS[placeId] ?? []), ...getAutomaticallyMatchedDocumentIds(placeId)])
-  );
+  const placeEntry = PLACES.find((entry) => entry.id === placeId) as
+    | { reservationDocumentIds?: unknown }
+    | undefined;
+  const documentIdsFromPlace = Array.isArray(placeEntry?.reservationDocumentIds)
+    ? placeEntry.reservationDocumentIds.filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+    : [];
+
+  if (documentIdsFromPlace.length > 0) {
+    return documentIdsFromPlace
+      .map((documentId) => {
+        const document = DOCUMENTS.find((entry) => entry.id === documentId);
+        if (!document) return null;
+        return {
+          label: `Voir la reservation: ${document.title}`,
+          url: buildInternalDocumentLink(document.id),
+        };
+      })
+      .filter((entry): entry is { label: string; url: string } => Boolean(entry));
+  }
+
+  const documentIds = getAutomaticallyMatchedDocumentIds(placeId);
 
   return documentIds
     .map((documentId) => {
