@@ -4126,7 +4126,13 @@ function GuideScreen({
   canManagePlaceVisibility: boolean;
   isOnline: boolean;
 }) {
-  const [selectorOpen, setSelectorOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterDays, setFilterDays] = useState<number[]>(() =>
+    selectedDay !== null ? [selectedDay] : []
+  );
+  const [filterVille, setFilterVille] = useState<string | null>(null);
+  const [filterTag, setFilterTag] = useState<string | null>(null);
+  const [filterName, setFilterName] = useState("");
   const [editingPlaceId, setEditingPlaceId] = useState<string | null>(null);
   const [draftPlaceDays, setDraftPlaceDays] = useState<number[]>([]);
   const [draftPlaceDayOrderByDay, setDraftPlaceDayOrderByDay] = useState<Record<number, number>>({});
@@ -4136,30 +4142,90 @@ function GuideScreen({
     []
   );
 
-  const dayPlaces = selectedDay !== null ? sortPlacesForDay(
-    PLACES_WITH_AUTO_GPS
-    .filter((place) => getEffectivePlaceDays(place, placeDayOverrideMap).includes(selectedDay))
-    .filter((place) => isPlaceVisibleForRole(role, place.id, placeVisibilityMap)),
-    selectedDay,
-    placeDayOrderOverrideMap,
-    fallbackPlaceIndexMap
-  ) : [];
+  // Reset filters when navigation sets a specific day context
+  useEffect(() => {
+    setFilterDays(selectedDay !== null ? [selectedDay] : []);
+    setFilterVille(null);
+    setFilterTag(null);
+    setFilterName("");
+    setFilterOpen(false);
+  }, [selectedDay]);
 
-  const allDayGroups = selectedDay === null
-    ? JOURS_DESTINATIONS.map((entry) => ({
+  const availableTags = useMemo(
+    () => [...new Set(PLACES_WITH_AUTO_GPS.map((p) => p.tag))].sort(),
+    []
+  );
+  const availableVilles = useMemo(
+    () =>
+      [
+        ...new Set(
+          PLACES_WITH_AUTO_GPS.flatMap((p) =>
+            "ville" in p && typeof (p as { ville?: string }).ville === "string"
+              ? [(p as { ville: string }).ville]
+              : []
+          )
+        ),
+      ].sort(),
+    []
+  );
+
+  const filteredGroups = useMemo(() => {
+    const daysToShow =
+      filterDays.length > 0
+        ? JOURS_DESTINATIONS.filter((e) => filterDays.includes(e.jour))
+        : JOURS_DESTINATIONS;
+    const normalizedSearch = filterName.trim().toLowerCase();
+    return daysToShow
+      .map((entry) => ({
         entry,
         places: sortPlacesForDay(
-          PLACES_WITH_AUTO_GPS
-            .filter((place) => getEffectivePlaceDays(place, placeDayOverrideMap).includes(entry.jour))
-            .filter((place) => isPlaceVisibleForRole(role, place.id, placeVisibilityMap)),
+          PLACES_WITH_AUTO_GPS.filter((p) =>
+            getEffectivePlaceDays(p, placeDayOverrideMap).includes(entry.jour)
+          )
+            .filter((p) => isPlaceVisibleForRole(role, p.id, placeVisibilityMap))
+            .filter((p) => !filterTag || p.tag === filterTag)
+            .filter(
+              (p) =>
+                !filterVille ||
+                ("ville" in p && (p as { ville?: string }).ville === filterVille)
+            )
+            .filter(
+              (p) =>
+                !normalizedSearch ||
+                p.name.toLowerCase().includes(normalizedSearch)
+            ),
           entry.jour,
           placeDayOrderOverrideMap,
           fallbackPlaceIndexMap
         ),
-      })).filter((g) => g.places.length > 0)
-    : [];
+      }))
+      .filter((g) => g.places.length > 0);
+  }, [
+    filterDays,
+    filterTag,
+    filterVille,
+    filterName,
+    placeDayOverrideMap,
+    placeVisibilityMap,
+    role,
+    placeDayOrderOverrideMap,
+    fallbackPlaceIndexMap,
+  ]);
 
-  const selectedEntry = selectedDay !== null ? (JOURS_DESTINATIONS.find((d) => d.jour === selectedDay) ?? null) : null;
+  const activeFilterCount =
+    filterDays.length +
+    (filterVille ? 1 : 0) +
+    (filterTag ? 1 : 0) +
+    (filterName.trim() ? 1 : 0);
+  const hasFilters = activeFilterCount > 0;
+
+  const clearFilters = () => {
+    setFilterDays([]);
+    setFilterVille(null);
+    setFilterTag(null);
+    setFilterName("");
+    onSelectedDayChange(null);
+  };
 
   const toggleDraftPlaceDay = (day: number) => {
     setDraftPlaceDays((previous) => {
@@ -4283,6 +4349,11 @@ function GuideScreen({
                         {formatTripDayLabel(day, tripStartDate)}
                       </span>
                     ))}
+                    {item.ville && (
+                      <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                        {item.ville}
+                      </span>
+                    )}
                   </div>
                   <ReactionCountersBadge
                     likes={counts.likes}
@@ -4484,124 +4555,173 @@ function GuideScreen({
 
         <div className="relative z-20 mt-3">
           <button
-            onClick={() => setSelectorOpen((prev) => !prev)}
+            onClick={() => setFilterOpen((prev) => !prev)}
             data-tutorial-id="guide-day-selector"
             className="w-full flex items-center justify-between bg-white/15 rounded-2xl px-4 py-3 backdrop-blur-sm"
           >
-            <span className="text-left">
+            <span className="text-left min-w-0">
               <span className="block text-sm font-black">
-                {selectedDay === null
-                  ? "Tous les jours"
-                  : formatTripDayLabel(selectedDay, tripStartDate)}
-                {selectedDay !== null && selectedDay === currentDay && (
-                  <span className="ml-2 text-[10px] font-black uppercase tracking-widest bg-white/25 rounded-full px-2 py-0.5 align-middle">
-                    aujourd'hui
-                  </span>
-                )}
+                {hasFilters ? "Filtres actifs" : "Tous les lieux"}
               </span>
-              {selectedDay === null ? (
-                <span className="block text-xs opacity-80 mt-0.5">
-                  Filtrer par jour
+              {hasFilters ? (
+                <span className="block text-xs opacity-80 mt-0.5 truncate">
+                  {[
+                    filterDays.length > 0 &&
+                      filterDays.map((d) => formatTripDayLabel(d, tripStartDate)).join(", "),
+                    filterTag,
+                    filterVille,
+                    filterName.trim() && `"${filterName.trim()}"`,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </span>
-              ) : selectedEntry ? (
-                <span className="block text-xs opacity-80 mt-0.5">
-                  {selectedEntry.destination}
-                </span>
-              ) : null}
+              ) : (
+                <span className="block text-xs opacity-80 mt-0.5">Appuyer pour filtrer</span>
+              )}
             </span>
-            <ChevronDown
-              size={18}
-              className={`transition-transform flex-shrink-0 ${selectorOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-
-          {selectorOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setSelectorOpen(false)}
+            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+              {hasFilters && (
+                <span className="text-[10px] font-black bg-white/30 rounded-full px-2 py-0.5">
+                  {activeFilterCount}
+                </span>
+              )}
+              <ChevronDown
+                size={18}
+                className={`transition-transform ${filterOpen ? "rotate-180" : ""}`}
               />
-              <div className="absolute left-0 right-0 mt-2 z-20 bg-card text-foreground rounded-2xl border border-border shadow-lg overflow-hidden max-h-72 overflow-y-auto">
-                <button
-                  onClick={() => {
-                    onSelectedDayChange(null);
-                    setSelectorOpen(false);
-                  }}
-                  className={`w-full flex items-center px-4 py-3 text-left active:bg-muted transition-colors border-b border-border/60 ${
-                    selectedDay === null ? "bg-muted" : ""
-                  }`}
-                >
-                  <span className="block text-sm font-bold text-foreground">Tous les jours</span>
-                </button>
-                {JOURS_DESTINATIONS.map((entry) => (
-                  <button
-                    key={entry.jour}
-                    onClick={() => {
-                      onSelectedDayChange(entry.jour);
-                      setSelectorOpen(false);
-                    }}
-                    data-tutorial-id={`guide-day-option-${entry.jour}`}
-                    className={`w-full flex items-center justify-between px-4 py-3 text-left active:bg-muted transition-colors border-b border-border/60 last:border-b-0 ${
-                      entry.jour === selectedDay ? "bg-muted" : ""
-                    }`}
-                  >
-                    <span>
-                      <span className="block text-sm font-bold text-foreground">
-                        {formatTripDayLabel(entry.jour, tripStartDate)} — {entry.destination}
-                      </span>
-                    </span>
-                    {entry.jour === currentDay && (
-                      <span className="text-[10px] font-black uppercase tracking-widest text-primary flex-shrink-0 ml-2">
-                        aujourd'hui
-                      </span>
-                    )}
-                  </button>
-                ))}
-                {JOURS_DESTINATIONS.length === 0 && (
-                  <p className="px-4 py-3 text-sm text-muted-foreground">
-                    Aucun jour défini pour le moment.
-                  </p>
-                )}
-              </div>
-            </>
-          )}
+            </div>
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        {selectedDay !== null ? (
-          <div className="space-y-4">
-            {dayPlaces.length === 0 && (
-              <div className="px-2 py-10 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Pas de visite prévue ce jour.
-                </p>
-              </div>
-            )}
-            {dayPlaces.map((item) => renderPlaceCard(item, selectedDay))}
+      {filterOpen && (
+        <div className="flex-shrink-0 bg-card border-b border-border px-4 pt-4 pb-4 space-y-4 overflow-y-auto max-h-[50vh]">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Jour</p>
+            <div className="flex flex-wrap gap-2">
+              {JOURS_DESTINATIONS.map((entry) => {
+                const active = filterDays.includes(entry.jour);
+                return (
+                  <button
+                    key={entry.jour}
+                    type="button"
+                    onClick={() =>
+                      setFilterDays((prev) =>
+                        active
+                          ? prev.filter((d) => d !== entry.jour)
+                          : [...prev, entry.jour].sort((a, b) => a - b)
+                      )
+                    }
+                    className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${
+                      active
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    {formatTripDayLabel(entry.jour, tripStartDate)}
+                    {entry.jour === currentDay && (
+                      <span className="ml-1 opacity-60">· auj.</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        ) : allDayGroups.length === 0 ? (
+
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Type</p>
+            <div className="flex flex-wrap gap-2">
+              {availableTags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setFilterTag((prev) => (prev === tag ? null : tag))}
+                  className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${
+                    filterTag === tag
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-muted text-foreground"
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {availableVilles.length > 0 && (
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Ville</p>
+              <div className="flex flex-wrap gap-2">
+                {availableVilles.map((ville) => (
+                  <button
+                    key={ville}
+                    type="button"
+                    onClick={() => setFilterVille((prev) => (prev === ville ? null : ville))}
+                    className={`rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${
+                      filterVille === ville
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    {ville}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Recherche</p>
+            <input
+              type="text"
+              value={filterName}
+              onChange={(e) => setFilterName(e.target.value)}
+              placeholder="Nom du lieu..."
+              className="w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="text-[11px] font-black uppercase tracking-widest text-accent underline"
+            >
+              Effacer tous les filtres
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        {filteredGroups.length === 0 ? (
           <div className="px-2 py-10 text-center">
             <p className="text-sm text-muted-foreground">
-              Aucune visite prévue.
+              {hasFilters
+                ? "Aucun lieu ne correspond aux filtres."
+                : "Aucune visite prévue."}
             </p>
           </div>
         ) : (
           <div className="space-y-8">
-            {allDayGroups.map(({ entry, places }) => (
+            {filteredGroups.map(({ entry, places }) => (
               <div key={`section-${entry.jour}`} className="space-y-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-sm font-black uppercase tracking-widest text-accent">
                     {formatTripDayLabel(entry.jour, tripStartDate)}
                   </h2>
-                  <span className="text-sm font-semibold text-muted-foreground">— {entry.destination}</span>
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    — {entry.destination}
+                  </span>
                   {entry.jour === currentDay && (
                     <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 rounded-full px-2 py-0.5">
                       aujourd'hui
                     </span>
                   )}
                 </div>
-                {places.map((item) => renderPlaceCard(item, entry.jour, `day${entry.jour}-`))}
+                {places.map((item) =>
+                  renderPlaceCard(item, entry.jour, `day${entry.jour}-`)
+                )}
               </div>
             ))}
           </div>
