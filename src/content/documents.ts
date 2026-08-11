@@ -674,7 +674,7 @@ export const DOCUMENTS: TravelDocument[] = [
       "Départ vers 4h30 pour une durée de 3h30 environ.",
     details: [
       "Réservation via Getyourguide (réf : GYGVN28H76B3)",
-      "adresse hôtel envoyée par whatsapp"
+      "adresse hôtel envoyée par whatsapp",
       "ANNULER VIA APPLI GETYOURGUIDE sur site internet avec ordinateur ou appli AVANT LE 19 AOÜT POUR NE RIEN PAYER DU TOUT",
     ],
     scans: [
