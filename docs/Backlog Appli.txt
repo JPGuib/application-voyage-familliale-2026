@@ -3,7 +3,6 @@ Backlog
 Evolutions : 
 - préparer l'application pour un autre voyage ! 
 A FAIRE 
-- Acheter un nom de domaine ?
 - faire une fichier d'installation à donner
 
 COntenu : 

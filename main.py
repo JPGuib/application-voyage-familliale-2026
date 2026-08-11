@@ -49,6 +49,19 @@ PACKS: dict[str, dict] = {
         },
         "questions_file": "questions_culture_generale.json",
     },
+    "disney": {
+        "label": "Quiz Disney ✨",
+        "categories": ["films_classiques", "pixar", "princesses", "parcs", "personnages", "musique"],
+        "category_labels": {
+            "films_classiques": "Films Classiques",
+            "pixar": "Univers Pixar",
+            "princesses": "Princesses Disney",
+            "parcs": "Parcs Disney",
+            "personnages": "Personnages & Vilains",
+            "musique": "Musique & Chansons",
+        },
+        "questions_file": "questions_disney.json",
+    },
 }
 
 QUESTIONS_BY_PACK: dict[str, dict] = {}
