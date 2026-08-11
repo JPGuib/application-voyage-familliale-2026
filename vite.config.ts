@@ -28,7 +28,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/icon-192.svg', 'icons/icon-512.svg', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {
-        name: 'Application de voyage familiale 2026',
+        name: 'Application de voyage familial 2026',
         short_name: 'Voyage 2026',
         description: 'Compagnon de voyage familial mobile-first.',
         theme_color: '#B8A898',

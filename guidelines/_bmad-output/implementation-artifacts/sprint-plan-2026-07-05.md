@@ -1,4 +1,4 @@
-# Sprint Planning - Application de voyage familiale 2026
+# Sprint Planning - Application de voyage familial 2026
 
 Date: 2026-07-05
 Sources:

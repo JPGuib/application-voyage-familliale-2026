@@ -4,6 +4,7 @@ Evolutions :
 - préparer l'application pour un autre voyage ! 
 A FAIRE 
 - faire une fichier d'installation à donner
+- revoir la suite logique des touches raccourcies en base
 
 COntenu : 
 * Revoir tous les quizz ! avec les guides et faire un gros challenge en fin de séjour ?
