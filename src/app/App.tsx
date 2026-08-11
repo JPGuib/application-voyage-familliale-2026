@@ -2859,7 +2859,7 @@ function DashboardScreen({
             className="block w-full active:scale-95 transition-transform"
           >
             <img
-              src="/images/Carte du voyage.webp"
+              src="/images/Carte du voyage.webp?v=20260811"
               alt="Carte du circuit du séjour en Turquie"
               className="w-full h-auto object-contain"
             />
@@ -2883,7 +2883,7 @@ function DashboardScreen({
           </div>
           <div className="flex-1 flex items-center justify-center px-2 min-h-0" onClick={(e) => e.stopPropagation()}>
             <img
-              src="/images/Carte du voyage.webp"
+              src="/images/Carte du voyage.webp?v=20260811"
               alt="Carte du circuit du séjour en Turquie"
               className="max-w-full max-h-full object-contain rounded-lg"
             />
