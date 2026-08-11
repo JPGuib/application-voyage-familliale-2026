@@ -14,6 +14,7 @@ export type DriverLikeStep = {
 };
 
 const GUIDE_DAY_SELECTOR = '[data-tutorial-id="guide-day-selector"]';
+const GUIDE_DATE_DROPDOWN = '[data-tutorial-id="guide-date-dropdown"]';
 const GUIDE_DAY2_OPTION = '[data-tutorial-id="guide-day-option-2"]';
 
 function centerTutorialElement(element: Element | null) {
@@ -40,10 +41,14 @@ function resolveStepElement(step: ReturnType<typeof loadGlobalTutorialSteps>[num
     return () => {
       let day2Option = document.querySelector(GUIDE_DAY2_OPTION);
       if (!day2Option) {
-        const daySelector = document.querySelector<HTMLButtonElement>(GUIDE_DAY_SELECTOR);
-        if (daySelector?.ariaExpanded !== "true") {
-          daySelector?.click();
+        // Open the main filter panel if the date dropdown button isn't visible yet
+        const dateDropdownButton = document.querySelector<HTMLButtonElement>(GUIDE_DATE_DROPDOWN);
+        if (!dateDropdownButton) {
+          document.querySelector<HTMLButtonElement>(GUIDE_DAY_SELECTOR)?.click();
         }
+        // Open the date sub-dropdown to expose individual day options
+        const freshDateDropdownButton = document.querySelector<HTMLButtonElement>(GUIDE_DATE_DROPDOWN);
+        freshDateDropdownButton?.click();
         day2Option = document.querySelector(GUIDE_DAY2_OPTION);
       }
 

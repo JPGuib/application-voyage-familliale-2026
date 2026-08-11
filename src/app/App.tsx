@@ -4651,6 +4651,7 @@ function GuideScreen({
               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Date</p>
             <button
               type="button"
+              data-tutorial-id="guide-date-dropdown"
               onClick={() => setDayDropdownOpen((p) => !p)}
               className={`w-full flex items-center justify-between rounded-xl border px-3 py-2.5 text-sm text-left transition-colors ${
                 filterDays.length > 0
@@ -4675,6 +4676,7 @@ function GuideScreen({
                     <button
                       key={entry.jour}
                       type="button"
+                      data-tutorial-id={`guide-day-option-${entry.jour}`}
                       onClick={() =>
                         setFilterDays((prev) =>
                           active

@@ -24,15 +24,15 @@ describe("driver-runtime", () => {
   it("reopens the day selector when the guide day 2 option is still closed", () => {
     document.body.innerHTML = '<button data-tutorial-id="guide-day-selector"></button>';
 
-    const selector = document.querySelector<HTMLButtonElement>(
+    const filterPanelSelector = document.querySelector<HTMLButtonElement>(
       '[data-tutorial-id="guide-day-selector"]'
     );
-    const clickSpy = vi.fn(() => {
-      const option = document.createElement("button");
-      option.setAttribute("data-tutorial-id", "guide-day-option-2");
-      document.body.appendChild(option);
+    const filterClickSpy = vi.fn(() => {
+      const dateDropdownBtn = document.createElement("button");
+      dateDropdownBtn.setAttribute("data-tutorial-id", "guide-date-dropdown");
+      document.body.appendChild(dateDropdownBtn);
     });
-    selector?.addEventListener("click", clickSpy);
+    filterPanelSelector?.addEventListener("click", filterClickSpy);
 
     const steps = toDriverSteps(loadGlobalTutorialSteps());
     const rawSteps = loadGlobalTutorialSteps();
@@ -42,9 +42,19 @@ describe("driver-runtime", () => {
     expect(day2Step).toBeDefined();
     expect(typeof day2Step?.element).toBe("function");
 
+    // Simulate that clicking the date dropdown button reveals day-option-2
+    document.body.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
+      if (target.getAttribute("data-tutorial-id") === "guide-date-dropdown") {
+        const option = document.createElement("button");
+        option.setAttribute("data-tutorial-id", "guide-day-option-2");
+        document.body.appendChild(option);
+      }
+    });
+
     const resolvedElement = (day2Step?.element as () => Element | null)();
 
-    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(filterClickSpy).toHaveBeenCalledTimes(1);
     expect(resolvedElement).not.toBeNull();
     expect(resolvedElement?.getAttribute("data-tutorial-id")).toBe("guide-day-option-2");
   });

@@ -242,8 +242,8 @@ export function loadGlobalTutorialSteps(
       screen: "guide",
       element: '[data-tutorial-id="guide-day-selector"]',
       popover: {
-        title: "Changer de date",
-        description: `Cliquez ici pour ouvrir la liste des dates, puis sélectionnez ${guideDay2Label}.`,
+        title: "Filtrer par date",
+        description: `Cliquez ici pour ouvrir le panneau de filtres, puis sélectionnez ${guideDay2Label} dans la section Date.`,
       },
       interactive: true,
       waitForElement: 2000,
