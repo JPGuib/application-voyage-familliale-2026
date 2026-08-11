@@ -4175,6 +4175,46 @@ function GuideScreen({
     []
   );
 
+  // Cascading available options — each layer filtered by upstream selections
+  const availableVillesForFilter = useMemo(() => {
+    const seen = new Set<string>();
+    for (const p of PLACES_WITH_AUTO_GPS) {
+      if (!isPlaceVisibleForRole(role, p.id, placeVisibilityMap)) continue;
+      if (filterDays.length > 0) {
+        const days = getEffectivePlaceDays(p, placeDayOverrideMap);
+        if (!filterDays.some((d) => days.includes(d))) continue;
+      }
+      const ville = "ville" in p ? (p as { ville?: string }).ville : undefined;
+      if (ville) seen.add(ville);
+    }
+    return [...seen].sort();
+  }, [filterDays, placeDayOverrideMap, placeVisibilityMap, role]);
+
+  const availableTagsForFilter = useMemo(() => {
+    const seen = new Set<string>();
+    for (const p of PLACES_WITH_AUTO_GPS) {
+      if (!isPlaceVisibleForRole(role, p.id, placeVisibilityMap)) continue;
+      if (filterDays.length > 0) {
+        const days = getEffectivePlaceDays(p, placeDayOverrideMap);
+        if (!filterDays.some((d) => days.includes(d))) continue;
+      }
+      if (
+        filterVilles.length > 0 &&
+        !("ville" in p && filterVilles.includes((p as { ville?: string }).ville ?? ""))
+      )
+        continue;
+      seen.add(p.tag);
+    }
+    return [...seen].sort();
+  }, [filterDays, filterVilles, placeDayOverrideMap, placeVisibilityMap, role]);
+
+  useEffect(() => {
+    setFilterVilles((prev) => prev.filter((v) => availableVillesForFilter.includes(v)));
+  }, [availableVillesForFilter]);
+  useEffect(() => {
+    setFilterTags((prev) => prev.filter((t) => availableTagsForFilter.includes(t)));
+  }, [availableTagsForFilter]);
+
   const filteredGroups = useMemo(() => {
     const daysToShow =
       filterDays.length > 0
@@ -4562,53 +4602,53 @@ function GuideScreen({
           <ContentOfflineStatusBadge section="stay-guide" isOnline={isOnline} />
         </div>
 
-        <div className="relative z-20 mt-3">
-          <button
-            onClick={() => setFilterOpen((prev) => !prev)}
-            data-tutorial-id="guide-day-selector"
-            className="w-full flex items-center justify-between bg-white/15 rounded-2xl px-4 py-3 backdrop-blur-sm"
-          >
-            <span className="text-left min-w-0">
-              <span className="block text-sm font-black">
-                {hasFilters ? "Filtres actifs" : "Tous les lieux"}
-              </span>
-              {hasFilters ? (
-                <span className="block text-xs opacity-80 mt-0.5 truncate">
-                  {[
-                    filterDays.length > 0 &&
-                      filterDays.map((d) => formatTripDayLabel(d, tripStartDate)).join(", "),
-                    filterTags.length > 0 && filterTags.join(", "),
-                    filterVilles.length > 0 && filterVilles.join(", "),
-                    filterName.trim() && `"${filterName.trim()}"`,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </span>
-              ) : (
-                <span className="block text-xs opacity-80 mt-0.5">Appuyer pour filtrer</span>
-              )}
-            </span>
-            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-              {hasFilters && (
-                <span className="text-[10px] font-black bg-white/30 rounded-full px-2 py-0.5">
-                  {activeFilterCount}
-                </span>
-              )}
-              <ChevronDown
-                size={18}
-                className={`transition-transform ${filterOpen ? "rotate-180" : ""}`}
-              />
-            </div>
-          </button>
-        </div>
       </div>
 
-      {filterOpen && (
-        <div className="flex-shrink-0 bg-card border-b border-border px-4 pt-4 pb-4 space-y-3 overflow-y-auto max-h-[50vh]">
+      <div className="flex-shrink-0 bg-card border-b border-border shadow-sm">
+        <button
+          onClick={() => setFilterOpen((prev) => !prev)}
+          data-tutorial-id="guide-day-selector"
+          className="w-full flex items-center justify-between px-4 py-3 text-left"
+        >
+          <span className="text-left min-w-0">
+            <span className="block text-sm font-black text-foreground">
+              {hasFilters ? "Filtres actifs" : "Tous les lieux"}
+            </span>
+            {hasFilters ? (
+              <span className="block text-xs text-muted-foreground mt-0.5 truncate">
+                {[
+                  filterDays.length > 0 &&
+                    filterDays.map((d) => formatTripDayLabel(d, tripStartDate)).join(", "),
+                  filterVilles.length > 0 && filterVilles.join(", "),
+                  filterTags.length > 0 && filterTags.join(", "),
+                  filterName.trim() && `"${filterName.trim()}"`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            ) : (
+              <span className="block text-xs text-muted-foreground mt-0.5">Appuyer pour filtrer</span>
+            )}
+          </span>
+          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+            {hasFilters && (
+              <span className="text-[10px] font-black bg-accent text-accent-foreground rounded-full px-2 py-0.5">
+                {activeFilterCount}
+              </span>
+            )}
+            <ChevronDown
+              size={18}
+              className={`transition-transform text-muted-foreground ${filterOpen ? "rotate-180" : ""}`}
+            />
+          </div>
+        </button>
 
-          {/* Jour */}
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Jour</p>
+        {filterOpen && (
+          <div className="px-4 pb-4 space-y-3 overflow-y-auto max-h-[45vh] border-t border-border">
+
+            {/* Date */}
+            <div className="pt-3">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Date</p>
             <button
               type="button"
               onClick={() => setDayDropdownOpen((p) => !p)}
@@ -4656,88 +4696,89 @@ function GuideScreen({
                 })}
               </div>
             )}
-          </div>
+            </div>
 
-          {/* Type */}
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Type</p>
-            <button
-              type="button"
-              onClick={() => setTagDropdownOpen((p) => !p)}
-              className={`w-full flex items-center justify-between rounded-xl border px-3 py-2.5 text-sm text-left transition-colors ${
-                filterTags.length > 0
-                  ? "border-accent bg-accent/5 text-accent font-bold"
-                  : "border-border bg-muted text-foreground"
-              }`}
-            >
-              <span className="truncate">
-                {filterTags.length === 0
-                  ? "Tous les types"
-                  : filterTags.length <= 2
-                  ? filterTags.join(", ")
-                  : `${filterTags.length} types sélectionnés`}
-              </span>
-              <ChevronDown size={15} className={`flex-shrink-0 ml-2 transition-transform ${tagDropdownOpen ? "rotate-180" : ""}`} />
-            </button>
-            {tagDropdownOpen && (
-              <div className="mt-1 border border-border rounded-xl overflow-hidden">
-                {availableTags.map((tag) => {
-                  const active = filterTags.includes(tag);
-                  return (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() =>
-                        setFilterTags((prev) =>
-                          active ? prev.filter((t) => t !== tag) : [...prev, tag].sort()
-                        )
-                      }
-                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left border-b border-border/40 last:border-b-0 active:bg-muted"
-                    >
-                      <span className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center ${active ? "bg-accent border-accent" : "border-border"}`}>
-                        {active && <Check size={10} className="text-accent-foreground" />}
-                      </span>
-                      <span className={active ? "font-bold text-foreground" : "text-muted-foreground"}>{tag}</span>
-                    </button>
-                  );
-                })}
+            {/* Ville — options filtrées par les dates sélectionnées */}
+            {availableVillesForFilter.length > 0 && (
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Ville</p>
+                <button
+                  type="button"
+                  onClick={() => setVilleDropdownOpen((p) => !p)}
+                  className={`w-full flex items-center justify-between rounded-xl border px-3 py-2.5 text-sm text-left transition-colors ${
+                    filterVilles.length > 0
+                      ? "border-accent bg-accent/5 text-accent font-bold"
+                      : "border-border bg-muted text-foreground"
+                  }`}
+                >
+                  <span className="truncate">
+                    {filterVilles.length === 0
+                      ? "Toutes les villes"
+                      : filterVilles.length <= 2
+                      ? filterVilles.join(", ")
+                      : `${filterVilles.length} villes sélectionnées`}
+                  </span>
+                  <ChevronDown size={15} className={`flex-shrink-0 ml-2 transition-transform ${villeDropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+                {villeDropdownOpen && (
+                  <div className="mt-1 border border-border rounded-xl overflow-hidden">
+                    {availableVillesForFilter.map((ville) => {
+                      const active = filterVilles.includes(ville);
+                      return (
+                        <button
+                          key={ville}
+                          type="button"
+                          onClick={() =>
+                            setFilterVilles((prev) =>
+                              active ? prev.filter((v) => v !== ville) : [...prev, ville].sort()
+                            )
+                          }
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left border-b border-border/40 last:border-b-0 active:bg-muted"
+                        >
+                          <span className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center ${active ? "bg-accent border-accent" : "border-border"}`}>
+                            {active && <Check size={10} className="text-accent-foreground" />}
+                          </span>
+                          <span className={active ? "font-bold text-foreground" : "text-muted-foreground"}>{ville}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
-          </div>
 
-          {/* Ville */}
-          {availableVilles.length > 0 && (
+            {/* Type — options filtrées par dates + villes */}
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Ville</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Type</p>
               <button
                 type="button"
-                onClick={() => setVilleDropdownOpen((p) => !p)}
+                onClick={() => setTagDropdownOpen((p) => !p)}
                 className={`w-full flex items-center justify-between rounded-xl border px-3 py-2.5 text-sm text-left transition-colors ${
-                  filterVilles.length > 0
+                  filterTags.length > 0
                     ? "border-accent bg-accent/5 text-accent font-bold"
                     : "border-border bg-muted text-foreground"
                 }`}
               >
                 <span className="truncate">
-                  {filterVilles.length === 0
-                    ? "Toutes les villes"
-                    : filterVilles.length <= 2
-                    ? filterVilles.join(", ")
-                    : `${filterVilles.length} villes sélectionnées`}
+                  {filterTags.length === 0
+                    ? "Tous les types"
+                    : filterTags.length <= 2
+                    ? filterTags.join(", ")
+                    : `${filterTags.length} types sélectionnés`}
                 </span>
-                <ChevronDown size={15} className={`flex-shrink-0 ml-2 transition-transform ${villeDropdownOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={15} className={`flex-shrink-0 ml-2 transition-transform ${tagDropdownOpen ? "rotate-180" : ""}`} />
               </button>
-              {villeDropdownOpen && (
+              {tagDropdownOpen && (
                 <div className="mt-1 border border-border rounded-xl overflow-hidden">
-                  {availableVilles.map((ville) => {
-                    const active = filterVilles.includes(ville);
+                  {availableTagsForFilter.map((tag) => {
+                    const active = filterTags.includes(tag);
                     return (
                       <button
-                        key={ville}
+                        key={tag}
                         type="button"
                         onClick={() =>
-                          setFilterVilles((prev) =>
-                            active ? prev.filter((v) => v !== ville) : [...prev, ville].sort()
+                          setFilterTags((prev) =>
+                            active ? prev.filter((t) => t !== tag) : [...prev, tag].sort()
                           )
                         }
                         className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left border-b border-border/40 last:border-b-0 active:bg-muted"
@@ -4745,38 +4786,38 @@ function GuideScreen({
                         <span className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center ${active ? "bg-accent border-accent" : "border-border"}`}>
                           {active && <Check size={10} className="text-accent-foreground" />}
                         </span>
-                        <span className={active ? "font-bold text-foreground" : "text-muted-foreground"}>{ville}</span>
+                        <span className={active ? "font-bold text-foreground" : "text-muted-foreground"}>{tag}</span>
                       </button>
                     );
                   })}
                 </div>
               )}
             </div>
-          )}
 
-          {/* Recherche par nom */}
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Recherche</p>
-            <input
-              type="text"
-              value={filterName}
-              onChange={(e) => setFilterName(e.target.value)}
-              placeholder="Nom du lieu..."
-              className="w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
-            />
+            {/* Recherche par nom */}
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Recherche</p>
+              <input
+                type="text"
+                value={filterName}
+                onChange={(e) => setFilterName(e.target.value)}
+                placeholder="Nom du lieu..."
+                className="w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
+              />
+            </div>
+
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-[11px] font-black uppercase tracking-widest text-accent underline"
+              >
+                Effacer tous les filtres
+              </button>
+            )}
           </div>
-
-          {hasFilters && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="text-[11px] font-black uppercase tracking-widest text-accent underline"
-            >
-              Effacer tous les filtres
-            </button>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {filteredGroups.length === 0 ? (
