@@ -3637,7 +3637,7 @@ function DocumentsScreen({
     }
 
     setActiveCategory(target.category);
-    setDocumentFilterName("");
+    setDocumentFilterName(target.title);
     setDocumentFilterDays([]);
     setDocumentDayDropdownOpen(false);
     setFilterOpen(false);
