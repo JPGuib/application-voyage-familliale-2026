@@ -3637,10 +3637,10 @@ function DocumentsScreen({
     }
 
     setActiveCategory(target.category);
-    setDocumentFilterName(target.title);
+    setDocumentFilterName("");
     setDocumentFilterDays([]);
     setDocumentDayDropdownOpen(false);
-    setFilterOpen(true);
+    setFilterOpen(false);
     setHighlightedDocumentId(target.id);
 
     requestAnimationFrame(() => {
@@ -5361,6 +5361,14 @@ function ContentDetailScreen({
     }
     return Array.from(byUrl.values());
   }, [autoReservationLinks, item.links]);
+  const reservationLinks = useMemo(
+    () => usefulLinks.filter((link) => link.url.startsWith(INTERNAL_DOCUMENT_LINK_PREFIX)),
+    [usefulLinks]
+  );
+  const externalUsefulLinks = useMemo(
+    () => usefulLinks.filter((link) => !link.url.startsWith(INTERNAL_DOCUMENT_LINK_PREFIX)),
+    [usefulLinks]
+  );
   const photos = item.photos?.length ? item.photos : [item.image];
   const heroPhoto = photos[0] ?? item.image;
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -5685,19 +5693,39 @@ function ContentDetailScreen({
         {usefulLinks.length > 0 ? (
           <div className="px-4 mb-6">
             <h2 className="text-base font-black text-foreground mb-3">🌐 Liens utiles</h2>
-            <div className="space-y-2">
-              {usefulLinks.map((link, index) => (
-                <button
-                  key={`${item.id}-link-${index}`}
-                  type="button"
-                  onClick={() => openUsefulLink(link.url)}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 active:scale-95 transition-transform"
-                >
-                  <span className="text-sm font-semibold text-foreground/90">{link.label}</span>
-                  <ExternalLink size={16} className="text-muted-foreground flex-shrink-0" />
-                </button>
-              ))}
-            </div>
+            {reservationLinks.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-2">
+                {reservationLinks.map((link, index) => (
+                  <button
+                    key={`${item.id}-reservation-link-${index}`}
+                    type="button"
+                    onClick={() => openUsefulLink(link.url)}
+                    title={link.label}
+                    aria-label={link.label}
+                    className="inline-flex items-center gap-1 rounded-full border border-[#90CAF9] bg-[#E3F2FD] px-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-[#1565C0] active:scale-95 transition-transform"
+                  >
+                    Voir reservation
+                    <ExternalLink size={12} />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {externalUsefulLinks.length > 0 && (
+              <div className="space-y-2">
+                {externalUsefulLinks.map((link, index) => (
+                  <button
+                    key={`${item.id}-link-${index}`}
+                    type="button"
+                    onClick={() => openUsefulLink(link.url)}
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-3.5 py-3 active:scale-95 transition-transform"
+                  >
+                    <span className="text-sm font-semibold text-foreground/90">{link.label}</span>
+                    <ExternalLink size={16} className="text-muted-foreground flex-shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         ) : null}
 
