@@ -1,5 +1,5 @@
 """
-Trivial Turquie - backend de jeu multijoueur (2 a 5 joueurs)
+Trivial Turquie & autres packs - backend de jeu multijoueur (2 a 5 joueurs)
 Chacun pour soi. Lancer avec: uvicorn main:app --host 0.0.0.0 --port 8000
 """
 import json
@@ -12,25 +12,57 @@ from typing import Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 BASE_DIR = Path(__file__).parent
-CATEGORIES = ["histoire", "gastronomie", "langue", "geographie", "culture", "souvenirs"]
-CATEGORY_LABELS = {
-    "histoire": "Histoire & Empire ottoman",
-    "gastronomie": "Gastronomie",
-    "langue": "Langue & expressions",
-    "geographie": "Geographie",
-    "culture": "Culture & traditions",
-    "souvenirs": "Vecu du groupe",
-}
-BOARD_SIZE = 24  # 24 cases, 4 tours de chaque categorie
+BOARD_SIZE = 24  # 24 cases, 4 tours de chaque categorie (packs a 6 categories)
 COLORS = ["#e63946", "#2a9d8f", "#f4a261", "#457b9d", "#a663cc"]
 
-with open(BASE_DIR / "questions.json", encoding="utf-8") as f:
-    QUESTIONS = json.load(f)
+# ─────────────────────────────────────────────────────────────────────────
+# Registre des "packs" de thèmes. Pour ajouter une nouvelle rubrique, voir
+# les instructions détaillées dans README.md ("Ajouter une rubrique").
+# ─────────────────────────────────────────────────────────────────────────
+PACKS: dict[str, dict] = {
+    "turquie": {
+        "label": "Trivial Turquie 🇹🇷",
+        "categories": ["histoire", "gastronomie", "langue", "geographie", "culture", "souvenirs"],
+        "category_labels": {
+            "histoire": "Histoire & Empire ottoman",
+            "gastronomie": "Gastronomie",
+            "langue": "Langue & expressions",
+            "geographie": "Geographie",
+            "culture": "Culture & traditions",
+            "souvenirs": "Vecu du groupe",
+        },
+        "questions_file": "questions_turquie.json",
+    },
+    "culture-generale": {
+        "label": "Culture Générale 🧠",
+        "categories": ["histoire", "geographie", "sciences", "divertissement", "sports", "litterature"],
+        "category_labels": {
+            "histoire": "Histoire",
+            "geographie": "Géographie",
+            "sciences": "Sciences & Nature",
+            "divertissement": "Divertissement",
+            "sports": "Sports & Loisirs",
+            "litterature": "Littérature",
+        },
+        "questions_file": "questions_culture_generale.json",
+    },
+}
+
+QUESTIONS_BY_PACK: dict[str, dict] = {}
+for pack_id, pack_def in PACKS.items():
+    with open(BASE_DIR / pack_def["questions_file"], encoding="utf-8") as f:
+        QUESTIONS_BY_PACK[pack_id] = json.load(f)
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET"],
+    allow_headers=["*"],
+)
 
 # Une partie oubliee (personne ne joue plus, onglet ferme sans "Terminer")
 # est fermee automatiquement au bout d'un moment pour ne pas laisser tourner
@@ -76,11 +108,19 @@ async def health():
     return {"status": "ok", "rooms": len(rooms)}
 
 
-def build_board():
-    # repartit les 6 categories sur 24 cases, dans un ordre mélangé mais fixe pour la session
+@app.get("/packs")
+async def list_packs():
+    # Le front interroge cet endpoint pour afficher les rubriques
+    # disponibles au moment de créer une partie — ajouter un pack ici (et
+    # dans PACKS) suffit, aucune modification du frontend n'est necessaire.
+    return [{"id": pid, "label": pdef["label"]} for pid, pdef in PACKS.items()]
+
+
+def build_board(categories: list[str]):
+    # repartit les 6 categories du pack sur 24 cases, ordre mélangé mais fixe pour la session
     cells = []
-    for _ in range(BOARD_SIZE // len(CATEGORIES)):
-        cats = CATEGORIES[:]
+    for _ in range(BOARD_SIZE // len(categories)):
+        cats = categories[:]
         random.shuffle(cats)
         cells.extend(cats)
     return cells
@@ -112,14 +152,19 @@ class Player:
 
 
 class Room:
-    def __init__(self, code: str):
+    def __init__(self, code: str, pack_id: str):
         self.code = code
+        self.pack_id = pack_id
+        pack = PACKS[pack_id]
+        self.categories = pack["categories"]
+        self.category_labels = pack["category_labels"]
+        self.questions = QUESTIONS_BY_PACK[pack_id]
         self.players: dict[str, Player] = {}
         self.order: list[str] = []
         self.turn_index = 0
         self.state = "lobby"  # lobby | playing | finished | cancelled
-        self.board = build_board()
-        self.used_questions: dict[str, set[int]] = {c: set() for c in CATEGORIES}
+        self.board = build_board(self.categories)
+        self.used_questions: dict[str, set[int]] = {c: set() for c in self.categories}
         self.pending_question: Optional[dict] = None  # question en attente de reponse
         self.winner: Optional[str] = None
         self.lock = asyncio.Lock()
@@ -154,9 +199,11 @@ class Room:
         return {
             "type": "room_state",
             "code": self.code,
+            "pack_id": self.pack_id,
+            "pack_label": PACKS[self.pack_id]["label"],
             "state": self.state,
             "board": self.board,
-            "category_labels": CATEGORY_LABELS,
+            "category_labels": self.category_labels,
             "players": [self.players[pid].public() for pid in self.order],
             "current_player": self.order[self.turn_index] if self.order else None,
             "winner": self.winner,
@@ -164,7 +211,13 @@ class Room:
         }
 
     def pick_question(self, category: str):
-        bank = QUESTIONS.get(category, [])
+        # random.choice pioche uniformement parmi les questions pas encore
+        # posees dans cette partie pour cette categorie : l'ordre de sortie
+        # est donc aleatoire, jamais sequentiel. Une fois le stock epuise, on
+        # relache le suivi et on recommence a piocher aleatoirement dans tout
+        # le lot (les memes questions peuvent alors ressortir, dans un ordre
+        # a nouveau aleatoire).
+        bank = self.questions.get(category, [])
         used = self.used_questions[category]
         available = [i for i in range(len(bank)) if i not in used]
         if not available:
@@ -226,8 +279,11 @@ async def ws_endpoint(websocket: WebSocket, code: str, player_name: str):
     create_new = code == "NEW"
 
     if create_new:
+        pack_id = websocket.query_params.get("pack", "turquie")
+        if pack_id not in PACKS:
+            pack_id = "turquie"
         code = make_room_code()
-        room = Room(code)
+        room = Room(code, pack_id)
         rooms[code] = room
     else:
         room = rooms.get(code)
@@ -303,14 +359,14 @@ async def handle_message(room: Room, player: Player, data: dict):
         if msg_type == "roll":
             if room.pending_question is not None:
                 return
-            # si le joueur a deja les 6 parts, on tente la question finale
-            if len(player.wedges) == len(CATEGORIES):
-                category = random.choice(CATEGORIES)
+            # si le joueur a deja toutes les parts du pack, on tente la question finale
+            if len(player.wedges) == len(room.categories):
+                category = random.choice(room.categories)
                 q = room.pick_question(category)
                 room.pending_question = {"player_id": player.id, "final": True, **q}
                 await broadcast(room, {
                     "type": "question", "player_id": player.id, "category": q["category"],
-                    "label": CATEGORY_LABELS[q["category"]],
+                    "label": room.category_labels[q["category"]],
                     "question": q["question"], "choices": q["choices"], "final": True,
                 })
                 await broadcast(room, {"type": "info", "message": f"{player.name} tente la question finale !"})
@@ -325,7 +381,7 @@ async def handle_message(room: Room, player: Player, data: dict):
             room.pending_question = {"player_id": player.id, "final": False, **q}
             await broadcast(room, {
                 "type": "question", "player_id": player.id, "category": q["category"],
-                "label": CATEGORY_LABELS[q["category"]],
+                "label": room.category_labels[q["category"]],
                 "question": q["question"], "choices": q["choices"], "final": False,
             })
             return

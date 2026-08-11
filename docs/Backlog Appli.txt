@@ -6,8 +6,6 @@ A FAIRE
 - Acheter un nom de domaine ?
 - attention revoir le tutoriel à la fin, voire le compléter
 - faire une fichier d'installation à donner
-- supprimer les lieux en double et mettre 2 fois les dates
-
 
 JEU 
 * Bien tester le trivial !
@@ -19,6 +17,7 @@ COntenu :
 * revoir les coordonnées GPS
 * revoir les textes et mettre en gras
 * compléter avec les réservations
+* supprimer les lieux en double et mettre 2 fois les dates
 
 TESTER TOUTE L'APPLICATION
 * tester le mode offline
