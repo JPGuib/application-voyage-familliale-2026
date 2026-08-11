@@ -636,13 +636,13 @@ export const DOCUMENTS: TravelDocument[] = [
       "Vol en montgolfière au lever du soleil à Göreme.\n" +
       "Départ vers 4h30 pour une durée de 3h30 environ.",
     details: [
-      "Réservation via Getyourguide (réf : GYGVN276568A)",
+      "**Réservation via Getyourguide (réf : GYGVN276568A)**",
       "Pin: GLLjwTcr",
-      "ANNULER VIA APPLI GETYOURGUIDE sur le téléphone AVANT LE 19 AOÜT POUR AVOIR REMBOURSEMENT TOTAL ET AVANT LE 17 AOUT POUR NE RIEN PAYER DU TOUT",
+      "**ANNULER VIA APPLI GETYOURGUIDE sur le téléphone AVANT LE 19 AOÜT POUR AVOIR REMBOURSEMENT TOTAL ET AVANT LE 17 AOUT POUR NE RIEN PAYER DU TOUT**",
     ],
     scans: [
-      "/images/Guide/Montgolfière jour 5 - 1.webp",
-      "/images/Guide/Montgolfière jour 5 - 2.webp",
+      "/images/guide/Montgolfière jour 5 - 1.webp",
+      "/images/guide/Montgolfière jour 5 - 2.webp",
     ]
   },
   {
@@ -659,8 +659,8 @@ export const DOCUMENTS: TravelDocument[] = [
       "ANNULER VIA APPLI TRIPADVISOR sur site internet avec ordinateur ou appli AVANT LE 19 AOÜT POUR NE RIEN PAYER DU TOUT",
     ],
     scans: [
-      "/images/Guide/Montgolfière jour 6 - 1.webp",
-      "/images/Guide/Montgolfière jour 6 - 2.webp",
+      "/images/guide/Montgolfière jour 6 - 1.webp",
+      "/images/guide/Montgolfière jour 6 - 2.webp",
     ]
   },
   {
@@ -678,8 +678,8 @@ export const DOCUMENTS: TravelDocument[] = [
       "ANNULER VIA APPLI GETYOURGUIDE sur site internet avec ordinateur ou appli AVANT LE 19 AOÜT POUR NE RIEN PAYER DU TOUT",
     ],
     scans: [
-      "/images/Guide/Montgolfière jour 7 - 1.webp",
-      "/images/Guide/Montgolfière jour 7 - 2.webp",
+      "/images/guide/Montgolfière jour 7 - 1.webp",
+      "/images/guide/Montgolfière jour 7 - 2.webp",
     ]
   },
   {
