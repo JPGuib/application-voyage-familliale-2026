@@ -88,6 +88,61 @@ describe("App document visibility integration (story 26.3)", () => {
     cloudSyncMock.mockReset();
   });
 
+  it("filters the active document category by day and title", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-user",
+      cloudSnapshot: makeSnapshot("utilisateur", {}),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Documents" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Documents et informations importants/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Nantes → Paris/i)).toBeInTheDocument();
+    expect(screen.getByText(/Istanbul → Nantes/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Filtrer cette catégorie/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Tous les jours/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Jour 10/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Nantes → Paris/i)).not.toBeInTheDocument();
+    });
+    expect(screen.getByText(/Istanbul → Nantes/i)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/Filtrer les documents par titre/i), {
+      target: { value: "Paris" },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Aucun document visible pour cette catégorie/i)).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText(/Filtrer les documents par titre/i), {
+      target: { value: "Istanbul" },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Istanbul → Nantes/i)).toBeInTheDocument();
+    });
+  });
+
   it("hides owner-marked documents from non-owner", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 

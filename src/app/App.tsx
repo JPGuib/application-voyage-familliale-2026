@@ -133,7 +133,9 @@ import {
   getSafeScreen,
 } from "./access-control";
 import {
+  filterDocuments,
   groupDocumentsByCategory,
+  normalizeDocumentDays,
 } from "./documents-screen";
 import { findDuplicateProfileBySurname } from "./profile-login";
 import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
@@ -3252,6 +3254,10 @@ function DocumentsScreen({
   const [isAdding, setIsAdding] = useState(false);
   const [scansDocumentId, setScansDocumentId] = useState<string | null>(null);
   const [scanLightboxIndex, setScanLightboxIndex] = useState<number | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [documentFilterDays, setDocumentFilterDays] = useState<number[]>([]);
+  const [documentFilterName, setDocumentFilterName] = useState("");
+  const [documentDayDropdownOpen, setDocumentDayDropdownOpen] = useState(false);
 
   const [draftCategory, setDraftCategory] = useState<DocumentCategory>(DOCUMENT_CATEGORIES[0]);
   const [draftTitle, setDraftTitle] = useState("");
@@ -3263,27 +3269,6 @@ function DocumentsScreen({
   const [draftScans, setDraftScans] = useState("");
   const [draftLinks, setDraftLinks] = useState("");
   const [draftGps, setDraftGps] = useState("");
-
-  function normalizeDocumentDays(value: number | number[] | undefined): number[] {
-    if (Array.isArray(value)) {
-      const uniqueDays = Array.from(
-        new Set(
-          value
-            .map((day) => Number(day))
-            .filter((day) => Number.isFinite(day) && day > 0)
-            .map((day) => Math.trunc(day))
-        )
-      );
-      uniqueDays.sort((a, b) => a - b);
-      return uniqueDays;
-    }
-
-    if (typeof value === "number" && Number.isFinite(value) && value > 0) {
-      return [Math.trunc(value)];
-    }
-
-    return [];
-  }
 
   function parseDraftDayInput(value: string): number[] {
     return Array.from(
@@ -3489,10 +3474,39 @@ function DocumentsScreen({
     isDocumentVisibleForRole(role, document.id, documentVisibilityMap)
   );
   const grouped = groupDocumentsByCategory(visibleDocuments);
-  const visibleItems = grouped[activeCategory];
+  const categoryItems = grouped[activeCategory];
+  const availableDocumentDays = useMemo(
+    () =>
+      Array.from(
+        new Set(categoryItems.flatMap((item) => normalizeDocumentDays(item.day)))
+      ).sort((a, b) => a - b),
+    [categoryItems]
+  );
+  const hasDocumentFilters =
+    documentFilterDays.length > 0 || documentFilterName.trim().length > 0;
+  const activeDocumentFilterCount =
+    (documentFilterDays.length > 0 ? 1 : 0) + (documentFilterName.trim().length > 0 ? 1 : 0);
+  const visibleItems = useMemo(
+    () =>
+      filterDocuments(categoryItems, {
+        days: documentFilterDays,
+        title: documentFilterName,
+      }),
+    [categoryItems, documentFilterDays, documentFilterName]
+  );
   const scansDocument = scansDocumentId
     ? visibleDocuments.find((doc) => doc.id === scansDocumentId) ?? null
     : null;
+
+  useEffect(() => {
+    setDocumentFilterDays((previous) => {
+      const next = previous.filter((day) => availableDocumentDays.includes(day));
+      if (next.length === previous.length && next.every((day, index) => day === previous[index])) {
+        return previous;
+      }
+      return next;
+    });
+  }, [availableDocumentDays]);
 
   function clearDraft(): void {
     setDraftCategory(activeCategory);
@@ -3930,6 +3944,135 @@ function DocumentsScreen({
             {category}
           </button>
         ))}
+      </div>
+
+      <div className="mx-4 mt-3 flex-shrink-0 rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setFilterOpen((prev) => !prev)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left"
+        >
+          <span className="min-w-0 text-left">
+            <span className="block text-sm font-black text-foreground">
+              {hasDocumentFilters ? "Filtres actifs" : "Filtrer cette catégorie"}
+            </span>
+            {hasDocumentFilters ? (
+              <span className="block text-xs text-muted-foreground mt-0.5 truncate">
+                {[
+                  documentFilterDays.length > 0 &&
+                    documentFilterDays.map((day) => formatTripDayLabel(day, tripStartDate)).join(", "),
+                  documentFilterName.trim() && `Titre: \"${documentFilterName.trim()}\"`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            ) : (
+              <span className="block text-xs text-muted-foreground mt-0.5">
+                Jour/date ou texte du titre
+              </span>
+            )}
+          </span>
+          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+            {hasDocumentFilters && (
+              <span className="text-[10px] font-black bg-[#1565C0] text-white rounded-full px-2 py-0.5">
+                {activeDocumentFilterCount}
+              </span>
+            )}
+            <ChevronDown
+              size={18}
+              className={`transition-transform text-muted-foreground ${filterOpen ? "rotate-180" : ""}`}
+            />
+          </div>
+        </button>
+
+        {filterOpen && (
+          <div className="px-4 pb-4 space-y-3 border-t border-border">
+            <div className="pt-3">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Jour</p>
+              <button
+                type="button"
+                onClick={() => setDocumentDayDropdownOpen((prev) => !prev)}
+                className={`w-full flex items-center justify-between rounded-xl border px-3 py-2.5 text-sm text-left transition-colors ${
+                  documentFilterDays.length > 0
+                    ? "border-[#1565C0] bg-[#EFF6FF] text-[#1565C0] font-bold"
+                    : "border-border bg-muted text-foreground"
+                }`}
+              >
+                <span className="truncate">
+                  {documentFilterDays.length === 0
+                    ? "Tous les jours"
+                    : documentFilterDays.length <= 2
+                      ? documentFilterDays.map((day) => formatTripDayLabel(day, tripStartDate)).join(", ")
+                      : `${documentFilterDays.length} jours sélectionnés`}
+                </span>
+                <ChevronDown
+                  size={15}
+                  className={`flex-shrink-0 ml-2 transition-transform ${documentDayDropdownOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {documentDayDropdownOpen && (
+                <div className="mt-1 border border-border rounded-xl overflow-hidden">
+                  {availableDocumentDays.length === 0 ? (
+                    <div className="px-3 py-2.5 text-sm text-muted-foreground bg-background">
+                      Aucun jour associé dans cette catégorie.
+                    </div>
+                  ) : (
+                    availableDocumentDays.map((day) => {
+                      const active = documentFilterDays.includes(day);
+                      return (
+                        <button
+                          key={`documents-day-filter-${day}`}
+                          type="button"
+                          onClick={() =>
+                            setDocumentFilterDays((prev) =>
+                              active
+                                ? prev.filter((entry) => entry !== day)
+                                : [...prev, day].sort((a, b) => a - b)
+                            )
+                          }
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left border-b border-border/40 last:border-b-0 active:bg-muted"
+                        >
+                          <span className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center ${active ? "bg-[#1565C0] border-[#1565C0]" : "border-border"}`}>
+                            {active && <Check size={10} className="text-white" />}
+                          </span>
+                          <span className={active ? "font-bold text-foreground" : "text-muted-foreground"}>
+                            {formatTripDayLabel(day, tripStartDate)}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Nom</p>
+              <input
+                type="text"
+                value={documentFilterName}
+                onChange={(event) => setDocumentFilterName(event.target.value)}
+                placeholder="Rechercher dans le titre"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground"
+                aria-label="Filtrer les documents par titre"
+              />
+            </div>
+
+            {hasDocumentFilters && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDocumentFilterDays([]);
+                  setDocumentFilterName("");
+                }}
+                className="rounded-xl border border-border px-3 py-2 text-xs font-black uppercase tracking-widest text-muted-foreground"
+              >
+                Réinitialiser les filtres
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {isOwner && (

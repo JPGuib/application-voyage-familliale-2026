@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { canAccessScreen } from "./access-control";
 import { DOCUMENTS, DOCUMENT_CATEGORIES } from "../content/documents";
-import { groupDocumentsByCategory } from "./documents-screen";
+import { filterDocuments, groupDocumentsByCategory, normalizeDocumentDays } from "./documents-screen";
 
 describe("documents screen data helpers", () => {
   it("grouped documents: every category key exists even when empty", () => {
@@ -22,6 +22,26 @@ describe("documents screen data helpers", () => {
     const volWithScans = DOCUMENTS.find((doc) => doc.id === "vol-nantes-paris-af7507");
     expect(volWithScans).toBeTruthy();
     expect((volWithScans?.scans?.length ?? 0)).toBeGreaterThan(0);
+  });
+
+  it("normalizes document days from scalar and array values", () => {
+    expect(normalizeDocumentDays(undefined)).toEqual([]);
+    expect(normalizeDocumentDays(4)).toEqual([4]);
+    expect(normalizeDocumentDays([3, 1, 3, 2])).toEqual([1, 2, 3]);
+  });
+
+  it("filters documents by day and title", () => {
+    const dayFiveDocs = filterDocuments(DOCUMENTS, { days: [5] });
+    expect(dayFiveDocs.length).toBeGreaterThan(0);
+    expect(dayFiveDocs.every((doc) => normalizeDocumentDays(doc.day).includes(5))).toBe(true);
+
+    const matchingTitleDocs = filterDocuments(DOCUMENTS, { title: "montgolfière" });
+    expect(matchingTitleDocs.length).toBeGreaterThan(0);
+    expect(matchingTitleDocs.every((doc) => doc.title.toLowerCase().includes("montgolfière"))).toBe(true);
+
+    const combined = filterDocuments(DOCUMENTS, { days: [6], title: "montgolfière" });
+    expect(combined.map((doc) => doc.id)).toContain("Montgolfiere-discovery-balloons");
+    expect(combined.map((doc) => doc.id)).not.toContain("Montgolfiere-rainbow-balloons");
   });
 });
 
