@@ -460,7 +460,8 @@
     tag: "Monument",
     image: "/images/Jour 3/Mosquee bleue 3.webp",
     photos: [
-      "/images/Jour 3/Mosquée bleue 3.webp",
+      "/images/Jour 3/Mosquee bleue 3.webp",
+      "/images/Jour 3/Mosquee bleue 2.webp",
     ],
     audioTitle: "La Mosquée Bleue, merveille ottomane",
     audioDuration: "3 min 30 sec",
