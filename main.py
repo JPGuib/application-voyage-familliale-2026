@@ -25,14 +25,14 @@ COLORS = ["#e63946", "#2a9d8f", "#f4a261", "#457b9d", "#a663cc"]
 PACKS: dict[str, dict] = {
     "turquie": {
         "label": "Trivial Turquie 🇹🇷",
-        "categories": ["histoire", "gastronomie", "langue", "geographie", "culture", "souvenirs"],
+        "categories": ["histoire", "gastronomie", "langue", "geographie", "culture", "Istanbul"],
         "category_labels": {
             "histoire": "Histoire & Empire ottoman",
             "gastronomie": "Gastronomie",
             "langue": "Langue & expressions",
             "geographie": "Geographie",
             "culture": "Culture & traditions",
-            "souvenirs": "Vecu du groupe",
+            "Istanbul": "Istanbul",
         },
         "questions_file": "questions_turquie.json",
     },
