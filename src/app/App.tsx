@@ -86,7 +86,7 @@ import {
   type GameProgress,
   upsertGameHistory,
 } from "./game-results";
-import { computePodium, type PodiumProfileInput } from "./podium";
+import { computePodium } from "./podium";
 import { buildScoreChartPoints } from "./score-progression";
 import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
@@ -380,6 +380,7 @@ const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
 const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-by-profile";
 const LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY = "jp-launch-gate-pending-completion-by-profile";
 const MAX_PLACE_COMMENT_LENGTH = 500;
+const MAX_CHALLENGE_RESPONSE_LENGTH = 280;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -510,6 +511,16 @@ type PlaceComment = {
 };
 
 type PlaceCommentsByPlace = Record<string, Record<string, PlaceComment>>;
+type ChallengeReactionEmoji = "love" | "laugh" | "wow" | "clap";
+type ChallengeReaction = {
+  day: number;
+  targetProfileId: string;
+  reactorProfileId: string;
+  emoji: ChallengeReactionEmoji;
+  updatedAt: number;
+  authorUid?: string;
+};
+type ChallengeReactionsByDay = Record<number, Record<string, Record<string, ChallengeReaction>>>;
 type PlaceVisibilityState = "visible" | "hiddenByOwner";
 type PlaceVisibilityMap = Record<string, PlaceVisibilityState>;
 type PlaceDayOverrideMap = Record<string, number[]>;
@@ -534,6 +545,25 @@ type QuickAction = {
   colorBg: string;
   colorText: string;
 };
+
+type ResultsFamilyMember = {
+  profileId: string;
+  surname: string;
+  role: Role;
+  gameResults: GameHistoryEntry[];
+  destinationSurveyPoints?: number;
+};
+
+const CHALLENGE_REACTION_OPTIONS: Array<{
+  value: ChallengeReactionEmoji;
+  emoji: string;
+  label: string;
+}> = [
+  { value: "love", emoji: "❤️", label: "J'adore" },
+  { value: "laugh", emoji: "😂", label: "Drôle" },
+  { value: "wow", emoji: "😮", label: "Impressionnant" },
+  { value: "clap", emoji: "👏", label: "Bravo" },
+];
 
 type ExternalAppLink = {
   href: string;
@@ -858,6 +888,13 @@ function areGameHistoriesEqual(
   }
 
   return true;
+}
+
+function areChallengeReactionsEqual(
+  left: ChallengeReactionsByDay,
+  right: ChallengeReactionsByDay
+): boolean {
+  return stableSerializeForCloudPush(left) === stableSerializeForCloudPush(right);
 }
 
 function parsePlaceComments(raw: unknown): PlaceCommentsByPlace {
@@ -6171,6 +6208,7 @@ function GameScreen({
   riddleFeedback,
   riddleValidated,
   riddleSolved,
+  challengeResponse,
   challengeDone,
   onStart,
   onAnswer,
@@ -6179,6 +6217,7 @@ function GameScreen({
   onRiddleAnswerChange,
   onValidateRiddle,
   onContinueToChallenge,
+  onChallengeResponseChange,
   onCompleteChallenge,
   currentDay,
   tripStartDate,
@@ -6200,6 +6239,7 @@ function GameScreen({
   riddleFeedback: string | null;
   riddleValidated: boolean;
   riddleSolved: boolean;
+  challengeResponse: string;
   challengeDone: boolean;
   onStart: () => void;
   onAnswer: (idx: number) => void;
@@ -6208,6 +6248,7 @@ function GameScreen({
   onRiddleAnswerChange: (value: string) => void;
   onValidateRiddle: () => void;
   onContinueToChallenge: () => void;
+  onChallengeResponseChange: (value: string) => void;
   onCompleteChallenge: () => void;
   currentDay: number;
   tripStartDate: string | null;
@@ -6302,7 +6343,7 @@ function GameScreen({
             </p>
             <p className="text-xs font-bold text-[#C62828] bg-[#FFEBEE] rounded-xl px-4 py-3 mb-8 text-left">
               ⚠️ Une fois lancé, impossible de quitter le jeu avant de l&apos;avoir terminé (quiz,
-              énigme puis défi photo). Mieux vaut y jouer en fin de journée, une fois toutes les
+              énigme puis défi final). Mieux vaut y jouer en fin de journée, une fois toutes les
               visites terminées.
             </p>
             <button
@@ -6444,6 +6485,7 @@ function GameScreen({
   }
 
   if (gameState === "challenge") {
+    const trimmedChallengeResponse = challengeResponse.trim();
     return (
       <div className="flex flex-col h-full overflow-y-auto">
         <div className="relative bg-[#FF6B3D] text-white px-6 pt-12 pb-6 flex-shrink-0">
@@ -6462,12 +6504,23 @@ function GameScreen({
             <p className="mt-3 text-xs font-bold text-[#6B3DFF] bg-[#F3E5F5] rounded-xl px-3 py-2.5 leading-relaxed">
               📌 {challenge.note}
             </p>
+            <textarea
+              value={challengeResponse}
+              onChange={(e) => onChallengeResponseChange(e.target.value.slice(0, MAX_CHALLENGE_RESPONSE_LENGTH))}
+              placeholder="Écrivez ici votre réponse au défi du jour"
+              className="mt-4 min-h-28 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+              disabled={challengeDone}
+            />
+            <div className="mt-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+              <span>Cette réponse sera partagée avec les autres une fois tout le monde passé.</span>
+              <span>{challengeResponse.length}/{MAX_CHALLENGE_RESPONSE_LENGTH}</span>
+            </div>
             <p className="mt-3 text-xs text-muted-foreground">
               Une fois le défi terminé, le jeu du jour se termine : impossible d&apos;y revenir ensuite.
             </p>
             <button
               onClick={onCompleteChallenge}
-              disabled={challengeDone}
+              disabled={challengeDone || trimmedChallengeResponse.length === 0}
               className="mt-4 w-full rounded-xl py-3 text-sm font-black bg-primary text-primary-foreground disabled:opacity-50"
             >
               {challengeDone ? "Défi validé ✅" : "Terminer le défi du jour 🏆"}
@@ -6559,19 +6612,31 @@ function ResultsScreen({
   history,
   familyMembers,
   currentDay,
+  sharedChallengeDay,
   tripStartDate,
   currentProfileId,
+  currentProfileRole,
   destinationSurveyDestination,
   destinationSurveyResults,
+  challengeReactionsByDay,
+  onReactToChallengeResponse,
 }: {
   onBack: () => void;
   history: GameHistoryEntry[];
-  familyMembers: PodiumProfileInput[];
+  familyMembers: ResultsFamilyMember[];
   currentDay: number;
+  sharedChallengeDay: number | null;
   tripStartDate: string | null;
   currentProfileId: string;
+  currentProfileRole: Role | null;
   destinationSurveyDestination: string;
   destinationSurveyResults: ReturnType<typeof computeDestinationSurveyResults>["rows"];
+  challengeReactionsByDay: ChallengeReactionsByDay;
+  onReactToChallengeResponse: (
+    day: number,
+    targetProfileId: string,
+    emoji: ChallengeReactionEmoji
+  ) => void;
 }) {
   const chartMembers = familyMembers.filter((member) => member.role !== "proprietaire");
   const visibleDestinationSurveyResults = destinationSurveyResults.filter(
@@ -6611,6 +6676,53 @@ function ResultsScreen({
       surname: member.surname,
       hasPlayed: member.gameResults.some((entry) => entry.day === currentDay),
     }));
+  const canViewSharedChallenges =
+    currentProfileRole === "utilisateur";
+  const sharedChallengeParticipants = familyMembers.filter(
+    (member) => member.role !== "proprietaire" && member.role !== "visiteur"
+  );
+  const sharedChallengeEntries =
+    sharedChallengeDay === null
+      ? []
+      : sharedChallengeParticipants.map((member) => {
+          const gameEntry = member.gameResults.find((entry) => entry.day === sharedChallengeDay) ?? null;
+          const challengeResponse = gameEntry?.challengeResponse?.trim() ?? "";
+          const reactionsForEntry =
+            challengeReactionsByDay[sharedChallengeDay]?.[member.profileId] ?? {};
+          const reactionCounts = CHALLENGE_REACTION_OPTIONS.map((option) => ({
+            ...option,
+            count: Object.values(reactionsForEntry).filter(
+              (reaction) => reaction.emoji === option.value
+            ).length,
+          }));
+          return {
+            profileId: member.profileId,
+            surname: member.surname,
+            response: challengeResponse,
+            completedAt: gameEntry?.completedAt ?? "",
+            currentUserReaction: reactionsForEntry[currentProfileId]?.emoji ?? null,
+            reactionCounts,
+          };
+        })
+          .sort((left, right) => {
+            const leftTs = Date.parse(left.completedAt);
+            const rightTs = Date.parse(right.completedAt);
+            const leftValid = Number.isFinite(leftTs);
+            const rightValid = Number.isFinite(rightTs);
+
+            if (leftValid && rightValid && leftTs !== rightTs) {
+              return leftTs - rightTs;
+            }
+            if (leftValid !== rightValid) {
+              return leftValid ? -1 : 1;
+            }
+
+            return left.surname.localeCompare(right.surname, "fr");
+          });
+  const sharedChallengeReady =
+    sharedChallengeDay !== null &&
+    sharedChallengeEntries.length > 0 &&
+    sharedChallengeEntries.every((entry) => entry.response.length > 0);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -6900,6 +7012,88 @@ function ResultsScreen({
             </div>
           )}
         </div>
+
+        {canViewSharedChallenges && sharedChallengeDay !== null && (
+          <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+              Défis partagés — {formatTripDayLabel(sharedChallengeDay, tripStartDate)}
+            </p>
+            {!sharedChallengeReady ? (
+              <p className="text-sm text-muted-foreground">
+                Les réponses du défi seront visibles ici dès que tout le monde aura répondu.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {sharedChallengeEntries.map((entry) => (
+                  <div
+                    key={`shared-challenge-${sharedChallengeDay}-${entry.profileId}`}
+                    className="rounded-xl border border-border bg-muted/30 px-3 py-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-black text-foreground">{entry.surname}</p>
+                      {entry.completedAt ? (
+                        <p className="text-[11px] font-semibold text-muted-foreground">
+                          {new Date(entry.completedAt).toLocaleDateString("fr-FR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      ) : null}
+                    </div>
+                    <p className="mt-2 text-sm text-foreground/85 leading-relaxed">{entry.response}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {entry.reactionCounts
+                        .filter((reaction) => reaction.count > 0)
+                        .map((reaction) => (
+                          <span
+                            key={`reaction-count-${entry.profileId}-${reaction.value}`}
+                            className="rounded-full bg-white px-2.5 py-1 text-xs font-black text-foreground shadow-sm"
+                          >
+                            {reaction.emoji} {reaction.count}
+                          </span>
+                        ))}
+                    </div>
+                    {entry.profileId !== currentProfileId && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {CHALLENGE_REACTION_OPTIONS.map((reaction) => {
+                          const isSelected = entry.currentUserReaction === reaction.value;
+                          return (
+                            <button
+                              key={`reaction-button-${entry.profileId}-${reaction.value}`}
+                              onClick={() =>
+                                onReactToChallengeResponse(
+                                  sharedChallengeDay,
+                                  entry.profileId,
+                                  reaction.value
+                                )
+                              }
+                              className={`rounded-full border px-3 py-1.5 text-sm font-black transition-colors ${
+                                isSelected
+                                  ? "border-[#6B3DFF] bg-[#F3E5F5] text-[#6B3DFF]"
+                                  : "border-border bg-white text-foreground"
+                              }`}
+                              aria-label={reaction.label}
+                              title={reaction.label}
+                            >
+                              {reaction.emoji}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {entry.profileId !== currentProfileId && entry.currentUserReaction && (
+                      <p className="mt-2 text-[11px] font-semibold text-muted-foreground">
+                        Re-cliquez sur votre emoji pour retirer votre réaction.
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="h-2" />
       </div>
@@ -9481,7 +9675,18 @@ export default function App() {
       return false;
     }
   });
+  const [challengeResponse, setChallengeResponse] = useState(() => {
+    if (cloudEnabled) {
+      return "";
+    }
+    try {
+      return parseGameProgress(localStorage.getItem("jp-game-progress"))?.challengeDraft ?? "";
+    } catch {
+      return "";
+    }
+  });
   const [challengeDone, setChallengeDone] = useState(false);
+  const [challengeReactionsByDay, setChallengeReactionsByDay] = useState<ChallengeReactionsByDay>({});
   const [gameHistory, setGameHistory] = useState<GameHistoryEntry[]>(() => {
     if (cloudEnabled) {
       return [];
@@ -9525,6 +9730,7 @@ export default function App() {
           quizDurationSec,
           riddleValidated,
           riddleSolved,
+          challengeDraft: challengeResponse,
         }
       : null;
 
@@ -10250,6 +10456,20 @@ export default function App() {
         ? previous
         : nextFromCloud;
     });
+    setChallengeReactionsByDay((previous) => {
+      const nextFromCloud = cloudSnapshot.challengeReactions ?? {};
+      const pendingReactions = pendingChallengeReactionsRef.current;
+      if (pendingReactions !== "none") {
+        if (stableSerializeForCloudPush(nextFromCloud) !== pendingReactions) {
+          return previous;
+        }
+        pendingChallengeReactionsRef.current = "none";
+      }
+
+      return areChallengeReactionsEqual(previous, nextFromCloud)
+        ? previous
+        : nextFromCloud;
+    });
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
@@ -10307,6 +10527,11 @@ export default function App() {
       setRiddleSolved((previous) =>
         previous === cloudProgress.riddleSolved ? previous : cloudProgress.riddleSolved
       );
+      setChallengeResponse((previous) =>
+        previous === (cloudProgress.challengeDraft ?? "")
+          ? previous
+          : (cloudProgress.challengeDraft ?? "")
+      );
       if (cloudProgress.riddleValidated) {
         setRiddleFeedback(
           cloudProgress.riddleSolved
@@ -10340,6 +10565,7 @@ export default function App() {
       setRiddleFeedback(null);
       setRiddleValidated(false);
       setRiddleSolved(false);
+      setChallengeResponse("");
       setChallengeDone(false);
     }
     // gameState est délibérément exclu des dépendances : cet effet ne doit
@@ -10419,6 +10645,7 @@ export default function App() {
   // Même principe que pendingPlaceVisibilityMapRef, appliqué à la visibilité
   // des documents importants.
   const pendingDocumentVisibilityMapRef = useRef<string | "none">("none");
+  const pendingChallengeReactionsRef = useRef<string | "none">("none");
   const previousCommentsSnapshotRef = useRef<PlaceCommentsByPlace | null>(null);
   const pendingLaunchGateCompletionRef = useRef<{ profileId: string; cycle: number } | null>(null);
   const lastChecklistReminderKeyRef = useRef<string | null>(null);
@@ -10535,6 +10762,7 @@ export default function App() {
       placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
       destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
+      challengeReactions: challengeReactionsByDay,
       launchGateCycle,
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       phase,
@@ -10580,6 +10808,7 @@ export default function App() {
       placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
       profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
+      challengeReactions: challengeReactionsByDay,
       launchGateCycle,
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       gameResults: gameHistory,
@@ -10602,6 +10831,7 @@ export default function App() {
     quizDurationSec,
     riddleValidated,
     riddleSolved,
+    challengeResponse,
     isAuthenticated,
     isAuthBootstrapPending,
     ownerCodeHash,
@@ -10622,6 +10852,7 @@ export default function App() {
     placeDayOrderOverrideMap,
     documentVisibilityMap,
     destinationSurveyVotes,
+    challengeReactionsByDay,
     launchGateCycle,
     launchGateCompletedCycleByProfile,
     phase,
@@ -11092,7 +11323,7 @@ export default function App() {
   // - "playing" (quiz en cours) et "riddle" (énigme, avant d'avoir cliqué
   //   "Continuer vers le défi") sont bloquants : impossible de changer
   //   d'écran, on affiche juste un avertissement.
-  // - "done" (récap du quiz) et "challenge" (défi photo) autorisent à
+  // - "done" (récap du quiz) et "challenge" (défi final) autorisent à
   //   quitter et reprendre plus tard, sans confirmation. Quitter pendant
   //   "done" fait basculer directement vers l'énigme (le récap du quiz ne
   //   se revoit pas, cf. règle "pas de rejeu").
@@ -11564,6 +11795,7 @@ const resetForProfileSwitch = () => {
     setRiddleFeedback(null);
     setRiddleValidated(false);
     setRiddleSolved(false);
+    setChallengeResponse("");
     setChallengeDone(false);
     setShowStartPrompt(false);
     setStartCodeInput("");
@@ -11922,6 +12154,15 @@ const resetForProfileSwitch = () => {
     setGameHistory((previous) =>
       day === undefined ? [] : previous.filter((entry) => entry.day !== day)
     );
+    setChallengeReactionsByDay((previous) => {
+      if (day === undefined) {
+        return {};
+      }
+
+      const next = { ...previous };
+      delete next[day];
+      return next;
+    });
 
     setUnlockFailedAttempts(0);
     setUnlockLockedUntil(0);
@@ -12001,6 +12242,7 @@ const resetForProfileSwitch = () => {
       setRiddleFeedback(null);
       setRiddleValidated(false);
       setRiddleSolved(false);
+      setChallengeResponse("");
       setChallengeDone(false);
     }
 
@@ -12041,6 +12283,7 @@ const resetForProfileSwitch = () => {
         setRiddleValidated(false);
         setRiddleSolved(false);
       }
+      setChallengeResponse("");
       return;
     }
 
@@ -12051,6 +12294,7 @@ const resetForProfileSwitch = () => {
           : `Pas tout à fait. La bonne réponse était "${todaysRiddle.answer}".`
       );
     }
+    setChallengeResponse(progress.challengeDraft ?? "");
   }, [cloudEnabled, currentDay, gameState, todaysRiddle.answer]);
 
   const answerQ = (idx: number) => {
@@ -12096,12 +12340,17 @@ const resetForProfileSwitch = () => {
     );
   };
 
-  // Terminer le défi photo termine immédiatement la session du jour (pas de
-  // bouton "Voir les résultats" séparé) : le défi photo est donc désormais
+  // Terminer le défi final termine immédiatement la session du jour (pas de
+  // bouton "Voir les résultats" séparé) : le défi du jour est donc désormais
   // obligatoire pour clore la journée, et il n'y a plus de retour possible
   // ensuite (alreadyPlayedToday verrouille l'écran "game" dès que
   // gameHistory contient une entrée pour currentDay).
   const completeChallengeAndFinishSession = () => {
+    const trimmedChallengeResponse = challengeResponse.trim();
+    if (!trimmedChallengeResponse) {
+      return;
+    }
+
     const entry: GameHistoryEntry = {
       day: currentDay,
       location: todayDestination,
@@ -12109,6 +12358,7 @@ const resetForProfileSwitch = () => {
       correctCount,
       riddleSolved,
       challengeDone: true,
+      challengeResponse: trimmedChallengeResponse,
       durationSec: quizDurationSec,
       totalScore: gameScore + riddleScore + CHALLENGE_POINTS,
       completedAt: new Date().toISOString(),
@@ -12125,8 +12375,79 @@ const resetForProfileSwitch = () => {
     setRiddleFeedback(null);
     setRiddleValidated(false);
     setRiddleSolved(false);
+    setChallengeResponse("");
     setChallengeDone(false);
     setScreen("results");
+  };
+
+  const reactToChallengeResponse = (
+    day: number,
+    targetProfileId: string,
+    emoji: ChallengeReactionEmoji
+  ) => {
+    if (
+      day < 1 ||
+      profile.role !== "utilisateur" ||
+      targetProfileId === profile.id
+    ) {
+      return;
+    }
+
+    const targetRole =
+      cloudSnapshot?.profiles?.[targetProfileId]?.role
+      ?? (targetProfileId === profile.id ? profile.role : null);
+    if (targetRole !== "utilisateur") {
+      return;
+    }
+
+    setChallengeReactionsByDay((previous) => {
+      const dayBucket = previous[day] ?? {};
+      const targetBucket = dayBucket[targetProfileId] ?? {};
+      const existingReaction = targetBucket[profile.id] ?? null;
+
+      if (existingReaction?.emoji === emoji) {
+        const nextTargetBucket = { ...targetBucket };
+        delete nextTargetBucket[profile.id];
+
+        const nextDayBucket = { ...dayBucket };
+        if (Object.keys(nextTargetBucket).length === 0) {
+          delete nextDayBucket[targetProfileId];
+        } else {
+          nextDayBucket[targetProfileId] = nextTargetBucket;
+        }
+
+        const next: ChallengeReactionsByDay = { ...previous };
+        if (Object.keys(nextDayBucket).length === 0) {
+          delete next[day];
+        } else {
+          next[day] = nextDayBucket;
+        }
+
+        pendingChallengeReactionsRef.current = stableSerializeForCloudPush(next);
+        return next;
+      }
+
+      const next: ChallengeReactionsByDay = {
+        ...previous,
+        [day]: {
+          ...dayBucket,
+          [targetProfileId]: {
+            ...targetBucket,
+            [profile.id]: {
+              day,
+              targetProfileId,
+              reactorProfileId: profile.id,
+              emoji,
+              updatedAt: Date.now(),
+              authorUid: cloudActorUid ?? undefined,
+            },
+          },
+        },
+      };
+
+      pendingChallengeReactionsRef.current = stableSerializeForCloudPush(next);
+      return next;
+    });
   };
 
   const loginCandidates: LoginCandidate[] = cloudSnapshot
@@ -12249,6 +12570,7 @@ const resetForProfileSwitch = () => {
         ownerGlobalChecklistAdditions: cloudSnapshot.ownerGlobalChecklistAdditions,
         ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
         placeComments: cloudSnapshot.placeComments ?? {},
+        challengeReactions: cloudSnapshot.challengeReactions ?? {},
         gameResults: selected.gameResults,
         gameProgress: selected.gameProgress,
         phase: selected.phase || cloudSnapshot.phase,
@@ -12415,12 +12737,13 @@ const resetForProfileSwitch = () => {
   const destinationSurveyPointsByProfile = new Map(
     destinationSurveyResults.rows.map((row) => [row.profileId, row.points] as const)
   );
-  const familyMembersForPodium: PodiumProfileInput[] = cloudSnapshot
+  const sharedChallengeDay = tripFinished ? currentDay : currentDay - 1;
+  const familyMembersForPodium: ResultsFamilyMember[] = cloudSnapshot
     ? Object.values(cloudSnapshot.profiles).map((item) => ({
         profileId: item.profileId,
         surname: item.surname,
         role: item.role,
-        gameResults: item.gameResults,
+        gameResults: item.gameResults as GameHistoryEntry[],
         destinationSurveyPoints: destinationSurveyPointsByProfile.get(item.profileId) ?? 0,
       }))
     : [
@@ -12748,6 +13071,7 @@ const resetForProfileSwitch = () => {
                 ownerGlobalChecklistAdditions: cloudSnapshot.ownerGlobalChecklistAdditions,
                 ownerGlobalChecklistRemovals: cloudSnapshot.ownerGlobalChecklistRemovals,
                 placeComments: cloudSnapshot.placeComments ?? {},
+                challengeReactions: cloudSnapshot.challengeReactions ?? {},
                 gameResults: selected.gameResults,
                 gameProgress: selected.gameProgress,
                 phase: selected.phase || cloudSnapshot.phase,
@@ -13529,6 +13853,7 @@ const resetForProfileSwitch = () => {
             riddleFeedback={riddleFeedback}
             riddleValidated={riddleValidated}
             riddleSolved={riddleSolved}
+            challengeResponse={challengeResponse}
             challengeDone={challengeDone}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
@@ -13548,6 +13873,7 @@ const resetForProfileSwitch = () => {
               setRiddleFeedback(null);
               setRiddleValidated(false);
               setRiddleSolved(false);
+              setChallengeResponse("");
               setChallengeDone(false);
             }}
             onAnswer={answerQ}
@@ -13559,6 +13885,7 @@ const resetForProfileSwitch = () => {
             }}
             onValidateRiddle={validateRiddle}
             onContinueToChallenge={() => setGameState("challenge")}
+            onChallengeResponseChange={setChallengeResponse}
             onCompleteChallenge={completeChallengeAndFinishSession}
           />
         );
@@ -13571,10 +13898,14 @@ const resetForProfileSwitch = () => {
             history={gameHistory}
             familyMembers={familyMembersForPodium}
             currentDay={currentDay}
+            sharedChallengeDay={sharedChallengeDay >= 1 ? sharedChallengeDay : null}
             tripStartDate={tripStartDate}
             currentProfileId={profile.id}
+            currentProfileRole={profile.role}
             destinationSurveyDestination={todayDestination}
             destinationSurveyResults={destinationSurveyResults.rows}
+            challengeReactionsByDay={challengeReactionsByDay}
+            onReactToChallengeResponse={reactToChallengeResponse}
           />
         );
       }
@@ -13898,6 +14229,7 @@ const resetForProfileSwitch = () => {
             riddleFeedback={riddleFeedback}
             riddleValidated={riddleValidated}
             riddleSolved={riddleSolved}
+            challengeResponse={challengeResponse}
             challengeDone={challengeDone}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
@@ -13917,6 +14249,7 @@ const resetForProfileSwitch = () => {
               setRiddleFeedback(null);
               setRiddleValidated(false);
               setRiddleSolved(false);
+              setChallengeResponse("");
               setChallengeDone(false);
             }}
             onAnswer={answerQ}
@@ -13928,6 +14261,7 @@ const resetForProfileSwitch = () => {
             }}
             onValidateRiddle={validateRiddle}
             onContinueToChallenge={() => setGameState("challenge")}
+            onChallengeResponseChange={setChallengeResponse}
             onCompleteChallenge={completeChallengeAndFinishSession}
             canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
             onOpenArcade={() => goToScreen("jeux")}
@@ -13963,10 +14297,14 @@ const resetForProfileSwitch = () => {
             history={gameHistory}
             familyMembers={familyMembersForPodium}
             currentDay={currentDay}
+            sharedChallengeDay={sharedChallengeDay >= 1 ? sharedChallengeDay : null}
             tripStartDate={tripStartDate}
             destinationSurveyDestination={todayDestination}
             destinationSurveyResults={destinationSurveyResults.rows}
             currentProfileId={profile.id}
+            currentProfileRole={profile.role}
+            challengeReactionsByDay={challengeReactionsByDay}
+            onReactToChallengeResponse={reactToChallengeResponse}
           />
         );
       case "tips":

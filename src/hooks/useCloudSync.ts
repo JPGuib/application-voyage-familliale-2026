@@ -26,6 +26,7 @@ import type {
   ChecklistCustomItem,
   ChecklistRemovalState,
   ChecklistState,
+  CloudChallengeReactionsByDay,
   CloudDestinationSurveyVote,
   CloudGameHistoryEntry,
   CloudGameProgress,
@@ -77,6 +78,7 @@ type PushSnapshotInput = {
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
+  challengeReactions?: CloudChallengeReactionsByDay;
   launchGateCycle?: number;
   launchGateCompletedCycleForProfile?: number | null;
   resetDestinationSurvey?: boolean;
@@ -457,6 +459,7 @@ export function useCloudSync() {
         placeDayOrderOverrides: snapshot.placeDayOrderOverrides,
         documentVisibilityMap: snapshot.documentVisibilityMap,
         profileDestinationSurveyVote: snapshot.profileDestinationSurveyVote,
+        challengeReactions: snapshot.challengeReactions,
         launchGateCycle: snapshot.launchGateCycle,
         launchGateCompletedCycleForProfile: snapshot.launchGateCompletedCycleForProfile,
         gameResults: snapshot.gameResults,
@@ -771,6 +774,7 @@ export function useCloudSync() {
       }
       const currentResultsByProfile: Record<string, CloudGameHistoryEntry[]> = {};
       const currentProgressByProfile: Record<string, CloudGameProgress> = {};
+      const currentChallengeReactionsByDay = cloudSnapshot.challengeReactions ?? {};
       for (const [profileId, profileState] of Object.entries(cloudSnapshot.profiles)) {
         currentResultsByProfile[profileId] = profileState.gameResults;
         currentProgressByProfile[profileId] = profileState.gameProgress;
@@ -780,6 +784,7 @@ export function useCloudSync() {
         familyId,
         currentResultsByProfile,
         currentProgressByProfile,
+        currentChallengeReactionsByDay,
         day
       );
     },

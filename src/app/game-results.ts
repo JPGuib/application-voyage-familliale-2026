@@ -5,6 +5,7 @@ export type GameHistoryEntry = {
   correctCount: number;
   riddleSolved: boolean;
   challengeDone: boolean;
+  challengeResponse?: string;
   durationSec: number;
   totalScore: number;
   completedAt: string;
@@ -32,6 +33,7 @@ export type GameProgress = {
   quizDurationSec: number;
   riddleValidated: boolean;
   riddleSolved: boolean;
+  challengeDraft?: string;
 };
 
 export function parseGameProgress(raw: string | null): GameProgress | null {
@@ -47,9 +49,13 @@ export function parseGameProgress(raw: string | null): GameProgress | null {
       (parsed?.quizStartedAt === null || typeof parsed?.quizStartedAt === "number") &&
       typeof parsed?.quizDurationSec === "number" &&
       typeof parsed?.riddleValidated === "boolean" &&
-      typeof parsed?.riddleSolved === "boolean"
+      typeof parsed?.riddleSolved === "boolean" &&
+      (parsed?.challengeDraft === undefined || typeof parsed?.challengeDraft === "string")
     ) {
-      return parsed as GameProgress;
+      return {
+        ...(parsed as GameProgress),
+        challengeDraft: typeof parsed.challengeDraft === "string" ? parsed.challengeDraft : "",
+      };
     }
     return null;
   } catch {
@@ -64,18 +70,29 @@ export function parseGameHistory(raw: string | null): GameHistoryEntry[] {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
 
-    return parsed.filter(
-      (entry) =>
+    return parsed.flatMap((entry) => {
+      const isValid =
         typeof entry?.day === "number" &&
         typeof entry?.location === "string" &&
         typeof entry?.quizScore === "number" &&
         typeof entry?.correctCount === "number" &&
         typeof entry?.riddleSolved === "boolean" &&
         typeof entry?.challengeDone === "boolean" &&
+        (entry?.challengeResponse === undefined || typeof entry?.challengeResponse === "string") &&
         typeof entry?.durationSec === "number" &&
         typeof entry?.totalScore === "number" &&
-        typeof entry?.completedAt === "string"
-    ) as GameHistoryEntry[];
+        typeof entry?.completedAt === "string";
+
+      if (!isValid) {
+        return [];
+      }
+
+      return [{
+        ...(entry as GameHistoryEntry),
+        challengeResponse:
+          typeof entry.challengeResponse === "string" ? entry.challengeResponse : "",
+      }];
+    });
   } catch {
     return [];
   }

@@ -23,6 +23,7 @@ export type CloudGameHistoryEntry = {
   correctCount: number;
   riddleSolved: boolean;
   challengeDone: boolean;
+  challengeResponse?: string;
   durationSec: number;
   totalScore: number;
   completedAt: string;
@@ -41,7 +42,24 @@ export type CloudGameProgress = {
   quizDurationSec: number;
   riddleValidated: boolean;
   riddleSolved: boolean;
+  challengeDraft?: string;
 } | null;
+
+export type ChallengeReactionEmoji = "love" | "laugh" | "wow" | "clap";
+
+export type CloudChallengeReaction = {
+  day: number;
+  targetProfileId: string;
+  reactorProfileId: string;
+  emoji: ChallengeReactionEmoji;
+  updatedAt: number;
+  authorUid?: string;
+};
+
+export type CloudChallengeReactionsByDay = Record<
+  number,
+  Record<string, Record<string, CloudChallengeReaction>>
+>;
 
 export type PlaceCommentReaction = "like" | "dislike";
 
@@ -132,6 +150,7 @@ export type CloudSyncSnapshot = {
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap: Record<string, DocumentVisibilityState>;
   destinationSurvey: CloudDestinationSurveyByProfile;
+  challengeReactions?: CloudChallengeReactionsByDay;
   gameDayOverrides: Record<number, GameDayOverride>;
   launchGateCycle: number;
   launchGateCompletedCycleByProfile: Record<string, number>;
@@ -169,6 +188,7 @@ export type CloudSyncWritePayload = {
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
+  challengeReactions?: CloudChallengeReactionsByDay;
   launchGateCycle?: number;
   launchGateCompletedCycleForProfile?: number | null;
   resetDestinationSurvey?: boolean;

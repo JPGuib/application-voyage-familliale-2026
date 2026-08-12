@@ -16,6 +16,7 @@ function makeEntry(overrides: Partial<GameHistoryEntry> = {}): GameHistoryEntry 
     correctCount: 4,
     riddleSolved: false,
     challengeDone: false,
+    challengeResponse: "",
     durationSec: 180,
     totalScore: 80,
     completedAt: "2026-07-05T10:00:00.000Z",
@@ -70,7 +71,7 @@ describe("persistence helpers", () => {
 
   it("parse une sauvegarde valide et ignore les entrees invalides", () => {
     const raw = JSON.stringify([
-      makeEntry({ day: 2 }),
+      makeEntry({ day: 2, challengeResponse: "Mon souvenir" }),
       { day: "broken" },
       makeEntry({ day: 4, location: "Izmir" }),
     ]);
@@ -79,6 +80,7 @@ describe("persistence helpers", () => {
 
     expect(parsed).toHaveLength(2);
     expect(parsed.map((entry) => entry.day)).toEqual([2, 4]);
+    expect(parsed[0].challengeResponse).toBe("Mon souvenir");
   });
 
   it("retourne une liste vide pour une sauvegarde illisible", () => {
@@ -97,12 +99,18 @@ describe("parseGameProgress", () => {
       quizDurationSec: 90,
       riddleValidated: false,
       riddleSolved: false,
+      challengeDraft: "",
       ...overrides,
     };
   }
 
   it("parse une progression valide (riddle/challenge)", () => {
-    const progress = makeProgress({ phase: "challenge", riddleValidated: true, riddleSolved: true });
+    const progress = makeProgress({
+      phase: "challenge",
+      riddleValidated: true,
+      riddleSolved: true,
+      challengeDraft: "Un super souvenir",
+    });
 
     expect(parseGameProgress(JSON.stringify(progress))).toEqual(progress);
   });

@@ -22,9 +22,9 @@ export type DailyChallenge = {
 };
 
 const POLARSTEPS_NOTE =
-  "N'oubliez pas de publier la photo et le fait appris sur Polarsteps pour que toute la famille en profite !";
+  "Si vous en avez envie, notez la réponse ou partagez ce souvenir sur Polarsteps pour garder une trace de la journée.";
 
-// Le quiz, l'énigme et le défi photo changent chaque jour en fonction des
+// Le quiz, l'énigme et le défi final changent chaque jour en fonction des
 // lieux et activités prévus ce jour-là (voir src/content/places.ts).
 export const QUESTIONS_BY_DAY: Record<number, QuizQuestion[]> = {
   1: [
@@ -245,10 +245,10 @@ export const QUESTIONS_BY_DAY: Record<number, QuizQuestion[]> = {
       expl: "« Pamukkale » signifie « Château de coton », en raison de ses terrasses blanches.",
     },
     {
-      q: "Quel ancien nom portait Izmir dans l'Antiquité ?",
-      options: ["Éphèse", "Smyrne", "Troie", "Pergame"],
+      q: "Aux ruines de quelle cité antique le site de Pamukkale est-il associé ?",
+      options: ["Troie", "Hiérapolis", "Pergame", "Milet"],
       correct: 1,
-      expl: "Izmir fut connue sous le nom de Smyrne, l'une des grandes cités de l'Empire romain.",
+      expl: "Le site de Pamukkale est associé aux ruines de l'ancienne cité de Hiérapolis.",
     },
   ],
   8: [
@@ -333,6 +333,70 @@ export const QUESTIONS_BY_DAY: Record<number, QuizQuestion[]> = {
       correct: 2,
       expl: "Le vol retour décolle à 14h00 pour une arrivée à 17h10.",
     },
+    {
+      q: "Quelle bibliothèque d'Éphèse conservait jusqu'à 12 000 rouleaux de parchemin ?",
+      options: [
+        "Bibliothèque de Celsius",
+        "Bibliothèque d'Alexandrie",
+        "Bibliothèque de Pergame",
+        "Bibliothèque impériale",
+      ],
+      correct: 0,
+      expl: "La bibliothèque de Celsius, à Éphèse, abritait jusqu'à 12 000 rouleaux de parchemin.",
+    },
+    {
+      q: "Combien de colonnes soutiennent la Citerne Basilique d'Istanbul ?",
+      options: ["212", "250", "336", "400"],
+      correct: 2,
+      expl: "La Citerne Basilique est un immense réservoir souterrain soutenu par 336 colonnes.",
+    },
+    {
+      q: "Que signifie « Pamukkale » en turc ?",
+      options: ["Colline blanche", "Château de coton", "Temple de l'eau", "Ville de marbre"],
+      correct: 1,
+      expl: "Pamukkale signifie littéralement « château de coton » en turc.",
+    },
+    {
+      q: "En quelle année la République turque a-t-elle été proclamée ?",
+      options: ["1453", "1923", "1928", "1934"],
+      correct: 1,
+      expl: "La République turque a été proclamée en 1923 sous l'impulsion de Mustafa Kemal Atatürk.",
+    },
+    {
+      q: "Quel est considéré comme le premier traité de paix écrit de l'histoire ?",
+      options: [
+        "Le traité de Lausanne",
+        "Le traité de Kadesh",
+        "Le traité de Versailles",
+        "Le traité de Sèvres",
+      ],
+      correct: 1,
+      expl: "Le traité hittite-égyptien de Kadesh (1258 av. J.-C.) est souvent présenté comme le premier traité de paix écrit de l'histoire.",
+    },
+    {
+      q: "Combien de sites classés au patrimoine mondial de l'UNESCO la Turquie abrite-t-elle ?",
+      options: ["7", "12", "19", "29"],
+      correct: 2,
+      expl: "La rubrique Histoire indique que la Turquie abrite 19 sites classés au patrimoine mondial de l'UNESCO.",
+    },
+    {
+      q: "Quelle est la monnaie de la Turquie ?",
+      options: ["Le dinar turc", "La lire turque", "L'euro anatolien", "Le manat"],
+      correct: 1,
+      expl: "La monnaie officielle du pays est la lire turque (TRY).",
+    },
+    {
+      q: "Quelle ville a été choisie comme capitale en 1923 pour marquer la rupture avec l'ère ottomane ?",
+      options: ["Istanbul", "Izmir", "Ankara", "Bursa"],
+      correct: 2,
+      expl: "Ankara a été choisie comme capitale en 1923 pour symboliser la Turquie moderne voulue par Atatürk.",
+    },
+    {
+      q: "Environ combien de mosquées compte la Turquie ?",
+      options: ["8 000", "20 000", "50 000", "Plus de 80 000"],
+      correct: 3,
+      expl: "La rubrique Culture et Tradition indique que la Turquie compte plus de 80 000 mosquées.",
+    },
   ],
 };
 
@@ -401,63 +465,63 @@ export const RIDDLES_BY_DAY: Record<number, DailyRiddle> = {
 
 export const CHALLENGES_BY_DAY: Record<number, DailyChallenge> = {
   1: {
-    title: "Défi photo du jour",
+    title: "Défi souvenir du jour",
     description:
-      "Prenez une photo de famille à l'aéroport avant l'embarquement et racontez un fait appris sur le voyage qui vous attend.",
+      "Chacun cite une attente ou une curiosité sur le voyage en Turquie, puis l'équipe choisit celle qui donne le plus envie de partir.",
     note: POLARSTEPS_NOTE,
   },
   2: {
-    title: "Défi photo du jour",
+    title: "Défi souvenir du jour",
     description:
-      "Prenez une photo de famille devant la mosquée Süleymaniye et racontez un fait appris pendant la visite.",
+      "Chacun raconte le lieu d'Istanbul qui l'a le plus marqué aujourd'hui et doit citer un détail précis appris sur ce lieu.",
     note: POLARSTEPS_NOTE,
   },
   3: {
-    title: "Défi photo du jour",
+    title: "Défi souvenir du jour",
     description:
-      "Prenez une photo de famille devant la Mosquée Bleue et racontez un fait appris pendant la visite.",
+      "Faites le vote familial du monument le plus impressionnant du jour et justifiez le choix gagnant avec un fait vu dans l'application ou pendant la visite.",
     note: POLARSTEPS_NOTE,
   },
   4: {
-    title: "Défi photo du jour",
+    title: "Défi souvenir du jour",
     description:
-      "Prenez une photo de famille au Grand Bazar et racontez un fait appris pendant la visite.",
+      "Chaque joueur donne l'objet ou l'ambiance qu'il retient le plus du Grand Bazar ou du trajet vers Ankara, puis l'équipe choisit le souvenir du jour.",
     note: POLARSTEPS_NOTE,
   },
   5: {
-    title: "Défi photo du jour",
+    title: "Défi souvenir du jour",
     description:
-      "Prenez une photo de famille devant le lac salé (Tuz Gölü) et racontez un fait appris pendant la visite.",
+      "Reconstituez ensemble la journée en 3 étapes clés entre Ankara et la Cappadoce, avec au moins un chiffre ou un fait exact dans votre récit.",
     note: POLARSTEPS_NOTE,
   },
   6: {
-    title: "Défi photo du jour",
+    title: "Défi souvenir du jour",
     description:
-      "Prenez une photo de famille devant les cheminées de fées de Cappadoce et racontez un fait appris pendant la visite.",
+      "Chacun choisit son paysage préféré de Cappadoce et explique pourquoi en citant un détail sur Göreme, les vallées ou les montgolfières.",
     note: POLARSTEPS_NOTE,
   },
   7: {
-    title: "Défi photo du jour",
+    title: "Défi souvenir du jour",
     description:
-      "Prenez une photo de famille devant les terrasses de Pamukkale et racontez un fait appris pendant la visite.",
+      "Faites un mini récit de route: un fait sur Konya, un fait sur le caravansérail et un fait sur Pamukkale, dans l'ordre de la journée.",
     note: POLARSTEPS_NOTE,
   },
   8: {
-    title: "Défi photo du jour",
+    title: "Défi souvenir du jour",
     description:
-      "Prenez une photo de famille devant la bibliothèque de Celsius à Éphèse et racontez un fait appris pendant la visite.",
+      "Chaque joueur dit ce qu'il retiendrait pour raconter Éphèse à quelqu'un qui n'y est jamais allé, avec un monument ou un chiffre précis.",
     note: POLARSTEPS_NOTE,
   },
   9: {
-    title: "Défi photo du jour",
+    title: "Défi souvenir du jour",
     description:
-      "Prenez une photo de famille devant le pont d'Osmangazi ou à Bursa et racontez un fait appris pendant la visite.",
+      "Choisissez le moment le plus marquant entre Bursa et le pont d'Osmangazi, puis défendez-le avec un fait historique ou technique exact.",
     note: POLARSTEPS_NOTE,
   },
   10: {
-    title: "Défi photo du jour",
+    title: "Défi final du voyage",
     description:
-      "Prenez une photo de famille avant l'embarquement du vol retour et racontez votre meilleur souvenir du voyage.",
+      "Chacun partage son meilleur souvenir du voyage et l'équipe désigne le top 3 final avec, pour chaque souvenir, un fait précis appris pendant le séjour.",
     note: POLARSTEPS_NOTE,
   },
 };

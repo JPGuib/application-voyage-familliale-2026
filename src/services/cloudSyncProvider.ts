@@ -1,4 +1,5 @@
 import {
+  get,
   onValue,
   ref,
   runTransaction,
@@ -12,10 +13,13 @@ import {
   type Role,
 } from "../app/owner-policy";
 import type {
+  ChallengeReactionEmoji,
   ChecklistCustomItem,
   ChecklistRemovalState,
   ChecklistState,
   ClaimRoleResult,
+  CloudChallengeReaction,
+  CloudChallengeReactionsByDay,
   CloudGameHistoryEntry,
   CloudGameProgress,
   CloudPlaceComment,
@@ -144,6 +148,7 @@ function isCloudGameEntry(value: unknown): value is CloudGameHistoryEntry {
     typeof entry.correctCount === "number" &&
     typeof entry.riddleSolved === "boolean" &&
     typeof entry.challengeDone === "boolean" &&
+    (entry.challengeResponse === undefined || typeof entry.challengeResponse === "string") &&
     typeof entry.durationSec === "number" &&
     typeof entry.totalScore === "number" &&
     typeof entry.completedAt === "string"
@@ -155,7 +160,13 @@ function parseGameResults(value: unknown): CloudGameHistoryEntry[] {
     return [];
   }
 
-  return value.filter(isCloudGameEntry).sort((left, right) => left.day - right.day);
+  return value
+    .filter(isCloudGameEntry)
+    .map((entry) => ({
+      ...entry,
+      challengeResponse: typeof entry.challengeResponse === "string" ? entry.challengeResponse : "",
+    }))
+    .sort((left, right) => left.day - right.day);
 }
 
 function parseGameProgress(value: unknown): CloudGameProgress {
@@ -168,7 +179,8 @@ function parseGameProgress(value: unknown): CloudGameProgress {
     (entry.quizStartedAt === null || entry.quizStartedAt === undefined || typeof entry.quizStartedAt === "number") &&
     typeof entry.quizDurationSec === "number" &&
     typeof entry.riddleValidated === "boolean" &&
-    typeof entry.riddleSolved === "boolean"
+    typeof entry.riddleSolved === "boolean" &&
+    (entry.challengeDraft === undefined || typeof entry.challengeDraft === "string")
   ) {
     return {
       day: entry.day,
@@ -178,9 +190,89 @@ function parseGameProgress(value: unknown): CloudGameProgress {
       quizDurationSec: entry.quizDurationSec,
       riddleValidated: entry.riddleValidated,
       riddleSolved: entry.riddleSolved,
+      challengeDraft: typeof entry.challengeDraft === "string" ? entry.challengeDraft : "",
     };
   }
   return null;
+}
+
+function toChallengeReactionEmoji(value: unknown): ChallengeReactionEmoji | null {
+  if (value === "love" || value === "laugh" || value === "wow" || value === "clap") {
+    return value;
+  }
+  return null;
+}
+
+function parseChallengeReaction(
+  day: number,
+  targetProfileId: string,
+  reactorProfileId: string,
+  value: unknown
+): CloudChallengeReaction | null {
+  const entry = asRecord(value);
+  const emoji = toChallengeReactionEmoji(entry.emoji);
+  const updatedAt = toFiniteNumber(entry.updatedAt, 0);
+  const normalizedTargetProfileId =
+    typeof entry.targetProfileId === "string" && entry.targetProfileId.trim().length > 0
+      ? entry.targetProfileId
+      : targetProfileId;
+  const normalizedReactorProfileId =
+    typeof entry.reactorProfileId === "string" && entry.reactorProfileId.trim().length > 0
+      ? entry.reactorProfileId
+      : reactorProfileId;
+  const authorUid =
+    typeof entry.authorUid === "string" && entry.authorUid.trim().length > 0
+      ? entry.authorUid
+      : undefined;
+
+  if (!emoji || updatedAt <= 0 || !normalizedTargetProfileId || !normalizedReactorProfileId) {
+    return null;
+  }
+
+  return {
+    day,
+    targetProfileId: normalizedTargetProfileId,
+    reactorProfileId: normalizedReactorProfileId,
+    emoji,
+    updatedAt,
+    authorUid,
+  };
+}
+
+function parseChallengeReactions(value: unknown): CloudChallengeReactionsByDay {
+  const raw = asRecord(value);
+  const next: CloudChallengeReactionsByDay = {};
+
+  for (const [dayKey, targetMapValue] of Object.entries(raw)) {
+    const day = Number(dayKey);
+    if (!Number.isFinite(day) || day <= 0) {
+      continue;
+    }
+
+    const targetMap = asRecord(targetMapValue);
+    for (const [targetProfileId, reactorMapValue] of Object.entries(targetMap)) {
+      const reactorMap = asRecord(reactorMapValue);
+      for (const [reactorProfileId, reactionValue] of Object.entries(reactorMap)) {
+        const parsedReaction = parseChallengeReaction(
+          Math.trunc(day),
+          targetProfileId,
+          reactorProfileId,
+          reactionValue
+        );
+        if (!parsedReaction) {
+          continue;
+        }
+
+        const dayBucket = next[Math.trunc(day)] ?? {};
+        const targetBucket = dayBucket[targetProfileId] ?? {};
+        targetBucket[reactorProfileId] = parsedReaction;
+        dayBucket[targetProfileId] = targetBucket;
+        next[Math.trunc(day)] = dayBucket;
+      }
+    }
+  }
+
+  return next;
 }
 
 function parseGameDayOverrides(value: unknown): Record<number, GameDayOverride> {
@@ -491,6 +583,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const ownerGlobalRemovalRecords = asRecord(root.checklistCatalogRemovals);
   const placeCommentRecords = asRecord(root.placeComments);
   const destinationSurveyRecords = parseDestinationSurvey(root.destinationSurvey);
+  const challengeReactionRecords = parseChallengeReactions(root.challengeReactions);
   const gameResultRecords = asRecord(root.gameResults);
   const gameProgressRecords = asRecord(root.gameProgress);
   const phaseRecords = asRecord(root.phase);
@@ -558,6 +651,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     ownerGlobalChecklistRemovals: parseChecklistRemovals(ownerGlobalRemovalRecords),
     placeComments: parsePlaceComments(placeCommentRecords),
     placeVisibilityMap: parsePlaceVisibilityMap(root.placeVisibilityMap),
+    challengeReactions: challengeReactionRecords,
     placeDayOverrides: parsePlaceDayOverrides(root.placeDayOverrides),
     placeDayOrderOverrides: parsePlaceDayOrderOverrides(root.placeDayOverrides),
     documentVisibilityMap: parseDocumentVisibilityMap(root.documentVisibilityMap),
@@ -702,6 +796,72 @@ export async function pushCloudSnapshot(
           authorUid: normalizedAuthorUid,
         };
       }
+    }
+  }
+
+  if (payload.challengeReactions !== undefined) {
+    const desiredReactionPaths = new Set<string>();
+
+    for (const [dayKey, targetMap] of Object.entries(payload.challengeReactions)) {
+      const day = Number(dayKey);
+      if (!Number.isFinite(day) || day <= 0) {
+        continue;
+      }
+
+      for (const [targetProfileId, reactionsByProfile] of Object.entries(targetMap ?? {})) {
+        for (const [reactorProfileId, reaction] of Object.entries(reactionsByProfile ?? {})) {
+          const normalizedAuthorUid =
+            typeof reaction.authorUid === "string" && reaction.authorUid.trim().length > 0
+              ? reaction.authorUid
+              : payload.actorUid;
+
+          if (
+            reaction.reactorProfileId === payload.profileId &&
+            reactorProfileId === payload.profileId &&
+            normalizedAuthorUid === payload.actorUid
+          ) {
+            const reactionPath =
+              `challengeReactions/${Math.trunc(day)}/${targetProfileId}/${reactorProfileId}`;
+            desiredReactionPaths.add(reactionPath);
+            updates[reactionPath] = {
+              ...reaction,
+              authorUid: normalizedAuthorUid,
+            };
+          }
+        }
+      }
+    }
+
+    try {
+      const existingReactionsSnapshot = await get(
+        ref(database, `families/${familyId}/challengeReactions`)
+      );
+      const existingReactions = parseChallengeReactions(existingReactionsSnapshot.val());
+
+      for (const [dayKey, targetMap] of Object.entries(existingReactions)) {
+        const day = Number(dayKey);
+        if (!Number.isFinite(day) || day <= 0) {
+          continue;
+        }
+
+        for (const [targetProfileId, reactionsByProfile] of Object.entries(targetMap ?? {})) {
+          for (const [reactorProfileId, reaction] of Object.entries(reactionsByProfile ?? {})) {
+            if (
+              reaction.reactorProfileId === payload.profileId &&
+              reactorProfileId === payload.profileId &&
+              reaction.authorUid === payload.actorUid
+            ) {
+              const reactionPath =
+                `challengeReactions/${Math.trunc(day)}/${targetProfileId}/${reactorProfileId}`;
+              if (!desiredReactionPaths.has(reactionPath)) {
+                updates[reactionPath] = null;
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // L'absence de lecture cloud ne doit pas bloquer le push global.
     }
   }
 
@@ -1028,6 +1188,7 @@ export async function resetGameResultsInCloud(
   familyId: string,
   currentResultsByProfile: Record<string, CloudGameHistoryEntry[]>,
   currentProgressByProfile: Record<string, CloudGameProgress>,
+  currentChallengeReactionsByDay: CloudChallengeReactionsByDay,
   day?: number
 ): Promise<void> {
   const updates: Record<string, unknown> = {
@@ -1051,6 +1212,12 @@ export async function resetGameResultsInCloud(
     } else if (progress && progress.day === day) {
       updates[`families/${familyId}/gameProgress/${profileId}`] = null;
     }
+  }
+
+  if (day === undefined) {
+    updates[`families/${familyId}/challengeReactions`] = null;
+  } else if (currentChallengeReactionsByDay[day]) {
+    updates[`families/${familyId}/challengeReactions/${day}`] = null;
   }
 
   await update(ref(database), updates);

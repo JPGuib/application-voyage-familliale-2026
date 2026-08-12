@@ -494,6 +494,36 @@ suite("firebase rtdb rules owner phase guard", () => {
       })
     );
   });
+
+  it("allows a profile to write its own challenge reaction", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertSucceeds(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/challengeReactions/3/${VISITOR_PROFILE_ID}/${NON_OWNER_PROFILE_ID}`).set({
+        day: 3,
+        targetProfileId: VISITOR_PROFILE_ID,
+        reactorProfileId: NON_OWNER_PROFILE_ID,
+        emoji: "clap",
+        updatedAt: 123,
+        authorUid: NON_OWNER_UID,
+      })
+    );
+  });
+
+  it("denies writing a challenge reaction on behalf of another profile", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/challengeReactions/3/${VISITOR_PROFILE_ID}/${VISITOR_PROFILE_ID}`).set({
+        day: 3,
+        targetProfileId: VISITOR_PROFILE_ID,
+        reactorProfileId: VISITOR_PROFILE_ID,
+        emoji: "wow",
+        updatedAt: 124,
+        authorUid: NON_OWNER_UID,
+      })
+    );
+  });
 });
 
 if (!hasDatabaseEmulator) {
