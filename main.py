@@ -88,7 +88,6 @@ PACKS: dict[str, dict] = {
         },
         "questions_file": "questions_cinema.json",
     },
-    ""
 }
 
 QUESTIONS_BY_PACK: dict[str, dict] = {}
