@@ -62,6 +62,33 @@ PACKS: dict[str, dict] = {
         },
         "questions_file": "questions_disney.json",
     },
+    "musique": {
+        "label": "Quiz Musique 🎤",
+        "categories": ["annees_80", "annees_90", "annees_2000", "annees_2010", "annees_2020", "scene_francophone"],
+        "category_labels": {
+            "annees_80": "Années 80",
+            "annees_90": "Années 90",
+            "annees_2000": "Années 2000",
+            "annees_2010": "Années 2010",
+            "annees_2020": "Années 2020",
+            "scene_francophone": "Scène Francophone",
+        },
+        "questions_file": "questions_musique.json",
+    },
+    "cinema": {
+        "label": "Quiz Cinéma 🎬",
+        "categories": ["films_francais", "films_etrangers", "acteurs", "dessins_animes", "super_heros", "personnages_dessins_animes"],
+        "category_labels": {
+            "films_francais": "Films Français",
+            "films_etrangers": "Films Étrangers",
+            "acteurs": "Acteurs & Actrices",
+            "dessins_animes": "Dessins Animés",
+            "super_heros": "Super Héros",
+            "personnages_dessins_animes": "Personnages de Dessins Animés",
+        },
+        "questions_file": "questions_cinema.json",
+    },
+    ""
 }
 
 QUESTIONS_BY_PACK: dict[str, dict] = {}

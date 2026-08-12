@@ -1,0 +1,1014 @@
+{
+  "logique_chiffres": [
+    {
+      "q": "Combien font 7 × 8 ?",
+      "choices": [
+        "56",
+        "54",
+        "64",
+        "48"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel nombre vient ensuite : 2, 4, 8, 16, ... ?",
+      "choices": [
+        "32",
+        "24",
+        "30",
+        "36"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de côtés possède un octogone ?",
+      "choices": [
+        "8",
+        "6",
+        "10",
+        "12"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien font 100 ÷ 4 ?",
+      "choices": [
+        "25",
+        "20",
+        "40",
+        "50"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le double de 37 ?",
+      "choices": [
+        "74",
+        "64",
+        "72",
+        "77"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel nombre est premier ?",
+      "choices": [
+        "29",
+        "21",
+        "27",
+        "33"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien font 15 + 27 ?",
+      "choices": [
+        "42",
+        "40",
+        "43",
+        "45"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel nombre manque : 5, 10, 15, 20, ... ?",
+      "choices": [
+        "25",
+        "30",
+        "22",
+        "35"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de minutes y a-t-il dans 2 heures ?",
+      "choices": [
+        "120",
+        "100",
+        "90",
+        "150"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le quart de 100 ?",
+      "choices": [
+        "25",
+        "20",
+        "40",
+        "50"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Si un triangle possède trois côtés, combien de côtés ont quatre triangles séparés ?",
+      "choices": [
+        "12",
+        "10",
+        "8",
+        "16"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel nombre est le plus grand ?",
+      "choices": [
+        "0,9",
+        "0,09",
+        "0,19",
+        "0,8"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien font 9 × 9 ?",
+      "choices": [
+        "81",
+        "72",
+        "90",
+        "99"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel nombre vient ensuite : 1, 1, 2, 3, 5, 8, ... ?",
+      "choices": [
+        "13",
+        "10",
+        "12",
+        "15"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de secondes y a-t-il dans une minute ?",
+      "choices": [
+        "60",
+        "30",
+        "100",
+        "90"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le tiers de 90 ?",
+      "choices": [
+        "30",
+        "20",
+        "45",
+        "60"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Si un objet coûte 50 € et bénéficie de 10 % de réduction, quel est son prix ?",
+      "choices": [
+        "45 €",
+        "40 €",
+        "48 €",
+        "35 €"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien font 12 × 12 ?",
+      "choices": [
+        "144",
+        "124",
+        "132",
+        "156"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel nombre vient ensuite : 3, 6, 12, 24, ... ?",
+      "choices": [
+        "48",
+        "36",
+        "42",
+        "60"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien font 75 - 28 ?",
+      "choices": [
+        "47",
+        "43",
+        "53",
+        "57"
+      ],
+      "answer": 0
+    }
+  ],
+  "culture_generale": [
+    {
+      "q": "Quelle planète est surnommée la planète bleue ?",
+      "choices": [
+        "Terre",
+        "Neptune",
+        "Uranus",
+        "Vénus"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Qui a écrit « Le Petit Prince » ?",
+      "choices": [
+        "Antoine de Saint-Exupéry",
+        "Jules Verne",
+        "Victor Hugo",
+        "Marcel Proust"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le symbole chimique du fer ?",
+      "choices": [
+        "Fe",
+        "Fr",
+        "F",
+        "Ir"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle ville est la capitale de l'Espagne ?",
+      "choices": [
+        "Madrid",
+        "Barcelone",
+        "Séville",
+        "Valence"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de jours compte une année bissextile ?",
+      "choices": [
+        "366",
+        "365",
+        "364",
+        "367"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel océan se trouve entre l'Afrique et l'Australie ?",
+      "choices": [
+        "Océan Indien",
+        "Atlantique",
+        "Pacifique",
+        "Arctique"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est le symbole de la paix dans de nombreuses représentations ?",
+      "choices": [
+        "Colombe",
+        "Aigle",
+        "Corbeau",
+        "Paon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel instrument mesure la température ?",
+      "choices": [
+        "Thermomètre",
+        "Baromètre",
+        "Altimètre",
+        "Sismographe"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le plus grand continent ?",
+      "choices": [
+        "Asie",
+        "Afrique",
+        "Europe",
+        "Amérique du Nord"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle est la monnaie du Royaume-Uni ?",
+      "choices": [
+        "Livre sterling",
+        "Euro",
+        "Dollar",
+        "Franc"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel gaz les plantes absorbent-elles principalement pour la photosynthèse ?",
+      "choices": [
+        "Dioxyde de carbone",
+        "Oxygène",
+        "Azote",
+        "Hydrogène"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel écrivain a créé le personnage de Dracula ?",
+      "choices": [
+        "Bram Stoker",
+        "Mary Shelley",
+        "H. G. Wells",
+        "Robert Louis Stevenson"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle planète possède des anneaux très visibles ?",
+      "choices": [
+        "Saturne",
+        "Mars",
+        "Mercure",
+        "Vénus"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays a pour capitale Berlin ?",
+      "choices": [
+        "Allemagne",
+        "Autriche",
+        "Belgique",
+        "Pays-Bas"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle partie de la plante absorbe principalement l'eau du sol ?",
+      "choices": [
+        "Racines",
+        "Fleurs",
+        "Fruits",
+        "Feuilles"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de couleurs compte traditionnellement l'arc-en-ciel dans le modèle scolaire ?",
+      "choices": [
+        "7",
+        "5",
+        "6",
+        "8"
+      ],
+      "answer": 0
+    }
+  ],
+  "trouver_intrus": [
+    {
+      "q": "Quel mot est l'intrus : pomme, poire, banane, carotte ?",
+      "choices": [
+        "Carotte",
+        "Pomme",
+        "Poire",
+        "Banane"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel mot est l'intrus : Paris, Rome, Madrid, Berlin, Lisbonne ?",
+      "choices": [
+        "Aucun",
+        "Paris",
+        "Rome",
+        "Berlin"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est l'intrus : lion, tigre, panthère, dauphin ?",
+      "choices": [
+        "Dauphin",
+        "Lion",
+        "Tigre",
+        "Panthère"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel nombre est l'intrus : 2, 4, 6, 9 ?",
+      "choices": [
+        "9",
+        "2",
+        "4",
+        "6"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel aliment est l'intrus : riz, pâtes, pain, saumon ?",
+      "choices": [
+        "Saumon",
+        "Riz",
+        "Pâtes",
+        "Pain"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel objet est l'intrus : marteau, tournevis, scie, fourchette ?",
+      "choices": [
+        "Fourchette",
+        "Marteau",
+        "Tournevis",
+        "Scie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est l'intrus : France, Espagne, Italie, Brésil ?",
+      "choices": [
+        "Brésil",
+        "France",
+        "Espagne",
+        "Italie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est l'intrus : baleine, dauphin, requin, phoque ?",
+      "choices": [
+        "Requin",
+        "Baleine",
+        "Dauphin",
+        "Phoque"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle planète est l'intrus : Mars, Vénus, Terre, Lune ?",
+      "choices": [
+        "Lune",
+        "Mars",
+        "Vénus",
+        "Terre"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel moyen de transport est l'intrus : train, bus, métro, vélo ?",
+      "choices": [
+        "Vélo",
+        "Train",
+        "Bus",
+        "Métro"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel fruit est l'intrus : fraise, framboise, myrtille, tomate ?",
+      "choices": [
+        "Tomate",
+        "Fraise",
+        "Framboise",
+        "Myrtille"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel instrument est l'intrus : piano, guitare, violon, trompette ?",
+      "choices": [
+        "Trompette",
+        "Piano",
+        "Guitare",
+        "Violon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel métier est l'intrus : médecin, infirmier, pharmacien, architecte ?",
+      "choices": [
+        "Architecte",
+        "Médecin",
+        "Infirmier",
+        "Pharmacien"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel objet est l'intrus : chaise, table, canapé, réfrigérateur ?",
+      "choices": [
+        "Réfrigérateur",
+        "Chaise",
+        "Table",
+        "Canapé"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est l'intrus : chien, chat, hamster, aigle ?",
+      "choices": [
+        "Aigle",
+        "Chien",
+        "Chat",
+        "Hamster"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est l'intrus : Japon, Chine, Inde, Égypte ?",
+      "choices": [
+        "Égypte",
+        "Japon",
+        "Chine",
+        "Inde"
+      ],
+      "answer": 0
+    }
+  ],
+  "enigmes": [
+    {
+      "q": "Je peux être cassée sans être touchée. Que suis-je ?",
+      "choices": [
+        "Une promesse",
+        "Une pierre",
+        "Une assiette",
+        "Une porte"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Plus je sèche, plus je deviens mouillée. Que suis-je ?",
+      "choices": [
+        "Une serviette",
+        "Une éponge sèche",
+        "Un parapluie",
+        "Une chaussure"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Je suis plein de trous mais je retiens l'eau. Que suis-je ?",
+      "choices": [
+        "Une éponge",
+        "Une passoire",
+        "Un filet",
+        "Un panier"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "J'ai des aiguilles mais je ne pique pas. Que suis-je ?",
+      "choices": [
+        "Une horloge",
+        "Un cactus",
+        "Une trousse",
+        "Un hérisson"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Je monte et je descends sans bouger. Que suis-je ?",
+      "choices": [
+        "Un escalier",
+        "Un ascenseur",
+        "Une balançoire",
+        "Une échelle"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Je peux faire le tour du monde en restant dans un coin. Que suis-je ?",
+      "choices": [
+        "Un timbre",
+        "Une valise",
+        "Une carte",
+        "Un globe"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Plus on m'enlève, plus je deviens grand. Que suis-je ?",
+      "choices": [
+        "Un trou",
+        "Un ballon",
+        "Un sac",
+        "Un mur"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "J'ai un cou mais pas de tête. Que suis-je ?",
+      "choices": [
+        "Une bouteille",
+        "Une chemise",
+        "Une guitare",
+        "Une chaise"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Je parle sans bouche et j'entends sans oreilles. Que suis-je ?",
+      "choices": [
+        "Un écho",
+        "Une radio",
+        "Un téléphone",
+        "Un perroquet"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Je suis toujours devant toi mais tu ne peux jamais me voir. Que suis-je ?",
+      "choices": [
+        "L'avenir",
+        "Le passé",
+        "Ton dos",
+        "Ton reflet"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Qu'est-ce qui a des dents mais ne peut pas mordre ?",
+      "choices": [
+        "Un peigne",
+        "Un crocodile",
+        "Une scie",
+        "Un requin"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Qu'est-ce qui a des mains mais ne peut pas applaudir ?",
+      "choices": [
+        "Une horloge",
+        "Un robot",
+        "Une statue",
+        "Un gant"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Je suis léger comme une plume, mais personne ne peut me tenir longtemps. Que suis-je ?",
+      "choices": [
+        "Le souffle",
+        "Une plume",
+        "La fumée",
+        "Le vent"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Plus je grandis, moins tu vois. Que suis-je ?",
+      "choices": [
+        "L'obscurité",
+        "Une lampe",
+        "Un écran",
+        "Un brouillard"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Je suis pris avant d'être donné. Que suis-je ?",
+      "choices": [
+        "Une photo",
+        "Un cadeau",
+        "Un conseil",
+        "Un billet"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel mot devient plus court quand on lui ajoute deux lettres ?",
+      "choices": [
+        "Court",
+        "Petit",
+        "Long",
+        "Bref"
+      ],
+      "answer": 0
+    }
+  ],
+  "plus_moins": [
+    {
+      "q": "Combien de jours y a-t-il dans une semaine ?",
+      "choices": [
+        "7",
+        "5",
+        "8",
+        "10"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de mètres mesure approximativement un terrain de football professionnel en longueur ?",
+      "choices": [
+        "Environ 100 m",
+        "Environ 30 m",
+        "Environ 250 m",
+        "Environ 500 m"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de dents possède généralement un adulte ?",
+      "choices": [
+        "32",
+        "28",
+        "36",
+        "40"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de litres contient un cube d'un mètre de côté ?",
+      "choices": [
+        "1 000 L",
+        "100 L",
+        "10 L",
+        "10 000 L"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de côtés possède un dodécagone ?",
+      "choices": [
+        "12",
+        "10",
+        "14",
+        "16"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de joueurs composent une équipe de basket sur le terrain ?",
+      "choices": [
+        "5",
+        "6",
+        "7",
+        "11"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de touches possède généralement un piano moderne ?",
+      "choices": [
+        "88",
+        "76",
+        "61",
+        "100"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle est la durée approximative d'un marathon ?",
+      "choices": [
+        "42,195 km",
+        "21,097 km",
+        "50 km",
+        "100 km"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de minutes dure un match de football réglementaire hors prolongation ?",
+      "choices": [
+        "90",
+        "60",
+        "80",
+        "120"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de cartes contient un jeu de cartes classique sans jokers ?",
+      "choices": [
+        "52",
+        "48",
+        "54",
+        "56"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de côtés possède un dé classique ?",
+      "choices": [
+        "6",
+        "4",
+        "8",
+        "12"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de mois compte une année ?",
+      "choices": [
+        "12",
+        "10",
+        "11",
+        "13"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de kilomètres environ séparent Paris et Londres à vol d'oiseau ?",
+      "choices": [
+        "Environ 340 km",
+        "Environ 80 km",
+        "Environ 700 km",
+        "Environ 1 200 km"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de cordes possède une guitare classique ?",
+      "choices": [
+        "6",
+        "4",
+        "5",
+        "8"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de lettres compte l'alphabet français ?",
+      "choices": [
+        "26",
+        "24",
+        "27",
+        "28"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de joueurs y a-t-il sur le terrain pour une équipe de volley-ball ?",
+      "choices": [
+        "6",
+        "5",
+        "7",
+        "8"
+      ],
+      "answer": 0
+    }
+  ],
+  "questions_rapides": [
+    {
+      "q": "Quelle couleur obtient-on en mélangeant du bleu et du jaune ?",
+      "choices": [
+        "Vert",
+        "Orange",
+        "Violet",
+        "Rose"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le contraire de « chaud » ?",
+      "choices": [
+        "Froid",
+        "Lent",
+        "Dur",
+        "Sec"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal miaule ?",
+      "choices": [
+        "Chat",
+        "Chien",
+        "Vache",
+        "Cheval"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel mois vient après avril ?",
+      "choices": [
+        "Mai",
+        "Mars",
+        "Juin",
+        "Juillet"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de côtés a un carré ?",
+      "choices": [
+        "4",
+        "3",
+        "5",
+        "6"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle planète habitons-nous ?",
+      "choices": [
+        "Terre",
+        "Mars",
+        "Vénus",
+        "Jupiter"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel fruit est jaune et courbé ?",
+      "choices": [
+        "Banane",
+        "Pomme",
+        "Kiwi",
+        "Cerise"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle est la capitale de l'Italie ?",
+      "choices": [
+        "Rome",
+        "Paris",
+        "Milan",
+        "Venise"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal donne généralement de la laine ?",
+      "choices": [
+        "Mouton",
+        "Vache",
+        "Chèvre",
+        "Cheval"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien font 10 + 10 ?",
+      "choices": [
+        "20",
+        "15",
+        "25",
+        "30"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le premier mois de l'année ?",
+      "choices": [
+        "Janvier",
+        "Mars",
+        "Décembre",
+        "Février"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel objet utilise-t-on pour couper du papier ?",
+      "choices": [
+        "Ciseaux",
+        "Règle",
+        "Gomme",
+        "Agrafeuse"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport se joue avec un ballon rond et des buts ?",
+      "choices": [
+        "Football",
+        "Tennis",
+        "Natation",
+        "Cyclisme"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle couleur est associée à une banane mûre ?",
+      "choices": [
+        "Jaune",
+        "Bleu",
+        "Violet",
+        "Noir"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le plus petit nombre parmi 3, 8, 1 et 5 ?",
+      "choices": [
+        "1",
+        "3",
+        "5",
+        "8"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal pond des œufs et possède un bec ?",
+      "choices": [
+        "Oiseau",
+        "Chien",
+        "Chat",
+        "Cheval"
+      ],
+      "answer": 0
+    }
+  ]
+}

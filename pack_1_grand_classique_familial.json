@@ -1,0 +1,1014 @@
+{
+  "cinema_series": [
+    {
+      "q": "Quel réalisateur a signé le film « Inception » en 2010 ?",
+      "choices": [
+        "Christopher Nolan",
+        "Steven Spielberg",
+        "James Cameron",
+        "Ridley Scott"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quelle saga trouve-t-on le personnage de Jack Sparrow ?",
+      "choices": [
+        "Pirates des Caraïbes",
+        "Indiana Jones",
+        "Mission: Impossible",
+        "Jurassic Park"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film met en scène un paquebot appelé Titanic ?",
+      "choices": [
+        "Titanic",
+        "Avatar",
+        "Pearl Harbor",
+        "Gladiator"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel acteur joue Forrest Gump dans le film de 1994 ?",
+      "choices": [
+        "Tom Hanks",
+        "Tom Cruise",
+        "Robin Williams",
+        "Brad Pitt"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans « Retour vers le futur », quelle machine permet de voyager dans le temps ?",
+      "choices": [
+        "Une DeLorean",
+        "Une Mustang",
+        "Un train",
+        "Un hélicoptère"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film d'animation raconte l'amitié entre Woody et Buzz ?",
+      "choices": [
+        "Toy Story",
+        "Shrek",
+        "Ratatouille",
+        "Cars"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel personnage dit souvent « Je suis ton père » dans Star Wars ?",
+      "choices": [
+        "Darth Vader",
+        "Obi-Wan Kenobi",
+        "Han Solo",
+        "Yoda"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel acteur incarne Harry Potter au cinéma ?",
+      "choices": [
+        "Daniel Radcliffe",
+        "Rupert Grint",
+        "Tom Felton",
+        "Elijah Wood"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quelle ville se déroule principalement « Le Fabuleux Destin d'Amélie Poulain » ?",
+      "choices": [
+        "Paris",
+        "Lyon",
+        "Marseille",
+        "Bordeaux"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1994 met en scène Simba ?",
+      "choices": [
+        "Le Roi Lion",
+        "Aladdin",
+        "Hercule",
+        "Mulan"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle série suit un groupe d'amis vivant à New York, dont Ross et Rachel ?",
+      "choices": [
+        "Friends",
+        "Lost",
+        "The Office",
+        "How I Met Your Mother"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans « Stranger Things », comment s'appelle la jeune fille dotée de pouvoirs psychiques ?",
+      "choices": [
+        "Eleven",
+        "Max",
+        "Nancy",
+        "Robin"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel acteur joue le professeur de chimie Walter White ?",
+      "choices": [
+        "Bryan Cranston",
+        "Steve Carell",
+        "Hugh Laurie",
+        "Kevin Costner"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans « The Office » version américaine, quel est le prénom du patron de Dunder Mifflin à Scranton ?",
+      "choices": [
+        "Michael",
+        "David",
+        "Jim",
+        "Dwight"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle série met en scène les familles Stark et Lannister ?",
+      "choices": [
+        "Game of Thrones",
+        "The Crown",
+        "Vikings",
+        "Sherlock"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de Pixar se déroule en grande partie dans l'esprit d'une jeune fille ?",
+      "choices": [
+        "Vice-Versa",
+        "Coco",
+        "Là-haut",
+        "Wall-E"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel réalisateur a créé « Jurassic Park » au cinéma ?",
+      "choices": [
+        "Steven Spielberg",
+        "George Lucas",
+        "Peter Jackson",
+        "Tim Burton"
+      ],
+      "answer": 0
+    }
+  ],
+  "musique": [
+    {
+      "q": "Quel groupe britannique a chanté « Bohemian Rhapsody » ?",
+      "choices": [
+        "Queen",
+        "The Beatles",
+        "Oasis",
+        "Coldplay"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel artiste est surnommé le « King of Pop » ?",
+      "choices": [
+        "Michael Jackson",
+        "Elvis Presley",
+        "Prince",
+        "Bruno Mars"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe a sorti l'album « Abbey Road » ?",
+      "choices": [
+        "The Beatles",
+        "The Rolling Stones",
+        "Pink Floyd",
+        "U2"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel instrument possède généralement 88 touches ?",
+      "choices": [
+        "Le piano",
+        "La guitare",
+        "Le violon",
+        "La trompette"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Qui chante « Like a Virgin » ?",
+      "choices": [
+        "Madonna",
+        "Cher",
+        "Cyndi Lauper",
+        "Whitney Houston"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur français a interprété « La Bohème » ?",
+      "choices": [
+        "Charles Aznavour",
+        "Serge Gainsbourg",
+        "Jacques Brel",
+        "Michel Sardou"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe français est derrière « Get Lucky » avec Pharrell Williams ?",
+      "choices": [
+        "Daft Punk",
+        "Air",
+        "Justice",
+        "Phoenix"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel compositeur a écrit « Les Quatre Saisons » ?",
+      "choices": [
+        "Antonio Vivaldi",
+        "Mozart",
+        "Beethoven",
+        "Bach"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel artiste a chanté « Rolling in the Deep » ?",
+      "choices": [
+        "Adele",
+        "Rihanna",
+        "Sia",
+        "Amy Winehouse"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe irlandais est connu pour « With or Without You » ?",
+      "choices": [
+        "U2",
+        "The Cranberries",
+        "Westlife",
+        "The Corrs"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur français a popularisé « Je te donne » avec Michael Jones ?",
+      "choices": [
+        "Jean-Jacques Goldman",
+        "Francis Cabrel",
+        "Renaud",
+        "Florent Pagny"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel instrument à cordes possède généralement quatre cordes et se joue avec un archet ?",
+      "choices": [
+        "Le violon",
+        "La harpe",
+        "Le piano",
+        "La clarinette"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel artiste a sorti « Purple Rain » ?",
+      "choices": [
+        "Prince",
+        "David Bowie",
+        "Elton John",
+        "George Michael"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle chanteuse a remporté l'Eurovision 2023 pour la Suède ?",
+      "choices": [
+        "Loreen",
+        "Céline Dion",
+        "Måneskin",
+        "Lara Fabian"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe a chanté « Hotel California » ?",
+      "choices": [
+        "Eagles",
+        "The Doors",
+        "Bon Jovi",
+        "Metallica"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Qui a composé la musique de « Star Wars » ?",
+      "choices": [
+        "John Williams",
+        "Hans Zimmer",
+        "Ennio Morricone",
+        "Danny Elfman"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur français est associé à « Alors on danse » ?",
+      "choices": [
+        "Stromae",
+        "Maître Gims",
+        "Soprano",
+        "Mika"
+      ],
+      "answer": 0
+    }
+  ],
+  "geographie_voyages": [
+    {
+      "q": "Quelle est la capitale de l'Italie ?",
+      "choices": [
+        "Rome",
+        "Milan",
+        "Naples",
+        "Turin"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays a la forme d'une botte sur la carte de l'Europe ?",
+      "choices": [
+        "Italie",
+        "Espagne",
+        "Grèce",
+        "Portugal"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le plus grand océan du monde ?",
+      "choices": [
+        "Pacifique",
+        "Atlantique",
+        "Indien",
+        "Arctique"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel pays se trouve Istanbul ?",
+      "choices": [
+        "Turquie",
+        "Grèce",
+        "Bulgarie",
+        "Géorgie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel fleuve traverse Paris ?",
+      "choices": [
+        "La Seine",
+        "La Loire",
+        "Le Rhône",
+        "La Garonne"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle est la capitale du Japon ?",
+      "choices": [
+        "Tokyo",
+        "Kyoto",
+        "Osaka",
+        "Hiroshima"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel pays trouve-t-on le Machu Picchu ?",
+      "choices": [
+        "Pérou",
+        "Chili",
+        "Mexique",
+        "Bolivie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est célèbre pour les pyramides de Gizeh ?",
+      "choices": [
+        "Égypte",
+        "Jordanie",
+        "Maroc",
+        "Tunisie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle est la capitale de l'Australie ?",
+      "choices": [
+        "Canberra",
+        "Sydney",
+        "Melbourne",
+        "Perth"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel continent abrite le Sahara ?",
+      "choices": [
+        "Afrique",
+        "Asie",
+        "Amérique du Sud",
+        "Océanie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel pays se trouve la ville de Barcelone ?",
+      "choices": [
+        "Espagne",
+        "Portugal",
+        "Italie",
+        "France"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle mer borde notamment la Grèce et la Turquie ?",
+      "choices": [
+        "Mer Égée",
+        "Mer Baltique",
+        "Mer du Nord",
+        "Mer Rouge"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le plus haut sommet du monde ?",
+      "choices": [
+        "Everest",
+        "K2",
+        "Mont Blanc",
+        "Kilimandjaro"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle est la capitale du Canada ?",
+      "choices": [
+        "Ottawa",
+        "Toronto",
+        "Montréal",
+        "Vancouver"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel pays se trouve le Taj Mahal ?",
+      "choices": [
+        "Inde",
+        "Pakistan",
+        "Népal",
+        "Sri Lanka"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est traversé par le fleuve Amazone ?",
+      "choices": [
+        "Brésil",
+        "Argentine",
+        "Mexique",
+        "Colombie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle ville est surnommée la « Ville éternelle » ?",
+      "choices": [
+        "Rome",
+        "Athènes",
+        "Paris",
+        "Londres"
+      ],
+      "answer": 0
+    }
+  ],
+  "animaux": [
+    {
+      "q": "Quel est le plus grand animal terrestre ?",
+      "choices": [
+        "Éléphant d'Afrique",
+        "Girafe",
+        "Hippopotame",
+        "Rhinocéros blanc"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est connu pour changer de couleur grâce notamment à ses cellules pigmentaires ?",
+      "choices": [
+        "Caméléon",
+        "Panda",
+        "Loutre",
+        "Manchot"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de pattes possède une araignée ?",
+      "choices": [
+        "8",
+        "6",
+        "10",
+        "12"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel mammifère marin est célèbre pour son intelligence et son sonar ?",
+      "choices": [
+        "Dauphin",
+        "Phoque",
+        "Morse",
+        "Lamantin"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est le symbole de l'Australie avec le kangourou ?",
+      "choices": [
+        "Koala",
+        "Panda",
+        "Lémurien",
+        "Capybara"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel oiseau ne peut pas voler mais est le plus grand oiseau vivant ?",
+      "choices": [
+        "Autruche",
+        "Aigle",
+        "Albatros",
+        "Faucon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal produit le miel ?",
+      "choices": [
+        "Abeille",
+        "Guêpe",
+        "Papillon",
+        "Bourdon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel félin est le plus grand du monde ?",
+      "choices": [
+        "Tigre",
+        "Lion",
+        "Guépard",
+        "Léopard"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal possède une trompe ?",
+      "choices": [
+        "Éléphant",
+        "Rhinocéros",
+        "Tapir uniquement",
+        "Girafe"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le seul mammifère capable de vol actif ?",
+      "choices": [
+        "Chauve-souris",
+        "Écureuil volant",
+        "Lémurien",
+        "Opossum"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est célèbre pour porter son petit dans une poche ?",
+      "choices": [
+        "Kangourou",
+        "Renard",
+        "Loutre",
+        "Lama"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel reptile est connu pour sa carapace ?",
+      "choices": [
+        "Tortue",
+        "Iguane",
+        "Crocodile",
+        "Gecko"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est appelé le « roi de la jungle » dans l'expression populaire ?",
+      "choices": [
+        "Lion",
+        "Tigre",
+        "Gorille",
+        "Jaguar"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel insecte passe par le stade de chenille avant de devenir adulte ?",
+      "choices": [
+        "Papillon",
+        "Libellule",
+        "Criquet",
+        "Fourmi"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal a généralement des rayures noires et blanches ?",
+      "choices": [
+        "Zèbre",
+        "Okapi",
+        "Tapir",
+        "Panda"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est le plus rapide sur terre sur de courtes distances ?",
+      "choices": [
+        "Guépard",
+        "Lion",
+        "Antilope",
+        "Autruche"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal marin possède huit bras ?",
+      "choices": [
+        "Poulpe",
+        "Calmar",
+        "Étoile de mer",
+        "Méduse"
+      ],
+      "answer": 0
+    }
+  ],
+  "cuisine_gastronomie": [
+    {
+      "q": "De quel pays vient traditionnellement la pizza napolitaine ?",
+      "choices": [
+        "Italie",
+        "Espagne",
+        "Grèce",
+        "France"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel ingrédient principal trouve-t-on dans le guacamole ?",
+      "choices": [
+        "Avocat",
+        "Concombre",
+        "Courgette",
+        "Poivron"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel fromage est traditionnellement utilisé dans une salade grecque ?",
+      "choices": [
+        "Feta",
+        "Brie",
+        "Comté",
+        "Roquefort"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel fruit est à la base du cidre ?",
+      "choices": [
+        "Pomme",
+        "Raisin",
+        "Poire",
+        "Pêche"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel plat français est préparé avec du bœuf mijoté dans du vin rouge ?",
+      "choices": [
+        "Bœuf bourguignon",
+        "Ratatouille",
+        "Quiche lorraine",
+        "Cassoulet"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel aliment est obtenu par fermentation du lait ?",
+      "choices": [
+        "Yaourt",
+        "Beurre",
+        "Farine",
+        "Miel"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est associé aux sushis ?",
+      "choices": [
+        "Japon",
+        "Chine",
+        "Corée du Sud",
+        "Thaïlande"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel ingrédient donne généralement sa couleur jaune au curry ?",
+      "choices": [
+        "Curcuma",
+        "Basilic",
+        "Paprika fumé",
+        "Persil"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel dessert italien est composé notamment de mascarpone et de café ?",
+      "choices": [
+        "Tiramisu",
+        "Panna cotta",
+        "Cannoli",
+        "Gelato"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel fruit sec est traditionnellement utilisé dans le pesto alla genovese ?",
+      "choices": [
+        "Pignon de pin",
+        "Noisette",
+        "Amande",
+        "Noix de pécan"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle céréale est utilisée pour fabriquer le couscous traditionnel ?",
+      "choices": [
+        "Semoule de blé dur",
+        "Riz",
+        "Maïs",
+        "Orge"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel légume est l'ingrédient principal de la ratatouille ?",
+      "choices": [
+        "Aubergine",
+        "Pomme de terre",
+        "Chou",
+        "Navet"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est associé au plat paella ?",
+      "choices": [
+        "Espagne",
+        "Portugal",
+        "Italie",
+        "Mexique"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle pâtisserie française est traditionnellement en forme de croissant ?",
+      "choices": [
+        "Croissant",
+        "Éclair",
+        "Mille-feuille",
+        "Macaron"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel fruit est généralement utilisé pour faire du guacamole en Amérique latine ?",
+      "choices": [
+        "Avocat",
+        "Mangue",
+        "Papaye",
+        "Ananas"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel fromage français est reconnaissable à sa pâte persillée ?",
+      "choices": [
+        "Roquefort",
+        "Camembert",
+        "Reblochon",
+        "Munster"
+      ],
+      "answer": 0
+    }
+  ],
+  "culture_generale": [
+    {
+      "q": "Combien de côtés possède un hexagone ?",
+      "choices": [
+        "6",
+        "5",
+        "7",
+        "8"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle planète est la plus proche du Soleil ?",
+      "choices": [
+        "Mercure",
+        "Vénus",
+        "Mars",
+        "Terre"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le symbole chimique de l'or ?",
+      "choices": [
+        "Au",
+        "Ag",
+        "Or",
+        "Gd"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Qui a peint la Joconde ?",
+      "choices": [
+        "Léonard de Vinci",
+        "Michel-Ange",
+        "Raphaël",
+        "Van Gogh"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien y a-t-il de continents généralement reconnus dans le modèle scolaire français ?",
+      "choices": [
+        "7",
+        "5",
+        "6",
+        "8"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel organe pompe le sang dans le corps humain ?",
+      "choices": [
+        "Cœur",
+        "Poumon",
+        "Foie",
+        "Rein"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle langue compte le plus de locuteurs natifs dans le monde ?",
+      "choices": [
+        "Chinois mandarin",
+        "Anglais",
+        "Espagnol",
+        "Français"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Qui a écrit « Les Misérables » ?",
+      "choices": [
+        "Victor Hugo",
+        "Émile Zola",
+        "Alexandre Dumas",
+        "Molière"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle planète est surnommée la planète rouge ?",
+      "choices": [
+        "Mars",
+        "Jupiter",
+        "Vénus",
+        "Saturne"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de minutes y a-t-il dans une heure ?",
+      "choices": [
+        "60",
+        "50",
+        "100",
+        "90"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel métal est liquide à température ambiante ?",
+      "choices": [
+        "Mercure",
+        "Fer",
+        "Cuivre",
+        "Aluminium"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le plus grand organe du corps humain ?",
+      "choices": [
+        "La peau",
+        "Le foie",
+        "Le cerveau",
+        "Le cœur"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays a offert la Statue de la Liberté aux États-Unis ?",
+      "choices": [
+        "France",
+        "Royaume-Uni",
+        "Espagne",
+        "Italie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel scientifique est associé à la théorie de la relativité ?",
+      "choices": [
+        "Albert Einstein",
+        "Isaac Newton",
+        "Galilée",
+        "Darwin"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le nombre de joueurs d'une équipe de football sur le terrain au coup d'envoi ?",
+      "choices": [
+        "11",
+        "9",
+        "10",
+        "12"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel écrivain a créé Sherlock Holmes ?",
+      "choices": [
+        "Arthur Conan Doyle",
+        "Agatha Christie",
+        "Jules Verne",
+        "H. G. Wells"
+      ],
+      "answer": 0
+    }
+  ]
+}

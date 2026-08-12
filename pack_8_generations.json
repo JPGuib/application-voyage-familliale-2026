@@ -1,0 +1,1014 @@
+{
+  "annees_60_70": [
+    {
+      "q": "Quel groupe britannique a sorti « Hey Jude » en 1968 ?",
+      "choices": [
+        "The Beatles",
+        "The Rolling Stones",
+        "The Who",
+        "Queen"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur est surnommé le King of Rock'n'Roll ?",
+      "choices": [
+        "Elvis Presley",
+        "Johnny Cash",
+        "Bob Dylan",
+        "Frank Sinatra"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel homme a marché sur la Lune en premier en 1969 ?",
+      "choices": [
+        "Neil Armstrong",
+        "Buzz Aldrin",
+        "Yuri Gagarin",
+        "John Glenn"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel événement sportif a marqué les Jeux de Mexico en 1968 avec le geste de Tommie Smith et John Carlos ?",
+      "choices": [
+        "Le podium du 200 m",
+        "Le marathon",
+        "Le 100 m",
+        "Le saut en hauteur"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1972 de Francis Ford Coppola raconte l'histoire de la famille Corleone ?",
+      "choices": [
+        "Le Parrain",
+        "Rocky",
+        "Taxi Driver",
+        "Apocalypse Now"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe a chanté « Hotel California » dans les années 1970 ?",
+      "choices": [
+        "Eagles",
+        "ABBA",
+        "Queen",
+        "Fleetwood Mac"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu de société classique met en scène des rues et des propriétés à acheter ?",
+      "choices": [
+        "Monopoly",
+        "Cluedo",
+        "Risk",
+        "Scrabble"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel président français est associé à Mai 68 et a quitté le pouvoir en 1969 ?",
+      "choices": [
+        "Charles de Gaulle",
+        "Georges Pompidou",
+        "Valéry Giscard d'Estaing",
+        "François Mitterrand"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe suédois a gagné l'Eurovision 1974 avec « Waterloo » ?",
+      "choices": [
+        "ABBA",
+        "Europe",
+        "Roxette",
+        "Ace of Base"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1977 lance la saga Star Wars au cinéma ?",
+      "choices": [
+        "Star Wars : Un nouvel espoir",
+        "L'Empire contre-attaque",
+        "Le Retour du Jedi",
+        "Alien"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur a sorti « Imagine » en 1971 ?",
+      "choices": [
+        "John Lennon",
+        "Paul McCartney",
+        "Elton John",
+        "David Bowie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe a sorti « Another Brick in the Wall » en 1979 ?",
+      "choices": [
+        "Pink Floyd",
+        "Genesis",
+        "The Police",
+        "Dire Straits"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel mouvement musical est associé à Bob Marley ?",
+      "choices": [
+        "Reggae",
+        "Disco",
+        "Punk",
+        "Grunge"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel appareil permettait d'écouter des cassettes audio portables avant les baladeurs numériques ?",
+      "choices": [
+        "Walkman",
+        "Discman",
+        "Minidisc",
+        "iPod"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1975 réalisé par Steven Spielberg raconte une attaque de requin ?",
+      "choices": [
+        "Les Dents de la mer",
+        "Rencontres du troisième type",
+        "Alien",
+        "Rocky"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel objet était utilisé pour téléphoner à la maison avant la généralisation des téléphones portables ?",
+      "choices": [
+        "Téléphone fixe",
+        "Smartphone",
+        "Tablette",
+        "Montre connectée"
+      ],
+      "answer": 0
+    }
+  ],
+  "annees_80": [
+    {
+      "q": "Quel groupe a sorti « Thriller » ?",
+      "choices": [
+        "Michael Jackson",
+        "Queen",
+        "Duran Duran",
+        "Bon Jovi"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1982 met en scène un extraterrestre qui veut rentrer chez lui ?",
+      "choices": [
+        "E.T. l'extra-terrestre",
+        "Alien",
+        "Predator",
+        "The Abyss"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel ordinateur personnel d'Apple est lancé en 1984 avec une célèbre publicité inspirée de 1984 ?",
+      "choices": [
+        "Macintosh",
+        "Apple IIe",
+        "iMac",
+        "Newton"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe a chanté « Take on Me » ?",
+      "choices": [
+        "a-ha",
+        "Wham!",
+        "Duran Duran",
+        "Depeche Mode"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu vidéo de Nintendo met en scène un plombier nommé Mario ?",
+      "choices": [
+        "Super Mario Bros.",
+        "Metroid",
+        "Zelda II",
+        "Duck Hunt"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1985 met en scène Marty McFly ?",
+      "choices": [
+        "Retour vers le futur",
+        "Top Gun",
+        "Dirty Dancing",
+        "Rambo II"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur a popularisé « Like a Virgin » ?",
+      "choices": [
+        "Madonna",
+        "Cyndi Lauper",
+        "Whitney Houston",
+        "Tina Turner"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe français a chanté « Voyage, voyage » ?",
+      "choices": [
+        "Desireless",
+        "Indochine",
+        "Téléphone",
+        "Gold"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel dessin animé met en scène les aventures de Son Goku à partir de 1984 au Japon ?",
+      "choices": [
+        "Dragon Ball",
+        "Pokémon",
+        "Olive et Tom",
+        "Nicky Larson"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1989 met en scène Ariel, une sirène Disney ?",
+      "choices": [
+        "La Petite Sirène",
+        "Aladdin",
+        "Le Roi Lion",
+        "Mulan"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe a sorti « With or Without You » en 1987 ?",
+      "choices": [
+        "U2",
+        "Simple Minds",
+        "The Cure",
+        "INXS"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel appareil de jeu vidéo portable de Nintendo sort à la fin des années 1980 ?",
+      "choices": [
+        "Game Boy",
+        "Nintendo DS",
+        "PSP",
+        "Game Gear"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1986 met en scène Maverick, pilote de chasse joué par Tom Cruise ?",
+      "choices": [
+        "Top Gun",
+        "Rain Man",
+        "Cocktail",
+        "Scarface"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe français a sorti « L'Aventurier » ?",
+      "choices": [
+        "Indochine",
+        "Téléphone",
+        "Partenaire Particulier",
+        "Gold"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel héros de bande dessinée est un journaliste accompagné d'un chien nommé Milou ?",
+      "choices": [
+        "Tintin",
+        "Astérix",
+        "Lucky Luke",
+        "Gaston Lagaffe"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur a interprété « Careless Whisper » avec Wham! ?",
+      "choices": [
+        "George Michael",
+        "Phil Collins",
+        "Sting",
+        "Billy Joel"
+      ],
+      "answer": 0
+    }
+  ],
+  "annees_90": [
+    {
+      "q": "Quel groupe a sorti « Wannabe » en 1996 ?",
+      "choices": [
+        "Spice Girls",
+        "Destiny's Child",
+        "All Saints",
+        "TLC"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1997 est devenu un immense succès mondial avec Jack et Rose ?",
+      "choices": [
+        "Titanic",
+        "Armageddon",
+        "The Mask",
+        "Independence Day"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu vidéo de Nintendo met en scène Pikachu et ses amis ?",
+      "choices": [
+        "Pokémon",
+        "Kirby",
+        "F-Zero",
+        "Star Fox"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle série met en scène six amis dont Ross et Rachel ?",
+      "choices": [
+        "Friends",
+        "Seinfeld",
+        "Ally McBeal",
+        "Urgences"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe français a chanté « C'est la ouate » ?",
+      "choices": [
+        "Caroline Loeb",
+        "Zazie",
+        "Mylène Farmer",
+        "Vanessa Paradis"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film d'animation Disney de 1994 met en scène Simba ?",
+      "choices": [
+        "Le Roi Lion",
+        "Aladdin",
+        "Hercule",
+        "Tarzan"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur a sorti « Baby One More Time » à la fin des années 1990 ?",
+      "choices": [
+        "Britney Spears",
+        "Christina Aguilera",
+        "Mariah Carey",
+        "Shania Twain"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel navigateur web de Microsoft était très répandu dans les années 1990 ?",
+      "choices": [
+        "Internet Explorer",
+        "Chrome",
+        "Firefox",
+        "Safari"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1999 met en scène Neo ?",
+      "choices": [
+        "Matrix",
+        "Fight Club",
+        "Gladiator",
+        "American Beauty"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe britannique a sorti « Wonderwall » en 1995 ?",
+      "choices": [
+        "Oasis",
+        "Blur",
+        "Radiohead",
+        "Suede"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu de cartes à collectionner inspiré d'une série japonaise devient un phénomène mondial dans les années 1990 ?",
+      "choices": [
+        "Pokémon",
+        "Magic uniquement",
+        "Uno",
+        "Mille Bornes"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel téléphone portable de Nokia était célèbre pour sa grande robustesse et son jeu Snake ?",
+      "choices": [
+        "Nokia 3310",
+        "iPhone 3G",
+        "BlackBerry Bold",
+        "Motorola Razr"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1993 a popularisé les dinosaures recréés génétiquement ?",
+      "choices": [
+        "Jurassic Park",
+        "Twister",
+        "Speed",
+        "Men in Black"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur français a sorti « Savoir aimer » en 1997 ?",
+      "choices": [
+        "Florent Pagny",
+        "Patrick Bruel",
+        "Pascal Obispo",
+        "Jean-Jacques Goldman"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe de rock a sorti « Californication » en 1999 ?",
+      "choices": [
+        "Red Hot Chili Peppers",
+        "Nirvana",
+        "Pearl Jam",
+        "Green Day"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel service de messagerie instantanée était très populaire avant les réseaux sociaux modernes ?",
+      "choices": [
+        "MSN Messenger",
+        "WhatsApp",
+        "TikTok",
+        "Telegram"
+      ],
+      "answer": 0
+    }
+  ],
+  "annees_2000": [
+    {
+      "q": "Quel film de 2001 lance la trilogie du Seigneur des Anneaux ?",
+      "choices": [
+        "La Communauté de l'Anneau",
+        "Les Deux Tours",
+        "Le Retour du Roi",
+        "Le Hobbit"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel réseau social lancé en 2004 devient rapidement mondial ?",
+      "choices": [
+        "Facebook",
+        "Instagram",
+        "TikTok",
+        "Snapchat"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel téléphone d'Apple est présenté en 2007 et popularise le smartphone à écran tactile ?",
+      "choices": [
+        "iPhone",
+        "iPod touch",
+        "iPad",
+        "Apple Watch"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe français a sorti « Dernière danse » en 2013, devenu viral plus tard ?",
+      "choices": [
+        "Indila",
+        "Superbus",
+        "Kyo",
+        "Zaz"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle série médicale commence en 2005 avec Meredith Grey ?",
+      "choices": [
+        "Grey's Anatomy",
+        "House",
+        "Lost",
+        "Dexter"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu vidéo de Nintendo sort en 2006 et utilise des mouvements de manette pour jouer ?",
+      "choices": [
+        "Wii Sports",
+        "Halo 3",
+        "GTA IV",
+        "The Sims 2"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 2009 introduit le monde de Pandora ?",
+      "choices": [
+        "Avatar",
+        "District 9",
+        "Watchmen",
+        "2012"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur britannique a connu le succès avec « You're Beautiful » ?",
+      "choices": [
+        "James Blunt",
+        "Robbie Williams",
+        "Sting",
+        "Sam Smith"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel groupe français a chanté « Je veux » en 2010 ?",
+      "choices": [
+        "Zaz",
+        "Coeur de Pirate",
+        "Louise Attaque",
+        "Shy'm"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 2008 lance l'univers cinématographique Marvel avec Tony Stark ?",
+      "choices": [
+        "Iron Man",
+        "Hulk",
+        "Thor",
+        "Avengers"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel réseau social de partage de vidéos devient incontournable dans les années 2000 ?",
+      "choices": [
+        "YouTube",
+        "TikTok",
+        "Instagram",
+        "Twitch"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel artiste a sorti l'album « Back to Black » en 2006 ?",
+      "choices": [
+        "Amy Winehouse",
+        "Adele",
+        "Duffy",
+        "Sia"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film d'animation Pixar de 2008 suit un petit robot nettoyeur de la Terre ?",
+      "choices": [
+        "WALL-E",
+        "Ratatouille",
+        "Cars",
+        "Up"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu vidéo en monde ouvert de Rockstar sort en 2004 et se déroule à San Andreas ?",
+      "choices": [
+        "GTA: San Andreas",
+        "GTA IV",
+        "Red Dead Redemption",
+        "Bully"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel chanteur français a popularisé « Confessions nocturnes » avec Diam's ?",
+      "choices": [
+        "Vitaa",
+        "Kamelancien",
+        "Booba",
+        "Soprano"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel moteur de recherche domine largement le web au début des années 2000 ?",
+      "choices": [
+        "Google",
+        "Yahoo",
+        "Altavista",
+        "Lycos"
+      ],
+      "answer": 0
+    }
+  ],
+  "aujourdhui": [
+    {
+      "q": "Quelle plateforme de streaming est associée à des séries comme Stranger Things et The Crown ?",
+      "choices": [
+        "Netflix",
+        "Spotify",
+        "Twitch",
+        "Deezer"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel réseau social est particulièrement associé aux vidéos courtes et verticales ?",
+      "choices": [
+        "TikTok",
+        "LinkedIn",
+        "Pinterest",
+        "Flickr"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel service de streaming musical appartient à Spotify ?",
+      "choices": [
+        "Spotify",
+        "Netflix",
+        "YouTube TV",
+        "Prime Video"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel assistant vocal est associé à Amazon ?",
+      "choices": [
+        "Alexa",
+        "Siri",
+        "Google Assistant",
+        "Bixby"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel appareil portable d'Apple permet notamment de suivre son activité et sa santé générale ?",
+      "choices": [
+        "Apple Watch",
+        "iPod Classic",
+        "Apple TV",
+        "AirPort"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle entreprise développe la console PlayStation ?",
+      "choices": [
+        "Sony",
+        "Nintendo",
+        "Microsoft",
+        "Sega"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel service de streaming vidéo est associé à Disney ?",
+      "choices": [
+        "Disney+",
+        "Max",
+        "Prime Video",
+        "Crunchyroll"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu de société en ligne très populaire consiste à deviner un mot en six essais ?",
+      "choices": [
+        "Wordle",
+        "Monopoly",
+        "Cluedo",
+        "Pictionary"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel format vidéo est devenu emblématique de TikTok et des Reels ?",
+      "choices": [
+        "Vidéo verticale courte",
+        "Film de trois heures",
+        "Vidéo uniquement horizontale",
+        "Diaporama papier"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel réseau professionnel est principalement utilisé pour les CV et contacts professionnels ?",
+      "choices": [
+        "LinkedIn",
+        "TikTok",
+        "Snapchat",
+        "Reddit"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel service de visioconférence est devenu très populaire pendant les années 2020 ?",
+      "choices": [
+        "Zoom",
+        "Napster",
+        "Vine",
+        "MySpace"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel type de véhicule électrique est devenu courant chez de nombreux constructeurs ?",
+      "choices": [
+        "Voiture électrique",
+        "Locomotive vapeur",
+        "Scooter à voile",
+        "Dirigeable"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel service de cartographie permet de consulter des itinéraires et Street View ?",
+      "choices": [
+        "Google Maps",
+        "Spotify",
+        "Canva",
+        "Dropbox"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle console hybride de Nintendo peut être utilisée en portable et sur un téléviseur ?",
+      "choices": [
+        "Nintendo Switch",
+        "Wii U",
+        "GameCube",
+        "3DS"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel service permet de stocker des fichiers en ligne et de les synchroniser ?",
+      "choices": [
+        "Google Drive",
+        "VLC",
+        "Paint",
+        "Notepad"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel mot désigne couramment une vidéo diffusée en direct sur Internet ?",
+      "choices": [
+        "Live",
+        "Replay",
+        "Podcast",
+        "Album"
+      ],
+      "answer": 0
+    }
+  ],
+  "toutes_generations": [
+    {
+      "q": "Quel personnage est commun aux générations ayant connu les dessins animés Disney depuis plusieurs décennies ?",
+      "choices": [
+        "Mickey Mouse",
+        "Elsa",
+        "Pikachu",
+        "Mario"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu de société existe depuis le XXe siècle et reste très connu aujourd'hui ?",
+      "choices": [
+        "Monopoly",
+        "Fortnite",
+        "TikTok",
+        "Minecraft"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport est associé à Roland-Garros ?",
+      "choices": [
+        "Tennis",
+        "Football",
+        "Cyclisme",
+        "Rugby"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel monument parisien est devenu un symbole mondial de la France ?",
+      "choices": [
+        "Tour Eiffel",
+        "Arc de Triomphe uniquement",
+        "Louvre uniquement",
+        "Sacré-Cœur"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est souvent associé à Winnie l'Ourson ?",
+      "choices": [
+        "Un ours",
+        "Un tigre",
+        "Un lapin",
+        "Un éléphant"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel héros de BD français est accompagné de son ami Obélix ?",
+      "choices": [
+        "Astérix",
+        "Tintin",
+        "Lucky Luke",
+        "Spirou"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle boisson gazeuse est connue dans le monde entier sous une marque rouge et blanche ?",
+      "choices": [
+        "Coca-Cola",
+        "Orangina",
+        "Schweppes",
+        "Perrier"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel instrument possède des touches noires et blanches ?",
+      "choices": [
+        "Piano",
+        "Violon",
+        "Trompette",
+        "Batterie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel film de 1994 a pour héros un homme appelé Forrest ?",
+      "choices": [
+        "Forrest Gump",
+        "Speed",
+        "The Mask",
+        "Le Roi Lion"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport utilise une raquette et un volant ?",
+      "choices": [
+        "Badminton",
+        "Tennis de table",
+        "Squash uniquement",
+        "Golf"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel personnage porte généralement un costume rouge et bleu et grimpe aux murs ?",
+      "choices": [
+        "Spider-Man",
+        "Superman",
+        "Batman",
+        "Flash"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est associé à la tour Eiffel et au Louvre ?",
+      "choices": [
+        "France",
+        "Italie",
+        "Espagne",
+        "Belgique"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel animal est célèbre pour ses rayures noires et blanches ?",
+      "choices": [
+        "Zèbre",
+        "Tigre",
+        "Panda",
+        "Okapi"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel dessert est traditionnellement associé à la fête d'anniversaire dans de nombreuses familles ?",
+      "choices": [
+        "Gâteau",
+        "Sushi",
+        "Soupe",
+        "Salade"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu de cartes consiste notamment à former des suites et des familles avec 32 ou 54 cartes selon les variantes ?",
+      "choices": [
+        "Belote",
+        "Échecs",
+        "Dominos",
+        "Monopoly"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel moyen de transport relie de nombreuses villes françaises à grande vitesse ?",
+      "choices": [
+        "TGV",
+        "Métro uniquement",
+        "Tramway",
+        "Téléphérique"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu consiste à aligner quatre pions de même couleur ?",
+      "choices": [
+        "Puissance 4",
+        "Mille Bornes",
+        "Cluedo",
+        "Risk"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel célèbre détective belge a été créé par Agatha Christie ?",
+      "choices": [
+        "Hercule Poirot",
+        "Sherlock Holmes",
+        "Maigret",
+        "Columbo"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel objet permet de prendre une photo instantanément avec un téléphone moderne ?",
+      "choices": [
+        "Appareil photo du smartphone",
+        "Lecteur CD",
+        "Réveil",
+        "Calculatrice"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport est associé au Tour de France ?",
+      "choices": [
+        "Cyclisme",
+        "Tennis",
+        "Natation",
+        "Athlétisme"
+      ],
+      "answer": 0
+    }
+  ]
+}
