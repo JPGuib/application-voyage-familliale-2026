@@ -165,8 +165,8 @@ PACKS: dict[str, dict] = {
                                 "sport_insolite_records": "Sport insolite & records",
                             },
                             "questions_file": "pack_9_sport.json",
-        },
-        
+        },  
+}
 QUESTIONS_BY_PACK: dict[str, dict] = {}
 for pack_id, pack_def in PACKS.items():
     with open(BASE_DIR / pack_def["questions_file"], encoding="utf-8") as f:
