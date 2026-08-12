@@ -712,6 +712,10 @@ export const DOCUMENTS: TravelDocument[] = [
       "/images/guide/Information Tour 1.webp",
       "/images/guide/Information Tour 2.webp",
       "/images/guide/Nom du prestataire voyage.webp",
+      "/images/guide/Facture_1.webp",
+      "/images/guide/Facture_2.webp",
+      "/images/guide/Facture_3.webp",
+      "/images/guide/Facture_4.webp",
     ],
   },
    {
