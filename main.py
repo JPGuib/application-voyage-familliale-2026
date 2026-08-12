@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -172,14 +173,6 @@ for pack_id, pack_def in PACKS.items():
     with open(BASE_DIR / pack_def["questions_file"], encoding="utf-8") as f:
         QUESTIONS_BY_PACK[pack_id] = json.load(f)
 
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["GET"],
-    allow_headers=["*"],
-)
-
 # Une partie oubliee (personne ne joue plus, onglet ferme sans "Terminer")
 # est fermee automatiquement au bout d'un moment pour ne pas laisser tourner
 # des salons morts indefiniment en memoire.
@@ -187,9 +180,19 @@ ROOM_LOBBY_TIMEOUT_SECONDS = 30 * 60       # 30 min sans demarrer la partie
 ROOM_INACTIVITY_TIMEOUT_SECONDS = 3 * 60 * 60  # 3h sans aucune action
 
 
-@app.on_event("startup")
-async def start_cleanup_task():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     asyncio.create_task(cleanup_stale_rooms_loop())
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 async def cleanup_stale_rooms_loop():
