@@ -82,6 +82,13 @@ export const CULTURE_TRADITION_TOPICS = [
     photos: [
       "/images/Culture/Chat.webp",
       "/images/Culture/chat 2.webp",
+      "/images/Culture/chat1.webp",
+      "/images/Culture/chat3.webp",
+      "/images/Culture/chat4.webp",
+      "/images/Culture/chat5.webp",
+      "/images/Culture/chat6.webp",
+      "/images/Culture/chat7.webp",
+      "/images/Culture/chat2.webp",
     ],
     audioTitle: "Miaulements sur le Bosphore",
     audioDuration: "2 min 45 sec",

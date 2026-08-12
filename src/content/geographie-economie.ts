@@ -12,15 +12,22 @@ export const GEOGRAPHIE_ECONOMIE_TOPICS = [
     name: "Carte d'identité de la Turquie",
     shortDesc: "Les fondamentaux d'une nation entre deux continents",
     tag: "Général",
-    image: "/images/Geographie/Drapeau image 1.webp",
+    image: "/images/Geographie/drapeau_photo_1.webp",
     photos: [
-      "/images/Geographie/Drapeau image 1.webp",
-      "/images/Geographie/Drapeau image 2.webp"
+      "/images/Geographie/drapeau_photo_1.webp",
+      "/images/Geographie/carte turquie.webp"
     ],
     audioTitle: "La Turquie en chiffres et en symboles",
     audioDuration: "3 min 30 sec",
     audioSrc: "/audio/geographie/Carte_identite_Turquie.mp3",
+    historyLabel: "Chiffres clés",
     history: "La République de Turquie (Türkiye Cumhuriyeti) est un État transcontinental à cheval entre l'Europe et l'Asie. Sa capitale, Ankara, a été choisie par Mustafa Kemal Atatürk en 1923 pour marquer la rupture avec l'ère ottomane dominée par Istanbul. Le pays s'étend sur 783 562 km² et compte environ 86 millions d'habitants. Sa langue officielle est le turc, écrit en alphabet latin depuis 1928, et sa monnaie est la lire turque (TRY). Le drapeau turc, rouge vif orné d'un croissant et d'une étoile blancs, trouve ses origines dans les bannières ottomanes. L'hymne national, İstiklâl Marşı (La Marche de l'Indépendance), composé par Mehmet Akif Ersoy, célèbre la résistance nationale. La fête nationale est célébrée le 29 octobre, date de la proclamation de la République en 1923. La Turquie est membre fondateur de l'OTAN (1952), de l'OCDE, du Conseil de l'Europe et du G20. Elle entretient des relations complexes avec l'Union européenne, dont elle est candidate officielle depuis 1999.",
+    links: [
+      {
+        label: "Turquie : les cartes d'Erdogan (dessous des cartes)",
+        url: "https://youtu.be/qZD3Zhf2kZM?si=0xWbbGz2zz2fHns2",
+      },
+    ],
     anecdotes: [
       "Le nom officiel du pays est passé de 'Turkey' à 'Türkiye' en 2022 à la demande d'Erdoğan.",
       "Ankara n'était qu'un village de 30 000 habitants avant d'être choisie comme capitale.",
@@ -36,7 +43,8 @@ export const GEOGRAPHIE_ECONOMIE_TOPICS = [
     photos: [
       "/images/Geographie/Géologie 1.webp",
       "/images/Geographie/Géologie 2.webp",
-      "/images/Geographie/Relief.webp"
+      "/images/Geographie/Relief.webp",
+      "/images/Geographie/relief turquie.webp"
     ],
     audioTitle: "Relief et géologie de la Turquie",
     audioDuration: "4 min 10 sec",
@@ -113,6 +121,50 @@ export const GEOGRAPHIE_ECONOMIE_TOPICS = [
     ]
   },
   {
+    id: "place-femmes",
+    name: "Place des femmes dans la société turque",
+    shortDesc: "",
+    tag: "Général",
+    image: "/images/Geographie/femmes.webp",
+    photos: [
+      "/images/Geographie/femmes.webp",
+    ],
+    historyLabel: "Qu'en est-il ?",
+    history: "Non, les femmes n'ont pas le même poids que les hommes dans la société turque, et l'écart est important par rapport aux standards européens\n"+
+      "D'après le Global Gender Gap Report du Forum économique mondial (l'indice de référence sur ce sujet), la Turquie se classait 129e sur 146 pays en 2023, avec une légère détérioration confirmée en 2025 . Le pays se classe dernier de sa région (Eurasie et Asie centrale).\n"+
+      "Gros écart entre le cadre légal (assez progressiste historiquement) et la réalité socio-économique (participation au marché du travail, représentation politique, écarts de salaire), qui reste très inégalitaire.\n"+
+      "En résumé : la Turquie combine un poids économique global important, un niveau de vie moyen par habitant, un accès à l'éducation correct mais avec un écart de genre significatif, et une société où les femmes restent nettement sous-représentées économiquement et politiquement — un écart plus marqué que dans la plupart des pays d'Europe occidentale.",
+    anecdotes: [
+      "Seulement 10,1% de représentation des femmes dans les gouvernements locaux, et un ratio de ministres femmes de 6%.",
+    ],
+    links: [
+      {
+        label: "Etre une femme en Turquie : témoignages et réalités",
+        url: "https://www.tooistanbul.com/femmes-istanbul-turquie/f",
+      },
+    ]
+  },
+  {
+    id: "education",
+    name: "Éducation en Turquie",
+    shortDesc: "",
+    tag: "Général",
+    image: "/images/Geographie/education.webp",
+    photos: [
+      "/images/Geographie/education.webp",
+    ],
+    historyLabel: "Qu'en est-il ?",
+    history: "Le système éducatif turc a connu des réformes importantes au cours des dernières décennies, visant à améliorer l'accès et la qualité de l'éducation pour tous.\n"+
+      "Le taux d'alphabétisation est élevé, mais des disparités persistent entre les zones urbaines et rurales, ainsi qu'entre les sexes.\n"+
+      "L'enseignement primaire est obligatoire et gratuit, et le pays a fait des progrès significatifs dans l'enseignement secondaire et supérieur.\n"+
+      "Cependant, des défis subsistent, notamment en matière de qualité de l'enseignement, d'infrastructure scolaire et de formation des enseignants.",
+    anecdotes: [
+      "Scolarisation primaire quasi universelle.",
+      "L'écart de genre en éducation est l'un des domaines où la Turquie s'en sort le mieux.",
+      "Le taux d'alphabétisation des femmes reste cependant en retrait : 100e rang en taux d'alphabétisation.",
+    ]
+  },
+  {
     id: "economie",
     name: "Économie de la Turquie",
     shortDesc: "Une puissance émergente entre croissance et instabilité monétaire",
@@ -125,7 +177,12 @@ export const GEOGRAPHIE_ECONOMIE_TOPICS = [
     audioTitle: "L'économie turque, moteur de l'Anatolie",
     audioDuration: "4 min 00 sec",
     audioSrc: "/audio/geographie/Economie.mp3",
-    history: "La Turquie possède une économie diversifiée et industrialisée, classée parmi les plus grandes puissances émergentes du monde. Son PIB s'élève à environ 1 597 milliards de dollars en 2025, avec une croissance de 3,2% en 2024 et un PIB par habitant en parité de pouvoir d'achat de 41 914 USD. Les secteurs clés incluent l'automobile, le textile, le tourisme, l'agriculture, la construction et, plus récemment, l'industrie de la défense avec des drones de renommée mondiale comme ceux de Baykar. Le secteur textile emploie plus d'un million de personnes et représente près de 20% des exportations, plaçant le pays parmi les dix premiers exportateurs mondiaux. Le tourisme constitue une source de devises essentielle, ayant attiré plus de 50 millions de visiteurs par an avant la pandémie. Cependant, l'économie turque souffre d'une inflation chronique (34,9% en 2025, en baisse selon les projections), d'une volatilité extrême de la lire turque et d'un déficit chronique de la balance courante. La Bourse d'Istanbul est devenue le refuge des épargnants face à l'inflation galopante. Le pays est également le cinquième producteur mondial de ciment.",
+    historyLabel: "Présentation",
+    history: "La Turquie possède une économie diversifiée et industrialisée, classée parmi les plus grandes puissances émergentes du monde. Son PIB s'élève à environ 1 597 milliards de dollars en 2025, avec une croissance de 3,2% en 2024 et un PIB par habitant en parité de pouvoir d'achat de 41 914 USD. Les secteurs clés incluent l'automobile, le textile, le tourisme, l'agriculture, la construction et, plus récemment, l'industrie de la défense avec des drones de renommée mondiale comme ceux de Baykar. Le secteur textile emploie plus d'un million de personnes et représente près de 20% des exportations, plaçant le pays parmi les dix premiers exportateurs mondiaux. Le tourisme constitue une source de devises essentielle, ayant attiré plus de 50 millions de visiteurs par an avant la pandémie. Cependant, l'économie turque souffre d'une inflation chronique (34,9% en 2025, en baisse selon les projections), d'une volatilité extrême de la lire turque et d'un déficit chronique de la balance courante. La Bourse d'Istanbul est devenue le refuge des épargnants face à l'inflation galopante. Le pays est également le cinquième producteur mondial de ciment.\n"+
+    "17e-18e puissance économique mondiale\n"+
+    "7e puissance économique d'Europe.\n"+
+    "Mais le PIB par habitant en Turquie n'est que de 19 018 $ en 2026, soit la 84e place mondiale\n"+
+    "En résumé : la Turquie est une économie importante en volume (top 20 mondial) mais moyenne en richesse individuelle — un profil classique de grand pays émergent avec une population nombreuse (~87 millions d'habitants).",
     anecdotes: [
       "La Bourse d'Istanbul a enregistré l'une des meilleures performances mondiales en 2022, malgré l'inflation record.",
       "Le secteur des drones militaires turcs, incarné par Baykar, exporte vers plus de 30 pays.",

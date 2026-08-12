@@ -101,6 +101,16 @@
       "On peut passer d'un continent à l'autre en quelques minutes seulement.",
       "Les quartiers historiques et les rives modernes donnent à la ville des visages très différents.",
     ],
+    links: [
+      {
+        label: "(C'est pas sorcier) Comment Istanbul a régné sur 3 continents",
+        url: "https://youtu.be/9_33Rx3R-yA?si=bIOrMgeBoWe_cWvx",
+      },
+      { 
+        label: "(C'est pas sorcier) Où se trouve Istanbul ?",
+        url: "https://youtu.be/lftdAxMAoQM?si=B_RmFsKX2CTP3ouv",
+      },          
+    ],
   },
   {
     id: "sainte-sophie",
