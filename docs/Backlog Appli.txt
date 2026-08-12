@@ -6,10 +6,9 @@ Evolutions :
 
 
 CONTENU : 
-* Revoir tous les quizz ! avec les guides et faire un gros challenge en fin de séjour ?
-* revoir les coordonnées GPS
 * revoir les textes et mettre en gras
 * nettoyer les points du jeu
+* faire un test général 
 
 TESTER TOUTE L'APPLICATION
 * tester le mode offline

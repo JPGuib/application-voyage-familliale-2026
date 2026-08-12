@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TG_SCOPED_CSS } from "./turquieGamesShared";
 
 const IMPOSTEUR_SERVER_URL: string =
@@ -43,7 +43,7 @@ type IGameOver = {
 };
 
 const PRESET_PAIRS = [
-  { vrai: "Cappadoce", faux: "DÃ©sert" },
+  { vrai: "Cappadoce", faux: "Désert" },
   { vrai: "Bosphore", faux: "Fleuve" },
   { vrai: "Baklava", faux: "Chocolat" },
   { vrai: "Istanbul", faux: "Paris" },
@@ -75,7 +75,7 @@ export function ImposteurScreen({
   const [mySubmittedWord, setMySubmittedWord] = useState<string | null>(null);
   const [gameOver, setGameOver] = useState<IGameOver | null>(null);
   const [motVrai, setMotVrai] = useState("Cappadoce");
-  const [motFaux, setMotFaux] = useState("DÃ©sert");
+  const [motFaux, setMotFaux] = useState("Désert");
   const wsRef = useRef<WebSocket | null>(null);
   const stepRef = useRef(step);
 
@@ -113,7 +113,7 @@ export function ImposteurScreen({
   const connect = (code: string) => {
     setError(null);
     const trimmedName = name.trim();
-    if (!trimmedName) { setError("Entrez votre prÃ©nom."); return; }
+    if (!trimmedName) { setError("Entrez votre prénom."); return; }
     if (mode === "join" && code.length !== 4) { setError("Le code fait 4 chiffres."); return; }
     setIsConnecting(true);
     const ws = new WebSocket(
@@ -122,18 +122,18 @@ export function ImposteurScreen({
     wsRef.current = ws;
 
     const slowNotice = setTimeout(() => {
-      if (wsRef.current === ws) setConnectingHint("RÃ©veil du serveur, Ã§a peut prendre jusqu'Ã  50 secondesâ€¦");
+      if (wsRef.current === ws) setConnectingHint("Réveil du serveur, ça peut prendre jusqu'à 50 secondes…");
     }, 6000);
     const connectTimeout = setTimeout(() => {
       if (wsRef.current === ws) {
-        setError("Le serveur ne rÃ©pond pas aprÃ¨s 60 secondes. RÃ©essayez.");
+        setError("Le serveur ne répond pas après 60 secondes. Réessayez.");
         setIsConnecting(false);
         setConnectingHint(null);
         ws.close();
       }
     }, 60000);
 
-    ws.onerror = () => { setError("Connexion impossible. VÃ©rifiez votre connexion Internet."); setIsConnecting(false); setConnectingHint(null); };
+    ws.onerror = () => { setError("Connexion impossible. Vérifiez votre connexion Internet."); setIsConnecting(false); setConnectingHint(null); };
     ws.onclose = () => { setIsConnecting(false); setConnectingHint(null); };
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data as string);
@@ -188,32 +188,32 @@ export function ImposteurScreen({
       <style>{TG_SCOPED_CSS}</style>
       <div className="tg-root">
 
-        {/* â”€â”€ SETUP â”€â”€ */}
+        {/* ── SETUP ── */}
         {step === "setup" && (
           <div className="tg-screen tg-active">
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <button className="tg-btn tg-btn-secondary" style={{ width: "auto", padding: "8px 14px", minHeight: 38 }} onClick={onBack}>
-                â† Retour
+                ← Retour
               </button>
-              <h1 style={{ margin: 0, fontSize: "1.25rem" }}>ðŸŽ­ L'Imposteur</h1>
+              <h1 style={{ margin: 0, fontSize: "1.25rem" }}>🎭 L'Imposteur</h1>
             </div>
-            <p>Multijoueur Â· Chacun son tÃ©lÃ©phone Â· Min. 4 joueurs</p>
+            <p>Multijoueur · Chacun son téléphone · Min. 4 joueurs</p>
             {error && <div style={{ background: "rgba(255,107,107,0.15)", border: "1px solid var(--tg-danger)", borderRadius: 12, padding: "10px 14px", color: "var(--tg-danger)", fontSize: "0.88rem", marginBottom: 10 }}>{error}</div>}
             <div className="tg-card">
-              <h2>ðŸ‘¤ Votre prÃ©nom</h2>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Votre prÃ©nom" autoComplete="off" />
+              <h2>👤 Votre prénom</h2>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Votre prénom" autoComplete="off" />
             </div>
             <div style={{ display: "flex", gap: 8, margin: "8px 0" }}>
               <button className={`tg-btn ${mode === "create" ? "" : "tg-btn-outline"}`} style={{ flex: 1, padding: "12px 8px", minHeight: 44 }} onClick={() => setMode("create")}>
-                âž• CrÃ©er
+                ➕ Créer
               </button>
               <button className={`tg-btn ${mode === "join" ? "" : "tg-btn-outline"}`} style={{ flex: 1, padding: "12px 8px", minHeight: 44 }} onClick={() => setMode("join")}>
-                ðŸšª Rejoindre
+                🚪 Rejoindre
               </button>
             </div>
             {mode === "join" && (
               <div className="tg-card">
-                <h2>ðŸ”¢ Code de la table</h2>
+                <h2>🔢 Code de la table</h2>
                 <input
                   value={codeInput}
                   onChange={(e) => setCodeInput(e.target.value.replace(/\D/g, "").slice(0, 4))}
@@ -226,31 +226,31 @@ export function ImposteurScreen({
             )}
             <div className="tg-spacer" />
             <button className="tg-btn" disabled={isConnecting} onClick={() => connect(mode === "create" ? "NEW" : codeInput)}>
-              {isConnecting ? "â³ Connexionâ€¦" : mode === "create" ? "ðŸŽ­ CrÃ©er la table" : "ðŸšª Rejoindre la table"}
+              {isConnecting ? "⏳ Connexion…" : mode === "create" ? "🎭 Créer la table" : "🚪 Rejoindre la table"}
             </button>
             {connectingHint && <p style={{ textAlign: "center", fontSize: "0.82rem", color: "var(--tg-text-muted)", marginTop: 8 }}>{connectingHint}</p>}
           </div>
         )}
 
-        {/* â”€â”€ LOBBY â”€â”€ */}
+        {/* ── LOBBY ── */}
         {step === "lobby" && room && (
           <div className="tg-screen tg-active">
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <button className="tg-btn tg-btn-secondary" style={{ width: "auto", padding: "8px 14px", minHeight: 38 }} onClick={onBack}>
-                â† Quitter
+                ← Quitter
               </button>
-              <h1 style={{ margin: 0, fontSize: "1.25rem" }}>ðŸŽ­ L'Imposteur</h1>
+              <h1 style={{ margin: 0, fontSize: "1.25rem" }}>🎭 L'Imposteur</h1>
             </div>
             {error && <div style={{ background: "rgba(255,107,107,0.15)", border: "1px solid var(--tg-danger)", borderRadius: 12, padding: "10px 14px", color: "var(--tg-danger)", fontSize: "0.88rem", marginBottom: 10 }}>{error}</div>}
             <div className="tg-card" style={{ textAlign: "center" }}>
-              <p style={{ margin: "0 0 6px", fontSize: "0.82rem", color: "var(--tg-text-muted)" }}>NumÃ©ro de table</p>
+              <p style={{ margin: "0 0 6px", fontSize: "0.82rem", color: "var(--tg-text-muted)" }}>Numéro de table</p>
               <div style={{ fontSize: "3rem", fontWeight: 900, letterSpacing: "0.3em", color: "var(--tg-accent)" }}>{room.code}</div>
               <p style={{ margin: "6px 0 0", fontSize: "0.78rem", color: "var(--tg-text-muted)" }}>Communiquez ce code aux autres joueurs</p>
             </div>
-            <h2 style={{ marginTop: 18 }}>ðŸ‘¥ Joueurs ({room.players.length}/{room.min_players_required} min.)</h2>
+            <h2 style={{ marginTop: 18 }}>👥 Joueurs ({room.players.length}/{room.min_players_required} min.)</h2>
             {room.players.map((p) => (
               <div key={p.id} className="tg-card" style={{ padding: "11px 15px", margin: "5px 0", display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ fontSize: "1.1rem" }}>{p.connected ? "ðŸŸ¢" : "ðŸ”´"}</div>
+                <div style={{ fontSize: "1.1rem" }}>{p.connected ? "🟢" : "🔴"}</div>
                 <span style={{ fontWeight: 600 }}>{p.name}</span>
                 {p.host && <span style={{ fontSize: "0.7rem", color: "var(--tg-accent)", marginLeft: "auto" }}>ANIMATEUR</span>}
                 {p.id === myPlayerId && <span style={{ fontSize: "0.7rem", color: "var(--tg-text-muted)", marginLeft: p.host ? 0 : "auto" }}>MOI</span>}
@@ -258,9 +258,9 @@ export function ImposteurScreen({
             ))}
             {isHost && (
               <>
-                <h2 style={{ marginTop: 20 }}>ðŸ“ Mots du jeu</h2>
+                <h2 style={{ marginTop: 20 }}>📝 Mots du jeu</h2>
                 <div className="tg-card">
-                  <p style={{ margin: "0 0 10px", fontSize: "0.85rem" }}>Choisissez un thÃ¨me ou entrez vos propres mots :</p>
+                  <p style={{ margin: "0 0 10px", fontSize: "0.85rem" }}>Choisissez un thème ou entrez vos propres mots :</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
                     {PRESET_PAIRS.map((pair) => (
                       <button
@@ -290,35 +290,35 @@ export function ImposteurScreen({
             {isHost ? (
               <button className="tg-btn" disabled={room.players.length < room.min_players_required} onClick={startGame}>
                 {room.players.length < room.min_players_required
-                  ? `â³ En attente (${room.players.length}/${room.min_players_required} joueurs)`
-                  : "ðŸŽ­ DÃ©marrer la partie"}
+                  ? `⏳ En attente (${room.players.length}/${room.min_players_required} joueurs)`
+                  : "🎭 Démarrer la partie"}
               </button>
             ) : (
               <div className="tg-card" style={{ textAlign: "center" }}>
-                <p style={{ margin: 0, color: "var(--tg-text-muted)" }}>â³ En attente que l'animateur lance la partieâ€¦</p>
+                <p style={{ margin: 0, color: "var(--tg-text-muted)" }}>⏳ En attente que l'animateur lance la partie…</p>
               </div>
             )}
           </div>
         )}
 
-        {/* â”€â”€ ROLE REVEAL â”€â”€ */}
+        {/* ── ROLE REVEAL ── */}
         {step === "role" && myRole && (
           <div className="tg-screen tg-active" style={{ justifyContent: "center", alignItems: "center", textAlign: "center" }}>
             {!roleRevealed ? (
               <>
-                <div style={{ fontSize: "3.5rem", marginBottom: 18 }}>ðŸ”’</div>
-                <h2 style={{ fontSize: "1.5rem" }}>Votre rÃ´le secret</h2>
-                <p>Assurez-vous d'Ãªtre seul(e) Ã  regarder votre Ã©cran avant de continuer.</p>
+                <div style={{ fontSize: "3.5rem", marginBottom: 18 }}>🔒</div>
+                <h2 style={{ fontSize: "1.5rem" }}>Votre rôle secret</h2>
+                <p>Assurez-vous d'être seul(e) à regarder votre écran avant de continuer.</p>
                 <button className="tg-btn" onClick={() => setRoleRevealed(true)} style={{ marginTop: 16, maxWidth: 260 }}>
-                  ðŸ‘ï¸ Voir mon rÃ´le
+                  👁️ Voir mon rôle
                 </button>
               </>
             ) : (
               <>
                 <div className="tg-card" style={{ width: "100%", maxWidth: 320, padding: "28px 20px", textAlign: "center" }}>
-                  <div style={{ fontSize: "3.5rem", marginBottom: 14 }}>{myRole.is_impostor ? "ðŸŽ­" : "ðŸ§¿"}</div>
+                  <div style={{ fontSize: "3.5rem", marginBottom: 14 }}>{myRole.is_impostor ? "🎭" : "🧿"}</div>
                   <h1 style={{ fontSize: "1.4rem", marginBottom: 10 }}>
-                    {myRole.is_impostor ? "Vous Ãªtes l'Imposteur !" : "Vous Ãªtes un Vrai !"}
+                    {myRole.is_impostor ? "Vous êtes l'Imposteur !" : "Vous êtes un Vrai !"}
                   </h1>
                   <p style={{ fontSize: "0.9rem" }}>
                     {myRole.is_impostor
@@ -326,18 +326,18 @@ export function ImposteurScreen({
                       : "Vous connaissez le vrai mot. Trouvez l'imposteur !"}
                   </p>
                   <div style={{ fontSize: myRole.is_impostor && !myRole.mot ? "2.8rem" : "2.2rem", fontWeight: 800, color: "var(--tg-accent)", marginTop: 18 }}>
-                    {myRole.mot || "â“"}
+                    {myRole.mot || "❓"}
                   </div>
                 </div>
                 <button className="tg-btn" onClick={() => setStep("playing")} style={{ marginTop: 28, maxWidth: 260 }}>
-                  J'ai mÃ©morisÃ© âœ“
+                  J'ai mémorisé ✓
                 </button>
               </>
             )}
           </div>
         )}
 
-        {/* â”€â”€ PLAYING â”€â”€ */}
+        {/* ── PLAYING ── */}
         {step === "playing" && room && (
           <div className="tg-screen tg-active">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
@@ -349,7 +349,7 @@ export function ImposteurScreen({
                   onClick={() => { if (window.confirm("Terminer la partie pour tout le monde ?")) send({ type: "end_game" }); }}
                   style={{ background: "transparent", border: "1px solid rgba(255,107,107,0.4)", color: "var(--tg-danger)", borderRadius: 20, padding: "4px 12px", fontSize: "0.78rem", cursor: "pointer" }}
                 >
-                  ArrÃªter
+                  Arrêter
                 </button>
               )}
             </div>
@@ -357,10 +357,10 @@ export function ImposteurScreen({
 
             {room.state === "collecting_words" && (
               <>
-                <h1>Tour {room.round} Â· Votre mot</h1>
+                <h1>Tour {room.round} · Votre mot</h1>
                 <div className="tg-card" style={{ textAlign: "center", marginBottom: 10 }}>
                   <div style={{ fontSize: "0.82rem", color: "var(--tg-text-muted)", marginBottom: 4 }}>Votre mot secret</div>
-                  <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--tg-accent)" }}>{myRole?.mot || "â“"}</div>
+                  <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--tg-accent)" }}>{myRole?.mot || "❓"}</div>
                 </div>
                 <div className="tg-card" style={{ textAlign: "center", marginBottom: 14 }}>
                   <div style={{ fontSize: "0.82rem", color: "var(--tg-text-muted)", marginBottom: 6 }}>Mots soumis</div>
@@ -376,29 +376,29 @@ export function ImposteurScreen({
                 </div>
                 {isEliminated ? (
                   <div className="tg-card" style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: "2rem", marginBottom: 8 }}>ðŸ’€</div>
-                    <p style={{ margin: 0 }}>Vous avez Ã©tÃ© Ã©liminÃ©(e). Observez la suite !</p>
+                    <div style={{ fontSize: "2rem", marginBottom: 8 }}>💀</div>
+                    <p style={{ margin: 0 }}>Vous avez été éliminé(e). Observez la suite !</p>
                   </div>
                 ) : mySubmittedWord ? (
                   <div className="tg-card" style={{ textAlign: "center", borderColor: "var(--tg-success)" }}>
-                    <div style={{ fontSize: "2rem", marginBottom: 8 }}>âœ…</div>
-                    <p style={{ margin: 0, color: "var(--tg-success)" }}>Â«{mySubmittedWord}Â» envoyÃ© â€” en attente des autresâ€¦</p>
+                    <div style={{ fontSize: "2rem", marginBottom: 8 }}>✅</div>
+                    <p style={{ margin: 0, color: "var(--tg-success)" }}>«{mySubmittedWord}» envoyé — en attente des autres…</p>
                   </div>
                 ) : (
                   <>
-                    <input value={wordInput} onChange={(e) => setWordInput(e.target.value)} placeholder="Votre mot liÃ© au thÃ¨meâ€¦" maxLength={30} autoComplete="off" onKeyDown={(e) => e.key === "Enter" && submitWord()} />
+                    <input value={wordInput} onChange={(e) => setWordInput(e.target.value)} placeholder="Votre mot lié au thème…" maxLength={30} autoComplete="off" onKeyDown={(e) => e.key === "Enter" && submitWord()} />
                     <div className="tg-spacer" />
-                    <button className="tg-btn" onClick={submitWord} disabled={!wordInput.trim()}>Envoyer mon mot â†’</button>
+                    <button className="tg-btn" onClick={submitWord} disabled={!wordInput.trim()}>Envoyer mon mot →</button>
                   </>
                 )}
                 <h2 style={{ marginTop: 20, fontSize: "0.88rem" }}>Joueurs</h2>
                 {room.players.map((p) => (
                   <div key={p.id} className="tg-card" style={{ padding: "9px 14px", margin: "4px 0", display: "flex", alignItems: "center", gap: 8, opacity: p.eliminated ? 0.4 : 1 }}>
-                    <span style={{ fontSize: "0.95rem" }}>{p.eliminated ? "ðŸ’€" : p.connected ? "ðŸŸ¢" : "ðŸ”´"}</span>
+                    <span style={{ fontSize: "0.95rem" }}>{p.eliminated ? "💀" : p.connected ? "🟢" : "🔴"}</span>
                     <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{p.name}</span>
                     {p.id === myPlayerId && <span style={{ fontSize: "0.7rem", color: "var(--tg-text-muted)", marginLeft: "auto" }}>MOI</span>}
                     {p.host && !p.eliminated && <span style={{ fontSize: "0.7rem", color: "var(--tg-accent)", marginLeft: p.id === myPlayerId ? 0 : "auto" }}>ANIMATEUR</span>}
-                    {!p.eliminated && p.has_submitted && <span style={{ fontSize: "0.75rem", color: "var(--tg-success)", marginLeft: "auto" }}>âœ“</span>}
+                    {!p.eliminated && p.has_submitted && <span style={{ fontSize: "0.75rem", color: "var(--tg-success)", marginLeft: "auto" }}>✓</span>}
                   </div>
                 ))}
               </>
@@ -406,7 +406,7 @@ export function ImposteurScreen({
 
             {room.state === "discussion" && (
               <>
-                <h1>ðŸ“ Mots du Tour {room.round}</h1>
+                <h1>📝 Mots du Tour {room.round}</h1>
                 <div style={{ margin: "10px 0" }}>
                   {room.current_words.map((item, i) => (
                     <div key={i} className="tg-word-slot">
@@ -416,15 +416,15 @@ export function ImposteurScreen({
                   ))}
                 </div>
                 <div className="tg-card" style={{ background: "rgba(0,0,0,0.3)", marginBottom: 14, textAlign: "center" }}>
-                  <p style={{ margin: 0, fontSize: "0.88rem" }}>ðŸ’¬ Discutez entre vous. Qui est l'imposteur ?</p>
+                  <p style={{ margin: 0, fontSize: "0.88rem" }}>💬 Discutez entre vous. Qui est l'imposteur ?</p>
                 </div>
                 {isHost ? (
                   <>
-                    <h2 style={{ fontSize: "0.95rem" }}>ðŸ—³ï¸ Choisissez qui Ã©liminer :</h2>
+                    <h2 style={{ fontSize: "0.95rem" }}>🗳️ Choisissez qui éliminer :</h2>
                     <div className="tg-vote-grid">
                       {room.players.filter((p) => !p.eliminated).map((p) => (
-                        <div key={p.id} className="tg-vote-card" onClick={() => { if (window.confirm(`Ã‰liminer ${p.name} ?`)) send({ type: "eliminate_player", player_id: p.id }); }}>
-                          <div style={{ fontSize: "2rem", marginBottom: 6 }}>{p.id === myPlayerId ? "ðŸ‘‘" : "ðŸ‘¤"}</div>
+                        <div key={p.id} className="tg-vote-card" onClick={() => { if (window.confirm(`Éliminer ${p.name} ?`)) send({ type: "eliminate_player", player_id: p.id }); }}>
+                          <div style={{ fontSize: "2rem", marginBottom: 6 }}>{p.id === myPlayerId ? "👑" : "👤"}</div>
                           <strong style={{ fontSize: "0.9rem" }}>{p.name}</strong>
                           {p.id === myPlayerId && <div style={{ fontSize: "0.65rem", color: "var(--tg-text-muted)", marginTop: 2 }}>moi</div>}
                         </div>
@@ -433,12 +433,12 @@ export function ImposteurScreen({
                   </>
                 ) : (
                   <div className="tg-card" style={{ textAlign: "center" }}>
-                    <p style={{ margin: 0, color: "var(--tg-text-muted)" }}>â³ En attente de l'animateur pour dÃ©signer le suspectâ€¦</p>
+                    <p style={{ margin: 0, color: "var(--tg-text-muted)" }}>⏳ En attente de l'animateur pour désigner le suspect…</p>
                   </div>
                 )}
                 {room.eliminated_list.length > 0 && (
                   <>
-                    <h2 style={{ marginTop: 18, fontSize: "0.85rem" }}>ðŸ’€ DÃ©jÃ  Ã©liminÃ©s</h2>
+                    <h2 style={{ marginTop: 18, fontSize: "0.85rem" }}>💀 Déjà éliminés</h2>
                     {room.eliminated_list.map((e, i) => (
                       <div key={i} className="tg-card" style={{ padding: "8px 14px", margin: "4px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <span style={{ fontSize: "0.9rem" }}>{e.name}</span>
@@ -452,18 +452,18 @@ export function ImposteurScreen({
           </div>
         )}
 
-        {/* â”€â”€ FINISHED â”€â”€ */}
+        {/* ── FINISHED ── */}
         {step === "finished" && room && (
           <div className="tg-screen tg-active">
             <div className="tg-flex-center" style={{ textAlign: "center" }}>
               {gameOver ? (
                 <>
                   <h1 className={gameOver.winner === "vrais" ? "tg-result-win" : "tg-result-lose"} style={{ fontSize: "2rem", marginBottom: 14 }}>
-                    {gameOver.winner === "vrais" ? "ðŸŽ‰ Les Vrais gagnent !" : gameOver.winner === "imposteur" ? "ðŸŽ­ L'Imposteur gagne !" : "Partie terminÃ©e"}
+                    {gameOver.winner === "vrais" ? "🎉 Les Vrais gagnent !" : gameOver.winner === "imposteur" ? "🎭 L'Imposteur gagne !" : "Partie terminée"}
                   </h1>
                   <div className="tg-card" style={{ textAlign: "center", borderColor: gameOver.winner === "vrais" ? "var(--tg-success)" : "var(--tg-danger)", width: "100%", marginBottom: 18 }}>
-                    <div style={{ fontSize: "2.5rem", marginBottom: 10 }}>{gameOver.winner === "vrais" ? "ðŸ§¿" : "ðŸŽ­"}</div>
-                    <p style={{ marginBottom: 4, fontSize: "0.95rem" }}>L'imposteur Ã©tait</p>
+                    <div style={{ fontSize: "2.5rem", marginBottom: 10 }}>{gameOver.winner === "vrais" ? "🧿" : "🎭"}</div>
+                    <p style={{ marginBottom: 4, fontSize: "0.95rem" }}>L'imposteur était</p>
                     <p style={{ fontSize: "1.3rem", fontWeight: 700, color: gameOver.winner === "vrais" ? "var(--tg-success)" : "var(--tg-danger)", marginBottom: 12 }}>{gameOver.impostor_name}</p>
                     <p style={{ margin: 0, color: "var(--tg-text-muted)", fontSize: "0.9rem" }}>
                       Mot vrai : <strong style={{ color: "var(--tg-text)" }}>{gameOver.mot_vrai}</strong>
@@ -476,12 +476,12 @@ export function ImposteurScreen({
                   </div>
                 </>
               ) : (
-                <h1 style={{ marginBottom: 18 }}>Partie terminÃ©e</h1>
+                <h1 style={{ marginBottom: 18 }}>Partie terminée</h1>
               )}
 
               {room.all_rounds.length > 0 && (
                 <>
-                  <h2 style={{ fontSize: "0.95rem", marginBottom: 8, width: "100%", textAlign: "left" }}>ðŸ“ RÃ©cap des mots</h2>
+                  <h2 style={{ fontSize: "0.95rem", marginBottom: 8, width: "100%", textAlign: "left" }}>📝 Récap des mots</h2>
                   {room.all_rounds.map((roundWords, t) => (
                     <div key={t} style={{ width: "100%", marginBottom: 12 }}>
                       <div style={{ fontSize: "0.8rem", color: "var(--tg-text-muted)", marginBottom: 6 }}>Tour {t + 1}</div>
@@ -490,7 +490,7 @@ export function ImposteurScreen({
                         return (
                           <div key={i} className="tg-word-slot" style={{ borderLeft: `3px solid ${wasImpostor ? "var(--tg-danger)" : "var(--tg-success)"}`, textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <span><strong>{item.name}</strong> : {item.word}</span>
-                            {wasImpostor && <span style={{ fontSize: "0.7rem", color: "var(--tg-danger)" }}>ðŸŽ­</span>}
+                            {wasImpostor && <span style={{ fontSize: "0.7rem", color: "var(--tg-danger)" }}>🎭</span>}
                           </div>
                         );
                       })}
@@ -501,10 +501,10 @@ export function ImposteurScreen({
 
               {room.eliminated_list.length > 0 && (
                 <>
-                  <h2 style={{ fontSize: "0.95rem", marginBottom: 8, width: "100%", textAlign: "left" }}>ðŸ’€ Joueurs Ã©liminÃ©s</h2>
+                  <h2 style={{ fontSize: "0.95rem", marginBottom: 8, width: "100%", textAlign: "left" }}>💀 Joueurs éliminés</h2>
                   {room.eliminated_list.map((e, i) => (
                     <div key={i} className="tg-card" style={{ padding: "10px 14px", margin: "4px 0", width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", borderLeft: `3px solid ${e.was_impostor ? "var(--tg-danger)" : "rgba(255,255,255,0.1)"}` }}>
-                      <span>{e.name} {e.was_impostor ? "ðŸŽ­" : ""}</span>
+                      <span>{e.name} {e.was_impostor ? "🎭" : ""}</span>
                       <span style={{ fontSize: "0.75rem", color: "var(--tg-text-muted)" }}>Tour {e.round}</span>
                     </div>
                   ))}
@@ -514,11 +514,11 @@ export function ImposteurScreen({
               <div className="tg-spacer" />
               {isHost && (
                 <button className="tg-btn" onClick={() => send({ type: "play_again" })} style={{ maxWidth: 280 }}>
-                  ðŸ”„ Rejouer dans ce salon
+                  🔄 Rejouer dans ce salon
                 </button>
               )}
               <button className="tg-btn tg-btn-secondary" onClick={onBack} style={{ maxWidth: 280, marginTop: 8 }}>
-                ðŸ  Retour aux Jeux
+                🏠 Retour aux Jeux
               </button>
             </div>
           </div>
