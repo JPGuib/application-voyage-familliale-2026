@@ -11,8 +11,8 @@
     {"q": "Quelle bataille de la Première Guerre mondiale s'est déroulée sur la péninsule de Gallipoli ?", "choices": ["Bataille des Dardanelles", "Bataille de la Somme", "Bataille de Verdun", "Bataille d'Ypres"], "answer": 0},
     {"q": "Quelle cité antique aurait inspiré le mythe du cheval de bois ?", "choices": ["Troie", "Éphèse", "Pergame", "Antalya"], "answer": 0},
     {"q": "Quel est le nom turc de la mosquée Sainte-Sophie ?", "choices": ["Ayasofya", "Sultanahmet Camii", "Süleymaniye", "Rüstem Pasha"], "answer": 0},
-    {"q": "Quelle civilisation a construit les cités souterraines de Cappadoce ?", "choices": ["Hittites et premiers chrétiens", "Ottomans", "Romains uniquement", "Perses"], "answer": 0}
-            {"q": "Quel empire a précédé la République de Turquie sur une grande partie de son territoire ?",
+    {"q": "Quelle civilisation a construit les cités souterraines de Cappadoce ?", "choices": ["Hittites et premiers chrétiens", "Ottomans", "Romains uniquement", "Perses"], "answer": 0},
+    {"q": "Quel empire a précédé la République de Turquie sur une grande partie de son territoire ?",
       "choices": [
         "Empire ottoman",
         "Empire romain",
@@ -294,7 +294,7 @@
     {"q": "Qu'est-ce que le café turc a de particulier ?", "choices": ["Il est non filtré, avec le marc au fond", "Il est servi glacé", "Il est mélangé au lait", "Il est décaféiné"], "answer": 0},
     {"q": "Comment s'appelle la soupe de lentilles rouges très populaire en Turquie ?", "choices": ["Mercimek çorbası", "Ezogelin", "Yayla çorbası", "Işkembe"], "answer": 0},
     {"q": "Qu'est-ce qu'un 'meze' ?", "choices": ["Un assortiment de petites entrées à partager", "Un dessert au miel", "Un plat unique de viande", "Une boisson fermentée"], "answer": 0},
-    {"q": "Quel fruit sec est très utilisé dans la cuisine turque, notamment en dessert ?", "choices": ["L'abricot sec", "La banane séchée", "L'ananas séché", "La pomme séchée"], "answer": 0}
+    {"q": "Quel fruit sec est très utilisé dans la cuisine turque, notamment en dessert ?", "choices": ["L'abricot sec", "La banane séchée", "L'ananas séché", "La pomme séchée"], "answer": 0},
         {
       "q": "Quel plat turc est composé de viande grillée sur une broche verticale ?",
       "choices": [
@@ -577,7 +577,7 @@
     {"q": "Que signifie 'hayır' ?", "choices": ["Non", "Oui", "Bonjour", "Merci"], "answer": 0},
     {"q": "Quel alphabet est utilisé pour écrire le turc moderne ?", "choices": ["L'alphabet latin", "L'alphabet arabe", "L'alphabet cyrillique", "Les idéogrammes"], "answer": 0},
     {"q": "Que signifie 'güle güle', dit à une personne qui part ?", "choices": ["Au revoir", "Bienvenue", "Félicitations", "Bon courage"], "answer": 0},
-    {"q": "Comment dit-on 'je ne comprends pas' en turc ?", "choices": ["Anlamıyorum", "Biliyorum", "Seviyorum", "Görüşürüz"], "answer": 0}
+    {"q": "Comment dit-on 'je ne comprends pas' en turc ?", "choices": ["Anlamıyorum", "Biliyorum", "Seviyorum", "Görüşürüz"], "answer": 0},
       {
       "q": "Comment dit-on 'bonjour' en turc ?",
       "choices": [
@@ -850,7 +850,7 @@
     {"q": "Sur quel plateau se trouve la majeure partie de l'Anatolie centrale ?", "choices": ["Le plateau anatolien", "Le plateau tibétain", "Le plateau iranien", "Le plateau arménien"], "answer": 0},
     {"q": "Quelle station balnéaire du sud-ouest est réputée pour ses criques et sa 'côte turquoise' ?", "choices": ["Fethiye/Ölüdeniz", "Trabzon", "Samsun", "Van"], "answer": 0},
     {"q": "Quel grand lac se trouve à l'est de la Turquie ?", "choices": ["Le lac Van", "Le lac Léman", "Le lac Titicaca", "Le lac Baïkal"], "answer": 0},
-    {"q": "Quel pays ne partage PAS de frontière avec la Turquie ?", "choices": ["Egypte", "Grèce", "Iran", "Syrie"], "answer": 0}
+    {"q": "Quel pays ne partage PAS de frontière avec la Turquie ?", "choices": ["Egypte", "Grèce", "Iran", "Syrie"], "answer": 0},
    {
       "q": "Quelle est la capitale de la Turquie ?",
       "choices": [
@@ -1133,7 +1133,7 @@
     {"q": "Quelle fête religieuse marque la fin du Ramadan en Turquie ?", "choices": ["Şeker Bayramı (fête du sucre)", "Kurban Bayramı uniquement", "Nevruz", "Cumhuriyet Bayramı"], "answer": 0},
     {"q": "Quel motif décoratif en céramique est typique de la ville d'Iznik ?", "choices": ["Motifs floraux bleus et blancs/rouges", "Motifs géométriques noirs et blancs uniquement", "Portraits", "Paysages marins"], "answer": 0},
     {"q": "Comment s'appelle le narguilé traditionnel turc ?", "choices": ["Nargile", "Chicha égyptienne", "Hookah indien", "Kalyan persan"], "answer": 0},
-    {"q": "Quel instrument à cordes est emblématique de la musique turque traditionnelle ?", "choices": ["Le saz", "Le sitar", "L'oud égyptien", "Le violon seul"], "answer": 0}
+    {"q": "Quel instrument à cordes est emblématique de la musique turque traditionnelle ?", "choices": ["Le saz", "Le sitar", "L'oud égyptien", "Le violon seul"], "answer": 0},
     {
       "q": "Quel monument d'Istanbul est célèbre pour son immense dôme et son histoire byzantine puis ottomane ?",
       "choices": [
