@@ -33,7 +33,7 @@ export function ArcadeHubScreen({
         >
           <div className="text-3xl">🎲</div>
           <div className="flex-1">
-            <div className="font-black text-foreground text-sm">Trivial Turquie mais pas que</div>
+            <div className="font-black text-foreground text-sm">Trivial Turquie mais pas que ... !</div>
             <div className="text-xs text-muted-foreground">
               Multijoueur en direct, chacun pour soi, 2 à 5 joueurs
             </div>
@@ -56,20 +56,6 @@ export function ArcadeHubScreen({
         </button>
 
         <button
-          onClick={onPlayOrdalie}
-          className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left active:scale-[0.98] transition-transform shadow-sm"
-        >
-          <div className="text-3xl">🎙️</div>
-          <div className="flex-1">
-            <div className="font-black text-foreground text-sm">L'Ordalie des 5 Sens</div>
-            <div className="text-xs text-muted-foreground">
-              Un même téléphone à se passer, 1 Gardien et 4 Chercheurs, carte et questions vocales
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground" />
-        </button>
-
-        <button
           onClick={onPlayImposteur}
           className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left active:scale-[0.98] transition-transform shadow-sm"
         >
@@ -77,7 +63,7 @@ export function ArcadeHubScreen({
           <div className="flex-1">
             <div className="font-black text-foreground text-sm">L'Imposteur Turque</div>
             <div className="text-xs text-muted-foreground">
-              Un même téléphone à se passer, un mot secret, 5 joueurs, qui bluffe ?
+              Multijoueur, chacun son téléphone, min. 4 voyageurs, démasquez l'imposteur !
             </div>
           </div>
           <ChevronRight size={18} className="text-muted-foreground" />

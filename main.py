@@ -215,13 +215,21 @@ async def cleanup_stale_rooms_loop():
                 await broadcast(room, room.public_state())
             except Exception:
                 pass
+        # Nettoyage des salons Imposteur inactifs
+        stale_imp_codes = [
+            c for c, r in imposteur_rooms.items()
+            if (now - r.last_activity) > (
+                ROOM_LOBBY_TIMEOUT_SECONDS if r.state == "lobby"
+                else ROOM_INACTIVITY_TIMEOUT_SECONDS
+            )
+        ]
+        for code in stale_imp_codes:
+            imposteur_rooms.pop(code, None)
 
 
 @app.get("/health")
 async def health():
-    # Utilisé par les hébergeurs (Render, Railway...) pour vérifier que le
-    # service est vivant, et pratique pour verifier rapidement le déploiement.
-    return {"status": "ok", "rooms": len(rooms)}
+    return {"status": "ok", "rooms": len(rooms), "imposteur_rooms": len(imposteur_rooms)}
 
 
 @app.get("/packs")
@@ -538,6 +546,306 @@ async def handle_message(room: Room, player: Player, data: dict):
             if not bonus_replay:
                 room.advance_turn()
             await broadcast(room, room.public_state())
+            return
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Jeu de l'Imposteur — multijoueur WebSocket  (/ws/imposteur/{code}/{name})
+# Chaque joueur reste sur son propre téléphone. Min. 4 voyageurs.
+# ─────────────────────────────────────────────────────────────────────────
+
+IMPOSTEUR_MIN_PLAYERS = 4
+IMPOSTEUR_MAX_PLAYERS = 10
+
+imposteur_rooms: dict[str, "ImposteurRoom"] = {}
+
+
+class ImposteurPlayer:
+    def __init__(self, pid: str, name: str, host: bool = False):
+        self.id = pid
+        self.name = name
+        self.host = host
+        self.ws: Optional[WebSocket] = None
+        self.connected = True
+        self.eliminated = False
+        self.is_impostor = False
+        self.current_word: Optional[str] = None
+
+    def public(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "host": self.host,
+            "connected": self.connected,
+            "eliminated": self.eliminated,
+            "has_submitted": self.current_word is not None,
+        }
+
+
+class ImposteurRoom:
+    def __init__(self, code: str):
+        self.code = code
+        self.state = "lobby"  # lobby | collecting_words | discussion | finished
+        self.players: dict[str, ImposteurPlayer] = {}
+        self.order: list[str] = []
+        self.impostor_id: Optional[str] = None
+        self.mot_vrai = ""
+        self.mot_faux = ""
+        self.round = 0
+        self.max_rounds = 3
+        self.rounds_history: list[list[dict]] = []
+        self.eliminated_list: list[dict] = []
+        self.winner: Optional[str] = None  # "vrais" | "imposteur"
+        self.lock = asyncio.Lock()
+        self.last_activity = time.monotonic()
+
+    def add_player(self, name: str) -> "ImposteurPlayer":
+        pid = f"imp{len(self.players) + 1}_{random.randint(1000, 9999)}"
+        host = len(self.players) == 0
+        player = ImposteurPlayer(pid, name, host)
+        self.players[pid] = player
+        self.order.append(pid)
+        return player
+
+    def active_players(self) -> list["ImposteurPlayer"]:
+        return [self.players[pid] for pid in self.order if not self.players[pid].eliminated]
+
+    def public_state(self) -> dict:
+        active = self.active_players()
+        submitted = sum(1 for p in active if p.current_word is not None)
+        current_words: list[dict] = []
+        if self.state == "discussion" and self.rounds_history:
+            current_words = self.rounds_history[-1]
+        all_rounds = self.rounds_history if self.state == "finished" else []
+        return {
+            "type": "room_state",
+            "code": self.code,
+            "state": self.state,
+            "round": self.round,
+            "max_rounds": self.max_rounds,
+            "players": [self.players[pid].public() for pid in self.order],
+            "active_count": len(active),
+            "submitted_count": submitted,
+            "current_words": current_words,
+            "all_rounds": all_rounds,
+            "eliminated_list": self.eliminated_list,
+            "winner": self.winner,
+            "min_players_required": IMPOSTEUR_MIN_PLAYERS,
+        }
+
+
+def make_imposteur_code() -> str:
+    while True:
+        code = "".join(random.choices(string.digits, k=4))
+        if code not in imposteur_rooms:
+            return code
+
+
+async def broadcast_imposteur(room: "ImposteurRoom", message: dict) -> None:
+    dead: list[str] = []
+    for pid in room.order:
+        p = room.players[pid]
+        if p.ws is not None:
+            try:
+                await p.ws.send_json(message)
+            except Exception:
+                dead.append(pid)
+    for pid in dead:
+        room.players[pid].connected = False
+        room.players[pid].ws = None
+
+
+async def send_to_imp(player: "ImposteurPlayer", message: dict) -> None:
+    if player.ws is not None:
+        try:
+            await player.ws.send_json(message)
+        except Exception:
+            player.connected = False
+            player.ws = None
+
+
+@app.websocket("/ws/imposteur/{code}/{player_name}")
+async def ws_imposteur_endpoint(websocket: WebSocket, code: str, player_name: str):
+    await websocket.accept()
+    code = code.upper()
+    create_new = code == "NEW"
+
+    if create_new:
+        code = make_imposteur_code()
+        room = ImposteurRoom(code)
+        imposteur_rooms[code] = room
+    else:
+        room = imposteur_rooms.get(code)
+        if room is None:
+            await websocket.send_json({"type": "error", "message": "Salon introuvable."})
+            await websocket.close()
+            return
+        if room.state != "lobby" and player_name not in [room.players[p].name for p in room.order]:
+            await websocket.send_json({"type": "error", "message": "La partie a deja commence."})
+            await websocket.close()
+            return
+        if len(room.players) >= IMPOSTEUR_MAX_PLAYERS and player_name not in [room.players[p].name for p in room.order]:
+            await websocket.send_json({"type": "error", "message": f"Salon complet ({IMPOSTEUR_MAX_PLAYERS} joueurs max)."})
+            await websocket.close()
+            return
+
+    existing = next((room.players[p] for p in room.order if room.players[p].name == player_name), None)
+    if existing:
+        existing.ws = websocket
+        existing.connected = True
+        player = existing
+        if room.state != "lobby" and room.impostor_id:
+            mot = room.mot_faux if player.is_impostor else room.mot_vrai
+            await send_to_imp(player, {"type": "role_assignment", "is_impostor": player.is_impostor, "mot": mot})
+    else:
+        player = room.add_player(player_name)
+        player.ws = websocket
+
+    await websocket.send_json({"type": "joined", "player_id": player.id, "code": room.code})
+    await broadcast_imposteur(room, room.public_state())
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            await handle_imposteur_message(room, player, data)
+    except WebSocketDisconnect:
+        player.connected = False
+        player.ws = None
+        await broadcast_imposteur(room, room.public_state())
+
+
+async def handle_imposteur_message(room: "ImposteurRoom", player: "ImposteurPlayer", data: dict) -> None:
+    msg_type = data.get("type")
+    room.last_activity = time.monotonic()
+
+    async with room.lock:
+        if msg_type == "end_game":
+            if not player.host:
+                await send_to_imp(player, {"type": "error", "message": "Seul l'hote peut terminer la partie."})
+                return
+            room.state = "finished"
+            room.winner = None
+            await broadcast_imposteur(room, room.public_state())
+            return
+
+        if msg_type == "play_again":
+            if not player.host or room.state != "finished":
+                return
+            room.state = "lobby"
+            room.round = 0
+            room.impostor_id = None
+            room.mot_vrai = ""
+            room.mot_faux = ""
+            room.rounds_history = []
+            room.eliminated_list = []
+            room.winner = None
+            for p in room.players.values():
+                p.eliminated = False
+                p.is_impostor = False
+                p.current_word = None
+            await broadcast_imposteur(room, room.public_state())
+            return
+
+        if msg_type == "start_game":
+            if not player.host:
+                await send_to_imp(player, {"type": "error", "message": "Seul l'hote peut lancer la partie."})
+                return
+            active = room.active_players()
+            if len(active) < IMPOSTEUR_MIN_PLAYERS:
+                await send_to_imp(player, {"type": "error", "message": f"Il faut au moins {IMPOSTEUR_MIN_PLAYERS} joueurs."})
+                return
+            if room.state != "lobby":
+                return
+            mot_vrai = str(data.get("mot_vrai", "")).strip()
+            mot_faux = str(data.get("mot_faux", "")).strip()
+            if not mot_vrai:
+                await send_to_imp(player, {"type": "error", "message": "Le mot vrai est obligatoire."})
+                return
+            room.mot_vrai = mot_vrai
+            room.mot_faux = mot_faux
+            impostor = random.choice(active)
+            room.impostor_id = impostor.id
+            impostor.is_impostor = True
+            for pid in room.order:
+                p = room.players[pid]
+                mot = mot_faux if p.is_impostor else mot_vrai
+                await send_to_imp(p, {"type": "role_assignment", "is_impostor": p.is_impostor, "mot": mot})
+            room.state = "collecting_words"
+            room.round = 1
+            room.rounds_history = []
+            for p in active:
+                p.current_word = None
+            await broadcast_imposteur(room, room.public_state())
+            return
+
+        if msg_type == "submit_word":
+            if room.state != "collecting_words" or player.eliminated:
+                return
+            if player.current_word is not None:
+                return  # déjà soumis
+            word = str(data.get("word", "")).strip()
+            if not word:
+                await send_to_imp(player, {"type": "error", "message": "Veuillez ecrire un mot."})
+                return
+            if len(word) > 30:
+                await send_to_imp(player, {"type": "error", "message": "Mot trop long (30 caracteres max)."})
+                return
+            player.current_word = word
+            active = room.active_players()
+            all_submitted = all(p.current_word is not None for p in active)
+            await broadcast_imposteur(room, room.public_state())
+            if all_submitted:
+                round_words = [
+                    {"player_id": p.id, "name": p.name, "word": p.current_word}
+                    for p in [room.players[pid] for pid in room.order if not room.players[pid].eliminated]
+                ]
+                room.rounds_history.append(round_words)
+                room.state = "discussion"
+                for p in active:
+                    p.current_word = None
+                await broadcast_imposteur(room, room.public_state())
+            return
+
+        if msg_type == "eliminate_player":
+            if not player.host or room.state != "discussion":
+                return
+            target_id = str(data.get("player_id", ""))
+            target = room.players.get(target_id)
+            if target is None or target.eliminated:
+                return
+            target.eliminated = True
+            room.eliminated_list.append({
+                "player_id": target.id,
+                "name": target.name,
+                "round": room.round,
+                "was_impostor": target.is_impostor,
+            })
+            active = room.active_players()
+            impostor = room.players.get(room.impostor_id) if room.impostor_id else None
+            if impostor and impostor.eliminated:
+                room.state = "finished"
+                room.winner = "vrais"
+            elif len(active) <= 2:
+                room.state = "finished"
+                room.winner = "imposteur"
+            elif room.round >= room.max_rounds:
+                room.state = "finished"
+                room.winner = "imposteur"
+            else:
+                room.round += 1
+                room.state = "collecting_words"
+                for p in room.active_players():
+                    p.current_word = None
+            if room.state == "finished":
+                await broadcast_imposteur(room, {
+                    "type": "game_over",
+                    "winner": room.winner,
+                    "impostor_id": room.impostor_id,
+                    "impostor_name": impostor.name if impostor else "?",
+                    "mot_vrai": room.mot_vrai,
+                    "mot_faux": room.mot_faux,
+                })
+            await broadcast_imposteur(room, room.public_state())
             return
 
 

@@ -13955,7 +13955,7 @@ const resetForProfileSwitch = () => {
       case "ordalie":
         return <OrdalieScreen onBack={() => goToScreen("jeux")} />;
       case "imposteur":
-        return <ImposteurScreen onBack={() => goToScreen("jeux")} />;
+        return <ImposteurScreen defaultPlayerName={profile.surname} onBack={() => goToScreen("jeux")} />;
       case "results":
         return (
           <ResultsScreen
