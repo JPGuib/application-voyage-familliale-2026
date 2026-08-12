@@ -88,8 +88,85 @@ PACKS: dict[str, dict] = {
         },
         "questions_file": "questions_cinema.json",
     },
-}
-
+    "Grand classique familial": {
+        "label": "Grand classique familial 🏰",
+        "categories": ["Cinéma & séries", "Musique", "Géographie et voyages", "Animaux", "Cuisine et gastronomie", "Culture Générale"],
+        "category_labels": {
+            "cinema_series": "Cinéma & séries",
+            "musique": "Musique",
+            "geographie_voyages": "Géographie et voyages",
+            "animaux": "Animaux",
+            "cuisine_gastronomie": "Cuisine et gastronomie",
+            "culture_generale": "Culture Générale",
+        },
+        "questions_file": "pack_1_grand_classique_familial.json",
+    },
+    "Tour du monde": {
+        "label": "Tour du monde 🌍",
+        "categories": ["France", "Pays du monde", "Monuments", "Cuisine du monde", "Langues & expressions", "Voyages insolites"],
+        "category_labels": {
+            "france": "France",
+            "pays_du_monde": "Pays du monde",
+            "monuments": "Monuments",
+            "cuisine_du_monde": "Cuisine du monde",
+            "langues_expressions": "Langues & expressions",
+            "voyages_insolites": "Voyages insolites",
+        },
+        "questions_file": "pack_4_tour_du_monde.json",
+    },
+    "Pop Culture": {
+            "label": "Pop Culture 🎬",
+            "categories": ["Films", "Séries", "Musique", "Jeux vidéo", "Super-héros", "Personnes fictifs"],
+            "category_labels": {
+                "films": "Films",
+                "series": "Séries",
+                "musique": "Musique",
+                "jeux_video": "Jeux vidéo",
+                "super_heros": "Super-héros",
+                "personnes_fictifs": "Personnes fictifs",
+            },
+            "questions_file": "pack_5_pop_culture.json",
+    },
+    "Neurones en famille": {
+                "label": "Neurones en famille 🧠",
+                "categories": ["Logiques et chiffres", "Culture générale", "Trouver l'intrus", "Enigmes", "Plus ou moins", "Questions rapides"],
+                "category_labels": {
+                    "logiques_chiffres": "Logiques et chiffres",
+                    "culture_generale": "Culture générale",
+                    "trouver_intrus": "Trouver l'intrus",
+                    "enigmes": "Enigmes",
+                    "plus_ou_moins": "Plus ou moins",
+                    "questions_rapides": "Questions rapides",
+                },
+                "questions_file": "pack_6_neurones_famille.json",
+        },
+        "Générations": {
+                    "label": "Générations 🎬",
+                    "categories": ["Années 60-70", "Années 80", "Année 90", "Années 2000", "Aujourd'hui", "Toutes générations"],
+                    "category_labels": {
+                        "annees_60_70": "Années 60-70",
+                        "annees_80": "Années 80",
+                        "annee_90": "Année 90",
+                        "annees_2000": "Années 2000",
+                        "aujourdhui": "Aujourd'hui",
+                        "toutes_generations": "Toutes générations",
+                    },
+                    "questions_file": "pack_8_generations.json",
+        },
+        "Sport": {
+                            "label": "Sport 🏅",
+                            "categories": ["Football", "Sports mécaniques", "Tennis & sports de raquette", "Sports collectifs", "jeux olympiques et grands champions", "Sport insolite & records"],
+                            "category_labels": {
+                                "football": "Football",
+                                "sports_mecaniques": "Sports mécaniques",
+                                "tennis_sports_raquette": "Tennis & sports de raquette",
+                                "sports_collectifs": "Sports collectifs",
+                                "jeux_olympiques_grands_champions": "Jeux olympiques et grands champions",
+                                "sport_insolite_records": "Sport insolite & records",
+                            },
+                            "questions_file": "pack_9_sport.json",
+        },
+        
 QUESTIONS_BY_PACK: dict[str, dict] = {}
 for pack_id, pack_def in PACKS.items():
     with open(BASE_DIR / pack_def["questions_file"], encoding="utf-8") as f:

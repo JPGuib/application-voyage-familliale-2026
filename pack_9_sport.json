@@ -1,190 +1,1724 @@
 {
-Q["les_sports_populaires"] = [
-("Quel pays a remporté la Coupe du monde de football 2018 ?",["France","Croatie","Allemagne","Brésil"],0),
-("Combien de joueurs une équipe de football aligne-t-elle sur le terrain ?",["11","9","10","12"],0),
-("Quel joueur est surnommé CR7 ?",["Cristiano Ronaldo","Lionel Messi","Kylian Mbappé","Karim Benzema"],0),
-("Dans quel sport utilise-t-on un ballon ovale ?",["Rugby","Tennis","Basket-ball","Baseball"],0),
-("Combien de sets faut-il gagner pour remporter un match masculin en Grand Chelem de tennis ?",["3","2","4","5"],0),
-("Quel pays est associé au sumo ?",["Japon","Chine","Corée du Sud","Thaïlande"],0),
-("Quel sport pratique Teddy Riner ?",["Judo","Boxe","Escrime","Lutte"],0),
-("Dans quel sport marque-t-on des paniers ?",["Basket-ball","Handball","Volley-ball","Hockey"],0),
-("Quel club joue au stade Santiago-Bernabéu ?",["Real Madrid","FC Barcelone","Atlético de Madrid","Séville FC"],0),
-("Combien de points vaut un essai au rugby à XV ?",["5","3","6","7"],0),
-("Quel pays a remporté la Coupe du monde de rugby 2023 ?",["Afrique du Sud","Nouvelle-Zélande","France","Angleterre"],0),
-("Quel joueur français a remporté Roland-Garros en 1983 ?",["Yannick Noah","Henri Leconte","Jo-Wilfried Tsonga","Richard Gasquet"],0),
-("Quel sport pratique le vainqueur du Tour de France ?",["Cyclisme","Athlétisme","Automobile","Natation"],0),
-("Combien de joueurs d'une équipe de basket sont sur le terrain ?",["5","6","7","4"],0),
-("Quel pays a remporté l'Euro de football 2024 ?",["Espagne","Angleterre","France","Italie"],0),
-("Quel sport pratique Léon Marchand ?",["Natation","Athlétisme","Cyclisme","Plongeon"],0),
-("Dans quel sport trouve-t-on les postes de gardien, défenseur et attaquant ?",["Football","Tennis","Golf","Cyclisme"],0),
-("Quel pays est traditionnellement associé au cricket ?",["Angleterre","Brésil","Espagne","Mexique"],0),
-("Quel est le surnom de l'équipe de France de football ?",["Les Bleus","Les Coqs","Les Gaulois","Les Tricolores"],0),
-("Dans quel sport parle-t-on de birdie et d'eagle ?",["Golf","Badminton","Tennis","Hockey"],0),
-("Quel joueur argentin a remporté la Coupe du monde 2022 ?",["Lionel Messi","Ángel Di María","Sergio Agüero","Paulo Dybala"],0),
-("Quel sport se joue notamment à Wimbledon ?",["Tennis","Golf","Cricket","Rugby"],0),
-("Combien de joueurs une équipe de handball compte-t-elle sur le terrain ?",["7","6","8","5"],0),
-("Quel pays est le plus titré en Coupe du monde de football masculin ?",["Brésil","Allemagne","Italie","Argentine"],0),
-("Dans quel sport utilise-t-on un volant ?",["Badminton","Volley-ball","Squash","Tennis"],0),
-("Quelle compétition réunit les meilleurs clubs européens de football ?",["Ligue des champions","Coupe Davis","Tournoi des Six Nations","Masters 1000"],0),
-("Quel sport pratique Antoine Dupont ?",["Rugby","Football","Handball","Basket-ball"],0),
-("Dans quel sport trouve-t-on un scrum, ou mêlée ?",["Rugby","Football américain","Hockey","Baseball"],0),
-]
-
-Q["jo_et_champions"] = [
-("Dans quelle ville ont eu lieu les Jeux olympiques d'été de 2024 ?",["Paris","Londres","Tokyo","Los Angeles"],0),
-("Combien d'anneaux composent le symbole olympique ?",["5","4","6","7"],0),
-("Quel athlète jamaïcain est célèbre pour ses records du 100 m et du 200 m ?",["Usain Bolt","Yohan Blake","Asafa Powell","Michael Johnson"],0),
-("Quel nageur américain a remporté 23 médailles d'or olympiques ?",["Michael Phelps","Ryan Lochte","Mark Spitz","Caeleb Dressel"],0),
-("Dans quel sport Simone Biles est-elle championne ?",["Gymnastique","Natation","Athlétisme","Plongeon"],0),
-("Quel judoka français est multiple champion olympique ?",["Teddy Riner","David Douillet","Clarisse Agbégnénou","Steeve Guénot"],0),
-("Dans quel pays les Jeux olympiques antiques sont-ils nés ?",["Grèce","Italie","Égypte","Turquie"],0),
-("Quelle épreuve d'athlétisme mesure 42,195 km ?",["Marathon","Semi-marathon","10 000 m","Marche"],0),
-("Quel sport comprend les anneaux, les barres parallèles et le cheval d'arçons ?",["Gymnastique artistique","Escrime","Pentathlon","Trampoline"],0),
-("Quel nageur français a remporté plusieurs titres à Paris 2024 ?",["Léon Marchand","Florent Manaudou","Yannick Agnel","Alain Bernard"],0),
-("Quel pays a accueilli les Jeux olympiques d'hiver de 2022 ?",["Chine","Japon","Corée du Sud","Russie"],0),
-("Quelle Française est championne olympique de judo et multiple championne du monde ?",["Clarisse Agbégnénou","Laure Manaudou","Marie-José Pérec","Mélina Robert-Michon"],0),
-("Dans quelle discipline Usain Bolt est-il devenu une légende ?",["Sprint","Saut en longueur","Décathlon","Lancer du javelot"],0),
-("Quelle ancienne championne française a remporté trois médailles d'or olympiques en athlétisme ?",["Marie-José Pérec","Christine Arron","Muriel Hurtis","Colette Besson"],0),
-("Quel sport olympique se pratique avec un fleuret, une épée ou un sabre ?",["Escrime","Tir","Pentathlon","Judo"],0),
-("Quelle épreuve combine natation, cyclisme et course à pied ?",["Triathlon","Décathlon","Pentathlon","Aquathlon"],0),
-("Quel athlète américain a remporté quatre médailles d'or aux Jeux de Berlin en 1936 ?",["Jesse Owens","Carl Lewis","Michael Johnson","Ray Ewry"],0),
-("Dans quel sport peut-on gagner une médaille olympique en ski alpin ?",["Ski","Patinage artistique","Bobsleigh","Curling"],0),
-("Quel sport de combat oppose deux adversaires sur un tatami ?",["Judo","Escrime","Boxe","Tir à l'arc"],0),
-("Quel sport d'hiver se pratique avec des pierres lancées sur une cible de glace ?",["Curling","Hockey","Skeleton","Combiné nordique"],0),
-("Quelle discipline comporte dix épreuves chez les hommes en athlétisme ?",["Décathlon","Heptathlon","Pentathlon","Triathlon"],0),
-("Quel pays a organisé les Jeux olympiques d'été de 2016 ?",["Brésil","Royaume-Uni","Chine","Grèce"],0),
-("Quel Français a remporté le décathlon olympique à Sydney en 2000 ?",["Erki Nool","Roman Šebrle","Chris Huffins","Il n'y avait pas de Français"],3),
-("Quel athlète est surnommé 'le plus grand de tous les temps' dans le sprint américain et a remporté neuf ors olympiques ?",["Carl Lewis","Michael Johnson","Jesse Owens","Maurice Greene"],0),
-("Quelle épreuve consiste à franchir des haies puis une rivière avec une barrière ?",["3 000 m steeple","400 m haies","110 m haies","5 000 m"],0),
-("Quel sport olympique utilise une carabine ou un pistolet pour atteindre une cible ?",["Tir sportif","Biathlon","Pentathlon","Escrime"],0),
-("Quel champion français a remporté l'or olympique en escrime à l'épée par équipes à Tokyo ?",["Romain Cannone","Enzo Lefort","Yannick Borel","Bastien Augusto"],0),
-("Quel sport combine ski de fond et saut à ski ?",["Combiné nordique","Biathlon","Saut acrobatique","Ski alpin"],0),
-]
-
-Q["vitesse_et_moteurs"] = [
-("Dans quelle discipline court le Grand Prix de Monaco ?",["Formule 1","MotoGP","Rallye","IndyCar"],0),
-("Quel pilote est septuple champion du monde de Formule 1 ?",["Lewis Hamilton","Sebastian Vettel","Fernando Alonso","Alain Prost"],0),
-("Quel constructeur italien est célèbre pour son cheval cabré ?",["Ferrari","Lamborghini","Maserati","Alfa Romeo"],0),
-("Quelle course française dure 24 heures ?",["24 Heures du Mans","Paris-Dakar","Tour de Corse","Grand Prix de France"],0),
-("Quel pilote français est devenu champion du monde de F1 en 1997 ?",["Aucun Français","Alain Prost","Jean Alesi","Olivier Panis"],0),
-("Dans quel pays se trouve le circuit de Suzuka ?",["Japon","Chine","Corée du Sud","Thaïlande"],0),
-("Que signifie 'pole position' ?",["Première place sur la grille","Meilleur tour en course","Victoire finale","Arrêt au stand"],0),
-("Quel pilote brésilien a remporté trois titres mondiaux de F1 ?",["Ayrton Senna","Nelson Piquet","Emerson Fittipaldi","Rubens Barrichello"],0),
-("Quel championnat est associé aux voitures de Formule 1 ?",["Championnat du monde FIA de F1","WEC","WRC","DTM"],0),
-("Quel constructeur produit la 911 ?",["Porsche","BMW","Audi","Mercedes"],0),
-("Quel pilote allemand a remporté sept titres mondiaux de F1 ?",["Michael Schumacher","Sebastian Vettel","Nico Rosberg","Niki Lauda"],0),
-("Quelle compétition est surnommée le Dakar ?",["Rallye-raid","Course de F1","Course de côte","Championnat de tourisme"],0),
-("Dans quel sport Marc Márquez est-il une star ?",["MotoGP","Formule 1","Rallye","NASCAR"],0),
-("Que mesure principalement un compte-tours ?",["Le régime moteur","La vitesse","La température des pneus","La consommation"],0),
-("Quel circuit accueille traditionnellement le Grand Prix de Grande-Bretagne ?",["Silverstone","Monza","Spa","Imola"],0),
-("Quel constructeur japonais produit notamment la Civic ?",["Honda","Toyota","Nissan","Mazda"],0),
-("Quel pilote français a remporté neuf fois les 24 Heures du Mans ?",["Tom Kristensen","Sébastien Buemi","Henri Pescarolo","Alain Prost"],2),
-("Quelle couleur de drapeau signale généralement l'arrêt d'une course automobile ?",["Rouge","Jaune","Bleu","Vert"],0),
-("Quel championnat mondial concerne les rallyes ?",["WRC","WEC","WTCC","Moto2"],0),
-("Quel pilote espagnol a remporté deux titres mondiaux de F1 ?",["Fernando Alonso","Carlos Sainz","Pedro de la Rosa","Marc Gené"],0),
-("Quelle marque est associée au modèle Mustang ?",["Ford","Chevrolet","Dodge","Tesla"],0),
-("Quel circuit accueille le Grand Prix d'Italie de F1 ?",["Monza","Imola","Mugello","Misano"],0),
-("Quel pilote monégasque court pour Ferrari en F1 ?",["Charles Leclerc","Arthur Leclerc","Pierre Gasly","Esteban Ocon"],0),
-("Quel constructeur allemand est associé aux quatre anneaux ?",["Audi","BMW","Porsche","Mercedes"],0),
-("Quel pilote finlandais est champion du monde de F1 en 2007 avec Ferrari ?",["Kimi Räikkönen","Mika Häkkinen","Valtteri Bottas","Heikki Kovalainen"],0),
-("Quel constructeur a remporté de nombreuses victoires au Mans avec son prototype 919 Hybrid ?",["Porsche","Toyota","Audi","Peugeot"],0),
-("Quel pilote français a remporté le championnat du monde des rallyes WRC neuf fois ?",["Sébastien Loeb","Sébastien Ogier","Didier Auriol","François Delecour"],0),
-("Quel est le nom de la célèbre course américaine de 500 miles disputée à Indianapolis ?",["Indianapolis 500","Daytona 500","Sebring 12 Hours","NASCAR Cup"],0),
-]
-
-Q["stades_et_competitions"] = [
-("Dans quelle ville se trouve le stade de Wembley ?",["Londres","Manchester","Liverpool","Birmingham"],0),
-("Quel stade accueille traditionnellement le FC Barcelone ?",["Camp Nou","Santiago-Bernabéu","San Siro","Anfield"],0),
-("Quel stade accueille traditionnellement le Real Madrid ?",["Santiago-Bernabéu","Camp Nou","Metropolitano","Mestalla"],0),
-("Quelle compétition de tennis se joue à Paris sur terre battue ?",["Roland-Garros","Wimbledon","US Open","Open d'Australie"],0),
-("Quel tournoi de tennis se joue traditionnellement sur gazon ?",["Wimbledon","Roland-Garros","US Open","Monte-Carlo"],0),
-("Quel tournoi cycliste italien est l'un des trois Grands Tours ?",["Giro d'Italia","Tour de Suisse","Milan-San Remo","Tirreno-Adriatico"],0),
-("Quelle course cycliste est surnommée l'Enfer du Nord ?",["Paris-Roubaix","Liège-Bastogne-Liège","Milan-San Remo","Tour des Flandres"],0),
-("Quel tournoi de rugby oppose la France, l'Angleterre, l'Irlande, l'Italie, l'Écosse et le pays de Galles ?",["Tournoi des Six Nations","Rugby Championship","Coupe du monde","Challenge Cup"],0),
-("Quel stade londonien est particulièrement associé au rugby anglais ?",["Twickenham","Wembley","Emirates","Stamford Bridge"],0),
-("Quel Grand Chelem de tennis se joue à New York ?",["US Open","Wimbledon","Open d'Australie","Roland-Garros"],0),
-("Quel Grand Tour cycliste se dispute en Espagne ?",["Vuelta a España","Giro","Tour de France","Critérium du Dauphiné"],0),
-("Quelle compétition oppose les équipes nationales européennes de football ?",["Championnat d'Europe","Ligue des champions","Ligue Europa","Conference League"],0),
-("Quel stade parisien accueille notamment le XV de France ?",["Stade de France","Parc des Princes","Roland-Garros","Accor Arena"],0),
-("Quel stade est le domicile historique de Liverpool FC ?",["Anfield","Old Trafford","Emirates Stadium","Etihad Stadium"],0),
-("Quel stade est associé à Manchester United ?",["Old Trafford","Anfield","Etihad Stadium","Villa Park"],0),
-("Quel tournoi de golf majeur se joue à Augusta ?",["Masters","US Open","Open Championship","PGA Championship"],0),
-("Quel circuit accueille le Grand Prix d'Italie de F1 ?",["Monza","Imola","Mugello","Misano"],0),
-("Quel tournoi de tennis se joue à Melbourne ?",["Open d'Australie","US Open","Wimbledon","Roland-Garros"],0),
-("Quel stade accueille traditionnellement le Paris Saint-Germain ?",["Parc des Princes","Stade de France","Vélodrome","Groupama Stadium"],0),
-("Quel stade est surnommé le 'Théâtre des rêves' ?",["Old Trafford","Wembley","Anfield","Celtic Park"],0),
-("Quel tournoi de golf britannique est aussi appelé The Open ?",["Open Championship","Masters","PGA Championship","US Open"],0),
-("Quelle compétition de basket oppose les sélections nationales européennes ?",["EuroBasket","Euroligue","NBA","EuroCup"],0),
-("Quel circuit de F1 est célèbre pour l'Eau Rouge et le Raidillon ?",["Spa-Francorchamps","Monaco","Silverstone","Monza"],0),
-("Quelle compétition de tennis par équipes oppose les nations masculines ?",["Coupe Davis","Billie Jean King Cup","Laver Cup","ATP Finals"],0),
-("Quel stade de Milan est aussi appelé Giuseppe-Meazza ?",["San Siro","Stadio Olimpico","Juventus Stadium","Marassi"],0),
-("Quelle course cycliste belge est célèbre pour ses secteurs pavés ?",["Tour des Flandres","Liège-Bastogne-Liège","Flèche Wallonne","Amstel Gold Race"],0),
-("Quel Grand Chelem de tennis est le seul à se jouer sur terre battue ?",["Roland-Garros","Wimbledon","US Open","Open d'Australie"],0),
-]
-
-Q["regles_et_connaissances"] = [
-("Combien de temps dure un match de football réglementaire ?",["90 minutes","80 minutes","100 minutes","60 minutes"],0),
-("Combien de points vaut un panier à trois points au basket ?",["3","2","4","1"],0),
-("À quelle hauteur se trouve le panier de basket standard ?",["3,05 m","2,75 m","3,50 m","2,43 m"],0),
-("Combien de joueurs une équipe de rugby à XV compte-t-elle sur le terrain ?",["15","13","11","18"],0),
-("Combien de joueurs une équipe de volley-ball compte-t-elle sur le terrain ?",["6","5","7","8"],0),
-("Quelle distance sépare le point de penalty du but au football ?",["11 m","9 m","12 m","10 m"],0),
-("Au tennis, comment appelle-t-on un score de 40-40 ?",["Égalité","Avantage","Let","Tie-break"],0),
-("Combien de points vaut un touchdown en football américain avant transformation ?",["6","7","3","5"],0),
-("Quelle couleur de carton entraîne généralement une expulsion au football ?",["Rouge","Jaune","Bleu","Noir"],0),
-("Combien de joueurs composent une équipe de baseball sur le terrain ?",["9","7","11","10"],0),
-("Combien de trous compte un parcours de golf standard ?",["18","9","21","27"],0),
-("Combien de périodes compte un match de hockey sur glace ?",["3","2","4","5"],0),
-("Quelle est la longueur d'une piscine olympique ?",["50 m","25 m","100 m","33 m"],0),
-("Combien de mètres mesure une piste d'athlétisme standard sur un tour ?",["400 m","200 m","800 m","500 m"],0),
-("Au rugby, combien de points vaut une transformation ?",["2","3","5","1"],0),
-("Au handball, combien de temps dure normalement un match senior ?",["60 minutes","40 minutes","80 minutes","50 minutes"],0),
-("Au volley-ball, combien de points faut-il généralement pour gagner un set ?",["25","21","15","30"],0),
-("Quelle est la distance officielle d'un marathon ?",["42,195 km","40 km","41,195 km","45 km"],0),
-("Au football, que sanctionne le hors-jeu ?",["Une position irrégulière d'un attaquant au moment de la passe","Une faute de main","Un tacle dangereux","Une sortie de balle"],0),
-("Au tennis, comment appelle-t-on un jeu remporté sans perdre de point ?",["Jeu blanc","Ace","Break","Love"],0),
-("Quel équipement protège la tête d'un cycliste ?",["Casque","Protège-dents","Jambières","Plastron"],0),
-("Combien de joueurs une équipe de futsal aligne-t-elle sur le terrain ?",["5","6","7","4"],0),
-("Au golf, que signifie 'par' ?",["Le nombre de coups de référence pour un trou ou un parcours","Un coup raté","Un birdie","Un obstacle"],0),
-("En escrime, quelle arme permet de toucher sur tout le corps ?",["Épée","Fleuret","Sabre","Aucune"],0),
-("Combien de joueurs une équipe de water-polo compte-t-elle dans l'eau ?",["7","6","8","5"],0),
-("Quelle est la hauteur du filet de tennis au centre du court ?",["Environ 0,914 m","1,20 m","0,75 m","1,50 m"],0),
-("Au basket, combien de secondes une équipe dispose-t-elle généralement pour tenter un tir ?",["24","14","30","12"],0),
-("Au football, combien de remplacements une équipe peut-elle généralement effectuer dans les compétitions modernes autorisant cinq changements ?",["5","3","7","4"],0),
-]
-
-Q["insolite_et_records"] = [
-("Dans quel pays pratique-t-on le sepak takraw, sport mêlant ballon et acrobaties ?",["Thaïlande","Brésil","Espagne","Japon"],0),
-("Quel sport se joue avec une pierre lancée sur la glace et des balais ?",["Curling","Hockey","Patinage","Bandy"],0),
-("Quel sport peut se pratiquer sous l'eau avec un petit palet ?",["Hockey subaquatique","Rugby subaquatique","Water-polo","Curling aquatique"],0),
-("Quel sport consiste à porter son conjoint sur un parcours d'obstacles ?",["Course de porté de femme","Lutte","Sprint en duo","Relais familial"],0),
-("Quel sport traditionnel finlandais consiste notamment à lancer un téléphone portable ?",["Lancer de téléphone portable","Mölkky","Pesäpallo","Lancer de marteau"],0),
-("Quel sport brésilien mêle danse, musique et techniques de combat ?",["Capoeira","Jiu-jitsu","MMA","Vale tudo"],0),
-("Quel sport consiste à lancer des boules le plus près possible d'un cochonnet ?",["Pétanque","Bowling","Boccia","Curling"],0),
-("Quel sport se pratique avec une boule et des quilles ?",["Bowling","Curling","Pétanque","Golf"],0),
-("Quel sport consiste à lancer un disque vers des paniers métalliques ?",["Disc golf","Ultimate","Golf volant","Flying golf"],0),
-("Quel pays est particulièrement associé au kabaddi ?",["Inde","France","Norvège","Mexique"],0),
-("Quel sport utilise une table, des raquettes et une petite balle ?",["Tennis de table","Squash","Badminton","Pelote"],0),
-("Quel sport est associé à des courses de taureaux dans les rues de Pampelune ?",["Course de taureaux","Rugby","Pelote basque","Corrida"],0),
-("Quel sport équestre oppose deux équipes qui tentent de marquer avec une balle ?",["Horse-ball","Polo","Basket équestre","Hockey à cheval"],0),
-("Quel sport est parfois surnommé 'football australien' et se joue avec un ballon ovale ?",["Australian rules football","Cricket","Rugby à XIII","Gaélique"],0),
-("Quel est le nom de la course de fond de 100 km organisée à travers les Alpes entre Chamonix et Courmayeur ?",["CCC","UTMB","Marathon des Sables","Diagonale des Fous"],0),
-("Quel athlète est célèbre pour avoir couru un marathon en moins de deux heures lors d'une performance non homologuée ?",["Eliud Kipchoge","Haile Gebrselassie","Mo Farah","Kenenisa Bekele"],0),
-("Quel est le nom du célèbre ultra-trail organisé autour du Mont-Blanc ?",["UTMB","Spartathlon","Western States","Tor des Géants"],0),
-("Quel sport se joue avec une balle et un panier, mais à cheval ?",["Horse-ball","Polo","Pato","Buzkashi"],0),
-("Quel sport traditionnel afghan consiste à se disputer une carcasse de chèvre à cheval ?",["Buzkashi","Polo","Horse-ball","Kok-boru"],0),
-("Quel sport japonais voit des lutteurs tenter de faire sortir leur adversaire d'un cercle ?",["Sumo","Judo","Kendo","Aïkido"],0),
-("Quel sport consiste à descendre une rivière dans une embarcation pneumatique ?",["Rafting","Aviron","Surf","Canoë de vitesse"],0),
-("Quel sport peut opposer deux équipes qui tentent de toucher leurs adversaires avec une balle ?",["Dodgeball","Baseball","Cricket","Squash"],0),
-("Quel sport est pratiqué avec des palmes, un masque et un tuba dans certaines compétitions ?",["Nage avec palmes","Plongée synchronisée","Water-polo","Triathlon"],0),
-("Quel jeu de précision consiste à lancer des fléchettes sur une cible circulaire ?",["Fléchettes","Tir à l'arc","Boccia","Curling"],0),
-("Quel sport de ballon spectaculaire se pratique avec les pieds et un filet en Asie du Sud-Est ?",["Sepak takraw","Kabaddi","Pencak silat","Pelota"],0),
-("Quel sport consiste à parcourir une piste en luge, tête en avant ?",["Skeleton","Luge","Bobsleigh","Curling"],0),
-("Quel sport se pratique sur une planche avec une voile ?",["Planche à voile","Aviron","Canoë","Skateboard"],0),
-("Quel sport utilise un cheval et une longue perche pour atteindre une balle ?",["Polo","Horse-ball","Cricket","Hockey"],0),
-("Quel sport est associé au lancer de troncs d'arbres dans les Highlands écossais ?",["Caber toss","Hurling","Curling","Highland wrestling"],0),
-("Quel sport consiste à parcourir une rivière en descendant des rapides avec un kayak ?",["Kayak-kayak de rivière","Aviron","Polo","Voile"],0),
-("Quel sport de précision consiste à faire glisser des disques vers une cible sur une surface glacée ?",["Curling","Shuffleboard","Hockey","Boccia"],0),
-("Quel sport de combat coréen est célèbre pour ses coups de pied spectaculaires ?",["Taekwondo","Judo","Sumo","Kendo"],0),
-]
+  "les_sports_populaires": [
+    {
+      "q": "Quel pays a remporté la Coupe du monde de football 2018 ?",
+      "choices": [
+        "France",
+        "Croatie",
+        "Allemagne",
+        "Brésil"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de joueurs une équipe de football aligne-t-elle sur le terrain ?",
+      "choices": [
+        "11",
+        "9",
+        "10",
+        "12"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel joueur est surnommé CR7 ?",
+      "choices": [
+        "Cristiano Ronaldo",
+        "Lionel Messi",
+        "Kylian Mbappé",
+        "Karim Benzema"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel sport utilise-t-on un ballon ovale ?",
+      "choices": [
+        "Rugby",
+        "Tennis",
+        "Basket-ball",
+        "Baseball"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de sets faut-il gagner pour remporter un match masculin en Grand Chelem de tennis ?",
+      "choices": [
+        "3",
+        "2",
+        "4",
+        "5"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est associé au sumo ?",
+      "choices": [
+        "Japon",
+        "Chine",
+        "Corée du Sud",
+        "Thaïlande"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport pratique Teddy Riner ?",
+      "choices": [
+        "Judo",
+        "Boxe",
+        "Escrime",
+        "Lutte"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel sport marque-t-on des paniers ?",
+      "choices": [
+        "Basket-ball",
+        "Handball",
+        "Volley-ball",
+        "Hockey"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel club joue au stade Santiago-Bernabéu ?",
+      "choices": [
+        "Real Madrid",
+        "FC Barcelone",
+        "Atlético de Madrid",
+        "Séville FC"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de points vaut un essai au rugby à XV ?",
+      "choices": [
+        "5",
+        "3",
+        "6",
+        "7"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays a remporté la Coupe du monde de rugby 2023 ?",
+      "choices": [
+        "Afrique du Sud",
+        "Nouvelle-Zélande",
+        "France",
+        "Angleterre"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel joueur français a remporté Roland-Garros en 1983 ?",
+      "choices": [
+        "Yannick Noah",
+        "Henri Leconte",
+        "Jo-Wilfried Tsonga",
+        "Richard Gasquet"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport pratique le vainqueur du Tour de France ?",
+      "choices": [
+        "Cyclisme",
+        "Athlétisme",
+        "Automobile",
+        "Natation"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de joueurs d'une équipe de basket sont sur le terrain ?",
+      "choices": [
+        "5",
+        "6",
+        "7",
+        "4"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays a remporté l'Euro de football 2024 ?",
+      "choices": [
+        "Espagne",
+        "Angleterre",
+        "France",
+        "Italie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport pratique Léon Marchand ?",
+      "choices": [
+        "Natation",
+        "Athlétisme",
+        "Cyclisme",
+        "Plongeon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel sport trouve-t-on les postes de gardien, défenseur et attaquant ?",
+      "choices": [
+        "Football",
+        "Tennis",
+        "Golf",
+        "Cyclisme"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est traditionnellement associé au cricket ?",
+      "choices": [
+        "Angleterre",
+        "Brésil",
+        "Espagne",
+        "Mexique"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le surnom de l'équipe de France de football ?",
+      "choices": [
+        "Les Bleus",
+        "Les Coqs",
+        "Les Gaulois",
+        "Les Tricolores"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel sport parle-t-on de birdie et d'eagle ?",
+      "choices": [
+        "Golf",
+        "Badminton",
+        "Tennis",
+        "Hockey"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel joueur argentin a remporté la Coupe du monde 2022 ?",
+      "choices": [
+        "Lionel Messi",
+        "Ángel Di María",
+        "Sergio Agüero",
+        "Paulo Dybala"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport se joue notamment à Wimbledon ?",
+      "choices": [
+        "Tennis",
+        "Golf",
+        "Cricket",
+        "Rugby"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de joueurs une équipe de handball compte-t-elle sur le terrain ?",
+      "choices": [
+        "7",
+        "6",
+        "8",
+        "5"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est le plus titré en Coupe du monde de football masculin ?",
+      "choices": [
+        "Brésil",
+        "Allemagne",
+        "Italie",
+        "Argentine"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel sport utilise-t-on un volant ?",
+      "choices": [
+        "Badminton",
+        "Volley-ball",
+        "Squash",
+        "Tennis"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle compétition réunit les meilleurs clubs européens de football ?",
+      "choices": [
+        "Ligue des champions",
+        "Coupe Davis",
+        "Tournoi des Six Nations",
+        "Masters 1000"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport pratique Antoine Dupont ?",
+      "choices": [
+        "Rugby",
+        "Football",
+        "Handball",
+        "Basket-ball"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel sport trouve-t-on un scrum, ou mêlée ?",
+      "choices": [
+        "Rugby",
+        "Football américain",
+        "Hockey",
+        "Baseball"
+      ],
+      "answer": 0
+    }
+  ],
+  "jo_et_champions": [
+    {
+      "q": "Dans quelle ville ont eu lieu les Jeux olympiques d'été de 2024 ?",
+      "choices": [
+        "Paris",
+        "Londres",
+        "Tokyo",
+        "Los Angeles"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien d'anneaux composent le symbole olympique ?",
+      "choices": [
+        "5",
+        "4",
+        "6",
+        "7"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel athlète jamaïcain est célèbre pour ses records du 100 m et du 200 m ?",
+      "choices": [
+        "Usain Bolt",
+        "Yohan Blake",
+        "Asafa Powell",
+        "Michael Johnson"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel nageur américain a remporté 23 médailles d'or olympiques ?",
+      "choices": [
+        "Michael Phelps",
+        "Ryan Lochte",
+        "Mark Spitz",
+        "Caeleb Dressel"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel sport Simone Biles est-elle championne ?",
+      "choices": [
+        "Gymnastique",
+        "Natation",
+        "Athlétisme",
+        "Plongeon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel judoka français est multiple champion olympique ?",
+      "choices": [
+        "Teddy Riner",
+        "David Douillet",
+        "Clarisse Agbégnénou",
+        "Steeve Guénot"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel pays les Jeux olympiques antiques sont-ils nés ?",
+      "choices": [
+        "Grèce",
+        "Italie",
+        "Égypte",
+        "Turquie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle épreuve d'athlétisme mesure 42,195 km ?",
+      "choices": [
+        "Marathon",
+        "Semi-marathon",
+        "10 000 m",
+        "Marche"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport comprend les anneaux, les barres parallèles et le cheval d'arçons ?",
+      "choices": [
+        "Gymnastique artistique",
+        "Escrime",
+        "Pentathlon",
+        "Trampoline"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel nageur français a remporté plusieurs titres à Paris 2024 ?",
+      "choices": [
+        "Léon Marchand",
+        "Florent Manaudou",
+        "Yannick Agnel",
+        "Alain Bernard"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays a accueilli les Jeux olympiques d'hiver de 2022 ?",
+      "choices": [
+        "Chine",
+        "Japon",
+        "Corée du Sud",
+        "Russie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle Française est championne olympique de judo et multiple championne du monde ?",
+      "choices": [
+        "Clarisse Agbégnénou",
+        "Laure Manaudou",
+        "Marie-José Pérec",
+        "Mélina Robert-Michon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quelle discipline Usain Bolt est-il devenu une légende ?",
+      "choices": [
+        "Sprint",
+        "Saut en longueur",
+        "Décathlon",
+        "Lancer du javelot"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle ancienne championne française a remporté trois médailles d'or olympiques en athlétisme ?",
+      "choices": [
+        "Marie-José Pérec",
+        "Christine Arron",
+        "Muriel Hurtis",
+        "Colette Besson"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport olympique se pratique avec un fleuret, une épée ou un sabre ?",
+      "choices": [
+        "Escrime",
+        "Tir",
+        "Pentathlon",
+        "Judo"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle épreuve combine natation, cyclisme et course à pied ?",
+      "choices": [
+        "Triathlon",
+        "Décathlon",
+        "Pentathlon",
+        "Aquathlon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel athlète américain a remporté quatre médailles d'or aux Jeux de Berlin en 1936 ?",
+      "choices": [
+        "Jesse Owens",
+        "Carl Lewis",
+        "Michael Johnson",
+        "Ray Ewry"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel sport peut-on gagner une médaille olympique en ski alpin ?",
+      "choices": [
+        "Ski",
+        "Patinage artistique",
+        "Bobsleigh",
+        "Curling"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport de combat oppose deux adversaires sur un tatami ?",
+      "choices": [
+        "Judo",
+        "Escrime",
+        "Boxe",
+        "Tir à l'arc"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport d'hiver se pratique avec des pierres lancées sur une cible de glace ?",
+      "choices": [
+        "Curling",
+        "Hockey",
+        "Skeleton",
+        "Combiné nordique"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle discipline comporte dix épreuves chez les hommes en athlétisme ?",
+      "choices": [
+        "Décathlon",
+        "Heptathlon",
+        "Pentathlon",
+        "Triathlon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays a organisé les Jeux olympiques d'été de 2016 ?",
+      "choices": [
+        "Brésil",
+        "Royaume-Uni",
+        "Chine",
+        "Grèce"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel Français a remporté le décathlon olympique à Sydney en 2000 ?",
+      "choices": [
+        "Erki Nool",
+        "Roman Šebrle",
+        "Chris Huffins",
+        "Il n'y avait pas de Français"
+      ],
+      "answer": 3
+    },
+    {
+      "q": "Quel athlète est surnommé 'le plus grand de tous les temps' dans le sprint américain et a remporté neuf ors olympiques ?",
+      "choices": [
+        "Carl Lewis",
+        "Michael Johnson",
+        "Jesse Owens",
+        "Maurice Greene"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle épreuve consiste à franchir des haies puis une rivière avec une barrière ?",
+      "choices": [
+        "3 000 m steeple",
+        "400 m haies",
+        "110 m haies",
+        "5 000 m"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport olympique utilise une carabine ou un pistolet pour atteindre une cible ?",
+      "choices": [
+        "Tir sportif",
+        "Biathlon",
+        "Pentathlon",
+        "Escrime"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel champion français a remporté l'or olympique en escrime à l'épée par équipes à Tokyo ?",
+      "choices": [
+        "Romain Cannone",
+        "Enzo Lefort",
+        "Yannick Borel",
+        "Bastien Augusto"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport combine ski de fond et saut à ski ?",
+      "choices": [
+        "Combiné nordique",
+        "Biathlon",
+        "Saut acrobatique",
+        "Ski alpin"
+      ],
+      "answer": 0
+    }
+  ],
+  "vitesse_et_moteurs": [
+    {
+      "q": "Dans quelle discipline court le Grand Prix de Monaco ?",
+      "choices": [
+        "Formule 1",
+        "MotoGP",
+        "Rallye",
+        "IndyCar"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pilote est septuple champion du monde de Formule 1 ?",
+      "choices": [
+        "Lewis Hamilton",
+        "Sebastian Vettel",
+        "Fernando Alonso",
+        "Alain Prost"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel constructeur italien est célèbre pour son cheval cabré ?",
+      "choices": [
+        "Ferrari",
+        "Lamborghini",
+        "Maserati",
+        "Alfa Romeo"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle course française dure 24 heures ?",
+      "choices": [
+        "24 Heures du Mans",
+        "Paris-Dakar",
+        "Tour de Corse",
+        "Grand Prix de France"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pilote français est devenu champion du monde de F1 en 1997 ?",
+      "choices": [
+        "Aucun Français",
+        "Alain Prost",
+        "Jean Alesi",
+        "Olivier Panis"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel pays se trouve le circuit de Suzuka ?",
+      "choices": [
+        "Japon",
+        "Chine",
+        "Corée du Sud",
+        "Thaïlande"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Que signifie 'pole position' ?",
+      "choices": [
+        "Première place sur la grille",
+        "Meilleur tour en course",
+        "Victoire finale",
+        "Arrêt au stand"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pilote brésilien a remporté trois titres mondiaux de F1 ?",
+      "choices": [
+        "Ayrton Senna",
+        "Nelson Piquet",
+        "Emerson Fittipaldi",
+        "Rubens Barrichello"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel championnat est associé aux voitures de Formule 1 ?",
+      "choices": [
+        "Championnat du monde FIA de F1",
+        "WEC",
+        "WRC",
+        "DTM"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel constructeur produit la 911 ?",
+      "choices": [
+        "Porsche",
+        "BMW",
+        "Audi",
+        "Mercedes"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pilote allemand a remporté sept titres mondiaux de F1 ?",
+      "choices": [
+        "Michael Schumacher",
+        "Sebastian Vettel",
+        "Nico Rosberg",
+        "Niki Lauda"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle compétition est surnommée le Dakar ?",
+      "choices": [
+        "Rallye-raid",
+        "Course de F1",
+        "Course de côte",
+        "Championnat de tourisme"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Dans quel sport Marc Márquez est-il une star ?",
+      "choices": [
+        "MotoGP",
+        "Formule 1",
+        "Rallye",
+        "NASCAR"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Que mesure principalement un compte-tours ?",
+      "choices": [
+        "Le régime moteur",
+        "La vitesse",
+        "La température des pneus",
+        "La consommation"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel circuit accueille traditionnellement le Grand Prix de Grande-Bretagne ?",
+      "choices": [
+        "Silverstone",
+        "Monza",
+        "Spa",
+        "Imola"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel constructeur japonais produit notamment la Civic ?",
+      "choices": [
+        "Honda",
+        "Toyota",
+        "Nissan",
+        "Mazda"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pilote français a remporté neuf fois les 24 Heures du Mans ?",
+      "choices": [
+        "Tom Kristensen",
+        "Sébastien Buemi",
+        "Henri Pescarolo",
+        "Alain Prost"
+      ],
+      "answer": 2
+    },
+    {
+      "q": "Quelle couleur de drapeau signale généralement l'arrêt d'une course automobile ?",
+      "choices": [
+        "Rouge",
+        "Jaune",
+        "Bleu",
+        "Vert"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel championnat mondial concerne les rallyes ?",
+      "choices": [
+        "WRC",
+        "WEC",
+        "WTCC",
+        "Moto2"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pilote espagnol a remporté deux titres mondiaux de F1 ?",
+      "choices": [
+        "Fernando Alonso",
+        "Carlos Sainz",
+        "Pedro de la Rosa",
+        "Marc Gené"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle marque est associée au modèle Mustang ?",
+      "choices": [
+        "Ford",
+        "Chevrolet",
+        "Dodge",
+        "Tesla"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel circuit accueille le Grand Prix d'Italie de F1 ?",
+      "choices": [
+        "Monza",
+        "Imola",
+        "Mugello",
+        "Misano"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pilote monégasque court pour Ferrari en F1 ?",
+      "choices": [
+        "Charles Leclerc",
+        "Arthur Leclerc",
+        "Pierre Gasly",
+        "Esteban Ocon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel constructeur allemand est associé aux quatre anneaux ?",
+      "choices": [
+        "Audi",
+        "BMW",
+        "Porsche",
+        "Mercedes"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pilote finlandais est champion du monde de F1 en 2007 avec Ferrari ?",
+      "choices": [
+        "Kimi Räikkönen",
+        "Mika Häkkinen",
+        "Valtteri Bottas",
+        "Heikki Kovalainen"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel constructeur a remporté de nombreuses victoires au Mans avec son prototype 919 Hybrid ?",
+      "choices": [
+        "Porsche",
+        "Toyota",
+        "Audi",
+        "Peugeot"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pilote français a remporté le championnat du monde des rallyes WRC neuf fois ?",
+      "choices": [
+        "Sébastien Loeb",
+        "Sébastien Ogier",
+        "Didier Auriol",
+        "François Delecour"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le nom de la célèbre course américaine de 500 miles disputée à Indianapolis ?",
+      "choices": [
+        "Indianapolis 500",
+        "Daytona 500",
+        "Sebring 12 Hours",
+        "NASCAR Cup"
+      ],
+      "answer": 0
+    }
+  ],
+  "stades_et_competitions": [
+    {
+      "q": "Dans quelle ville se trouve le stade de Wembley ?",
+      "choices": [
+        "Londres",
+        "Manchester",
+        "Liverpool",
+        "Birmingham"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel stade accueille traditionnellement le FC Barcelone ?",
+      "choices": [
+        "Camp Nou",
+        "Santiago-Bernabéu",
+        "San Siro",
+        "Anfield"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel stade accueille traditionnellement le Real Madrid ?",
+      "choices": [
+        "Santiago-Bernabéu",
+        "Camp Nou",
+        "Metropolitano",
+        "Mestalla"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle compétition de tennis se joue à Paris sur terre battue ?",
+      "choices": [
+        "Roland-Garros",
+        "Wimbledon",
+        "US Open",
+        "Open d'Australie"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel tournoi de tennis se joue traditionnellement sur gazon ?",
+      "choices": [
+        "Wimbledon",
+        "Roland-Garros",
+        "US Open",
+        "Monte-Carlo"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel tournoi cycliste italien est l'un des trois Grands Tours ?",
+      "choices": [
+        "Giro d'Italia",
+        "Tour de Suisse",
+        "Milan-San Remo",
+        "Tirreno-Adriatico"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle course cycliste est surnommée l'Enfer du Nord ?",
+      "choices": [
+        "Paris-Roubaix",
+        "Liège-Bastogne-Liège",
+        "Milan-San Remo",
+        "Tour des Flandres"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel tournoi de rugby oppose la France, l'Angleterre, l'Irlande, l'Italie, l'Écosse et le pays de Galles ?",
+      "choices": [
+        "Tournoi des Six Nations",
+        "Rugby Championship",
+        "Coupe du monde",
+        "Challenge Cup"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel stade londonien est particulièrement associé au rugby anglais ?",
+      "choices": [
+        "Twickenham",
+        "Wembley",
+        "Emirates",
+        "Stamford Bridge"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel Grand Chelem de tennis se joue à New York ?",
+      "choices": [
+        "US Open",
+        "Wimbledon",
+        "Open d'Australie",
+        "Roland-Garros"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel Grand Tour cycliste se dispute en Espagne ?",
+      "choices": [
+        "Vuelta a España",
+        "Giro",
+        "Tour de France",
+        "Critérium du Dauphiné"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle compétition oppose les équipes nationales européennes de football ?",
+      "choices": [
+        "Championnat d'Europe",
+        "Ligue des champions",
+        "Ligue Europa",
+        "Conference League"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel stade parisien accueille notamment le XV de France ?",
+      "choices": [
+        "Stade de France",
+        "Parc des Princes",
+        "Roland-Garros",
+        "Accor Arena"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel stade est le domicile historique de Liverpool FC ?",
+      "choices": [
+        "Anfield",
+        "Old Trafford",
+        "Emirates Stadium",
+        "Etihad Stadium"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel stade est associé à Manchester United ?",
+      "choices": [
+        "Old Trafford",
+        "Anfield",
+        "Etihad Stadium",
+        "Villa Park"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel tournoi de golf majeur se joue à Augusta ?",
+      "choices": [
+        "Masters",
+        "US Open",
+        "Open Championship",
+        "PGA Championship"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel circuit accueille le Grand Prix d'Italie de F1 ?",
+      "choices": [
+        "Monza",
+        "Imola",
+        "Mugello",
+        "Misano"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel tournoi de tennis se joue à Melbourne ?",
+      "choices": [
+        "Open d'Australie",
+        "US Open",
+        "Wimbledon",
+        "Roland-Garros"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel stade accueille traditionnellement le Paris Saint-Germain ?",
+      "choices": [
+        "Parc des Princes",
+        "Stade de France",
+        "Vélodrome",
+        "Groupama Stadium"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel stade est surnommé le 'Théâtre des rêves' ?",
+      "choices": [
+        "Old Trafford",
+        "Wembley",
+        "Anfield",
+        "Celtic Park"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel tournoi de golf britannique est aussi appelé The Open ?",
+      "choices": [
+        "Open Championship",
+        "Masters",
+        "PGA Championship",
+        "US Open"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle compétition de basket oppose les sélections nationales européennes ?",
+      "choices": [
+        "EuroBasket",
+        "Euroligue",
+        "NBA",
+        "EuroCup"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel circuit de F1 est célèbre pour l'Eau Rouge et le Raidillon ?",
+      "choices": [
+        "Spa-Francorchamps",
+        "Monaco",
+        "Silverstone",
+        "Monza"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle compétition de tennis par équipes oppose les nations masculines ?",
+      "choices": [
+        "Coupe Davis",
+        "Billie Jean King Cup",
+        "Laver Cup",
+        "ATP Finals"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel stade de Milan est aussi appelé Giuseppe-Meazza ?",
+      "choices": [
+        "San Siro",
+        "Stadio Olimpico",
+        "Juventus Stadium",
+        "Marassi"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle course cycliste belge est célèbre pour ses secteurs pavés ?",
+      "choices": [
+        "Tour des Flandres",
+        "Liège-Bastogne-Liège",
+        "Flèche Wallonne",
+        "Amstel Gold Race"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel Grand Chelem de tennis est le seul à se jouer sur terre battue ?",
+      "choices": [
+        "Roland-Garros",
+        "Wimbledon",
+        "US Open",
+        "Open d'Australie"
+      ],
+      "answer": 0
+    }
+  ],
+  "regles_et_connaissances": [
+    {
+      "q": "Combien de temps dure un match de football réglementaire ?",
+      "choices": [
+        "90 minutes",
+        "80 minutes",
+        "100 minutes",
+        "60 minutes"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de points vaut un panier à trois points au basket ?",
+      "choices": [
+        "3",
+        "2",
+        "4",
+        "1"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "À quelle hauteur se trouve le panier de basket standard ?",
+      "choices": [
+        "3,05 m",
+        "2,75 m",
+        "3,50 m",
+        "2,43 m"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de joueurs une équipe de rugby à XV compte-t-elle sur le terrain ?",
+      "choices": [
+        "15",
+        "13",
+        "11",
+        "18"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de joueurs une équipe de volley-ball compte-t-elle sur le terrain ?",
+      "choices": [
+        "6",
+        "5",
+        "7",
+        "8"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle distance sépare le point de penalty du but au football ?",
+      "choices": [
+        "11 m",
+        "9 m",
+        "12 m",
+        "10 m"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Au tennis, comment appelle-t-on un score de 40-40 ?",
+      "choices": [
+        "Égalité",
+        "Avantage",
+        "Let",
+        "Tie-break"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de points vaut un touchdown en football américain avant transformation ?",
+      "choices": [
+        "6",
+        "7",
+        "3",
+        "5"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle couleur de carton entraîne généralement une expulsion au football ?",
+      "choices": [
+        "Rouge",
+        "Jaune",
+        "Bleu",
+        "Noir"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de joueurs composent une équipe de baseball sur le terrain ?",
+      "choices": [
+        "9",
+        "7",
+        "11",
+        "10"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de trous compte un parcours de golf standard ?",
+      "choices": [
+        "18",
+        "9",
+        "21",
+        "27"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de périodes compte un match de hockey sur glace ?",
+      "choices": [
+        "3",
+        "2",
+        "4",
+        "5"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle est la longueur d'une piscine olympique ?",
+      "choices": [
+        "50 m",
+        "25 m",
+        "100 m",
+        "33 m"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de mètres mesure une piste d'athlétisme standard sur un tour ?",
+      "choices": [
+        "400 m",
+        "200 m",
+        "800 m",
+        "500 m"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Au rugby, combien de points vaut une transformation ?",
+      "choices": [
+        "2",
+        "3",
+        "5",
+        "1"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Au handball, combien de temps dure normalement un match senior ?",
+      "choices": [
+        "60 minutes",
+        "40 minutes",
+        "80 minutes",
+        "50 minutes"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Au volley-ball, combien de points faut-il généralement pour gagner un set ?",
+      "choices": [
+        "25",
+        "21",
+        "15",
+        "30"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle est la distance officielle d'un marathon ?",
+      "choices": [
+        "42,195 km",
+        "40 km",
+        "41,195 km",
+        "45 km"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Au football, que sanctionne le hors-jeu ?",
+      "choices": [
+        "Une position irrégulière d'un attaquant au moment de la passe",
+        "Une faute de main",
+        "Un tacle dangereux",
+        "Une sortie de balle"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Au tennis, comment appelle-t-on un jeu remporté sans perdre de point ?",
+      "choices": [
+        "Jeu blanc",
+        "Ace",
+        "Break",
+        "Love"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel équipement protège la tête d'un cycliste ?",
+      "choices": [
+        "Casque",
+        "Protège-dents",
+        "Jambières",
+        "Plastron"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de joueurs une équipe de futsal aligne-t-elle sur le terrain ?",
+      "choices": [
+        "5",
+        "6",
+        "7",
+        "4"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Au golf, que signifie 'par' ?",
+      "choices": [
+        "Le nombre de coups de référence pour un trou ou un parcours",
+        "Un coup raté",
+        "Un birdie",
+        "Un obstacle"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "En escrime, quelle arme permet de toucher sur tout le corps ?",
+      "choices": [
+        "Épée",
+        "Fleuret",
+        "Sabre",
+        "Aucune"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Combien de joueurs une équipe de water-polo compte-t-elle dans l'eau ?",
+      "choices": [
+        "7",
+        "6",
+        "8",
+        "5"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quelle est la hauteur du filet de tennis au centre du court ?",
+      "choices": [
+        "Environ 0,914 m",
+        "1,20 m",
+        "0,75 m",
+        "1,50 m"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Au basket, combien de secondes une équipe dispose-t-elle généralement pour tenter un tir ?",
+      "choices": [
+        "24",
+        "14",
+        "30",
+        "12"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Au football, combien de remplacements une équipe peut-elle généralement effectuer dans les compétitions modernes autorisant cinq changements ?",
+      "choices": [
+        "5",
+        "3",
+        "7",
+        "4"
+      ],
+      "answer": 0
+    }
+  ],
+  "insolite_et_records": [
+    {
+      "q": "Dans quel pays pratique-t-on le sepak takraw, sport mêlant ballon et acrobaties ?",
+      "choices": [
+        "Thaïlande",
+        "Brésil",
+        "Espagne",
+        "Japon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport se joue avec une pierre lancée sur la glace et des balais ?",
+      "choices": [
+        "Curling",
+        "Hockey",
+        "Patinage",
+        "Bandy"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport peut se pratiquer sous l'eau avec un petit palet ?",
+      "choices": [
+        "Hockey subaquatique",
+        "Rugby subaquatique",
+        "Water-polo",
+        "Curling aquatique"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport consiste à porter son conjoint sur un parcours d'obstacles ?",
+      "choices": [
+        "Course de porté de femme",
+        "Lutte",
+        "Sprint en duo",
+        "Relais familial"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport traditionnel finlandais consiste notamment à lancer un téléphone portable ?",
+      "choices": [
+        "Lancer de téléphone portable",
+        "Mölkky",
+        "Pesäpallo",
+        "Lancer de marteau"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport brésilien mêle danse, musique et techniques de combat ?",
+      "choices": [
+        "Capoeira",
+        "Jiu-jitsu",
+        "MMA",
+        "Vale tudo"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport consiste à lancer des boules le plus près possible d'un cochonnet ?",
+      "choices": [
+        "Pétanque",
+        "Bowling",
+        "Boccia",
+        "Curling"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport se pratique avec une boule et des quilles ?",
+      "choices": [
+        "Bowling",
+        "Curling",
+        "Pétanque",
+        "Golf"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport consiste à lancer un disque vers des paniers métalliques ?",
+      "choices": [
+        "Disc golf",
+        "Ultimate",
+        "Golf volant",
+        "Flying golf"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel pays est particulièrement associé au kabaddi ?",
+      "choices": [
+        "Inde",
+        "France",
+        "Norvège",
+        "Mexique"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport utilise une table, des raquettes et une petite balle ?",
+      "choices": [
+        "Tennis de table",
+        "Squash",
+        "Badminton",
+        "Pelote"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport est associé à des courses de taureaux dans les rues de Pampelune ?",
+      "choices": [
+        "Course de taureaux",
+        "Rugby",
+        "Pelote basque",
+        "Corrida"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport équestre oppose deux équipes qui tentent de marquer avec une balle ?",
+      "choices": [
+        "Horse-ball",
+        "Polo",
+        "Basket équestre",
+        "Hockey à cheval"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport est parfois surnommé 'football australien' et se joue avec un ballon ovale ?",
+      "choices": [
+        "Australian rules football",
+        "Cricket",
+        "Rugby à XIII",
+        "Gaélique"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le nom de la course de fond de 100 km organisée à travers les Alpes entre Chamonix et Courmayeur ?",
+      "choices": [
+        "CCC",
+        "UTMB",
+        "Marathon des Sables",
+        "Diagonale des Fous"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel athlète est célèbre pour avoir couru un marathon en moins de deux heures lors d'une performance non homologuée ?",
+      "choices": [
+        "Eliud Kipchoge",
+        "Haile Gebrselassie",
+        "Mo Farah",
+        "Kenenisa Bekele"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel est le nom du célèbre ultra-trail organisé autour du Mont-Blanc ?",
+      "choices": [
+        "UTMB",
+        "Spartathlon",
+        "Western States",
+        "Tor des Géants"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport se joue avec une balle et un panier, mais à cheval ?",
+      "choices": [
+        "Horse-ball",
+        "Polo",
+        "Pato",
+        "Buzkashi"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport traditionnel afghan consiste à se disputer une carcasse de chèvre à cheval ?",
+      "choices": [
+        "Buzkashi",
+        "Polo",
+        "Horse-ball",
+        "Kok-boru"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport japonais voit des lutteurs tenter de faire sortir leur adversaire d'un cercle ?",
+      "choices": [
+        "Sumo",
+        "Judo",
+        "Kendo",
+        "Aïkido"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport consiste à descendre une rivière dans une embarcation pneumatique ?",
+      "choices": [
+        "Rafting",
+        "Aviron",
+        "Surf",
+        "Canoë de vitesse"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport peut opposer deux équipes qui tentent de toucher leurs adversaires avec une balle ?",
+      "choices": [
+        "Dodgeball",
+        "Baseball",
+        "Cricket",
+        "Squash"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport est pratiqué avec des palmes, un masque et un tuba dans certaines compétitions ?",
+      "choices": [
+        "Nage avec palmes",
+        "Plongée synchronisée",
+        "Water-polo",
+        "Triathlon"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel jeu de précision consiste à lancer des fléchettes sur une cible circulaire ?",
+      "choices": [
+        "Fléchettes",
+        "Tir à l'arc",
+        "Boccia",
+        "Curling"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport de ballon spectaculaire se pratique avec les pieds et un filet en Asie du Sud-Est ?",
+      "choices": [
+        "Sepak takraw",
+        "Kabaddi",
+        "Pencak silat",
+        "Pelota"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport consiste à parcourir une piste en luge, tête en avant ?",
+      "choices": [
+        "Skeleton",
+        "Luge",
+        "Bobsleigh",
+        "Curling"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport se pratique sur une planche avec une voile ?",
+      "choices": [
+        "Planche à voile",
+        "Aviron",
+        "Canoë",
+        "Skateboard"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport utilise un cheval et une longue perche pour atteindre une balle ?",
+      "choices": [
+        "Polo",
+        "Horse-ball",
+        "Cricket",
+        "Hockey"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport est associé au lancer de troncs d'arbres dans les Highlands écossais ?",
+      "choices": [
+        "Caber toss",
+        "Hurling",
+        "Curling",
+        "Highland wrestling"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport consiste à parcourir une rivière en descendant des rapides avec un kayak ?",
+      "choices": [
+        "Kayak-kayak de rivière",
+        "Aviron",
+        "Polo",
+        "Voile"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport de précision consiste à faire glisser des disques vers une cible sur une surface glacée ?",
+      "choices": [
+        "Curling",
+        "Shuffleboard",
+        "Hockey",
+        "Boccia"
+      ],
+      "answer": 0
+    },
+    {
+      "q": "Quel sport de combat coréen est célèbre pour ses coups de pied spectaculaires ?",
+      "choices": [
+        "Taekwondo",
+        "Judo",
+        "Sumo",
+        "Kendo"
+      ],
+      "answer": 0
+    }
+  ]
 }
