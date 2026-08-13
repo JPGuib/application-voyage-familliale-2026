@@ -1,0 +1,20 @@
+[
+  { "vrai": "Cappadoce",  "faux": "Désert"     },
+  { "vrai": "Bosphore",   "faux": "Fleuve"      },
+  { "vrai": "Baklava",    "faux": "Chocolat"    },
+  { "vrai": "Istanbul",   "faux": "Paris"       },
+  { "vrai": "Hammam",     "faux": "Sauna"       },
+  { "vrai": "Turquoise",  "faux": "Bleu"        },
+  { "vrai": "Tapis",      "faux": "Parquet"     },
+  { "vrai": "Derviche",   "faux": "Danseur"     },
+  { "vrai": "Mosquée",    "faux": "Cathédrale"  },
+  { "vrai": "Kebab",      "faux": "Sandwich"    },
+  { "vrai": "Minarets",   "faux": "Clocher"     },
+  { "vrai": "Bazaar",     "faux": "Supermarché" },
+  { "vrai": "Izmir",      "faux": "Nice"        },
+  { "vrai": "Antalya",    "faux": "Cannes"      },
+  { "vrai": "Pamukkale",  "faux": "Cascade"     },
+  { "vrai": "Raki",       "faux": "Pastis"      },
+  { "vrai": "Galata",     "faux": "Tour"        },
+  { "vrai": "Boğaz",      "faux": "Canal"       }
+]

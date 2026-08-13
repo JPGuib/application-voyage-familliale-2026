@@ -17,6 +17,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 BASE_DIR = Path(__file__).parent
 BOARD_SIZE = 24  # 24 cases, 4 tours de chaque categorie (packs a 6 categories)
+
+_imposteur_words_path = BASE_DIR / "src" / "content" / "imposteur-words.json"
+IMPOSTEUR_WORD_PAIRS: list[dict] = json.loads(_imposteur_words_path.read_text(encoding="utf-8"))
 COLORS = ["#e63946", "#2a9d8f", "#f4a261", "#457b9d", "#a663cc"]
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -759,13 +762,9 @@ async def handle_imposteur_message(room: "ImposteurRoom", player: "ImposteurPlay
                 return
             if room.state != "lobby":
                 return
-            mot_vrai = str(data.get("mot_vrai", "")).strip()
-            mot_faux = str(data.get("mot_faux", "")).strip()
-            if not mot_vrai:
-                await send_to_imp(player, {"type": "error", "message": "Le mot vrai est obligatoire."})
-                return
-            room.mot_vrai = mot_vrai
-            room.mot_faux = mot_faux
+            pair = random.choice(IMPOSTEUR_WORD_PAIRS)
+            room.mot_vrai = pair["vrai"]
+            room.mot_faux = pair["faux"]
             impostor = random.choice(active)
             room.impostor_id = impostor.id
             impostor.is_impostor = True

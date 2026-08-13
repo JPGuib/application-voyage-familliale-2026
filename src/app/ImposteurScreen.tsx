@@ -42,17 +42,6 @@ type IGameOver = {
   mot_faux: string;
 };
 
-const PRESET_PAIRS = [
-  { vrai: "Cappadoce", faux: "Désert" },
-  { vrai: "Bosphore", faux: "Fleuve" },
-  { vrai: "Baklava", faux: "Chocolat" },
-  { vrai: "Istanbul", faux: "Paris" },
-  { vrai: "Hammam", faux: "Sauna" },
-  { vrai: "Turquoise", faux: "Bleu" },
-  { vrai: "Tapis", faux: "Parquet" },
-  { vrai: "Derviche", faux: "Danseur" },
-];
-
 export function ImposteurScreen({
   defaultPlayerName,
   onBack,
@@ -74,8 +63,6 @@ export function ImposteurScreen({
   const [wordInput, setWordInput] = useState("");
   const [mySubmittedWord, setMySubmittedWord] = useState<string | null>(null);
   const [gameOver, setGameOver] = useState<IGameOver | null>(null);
-  const [motVrai, setMotVrai] = useState("Cappadoce");
-  const [motFaux, setMotFaux] = useState("Désert");
   const wsRef = useRef<WebSocket | null>(null);
   const stepRef = useRef(step);
 
@@ -167,9 +154,8 @@ export function ImposteurScreen({
   const send = (payload: Record<string, unknown>) => wsRef.current?.send(JSON.stringify(payload));
 
   const startGame = () => {
-    if (!motVrai.trim()) { setError("Le mot vrai est obligatoire."); return; }
     setError(null);
-    send({ type: "start_game", mot_vrai: motVrai.trim(), mot_faux: motFaux.trim() });
+    send({ type: "start_game" });
   };
 
   const submitWord = () => {
@@ -258,31 +244,8 @@ export function ImposteurScreen({
             ))}
             {isHost && (
               <>
-                <h2 style={{ marginTop: 20 }}>📝 Mots du jeu</h2>
-                <div className="tg-card">
-                  <p style={{ margin: "0 0 10px", fontSize: "0.85rem" }}>Choisissez un thème ou entrez vos propres mots :</p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-                    {PRESET_PAIRS.map((pair) => (
-                      <button
-                        key={pair.vrai}
-                        onClick={() => { setMotVrai(pair.vrai); setMotFaux(pair.faux); setError(null); }}
-                        style={{
-                          padding: "5px 10px", borderRadius: 20,
-                          border: `1px solid ${motVrai === pair.vrai ? "var(--tg-accent)" : "rgba(255,255,255,0.15)"}`,
-                          background: motVrai === pair.vrai ? "rgba(232,212,77,0.15)" : "transparent",
-                          color: motVrai === pair.vrai ? "var(--tg-accent)" : "var(--tg-text-muted)",
-                          fontSize: "0.78rem", cursor: "pointer",
-                        }}
-                      >
-                        {pair.vrai}
-                      </button>
-                    ))}
-                  </div>
-                  <input value={motVrai} onChange={(e) => setMotVrai(e.target.value)} placeholder="Mot vrai (ex : Cappadoce)" />
-                  <input value={motFaux} onChange={(e) => setMotFaux(e.target.value)} placeholder="Mot imposteur (optionnel)" />
-                  <p style={{ fontSize: "0.78rem", margin: "4px 0 0", color: "var(--tg-text-muted)" }}>
-                    Laissez vide pour que l'imposteur n'ait aucun mot.
-                  </p>
+                <div className="tg-card" style={{ textAlign: "center" }}>
+                  <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--tg-text-muted)" }}>🎲 Un thème sera tiré au sort automatiquement au démarrage.</p>
                 </div>
               </>
             )}
