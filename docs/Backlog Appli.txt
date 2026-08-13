@@ -9,6 +9,10 @@ CONTENU :
 * nettoyer les points du jeu
 * Revoir photos histoire (notamment la première brique) 
 
+TESTER TOUTE L'APPLICATION
+* tester le mode offline
+
+
 
 TESTS DE L'APPLICATION
 - Jeux 
@@ -27,3 +31,4 @@ TESTS DE L'APPLICATION
             * Générations : 100
             * Sport : 171
 - Quiz du jour / enigme 
+  

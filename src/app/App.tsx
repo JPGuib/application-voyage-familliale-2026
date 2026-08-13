@@ -6691,7 +6691,7 @@ function ResultsScreen({
       hasPlayed: member.gameResults.some((entry) => entry.day === currentDay),
     }));
   const canViewSharedChallenges =
-    currentProfileRole === "utilisateur" || currentProfileRole === "proprietaire";
+    currentProfileRole === "utilisateur";
   const sharedChallengeParticipants = familyMembers.filter(
     (member) => member.role !== "proprietaire" && member.role !== "visiteur"
   );
@@ -12803,7 +12803,7 @@ const resetForProfileSwitch = () => {
   const destinationSurveyPointsByProfile = new Map(
     destinationSurveyResults.rows.map((row) => [row.profileId, row.points] as const)
   );
-  const sharedChallengeDay = currentDay;
+  const sharedChallengeDay = tripFinished ? currentDay : currentDay - 1;
   const familyMembersForPodium: ResultsFamilyMember[] = cloudSnapshot
     ? Object.values(cloudSnapshot.profiles).map((item) => ({
         profileId: item.profileId,
