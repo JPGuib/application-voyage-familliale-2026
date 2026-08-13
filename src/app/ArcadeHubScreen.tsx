@@ -20,7 +20,7 @@ export function ArcadeHubScreen({
           onClick={onBack}
           className="relative z-10 flex items-center gap-1 text-white/80 text-sm font-bold mb-3"
         >
-          <ChevronLeft size={18} /> Jeu
+          <ChevronLeft size={18} /> Accueil
         </button>
         <h1 className="relative z-10 text-2xl font-black">Jeux 🕹️</h1>
         <p className="relative z-10 text-sm opacity-90 mt-1">Choisissez à quoi jouer</p>

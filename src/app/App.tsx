@@ -2965,6 +2965,9 @@ function DashboardScreen({
 
       {canPlayArcade && (
         <div className="px-4 mt-4">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+            Espace ludique
+          </p>
           <button
             onClick={() => onNavigate("jeux")}
             className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left active:scale-[0.98] transition-transform shadow-sm"
@@ -14275,7 +14278,7 @@ const resetForProfileSwitch = () => {
       case "jeux":
         return (
           <ArcadeHubScreen
-            onBack={() => goToScreen("game")}
+            onBack={() => goToScreen("dashboard")}
             onPlayTrivial={() => goToScreen("trivial")}
             onPlayCandyCrush={() => goToScreen("candy-crush")}
             onPlayOrdalie={() => goToScreen("ordalie")}
