@@ -1076,6 +1076,17 @@ export async function pushFamilyPhaseChange(
   await update(ref(database, familyPath(familyId)), updates);
 }
 
+export async function pushTripStartDate(
+  database: Database,
+  familyId: string,
+  tripStartDate: string
+): Promise<void> {
+  await update(ref(database, familyPath(familyId)), {
+    tripStartDate,
+    updatedAt: Date.now(),
+  });
+}
+
 export async function claimProfileRole(
   database: Database,
   familyId: string,

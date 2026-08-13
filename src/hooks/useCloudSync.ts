@@ -12,6 +12,7 @@ import {
   pushFamilyPhaseChange,
   pushGameDayOverride,
   pushPlaceDayOverride,
+  pushTripStartDate,
   resetGameProgressInCloud,
   resetGameResultsInCloud,
 } from "../services/cloudSyncProvider";
@@ -767,6 +768,38 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  const setTripStartDate = useCallback(
+    async (tripStartDate: string): Promise<boolean> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        setCloudAuthError("auth-required");
+        return false;
+      }
+
+      try {
+        await ensureFamilyMembership(database, familyId, cloudUserUid);
+        await ensureOwnerMembership(database, familyId, cloudUserUid);
+        await pushTripStartDate(database, familyId, tripStartDate);
+        setCloudAuthError(null);
+        return true;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        const isPermissionDenied = errorMessage.includes("PERMISSION_DENIED");
+        if (isPermissionDenied) {
+          const runtimeProjectId =
+            (database.app.options as { projectId?: string })?.projectId ?? null;
+          const runtimeDatabaseUrl =
+            (database.app.options as { databaseURL?: string })?.databaseURL
+            ?? ((import.meta.env.VITE_FIREBASE_DATABASE_URL as string | undefined) ?? null);
+          console.error(
+            `[cloud-sync] trip-start-date denied projectId=${runtimeProjectId ?? "null"} databaseURL=${runtimeDatabaseUrl ?? "null"} familyId=${familyId} actorUid=${cloudUserUid} tripStartDate=${tripStartDate}`
+          );
+        }
+        return false;
+      }
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   const resetGameResults = useCallback(
     async (day?: number): Promise<void> => {
       if (!isEnabled || !database || !cloudUserUid || !cloudSnapshot) {
@@ -831,6 +864,7 @@ export function useCloudSync() {
     deleteProfile,
     setGameDayOverride,
     setPlaceDayOverride,
+    setTripStartDate,
     resetGameResults,
     resetGameProgress,
     registerAsOwnerDevice,

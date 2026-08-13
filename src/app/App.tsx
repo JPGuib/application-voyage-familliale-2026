@@ -9160,6 +9160,7 @@ export default function App() {
     deleteProfile,
     setGameDayOverride,
     setPlaceDayOverride,
+    setTripStartDate: setTripStartDateInCloud,
     resetGameResults,
     resetGameProgress,
     registerAsOwnerDevice,
@@ -12311,54 +12312,8 @@ const resetForProfileSwitch = () => {
       };
     }
 
-    const profilePasswordHash = profilePasswordHashes[profile.id] || "";
-    const profileRecoveryHash = profileRecoveryHashes[profile.id] || "";
-    const profileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";
-    const profileRecoveryAnswer = profileRecoveryAnswers[profile.id] || "";
-    const profileCustomChecklistItems = customChecklistItemsByProfile[profile.id] ?? [];
-    const pushPayload = {
-      actorUid: cloudActorUid,
-      canWriteFamilyState,
-      familyState: normalizedFamilyState,
-      ownerCodeHash,
-      ownerCodePlain,
-      travelerCodeHash,
-      travelerCodePlain,
-      ownerRecoveryHash,
-      ownerRecoveryConfiguredAt: undefined,
-      profileId: profile.id,
-      surname: profile.surname,
-      role: profile.role,
-      profilePasswordHash,
-      profileRecoveryHash,
-      profileRecoveryQuestion,
-      profileRecoveryAnswer,
-      profileRecoveryConfiguredAt: profileRecoveryHash
-        ? cloudSnapshot.profiles[profile.id]?.recoveryConfiguredAt
-        : undefined,
-      gender: profile.gender,
-      householdRole: profile.householdRole,
-      checklist: checked,
-      profileCustomChecklistItems,
-      ownerGlobalChecklistAdditions,
-      ownerGlobalChecklistRemovals,
-      placeComments: placeCommentsByPlace,
-      placeVisibilityMap,
-      placeDayOverrides: placeDayOverrideMap,
-      placeDayOrderOverrides: placeDayOrderOverrideMap,
-      documentVisibilityMap,
-      profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
-      challengeReactions: challengeReactionsByDay,
-      launchGateCycle,
-      launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
-      gameResults: gameHistory,
-      gameProgress: currentGameProgress,
-      phase,
-      tripStartDate: date,
-    };
-
-    const pushed = await pushSnapshot(pushPayload);
-    if (pushed === false) {
+    const pushed = await setTripStartDateInCloud(date);
+    if (!pushed) {
       pendingTripStartDateRef.current = "none";
       return {
         ok: false,
@@ -12367,43 +12322,6 @@ const resetForProfileSwitch = () => {
     }
 
     pendingTripStartDateRef.current = date;
-    lastCloudPushRef.current = stableSerializeForCloudPush({
-      actorUid: cloudActorUid,
-      canWriteFamilyState,
-      familyState: normalizedFamilyState,
-      ownerCodeHash,
-      ownerCodePlain,
-      travelerCodeHash,
-      travelerCodePlain,
-      ownerRecoveryHash,
-      ownerRecoveryConfiguredAt: ownerRecoveryHash ? true : false,
-      profileId: profile.id,
-      surname: profile.surname,
-      role: profile.role,
-      gender: profile.gender,
-      householdRole: profile.householdRole,
-      profilePasswordHash,
-      profileRecoveryHash,
-      profileRecoveryQuestion,
-      profileRecoveryAnswer,
-      checklist: checked,
-      profileCustomChecklistItems,
-      ownerGlobalChecklistAdditions,
-      ownerGlobalChecklistRemovals,
-      placeCommentsByPlace,
-      placeVisibilityMap,
-      placeDayOverrides: placeDayOverrideMap,
-      placeDayOrderOverrides: placeDayOrderOverrideMap,
-      documentVisibilityMap,
-      destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
-      challengeReactions: challengeReactionsByDay,
-      launchGateCycle,
-      launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
-      phase,
-      tripStartDate: date,
-      gameHistory,
-      currentGameProgress,
-    });
     setTripStartDate(date);
     return { ok: true, message: "Date de début du voyage mise à jour." };
   };

@@ -69,7 +69,7 @@ function makeSnapshot() {
   };
 }
 
-async function openSettings(pushSnapshot: ReturnType<typeof vi.fn>) {
+async function openSettings(setTripStartDate: ReturnType<typeof vi.fn>) {
   localStorage.setItem("jp-active-profile-id", "p1");
   cloudSyncMock.mockReturnValue({
     cloudEnabled: true,
@@ -77,11 +77,12 @@ async function openSettings(pushSnapshot: ReturnType<typeof vi.fn>) {
     cloudAuthError: null,
     cloudActorUid: "actor-owner",
     cloudSnapshot: makeSnapshot(),
-    pushSnapshot,
+    pushSnapshot: vi.fn().mockResolvedValue(true),
     claimRoleForProfile: vi.fn().mockResolvedValue(null),
     deleteProfile: vi.fn().mockResolvedValue(undefined),
     setGameDayOverride: vi.fn().mockResolvedValue(undefined),
     setPlaceDayOverride: vi.fn().mockResolvedValue(undefined),
+    setTripStartDate,
     resetGameResults: vi.fn().mockResolvedValue(undefined),
     resetGameProgress: vi.fn().mockResolvedValue(undefined),
     registerAsOwnerDevice: vi.fn().mockResolvedValue(undefined),
@@ -110,8 +111,8 @@ describe("App trip start date save", () => {
   });
 
   it("persists the owner trip start date to cloud before reporting success", async () => {
-    const pushSnapshot = vi.fn().mockResolvedValue(true);
-    await openSettings(pushSnapshot);
+    const setTripStartDate = vi.fn().mockResolvedValue(true);
+    await openSettings(setTripStartDate);
 
     fireEvent.change(screen.getByDisplayValue("2026-08-16"), {
       target: { value: "2026-08-12" },
@@ -119,20 +120,15 @@ describe("App trip start date save", () => {
     fireEvent.click(screen.getByRole("button", { name: /Enregistrer la date de début/i }));
 
     await waitFor(() => {
-      expect(pushSnapshot).toHaveBeenCalledWith(
-        expect.objectContaining({
-          canWriteFamilyState: true,
-          tripStartDate: "2026-08-12",
-        })
-      );
+      expect(setTripStartDate).toHaveBeenCalledWith("2026-08-12");
     });
     expect(screen.getByText("Date de début du voyage mise à jour.")).toBeInTheDocument();
     expect(screen.getByText(/12 août 2026/i)).toBeInTheDocument();
   });
 
   it("keeps the previous date and shows an error when the cloud write fails", async () => {
-    const pushSnapshot = vi.fn().mockResolvedValue(false);
-    await openSettings(pushSnapshot);
+    const setTripStartDate = vi.fn().mockResolvedValue(false);
+    await openSettings(setTripStartDate);
 
     fireEvent.change(screen.getByDisplayValue("2026-08-16"), {
       target: { value: "2026-08-12" },
@@ -140,12 +136,7 @@ describe("App trip start date save", () => {
     fireEvent.click(screen.getByRole("button", { name: /Enregistrer la date de début/i }));
 
     await waitFor(() => {
-      expect(pushSnapshot).toHaveBeenCalledWith(
-        expect.objectContaining({
-          canWriteFamilyState: true,
-          tripStartDate: "2026-08-12",
-        })
-      );
+      expect(setTripStartDate).toHaveBeenCalledWith("2026-08-12");
     });
     expect(
       screen.getByText("Enregistrement impossible. Verifiez la synchronisation cloud puis reessayez.")
