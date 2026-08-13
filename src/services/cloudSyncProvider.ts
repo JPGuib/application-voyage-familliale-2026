@@ -971,7 +971,6 @@ export async function pushCloudSnapshot(
     }
   }
 
-  console.info("[cloud-sync] pushCloudSnapshot keys", Object.keys(updates));
   await update(ref(database, familyPath(familyId)), updates);
 }
 
