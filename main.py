@@ -176,6 +176,42 @@ for pack_id, pack_def in PACKS.items():
     with open(BASE_DIR / pack_def["questions_file"], encoding="utf-8") as f:
         QUESTIONS_BY_PACK[pack_id] = json.load(f)
 
+
+def validate_pack_configuration() -> None:
+    errors: list[str] = []
+    expected_categories = 6
+
+    for pack_id, pack_def in PACKS.items():
+        categories = pack_def["categories"]
+        labels = pack_def["category_labels"]
+        questions = QUESTIONS_BY_PACK[pack_id]
+
+        if len(categories) != expected_categories:
+            errors.append(
+                f"[{pack_id}] doit contenir exactement {expected_categories} categories (trouve: {len(categories)})."
+            )
+
+        duplicate_categories = sorted({c for c in categories if categories.count(c) > 1})
+        if duplicate_categories:
+            errors.append(f"[{pack_id}] categories dupliquees: {duplicate_categories}.")
+
+        missing_in_questions = [c for c in categories if c not in questions]
+        if missing_in_questions:
+            errors.append(
+                f"[{pack_id}] categories absentes du fichier de questions: {missing_in_questions}."
+            )
+
+        missing_in_labels = [c for c in categories if c not in labels]
+        if missing_in_labels:
+            errors.append(f"[{pack_id}] labels manquants pour: {missing_in_labels}.")
+
+    if errors:
+        error_block = "\n - ".join(errors)
+        raise RuntimeError(f"Configuration packs invalide:\n - {error_block}")
+
+
+validate_pack_configuration()
+
 # Une partie oubliee (personne ne joue plus, onglet ferme sans "Terminer")
 # est fermee automatiquement au bout d'un moment pour ne pas laisser tourner
 # des salons morts indefiniment en memoire.

@@ -21,18 +21,24 @@ const TRIVIAL_SERVER_URL: string =
 // (ex. wss://mon-serveur.onrender.com -> https://mon-serveur.onrender.com)
 const TRIVIAL_HTTP_URL = TRIVIAL_SERVER_URL.replace(/^wss:\/\//, "https://").replace(/^ws:\/\//, "http://");
 
-const CATEGORY_COLORS: Record<string, string> = {
-  histoire: "#0F5257",
-  gastronomie: "#C1442D",
-  langue: "#D9A441",
-  geographie: "#2AA9A2",
-  culture: "#8B5FA3",
-  souvenirs: "#3D5A73",
-  sciences: "#2E7D6B",
-  divertissement: "#D4711E",
-  sports: "#3D6B99",
-  litterature: "#7A5195",
-};
+const CATEGORY_COLOR_PALETTE = [
+  "#0F5257",
+  "#C1442D",
+  "#D9A441",
+  "#2AA9A2",
+  "#8B5FA3",
+  "#3D5A73",
+  "#2E7D6B",
+  "#D4711E",
+] as const;
+
+function buildCategoryColors(categoryKeys: string[]): Record<string, string> {
+  const colors: Record<string, string> = {};
+  categoryKeys.forEach((key, idx) => {
+    colors[key] = CATEGORY_COLOR_PALETTE[idx % CATEGORY_COLOR_PALETTE.length];
+  });
+  return colors;
+}
 
 type TPlayer = {
   id: string;
@@ -142,6 +148,7 @@ export function TrivialGameScreen({
   const [codeInput, setCodeInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isSocketReady, setIsSocketReady] = useState(false);
   const [connectingHint, setConnectingHint] = useState<string | null>(null);
   const [room, setRoom] = useState<TRoomState | null>(null);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
@@ -205,6 +212,7 @@ export function TrivialGameScreen({
     }
 
     setIsConnecting(true);
+    setIsSocketReady(false);
     setDiceMessage("");
     const packQuery = code === "NEW" ? `?pack=${encodeURIComponent(selectedPack)}` : "";
     const ws = new WebSocket(`${TRIVIAL_SERVER_URL}/ws/${code}/${encodeURIComponent(trimmedName)}${packQuery}`);
@@ -228,14 +236,20 @@ export function TrivialGameScreen({
       }
     }, 60000);
 
+    ws.onopen = () => {
+      setIsSocketReady(true);
+    };
+
     ws.onerror = () => {
       setError("Connexion au serveur de jeu impossible. Vérifiez l'URL configurée et votre connexion Internet.");
       setIsConnecting(false);
+      setIsSocketReady(false);
       setConnectingHint(null);
     };
 
     ws.onclose = () => {
       setIsConnecting(false);
+      setIsSocketReady(false);
       setConnectingHint(null);
     };
 
@@ -246,6 +260,7 @@ export function TrivialGameScreen({
           clearTimeout(connectTimeout);
           clearTimeout(slowNotice);
           setIsConnecting(false);
+          setIsSocketReady(true);
           setConnectingHint(null);
           setMyPlayerId(data.player_id);
           setStep("lobby");
@@ -294,8 +309,14 @@ export function TrivialGameScreen({
     };
   };
 
-  const send = (payload: Record<string, unknown>) => {
-    wsRef.current?.send(JSON.stringify(payload));
+  const send = (payload: Record<string, unknown>): boolean => {
+    const ws = wsRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      setError("Connexion perdue avec le serveur. Rejoignez à nouveau la partie.");
+      return false;
+    }
+    ws.send(JSON.stringify(payload));
+    return true;
   };
 
   const endGame = () => {
@@ -307,6 +328,13 @@ export function TrivialGameScreen({
   const me = room?.players.find((p) => p.id === myPlayerId) || null;
   const isMyTurn = room?.current_player === myPlayerId;
   const currentPlayer = room?.players.find((p) => p.id === room?.current_player) || null;
+  const categoryKeys = room
+    ? (() => {
+        const fromBoard = Array.from(new Set(room.board)).slice(0, 6);
+        return fromBoard.length > 0 ? fromBoard : Object.keys(room.category_labels).slice(0, 6);
+      })()
+    : [];
+  const categoryColors = buildCategoryColors(categoryKeys);
 
   useEffect(() => {
     if (!room || !me?.host) return;
@@ -492,7 +520,10 @@ export function TrivialGameScreen({
 
           {me?.host ? (
             <button
-              onClick={() => send({ type: "start" })}
+              onClick={() => {
+                setError(null);
+                send({ type: "start" });
+              }}
               disabled={room.players.length < 2}
               className="w-full bg-primary text-primary-foreground rounded-2xl py-4 font-black active:scale-95 transition-transform disabled:opacity-40"
             >
@@ -524,10 +555,10 @@ export function TrivialGameScreen({
           </div>
 
           <div className="flex flex-wrap gap-2 justify-center">
-            {Object.entries(room.category_labels).map(([key, label]) => (
+            {categoryKeys.map((key) => (
               <div key={key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <div className="w-2.5 h-2.5 rounded-sm" style={{ background: CATEGORY_COLORS[key] }} />
-                {label}
+                <div className="w-2.5 h-2.5 rounded-sm" style={{ background: categoryColors[key] }} />
+                {room.category_labels[key] ?? key}
               </div>
             ))}
           </div>
@@ -542,12 +573,12 @@ export function TrivialGameScreen({
                   {room.current_player === p.id ? " 👉" : ""}
                 </div>
                 <div className="ml-auto flex gap-1">
-                  {Object.keys(room.category_labels).map((cat) => (
+                  {categoryKeys.map((cat) => (
                     <div
                       key={cat}
                       className="w-2.5 h-2.5 rounded-sm"
                       style={{
-                        background: p.wedges.includes(cat) ? CATEGORY_COLORS[cat] : "var(--border)",
+                        background: p.wedges.includes(cat) ? categoryColors[cat] : "var(--border)",
                       }}
                     />
                   ))}
@@ -559,9 +590,10 @@ export function TrivialGameScreen({
           <button
             onClick={() => {
               setDiceMessage("");
+              setError(null);
               send({ type: "roll" });
             }}
-            disabled={!isMyTurn}
+            disabled={!isMyTurn || !isSocketReady}
             className="w-full bg-primary text-primary-foreground rounded-2xl py-4 font-black active:scale-95 transition-transform disabled:opacity-40"
           >
             {isMyTurn ? "Lancer le dé" : "En attente…"}
@@ -618,7 +650,7 @@ export function TrivialGameScreen({
             <div className="flex items-center justify-between">
               <div
                 className="text-xs font-black uppercase tracking-widest"
-                style={{ color: CATEGORY_COLORS[question.category] }}
+                style={{ color: categoryColors[question.category] ?? "#0F5257" }}
               >
                 {question.label}
                 {question.final ? " · QUESTION FINALE" : ""}

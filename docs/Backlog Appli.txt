@@ -12,3 +12,8 @@ CONTENU :
 
 TESTER TOUTE L'APPLICATION
 * tester le mode offline
+
+
+
+TESTS DE L'APPLICATION
+- Jeux 
