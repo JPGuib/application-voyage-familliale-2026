@@ -6626,7 +6626,7 @@ function ResultsScreen({
   history,
   familyMembers,
   currentDay,
-  sharedChallengeDay,
+  sharedChallengeDays,
   tripStartDate,
   currentProfileId,
   currentProfileRole,
@@ -6639,7 +6639,7 @@ function ResultsScreen({
   history: GameHistoryEntry[];
   familyMembers: ResultsFamilyMember[];
   currentDay: number;
-  sharedChallengeDay: number | null;
+  sharedChallengeDays: number[];
   tripStartDate: string | null;
   currentProfileId: string;
   currentProfileRole: Role | null;
@@ -6695,48 +6695,39 @@ function ResultsScreen({
   const sharedChallengeParticipants = familyMembers.filter(
     (member) => member.role !== "proprietaire" && member.role !== "visiteur"
   );
-  const sharedChallengeEntries =
-    sharedChallengeDay === null
-      ? []
-      : sharedChallengeParticipants.map((member) => {
-          const gameEntry = member.gameResults.find((entry) => entry.day === sharedChallengeDay) ?? null;
-          const challengeResponse = gameEntry?.challengeResponse?.trim() ?? "";
-          const reactionsForEntry =
-            challengeReactionsByDay[sharedChallengeDay]?.[member.profileId] ?? {};
-          const reactionCounts = CHALLENGE_REACTION_OPTIONS.map((option) => ({
-            ...option,
-            count: Object.values(reactionsForEntry).filter(
-              (reaction) => reaction.emoji === option.value
-            ).length,
-          }));
-          return {
-            profileId: member.profileId,
-            surname: member.surname,
-            response: challengeResponse,
-            completedAt: gameEntry?.completedAt ?? "",
-            currentUserReaction: reactionsForEntry[currentProfileId]?.emoji ?? null,
-            reactionCounts,
-          };
-        })
-          .sort((left, right) => {
-            const leftTs = Date.parse(left.completedAt);
-            const rightTs = Date.parse(right.completedAt);
-            const leftValid = Number.isFinite(leftTs);
-            const rightValid = Number.isFinite(rightTs);
-
-            if (leftValid && rightValid && leftTs !== rightTs) {
-              return leftTs - rightTs;
-            }
-            if (leftValid !== rightValid) {
-              return leftValid ? -1 : 1;
-            }
-
-            return left.surname.localeCompare(right.surname, "fr");
-          });
-  const sharedChallengeReady =
-    sharedChallengeDay !== null &&
-    sharedChallengeEntries.length > 0 &&
-    sharedChallengeEntries.every((entry) => entry.response.length > 0);
+  const perDayChallengeData = sharedChallengeDays.map((day) => {
+    const entries = sharedChallengeParticipants
+      .map((member) => {
+        const gameEntry = member.gameResults.find((entry) => entry.day === day) ?? null;
+        const challengeResponse = gameEntry?.challengeResponse?.trim() ?? "";
+        const reactionsForEntry = challengeReactionsByDay[day]?.[member.profileId] ?? {};
+        const reactionCounts = CHALLENGE_REACTION_OPTIONS.map((option) => ({
+          ...option,
+          count: Object.values(reactionsForEntry).filter(
+            (reaction) => reaction.emoji === option.value
+          ).length,
+        }));
+        return {
+          profileId: member.profileId,
+          surname: member.surname,
+          response: challengeResponse,
+          completedAt: gameEntry?.completedAt ?? "",
+          currentUserReaction: reactionsForEntry[currentProfileId]?.emoji ?? null,
+          reactionCounts,
+        };
+      })
+      .sort((left, right) => {
+        const leftTs = Date.parse(left.completedAt);
+        const rightTs = Date.parse(right.completedAt);
+        const leftValid = Number.isFinite(leftTs);
+        const rightValid = Number.isFinite(rightTs);
+        if (leftValid && rightValid && leftTs !== rightTs) return leftTs - rightTs;
+        if (leftValid !== rightValid) return leftValid ? -1 : 1;
+        return left.surname.localeCompare(right.surname, "fr");
+      });
+    const ready = entries.length > 0 && entries.every((entry) => entry.response.length > 0);
+    return { day, entries, ready };
+  });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -7027,20 +7018,20 @@ function ResultsScreen({
           )}
         </div>
 
-        {canViewSharedChallenges && sharedChallengeDay !== null && (
-          <div className="bg-card rounded-2xl shadow-sm border border-border p-5">
+        {canViewSharedChallenges && perDayChallengeData.map(({ day, entries, ready }) => (
+          <div key={`shared-challenge-day-${day}`} className="bg-card rounded-2xl shadow-sm border border-border p-5">
             <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
-              Défis partagés — {formatTripDayLabel(sharedChallengeDay, tripStartDate)}
+              Défis partagés — {formatTripDayLabel(day, tripStartDate)}
             </p>
-            {!sharedChallengeReady ? (
+            {!ready ? (
               <p className="text-sm text-muted-foreground">
                 Les réponses du défi seront visibles ici dès que tout le monde aura répondu.
               </p>
             ) : (
               <div className="space-y-3">
-                {sharedChallengeEntries.map((entry) => (
+                {entries.map((entry) => (
                   <div
-                    key={`shared-challenge-${sharedChallengeDay}-${entry.profileId}`}
+                    key={`shared-challenge-${day}-${entry.profileId}`}
                     className="rounded-xl border border-border bg-muted/30 px-3 py-3"
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -7077,11 +7068,7 @@ function ResultsScreen({
                             <button
                               key={`reaction-button-${entry.profileId}-${reaction.value}`}
                               onClick={() =>
-                                onReactToChallengeResponse(
-                                  sharedChallengeDay,
-                                  entry.profileId,
-                                  reaction.value
-                                )
+                                onReactToChallengeResponse(day, entry.profileId, reaction.value)
                               }
                               className={`rounded-full border px-3 py-1.5 text-sm font-black transition-colors ${
                                 isSelected
@@ -7107,7 +7094,7 @@ function ResultsScreen({
               </div>
             )}
           </div>
-        )}
+        ))}
 
         <div className="h-2" />
       </div>
@@ -12803,7 +12790,9 @@ const resetForProfileSwitch = () => {
   const destinationSurveyPointsByProfile = new Map(
     destinationSurveyResults.rows.map((row) => [row.profileId, row.points] as const)
   );
-  const sharedChallengeDay = tripFinished ? currentDay : currentDay - 1;
+  const sharedChallengeDays: number[] = tripFinished
+    ? [currentDay].filter((d) => d >= 1)
+    : [currentDay - 1, currentDay].filter((d) => d >= 1);
   const familyMembersForPodium: ResultsFamilyMember[] = cloudSnapshot
     ? Object.values(cloudSnapshot.profiles).map((item) => ({
         profileId: item.profileId,
@@ -13952,7 +13941,7 @@ const resetForProfileSwitch = () => {
             history={gameHistory}
             familyMembers={familyMembersForPodium}
             currentDay={currentDay}
-            sharedChallengeDay={sharedChallengeDay >= 1 ? sharedChallengeDay : null}
+            sharedChallengeDays={sharedChallengeDays}
             tripStartDate={tripStartDate}
             currentProfileId={profile.id}
             currentProfileRole={profile.role}
@@ -14352,7 +14341,7 @@ const resetForProfileSwitch = () => {
             history={gameHistory}
             familyMembers={familyMembersForPodium}
             currentDay={currentDay}
-            sharedChallengeDay={sharedChallengeDay >= 1 ? sharedChallengeDay : null}
+            sharedChallengeDays={sharedChallengeDays}
             tripStartDate={tripStartDate}
             destinationSurveyDestination={todayDestination}
             destinationSurveyResults={destinationSurveyResults.rows}
