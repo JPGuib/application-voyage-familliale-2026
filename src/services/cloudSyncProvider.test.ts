@@ -439,6 +439,7 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
       quizDurationSec: 75,
       riddleValidated: true,
       riddleSolved: true,
+      challengeDraft: "",
     });
   });
 
@@ -469,6 +470,7 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
       quizDurationSec: 0,
       riddleValidated: false,
       riddleSolved: false,
+      challengeDraft: "",
     });
   });
 
@@ -1342,6 +1344,7 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
       familyId,
       { "profile-a": [entryFor(1, 10), entryFor(2, 20)] },
       {},
+      {},
       2
     );
 
@@ -1352,7 +1355,7 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
   it("writes null for a per-day reset when it empties the profile's history", async () => {
     mockUpdate.mockClear();
 
-    await resetGameResultsInCloud(db, familyId, { "profile-a": [entryFor(1, 10)] }, {}, 1);
+    await resetGameResultsInCloud(db, familyId, { "profile-a": [entryFor(1, 10)] }, {}, {}, 1);
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     expect(updates["families/famille-test/gameResults/profile-a"]).toBeNull();
@@ -1411,6 +1414,7 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
           riddleSolved: false,
         },
       },
+      {},
       2
     );
 
