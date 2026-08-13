@@ -2718,6 +2718,7 @@ function DashboardScreen({
   todayFormatted: string;
 }) {
   const [mapLightboxOpen, setMapLightboxOpen] = useState(false);
+  const isArcadeOfflineLocked = Boolean(canPlayArcade) && !isOnline;
   const offlineSummary = useMemo(() => {
     const registry = readOfflineDownloadRegistry();
     const totals = Object.values(registry.sectionProgress).reduce(
@@ -2970,14 +2971,20 @@ function DashboardScreen({
           </p>
           <button
             onClick={() => onNavigate("jeux")}
+            disabled={isArcadeOfflineLocked}
+            aria-label="Jeux"
             data-tutorial-id="dashboard-arcade"
-            className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left active:scale-[0.98] transition-transform shadow-sm"
+            className={`w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left shadow-sm ${
+              isArcadeOfflineLocked
+                ? "opacity-60 cursor-not-allowed"
+                : "active:scale-[0.98] transition-transform"
+            }`}
           >
             <div className="text-3xl">🕹️</div>
             <div className="flex-1">
               <div className="font-black text-foreground text-sm">Espace ludique pour passer le temps</div>
               <div className="text-xs text-muted-foreground">
-                Petits jeux en solo ou en équipe
+                {isArcadeOfflineLocked ? "Connexion requise" : "Petits jeux en solo ou en équipe"}
               </div>
             </div>
             <ChevronRight size={18} className="text-muted-foreground" />
@@ -7618,7 +7625,7 @@ function SettingsScreen({
     proofInput: string
   ) => Promise<{ ok: boolean; message: string }>;
   tripStartDate: string | null;
-  onSaveTripStartDate: (date: string) => { ok: boolean; message: string };
+  onSaveTripStartDate: (date: string) => Promise<{ ok: boolean; message: string }>;
   currentDay: number;
   lastDefinedDay: number | null;
   gameDayOverride: "open" | "closed" | null;
@@ -8257,8 +8264,8 @@ function SettingsScreen({
               className="mt-2 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
             />
             <button
-              onClick={() => {
-                const result = onSaveTripStartDate(tripStartDateInput);
+              onClick={async () => {
+                const result = await onSaveTripStartDate(tripStartDateInput);
                 setTripStartDateFeedback(result.message);
               }}
               disabled={settingsWriteActionsDisabled}
@@ -11310,8 +11317,12 @@ export default function App() {
       return;
     }
 
-    if (s === "trivial" && !isOnline) {
-      setAccessDeniedMessage("Trivial Turquie indisponible hors ligne. Reconnectez-vous pour rejoindre une partie.");
+    if ((s === "jeux" || s === "trivial" || s === "candy-crush" || s === "ordalie" || s === "imposteur") && !isOnline) {
+      setAccessDeniedMessage(
+        s === "trivial"
+          ? "Trivial Turquie indisponible hors ligne. Reconnectez-vous pour rejoindre une partie."
+          : "Espace ludique indisponible hors ligne. Reconnectez-vous pour lancer les jeux."
+      );
       setScreen(getSafeScreen(profile.role, phase));
       return;
     }
@@ -12265,6 +12276,136 @@ const resetForProfileSwitch = () => {
       ok: true,
       message: `La partie en cours de ${targetSurname} a été réinitialisée.`,
     };
+  };
+
+  const saveTripStartDate = async (date: string) => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return {
+        ok: false,
+        message: "Seul le profil propriétaire peut configurer la date de début.",
+      };
+    }
+
+    if (!isValidTripStartDate(date)) {
+      return { ok: false, message: "Merci de choisir une date valide." };
+    }
+
+    if (!cloudEnabled) {
+      setTripStartDate(date);
+      return { ok: true, message: "Date de début du voyage mise à jour." };
+    }
+
+    if (!cloudSnapshot || !cloudActorUid || !profile.role) {
+      return {
+        ok: false,
+        message: "Synchronisation cloud indisponible pour le moment.",
+      };
+    }
+
+    const normalizedFamilyState = enforceOwnerUniqueness(familyState);
+    const canWriteFamilyState = canUpdateOwnerCode(normalizedFamilyState, profile.id);
+    if (!canWriteFamilyState) {
+      return {
+        ok: false,
+        message: "Seul le profil propriétaire peut configurer la date de début.",
+      };
+    }
+
+    const profilePasswordHash = profilePasswordHashes[profile.id] || "";
+    const profileRecoveryHash = profileRecoveryHashes[profile.id] || "";
+    const profileRecoveryQuestion = profileRecoveryQuestions[profile.id] || "";
+    const profileRecoveryAnswer = profileRecoveryAnswers[profile.id] || "";
+    const profileCustomChecklistItems = customChecklistItemsByProfile[profile.id] ?? [];
+    const pushPayload = {
+      actorUid: cloudActorUid,
+      canWriteFamilyState,
+      familyState: normalizedFamilyState,
+      ownerCodeHash,
+      ownerCodePlain,
+      travelerCodeHash,
+      travelerCodePlain,
+      ownerRecoveryHash,
+      ownerRecoveryConfiguredAt: undefined,
+      profileId: profile.id,
+      surname: profile.surname,
+      role: profile.role,
+      profilePasswordHash,
+      profileRecoveryHash,
+      profileRecoveryQuestion,
+      profileRecoveryAnswer,
+      profileRecoveryConfiguredAt: profileRecoveryHash
+        ? cloudSnapshot.profiles[profile.id]?.recoveryConfiguredAt
+        : undefined,
+      gender: profile.gender,
+      householdRole: profile.householdRole,
+      checklist: checked,
+      profileCustomChecklistItems,
+      ownerGlobalChecklistAdditions,
+      ownerGlobalChecklistRemovals,
+      placeComments: placeCommentsByPlace,
+      placeVisibilityMap,
+      placeDayOverrides: placeDayOverrideMap,
+      placeDayOrderOverrides: placeDayOrderOverrideMap,
+      documentVisibilityMap,
+      profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
+      challengeReactions: challengeReactionsByDay,
+      launchGateCycle,
+      launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
+      gameResults: gameHistory,
+      gameProgress: currentGameProgress,
+      phase,
+      tripStartDate: date,
+    };
+
+    const pushed = await pushSnapshot(pushPayload);
+    if (pushed === false) {
+      pendingTripStartDateRef.current = "none";
+      return {
+        ok: false,
+        message: "Enregistrement impossible. Verifiez la synchronisation cloud puis reessayez.",
+      };
+    }
+
+    pendingTripStartDateRef.current = date;
+    lastCloudPushRef.current = stableSerializeForCloudPush({
+      actorUid: cloudActorUid,
+      canWriteFamilyState,
+      familyState: normalizedFamilyState,
+      ownerCodeHash,
+      ownerCodePlain,
+      travelerCodeHash,
+      travelerCodePlain,
+      ownerRecoveryHash,
+      ownerRecoveryConfiguredAt: ownerRecoveryHash ? true : false,
+      profileId: profile.id,
+      surname: profile.surname,
+      role: profile.role,
+      gender: profile.gender,
+      householdRole: profile.householdRole,
+      profilePasswordHash,
+      profileRecoveryHash,
+      profileRecoveryQuestion,
+      profileRecoveryAnswer,
+      checklist: checked,
+      profileCustomChecklistItems,
+      ownerGlobalChecklistAdditions,
+      ownerGlobalChecklistRemovals,
+      placeCommentsByPlace,
+      placeVisibilityMap,
+      placeDayOverrides: placeDayOverrideMap,
+      placeDayOrderOverrides: placeDayOrderOverrideMap,
+      documentVisibilityMap,
+      destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
+      challengeReactions: challengeReactionsByDay,
+      launchGateCycle,
+      launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
+      phase,
+      tripStartDate: date,
+      gameHistory,
+      currentGameProgress,
+    });
+    setTripStartDate(date);
+    return { ok: true, message: "Date de début du voyage mise à jour." };
   };
 
   const todaysQuestions = getQuestionsForDay(currentDay);
@@ -13631,20 +13772,7 @@ const resetForProfileSwitch = () => {
             onSwitchProfile={resetForProfileSwitch}
             onDeleteOwnProfile={deleteOwnProfile}
             tripStartDate={tripStartDate}
-            onSaveTripStartDate={(date) => {
-              if (!canUpdateOwnerCode(familyState, profile.id)) {
-                return {
-                  ok: false,
-                  message: "Seul le profil propriétaire peut configurer la date de début.",
-                };
-              }
-              if (!isValidTripStartDate(date)) {
-                return { ok: false, message: "Merci de choisir une date valide." };
-              }
-              pendingTripStartDateRef.current = date;
-              setTripStartDate(date);
-              return { ok: true, message: "Date de début du voyage mise à jour." };
-            }}
+            onSaveTripStartDate={saveTripStartDate}
             currentDay={currentDay}
             lastDefinedDay={lastDefinedDay}
             gameDayOverride={gameDayOverride}
@@ -14464,20 +14592,7 @@ const resetForProfileSwitch = () => {
             onSwitchProfile={resetForProfileSwitch}
             onDeleteOwnProfile={deleteOwnProfile}
             tripStartDate={tripStartDate}
-            onSaveTripStartDate={(date) => {
-              if (!canUpdateOwnerCode(familyState, profile.id)) {
-                return {
-                  ok: false,
-                  message: "Seul le profil propriétaire peut configurer la date de début.",
-                };
-              }
-              if (!isValidTripStartDate(date)) {
-                return { ok: false, message: "Merci de choisir une date valide." };
-              }
-              pendingTripStartDateRef.current = date;
-              setTripStartDate(date);
-              return { ok: true, message: "Date de début du voyage mise à jour." };
-            }}
+            onSaveTripStartDate={saveTripStartDate}
             currentDay={currentDay}
             lastDefinedDay={lastDefinedDay}
             gameDayOverride={gameDayOverride}

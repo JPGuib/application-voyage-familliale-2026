@@ -31,5 +31,4 @@ TESTS DE L'APPLICATION
             * Générations : 100
             * Sport : 171
 - Quiz du jour / enigme 
-- fermeture / réouverture du jeu : ok
--  
+  
