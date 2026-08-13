@@ -808,7 +808,7 @@ async def handle_imposteur_message(room: "ImposteurRoom", player: "ImposteurPlay
             impostor.is_impostor = True
             for pid in room.order:
                 p = room.players[pid]
-                mot = mot_faux if p.is_impostor else mot_vrai
+                mot = room.mot_faux if p.is_impostor else room.mot_vrai
                 await send_to_imp(p, {"type": "role_assignment", "is_impostor": p.is_impostor, "mot": mot})
             room.state = "collecting_words"
             room.round = 1
