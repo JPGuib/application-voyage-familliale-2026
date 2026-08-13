@@ -29,14 +29,14 @@ COLORS = ["#e63946", "#2a9d8f", "#f4a261", "#457b9d", "#a663cc"]
 PACKS: dict[str, dict] = {
     "turquie": {
         "label": "Trivial Turquie 🇹🇷",
-        "categories": ["histoire", "gastronomie", "langue", "geographie", "culture", "Istanbul"],
+        "categories": ["histoire", "gastronomie", "langue", "geographie", "culture", "istanbul"],
         "category_labels": {
             "histoire": "Histoire & Empire ottoman",
             "gastronomie": "Gastronomie",
             "langue": "Langue & expressions",
             "geographie": "Geographie",
             "culture": "Culture & traditions",
-            "Istanbul": "Istanbul",
+            "istanbul": "Istanbul",
         },
         "questions_file": "questions_turquie.json",
     },
@@ -146,11 +146,11 @@ PACKS: dict[str, dict] = {
         },
         "Générations": {
                     "label": "Générations 🎬",
-                    "categories": ["Années 60-70", "Années 80", "Année 90", "Années 2000", "Aujourd'hui", "Toutes générations"],
+                    "categories": ["annees_60_70", "annees_80", "annees_90", "annees_2000", "aujourdhui", "toutes_generations"],
                     "category_labels": {
                         "annees_60_70": "Années 60-70",
                         "annees_80": "Années 80",
-                        "annee_90": "Année 90",
+                        "annees_90": "Années 90",
                         "annees_2000": "Années 2000",
                         "aujourdhui": "Aujourd'hui",
                         "toutes_generations": "Toutes générations",
