@@ -39,6 +39,20 @@ export const ACCUEIL_DRIVER_STEPS: DriverStepConfig[] = [
     },
   },
   {
+    element: "[data-tutorial-id=\"dashboard-arcade\"]",
+    popover: {
+      title: "Espace ludique",
+      description: "Accédez aux petits jeux disponibles en solo ou en équipe : Trivial Turquie, Bazar Crush, L'Ordalie et L'Imposteur.",
+    },
+  },
+  {
+    element: "[data-tutorial-id=\"dashboard-offline-media\"]",
+    popover: {
+      title: "Mode hors-ligne",
+      description: "Téléchargez à l'avance les contenus (guides, audios, images) pour y accéder sans connexion. Pratique lors des visites en zones sans réseau.",
+    },
+  },
+  {
     element: "[data-tutorial-id=\"bottom-nav-dashboard\"]",
     popover: {
       title: "Revenir à l'accueil",

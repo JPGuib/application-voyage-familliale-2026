@@ -2970,6 +2970,7 @@ function DashboardScreen({
           </p>
           <button
             onClick={() => onNavigate("jeux")}
+            data-tutorial-id="dashboard-arcade"
             className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left active:scale-[0.98] transition-transform shadow-sm"
           >
             <div className="text-3xl">🕹️</div>

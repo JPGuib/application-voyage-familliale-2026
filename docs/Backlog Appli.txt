@@ -7,8 +7,9 @@ Evolutions :
 
 CONTENU : 
 * revoir les textes et mettre en gras
+* Revoir certains tags
 * nettoyer les points du jeu
-* faire un test général 
+* Revoir photos histoire (notamment la première brique) 
 
 TESTER TOUTE L'APPLICATION
 * tester le mode offline
@@ -18,7 +19,7 @@ TESTER TOUTE L'APPLICATION
 TESTS DE L'APPLICATION
 - Jeux 
     - Candy crush : ok
-    - Imposteur : aller au bout
+    - Imposteur : ok
     - Trivial : ok
             * Trivial Turquie : 215
             * Culture Générale : 64
@@ -32,5 +33,5 @@ TESTS DE L'APPLICATION
             * Générations : 100
             * Sport : 171
 - Quiz du jour / enigme 
-- fermeture / réouverture du jeu fonctionne bien
+- fermeture / réouverture du jeu : ok
 -  
