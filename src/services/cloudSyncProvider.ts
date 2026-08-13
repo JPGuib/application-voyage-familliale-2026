@@ -971,13 +971,8 @@ export async function pushCloudSnapshot(
     }
   }
 
-  // Réécriture en chemins absolus depuis la racine pour contourner
-  // l'évaluation de .write au nœud families/$familyId (false pour non-owner).
-  const absoluteUpdates: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(updates)) {
-    absoluteUpdates[`${familyPath(familyId)}/${key}`] = value;
-  }
-  await update(ref(database), absoluteUpdates);
+  console.info("[cloud-sync] pushCloudSnapshot keys", Object.keys(updates));
+  await update(ref(database, familyPath(familyId)), updates);
 }
 
 export async function pushDestinationSurveyVoteOnly(
