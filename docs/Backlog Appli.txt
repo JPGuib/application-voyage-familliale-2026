@@ -31,7 +31,6 @@ TESTS DE L'APPLICATION
             * Neurones en famille : 100
             * Générations : 100
             * Sport : 171
-    - Défits du jour et les jeux => compliqué
 - Quiz du jour / enigme 
 - fermeture / réouverture du jeu fonctionne bien
 -  

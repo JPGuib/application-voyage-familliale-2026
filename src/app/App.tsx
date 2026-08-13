@@ -625,8 +625,8 @@ const QUICK_ACTIONS: QuickAction[] = [
   {
     id: "game",
     emoji: "🎮",
-    title: "Jeux",
-    subtitle: "Jeu du jour et autres",
+    title: "Jeu du jour",
+    subtitle: "Quiz, énigme et défi",
     colorBg: "bg-[#FFF3E0]",
     colorText: "text-[#E65100]",
   },
@@ -2686,6 +2686,7 @@ function DashboardScreen({
   quickActions,
   canAccessChecklist,
   canAccessOfflineMedia,
+  canPlayArcade,
   isOnline,
   onNavigate,
   onNavigateToTodayGuide,
@@ -2702,6 +2703,7 @@ function DashboardScreen({
   quickActions: QuickAction[];
   canAccessChecklist: boolean;
   canAccessOfflineMedia: boolean;
+  canPlayArcade?: boolean;
   isOnline: boolean;
   onNavigate: (s: Screen) => void;
   onNavigateToTodayGuide: () => void;
@@ -2960,6 +2962,24 @@ function DashboardScreen({
           ))}
         </div>
       </div>
+
+      {canPlayArcade && (
+        <div className="px-4 mt-4">
+          <button
+            onClick={() => onNavigate("jeux")}
+            className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left active:scale-[0.98] transition-transform shadow-sm"
+          >
+            <div className="text-3xl">🕹️</div>
+            <div className="flex-1">
+              <div className="font-black text-foreground text-sm">Espace ludique pour passer le temps</div>
+              <div className="text-xs text-muted-foreground">
+                Petits jeux en solo ou en équipe
+              </div>
+            </div>
+            <ChevronRight size={18} className="text-muted-foreground" />
+          </button>
+        </div>
+      )}
 
       {canAccessOfflineMedia && (
         <div className="px-4 mt-4 mb-6">
@@ -6288,23 +6308,6 @@ function GameScreen({
             Quiz Turquie — {formatTripDayLabel(currentDay, tripStartDate)}
           </p>
         </div>
-        {canPlayArcade && onOpenArcade && (
-          <div className="px-6 pt-5 flex-shrink-0">
-            <button
-              onClick={onOpenArcade}
-              className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left active:scale-[0.98] transition-transform shadow-sm"
-            >
-              <div className="text-3xl">🕹️</div>
-              <div className="flex-1">
-                <div className="font-black text-foreground text-sm">Espace ludique pour passer le temps</div>
-                <div className="text-xs text-muted-foreground">
-                  Petits jeux en solo ou en équipe
-                </div>
-              </div>
-              <ChevronRight size={18} className="text-muted-foreground" />
-            </button>
-          </div>
-        )}
         {isClosedByOwner ? (
           <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
             <div className="text-8xl mb-6">🔒</div>
@@ -13663,6 +13666,7 @@ const resetForProfileSwitch = () => {
             quickActions={visibleQuickActions}
             canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
+            canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
           isOnline={isOnline}
             onNavigate={goToScreen}
             onNavigateToTodayGuide={() => {
@@ -14063,6 +14067,7 @@ const resetForProfileSwitch = () => {
             quickActions={visibleQuickActions}
             canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
+            canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
           isOnline={isOnline}
             onNavigate={goToScreen}
             onNavigateToTodayGuide={() => {
@@ -14495,6 +14500,7 @@ const resetForProfileSwitch = () => {
             quickActions={visibleQuickActions}
           canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
+            canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
             onNavigate={goToScreen}
           onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}
