@@ -316,7 +316,7 @@ suite("firebase rtdb rules owner phase guard", () => {
     await assertSucceeds(ownerDb.ref(`families/${FAMILY_ID}/challengeReactions`).set(null));
   });
 
-  it("denies non-owner from wiping all challengeReactions", async () => {
+  it("allows non-owner to wipe all challengeReactions (family member bulk write)", async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await context
         .database()
@@ -325,7 +325,7 @@ suite("firebase rtdb rules owner phase guard", () => {
     });
 
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
-    await assertFails(nonOwnerDb.ref(`families/${FAMILY_ID}/challengeReactions`).set(null));
+    await assertSucceeds(nonOwnerDb.ref(`families/${FAMILY_ID}/challengeReactions`).set(null));
   });
 });
 
