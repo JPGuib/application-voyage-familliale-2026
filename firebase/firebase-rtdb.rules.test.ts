@@ -303,6 +303,30 @@ suite("firebase rtdb rules owner phase guard", () => {
 
     await assertFails(secondDeviceDb.ref(`families/${FAMILY_ID}/phase`).set("during"));
   });
+
+  it("allows owner to wipe all challengeReactions (score reset)", async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await context
+        .database()
+        .ref(`families/${FAMILY_ID}/challengeReactions/1/profile-a/profile-b`)
+        .set({ day: 1, targetProfileId: "profile-a", reactorProfileId: "profile-b", emoji: "love", updatedAt: 1, authorUid: OWNER_UID });
+    });
+
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+    await assertSucceeds(ownerDb.ref(`families/${FAMILY_ID}/challengeReactions`).set(null));
+  });
+
+  it("denies non-owner from wiping all challengeReactions", async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await context
+        .database()
+        .ref(`families/${FAMILY_ID}/challengeReactions/1/profile-a/profile-b`)
+        .set({ day: 1, targetProfileId: "profile-a", reactorProfileId: "profile-b", emoji: "love", updatedAt: 1, authorUid: NON_OWNER_UID });
+    });
+
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+    await assertFails(nonOwnerDb.ref(`families/${FAMILY_ID}/challengeReactions`).set(null));
+  });
 });
 
 if (!hasDatabaseEmulator) {

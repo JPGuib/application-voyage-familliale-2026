@@ -191,6 +191,7 @@
           }
         },
         "challengeReactions": {
+          ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           "$day": {
             "$targetProfileId": {
               "$reactorProfileId": {

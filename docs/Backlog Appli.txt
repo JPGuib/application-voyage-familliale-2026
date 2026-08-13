@@ -2,8 +2,6 @@ Backlog
 -----------
 Evolutions : 
 - préparer l'application pour un autre voyage ! 
-- Attention refaire un passage de tutoriel
-
 
 CONTENU : 
 * revoir les textes et mettre en gras
