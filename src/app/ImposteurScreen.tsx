@@ -168,6 +168,7 @@ export function ImposteurScreen({
   const me = room?.players.find((p) => p.id === myPlayerId) ?? null;
   const isHost = me?.host ?? false;
   const isEliminated = me?.eliminated ?? false;
+  const tableCode = room?.code ?? null;
 
   return (
     <div className="w-full h-full">
@@ -267,6 +268,21 @@ export function ImposteurScreen({
         {/* ── ROLE REVEAL ── */}
         {step === "role" && myRole && (
           <div className="tg-screen tg-active" style={{ justifyContent: "center", alignItems: "center", textAlign: "center" }}>
+            {tableCode && (
+              <div
+                className="tg-card"
+                style={{
+                  width: "100%",
+                  maxWidth: 320,
+                  textAlign: "center",
+                  padding: "10px 14px",
+                  marginBottom: 12,
+                }}
+              >
+                <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--tg-text-muted)" }}>Table</p>
+                <div style={{ fontSize: "1.25rem", fontWeight: 800, letterSpacing: "0.2em", color: "var(--tg-accent)" }}>{tableCode}</div>
+              </div>
+            )}
             {!roleRevealed ? (
               <>
                 <div style={{ fontSize: "3.5rem", marginBottom: 18 }}>🔒</div>
@@ -304,8 +320,13 @@ export function ImposteurScreen({
         {step === "playing" && room && (
           <div className="tg-screen tg-active">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <div style={{ fontSize: "0.85rem", color: "var(--tg-text-muted)" }}>
-                Tour <strong style={{ color: "var(--tg-accent)" }}>{room.round}</strong>/{room.max_rounds}
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <div style={{ fontSize: "0.72rem", color: "var(--tg-text-muted)" }}>
+                  Table <strong style={{ color: "var(--tg-accent)", letterSpacing: "0.12em" }}>{room.code}</strong>
+                </div>
+                <div style={{ fontSize: "0.85rem", color: "var(--tg-text-muted)" }}>
+                  Tour <strong style={{ color: "var(--tg-accent)" }}>{room.round}</strong>/{room.max_rounds}
+                </div>
               </div>
               {isHost && (
                 <button
@@ -419,6 +440,10 @@ export function ImposteurScreen({
         {step === "finished" && room && (
           <div className="tg-screen tg-active">
             <div className="tg-flex-center" style={{ textAlign: "center" }}>
+              <div className="tg-card" style={{ width: "100%", textAlign: "center", padding: "10px 14px", marginBottom: 14 }}>
+                <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--tg-text-muted)" }}>Table</p>
+                <div style={{ fontSize: "1.25rem", fontWeight: 800, letterSpacing: "0.2em", color: "var(--tg-accent)" }}>{room.code}</div>
+              </div>
               {gameOver ? (
                 <>
                   <h1 className={gameOver.winner === "vrais" ? "tg-result-win" : "tg-result-lose"} style={{ fontSize: "2rem", marginBottom: 14 }}>
