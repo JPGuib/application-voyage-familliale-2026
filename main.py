@@ -94,7 +94,7 @@ PACKS: dict[str, dict] = {
     },
     "Grand classique familial": {
         "label": "Grand classique familial 🏰",
-        "categories": ["Cinéma & séries", "Musique", "Géographie et voyages", "Animaux", "Cuisine et gastronomie", "Culture Générale"],
+        "categories": ["cinema_series", "musique", "geographie_voyages", "animaux", "cuisine_gastronomie", "culture_generale"],
         "category_labels": {
             "cinema_series": "Cinéma & séries",
             "musique": "Musique",
@@ -107,12 +107,12 @@ PACKS: dict[str, dict] = {
     },
     "Tour du monde": {
         "label": "Tour du monde 🌍",
-        "categories": ["France", "Pays du monde", "Monuments", "Cuisine du monde", "Langues & expressions", "Voyages insolites"],
+        "categories": ["france", "pays_du_monde", "monuments", "cuisine_monde", "langues_expressions", "voyages_insolites"],
         "category_labels": {
             "france": "France",
             "pays_du_monde": "Pays du monde",
             "monuments": "Monuments",
-            "cuisine_du_monde": "Cuisine du monde",
+            "cuisine_monde": "Cuisine du monde",
             "langues_expressions": "Langues & expressions",
             "voyages_insolites": "Voyages insolites",
         },
@@ -120,26 +120,26 @@ PACKS: dict[str, dict] = {
     },
     "Pop Culture": {
             "label": "Pop Culture 🎬",
-            "categories": ["Films", "Séries", "Musique", "Jeux vidéo", "Super-héros", "Personnes fictifs"],
+            "categories": ["films", "series", "musique", "jeux_video", "super_heros", "personnages_pop_culture"],
             "category_labels": {
                 "films": "Films",
                 "series": "Séries",
                 "musique": "Musique",
                 "jeux_video": "Jeux vidéo",
                 "super_heros": "Super-héros",
-                "personnes_fictifs": "Personnes fictifs",
+                "personnages_pop_culture": "Personnages fictifs",
             },
             "questions_file": "pack_5_pop_culture.json",
     },
     "Neurones en famille": {
                 "label": "Neurones en famille 🧠",
-                "categories": ["Logiques et chiffres", "Culture générale", "Trouver l'intrus", "Enigmes", "Plus ou moins", "Questions rapides"],
+                "categories": ["logique_chiffres", "culture_generale", "trouver_intrus", "enigmes", "plus_moins", "questions_rapides"],
                 "category_labels": {
-                    "logiques_chiffres": "Logiques et chiffres",
+                    "logique_chiffres": "Logiques et chiffres",
                     "culture_generale": "Culture générale",
                     "trouver_intrus": "Trouver l'intrus",
                     "enigmes": "Enigmes",
-                    "plus_ou_moins": "Plus ou moins",
+                    "plus_moins": "Plus ou moins",
                     "questions_rapides": "Questions rapides",
                 },
                 "questions_file": "pack_6_neurones_famille.json",
@@ -159,14 +159,14 @@ PACKS: dict[str, dict] = {
         },
         "Sport": {
                             "label": "Sport 🏅",
-                            "categories": ["Football", "Sports mécaniques", "Tennis & sports de raquette", "Sports collectifs", "jeux olympiques et grands champions", "Sport insolite & records"],
+                            "categories": ["les_sports_populaires", "jo_et_champions", "vitesse_et_moteurs", "stades_et_competitions", "regles_et_connaissances", "insolite_et_records"],
                             "category_labels": {
-                                "football": "Football",
-                                "sports_mecaniques": "Sports mécaniques",
-                                "tennis_sports_raquette": "Tennis & sports de raquette",
-                                "sports_collectifs": "Sports collectifs",
-                                "jeux_olympiques_grands_champions": "Jeux olympiques et grands champions",
-                                "sport_insolite_records": "Sport insolite & records",
+                                "les_sports_populaires": "Les sports populaires",
+                                "jo_et_champions": "JO et champions",
+                                "vitesse_et_moteurs": "Vitesse et moteurs",
+                                "stades_et_competitions": "Stades et compétitions",
+                                "regles_et_connaissances": "Règles et connaissances",
+                                "insolite_et_records": "Insolite et records",
                             },
                             "questions_file": "pack_9_sport.json",
         },  
@@ -494,9 +494,10 @@ async def handle_message(room: Room, player: Player, data: dict):
                 category = random.choice(room.categories)
                 q = room.pick_question(category)
                 room.pending_question = {"player_id": player.id, "final": True, **q}
+                category_label = room.category_labels.get(q["category"], q["category"])
                 await broadcast(room, {
                     "type": "question", "player_id": player.id, "category": q["category"],
-                    "label": room.category_labels[q["category"]],
+                    "label": category_label,
                     "question": q["question"], "choices": q["choices"], "final": True,
                 })
                 await broadcast(room, {"type": "info", "message": f"{player.name} tente la question finale !"})
@@ -509,9 +510,10 @@ async def handle_message(room: Room, player: Player, data: dict):
 
             q = room.pick_question(category)
             room.pending_question = {"player_id": player.id, "final": False, **q}
+            category_label = room.category_labels.get(q["category"], q["category"])
             await broadcast(room, {
                 "type": "question", "player_id": player.id, "category": q["category"],
-                "label": room.category_labels[q["category"]],
+                "label": category_label,
                 "question": q["question"], "choices": q["choices"], "final": False,
             })
             return
