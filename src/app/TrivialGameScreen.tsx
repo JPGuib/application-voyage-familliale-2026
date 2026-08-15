@@ -93,6 +93,62 @@ type HostedRoomEntry = {
 
 type TPackInfo = { id: string; label: string };
 
+const PACK_QUESTION_COUNT_BY_ID: Record<string, number> = {
+  turquie: 506,
+  cinema: 181,
+  culture_generale: 164,
+  disney: 214,
+  musique: 186,
+  grand_classique_familial: 202,
+  pack_1_grand_classique_familial: 202,
+  tour_du_monde: 202,
+  pack_4_tour_du_monde: 202,
+  pop_culture: 202,
+  pack_5_pop_culture: 202,
+  neurones_famille: 200,
+  pack_6_neurones_famille: 200,
+  generations: 202,
+  pack_8_generations: 202,
+  sport: 171,
+  pack_9_sport: 171,
+};
+
+const PACK_QUESTION_COUNT_BY_LABEL_HINT: Array<{ tokens: string[]; count: number }> = [
+  { tokens: ["turquie"], count: 506 },
+  { tokens: ["cinema"], count: 181 },
+  { tokens: ["culture", "generale"], count: 164 },
+  { tokens: ["disney"], count: 214 },
+  { tokens: ["musique"], count: 186 },
+  { tokens: ["grand", "classique", "familial"], count: 202 },
+  { tokens: ["tour", "monde"], count: 202 },
+  { tokens: ["pop", "culture"], count: 202 },
+  { tokens: ["neurones", "famille"], count: 200 },
+  { tokens: ["generation"], count: 202 },
+  { tokens: ["sport"], count: 171 },
+];
+
+function normalizePackText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getPackQuestionCount(pack: TPackInfo): number | null {
+  const idKey = pack.id.toLowerCase();
+  const directMatch = PACK_QUESTION_COUNT_BY_ID[idKey];
+  if (typeof directMatch === "number") return directMatch;
+
+  const normalized = normalizePackText(`${pack.id} ${pack.label}`);
+  for (const hint of PACK_QUESTION_COUNT_BY_LABEL_HINT) {
+    if (hint.tokens.every((token) => normalized.includes(token))) return hint.count;
+  }
+
+  return null;
+}
+
 // Utilisée si l'appel réseau à /packs échoue (serveur en train de démarrer,
 // pas encore de connexion...) — évite un écran de création vide.
 const FALLBACK_PACKS: TPackInfo[] = [{ id: "turquie", label: "Trivial Turquie 🇹🇷" }];
@@ -420,7 +476,9 @@ export function TrivialGameScreen({
                 Rubrique
               </div>
               <div className="flex flex-col gap-2">
-                {availablePacks.map((pack) => (
+                {availablePacks.map((pack) => {
+                  const questionCount = getPackQuestionCount(pack);
+                  return (
                   <button
                     key={pack.id}
                     onClick={() => setSelectedPack(pack.id)}
@@ -430,9 +488,13 @@ export function TrivialGameScreen({
                         : "bg-card border-border text-foreground"
                     }`}
                   >
-                    {pack.label}
+                    <div>{pack.label}</div>
+                    {questionCount !== null && (
+                      <div className="text-xs font-medium opacity-80 mt-0.5">{questionCount} questions</div>
+                    )}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
