@@ -8,6 +8,7 @@ CONTENU :
 * Revoir certains tags
 * Changer code ADMI?
 * Revoir l'utilisateur visiteur
+* vérifier la rotation smartphone de la vidéo et carnet de voyage
 
 Questions du Trivial par pack :
 - Trivial Turquie : 215 

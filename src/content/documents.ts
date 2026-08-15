@@ -50,6 +50,11 @@ export const DOCUMENTS: TravelDocument[] = [
       "Poids soute : 23 kg max",
     ],
     scans: [
+      "/images/Vol/Carte-d’embarquement-16 août JPG NTE CDG.webp",
+      "/images/Vol/Carte-d’embarquement-16 août KG NTE CDG.webp",
+      "/images/Vol/Carte-d’embarquement-16 août EMMA NTE CDG.webp",
+      "/images/Vol/Carte-d’embarquement-16 août THOMAS NTE CDG.webp",
+      "/images/Vol/Carte-d’embarquement-16 août JULIE NTE CDG.webp",
       "/images/Vol/Avion aller JPG.webp",
       "/images/Vol/Avion aller KG.webp",
       "/images/Vol/Avion aller Thomas.webp",
@@ -75,13 +80,18 @@ export const DOCUMENTS: TravelDocument[] = [
       "Départ depuis Charles de Gaulle terminal **2E**.\n" +
       "**Réservation** : ZT59SQ",
     details: [
- "Petit sac : 40 x 30 x 15 cm",
+      "Petit sac : 40 x 30 x 15 cm",
       "Valise cabine : 55 x 25 x 35 cm",
       "Valide soute : 158 cm (sommes des 3 dimensions)",
       "Poids cabine (sac + valise): 12 kg max",
       "Poids soute : 23 kg max",
     ],
     scans: [
+      "/images/Vol/Carte-d’embarquement-16 août JPG CDG IST.webp",
+      "/images/Vol/Carte-d’embarquement-16 août KG CDG IST.webp",
+      "/images/Vol/Carte-d’embarquement-16 août EMMA CDG IST.webp",
+      "/images/Vol/Carte-d’embarquement-16 août THOMAS CDG IST.webp",
+      "/images/Vol/Carte-d’embarquement-16 août JULIE CDG IST.webp",
       "/images/Vol/Avion aller JPG.webp",
       "/images/Vol/Avion aller KG.webp",
       "/images/Vol/Avion aller Thomas.webp",
