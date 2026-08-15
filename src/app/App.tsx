@@ -1390,7 +1390,12 @@ function ActionCard({
           className="w-12 h-12 mb-2 rounded-xl object-cover"
         />
       ) : (
-        <span className="text-3xl mb-2 block">{emoji}</span>
+        <span
+          className="text-3xl mb-2 block"
+          style={{ fontFamily: '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif' }}
+        >
+          {emoji}
+        </span>
       )}
       <p className={`font-black text-sm ${colorText}`}>{title}</p>
       <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
