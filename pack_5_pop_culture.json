@@ -1,1014 +1,217 @@
+
 {
   "films": [
-    {
-      "q": "Quel film de 1999 raconte une réalité simulée contrôlée par des machines ?",
-      "choices": [
-        "Matrix",
-        "Terminator",
-        "Minority Report",
-        "Inception"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de Steven Spielberg met en scène un extraterrestre surnommé E.T. ?",
-      "choices": [
-        "E.T. l'extra-terrestre",
-        "Jurassic Park",
-        "Rencontres du troisième type",
-        "A.I."
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 1985 suit Marty McFly et le docteur Brown ?",
-      "choices": [
-        "Retour vers le futur",
-        "Top Gun",
-        "Rocky IV",
-        "Gremlins"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film met en scène un archéologue nommé Indiana Jones ?",
-      "choices": [
-        "Les Aventuriers de l'Arche perdue",
-        "Le Patient anglais",
-        "Gladiator",
-        "Le Dernier Samouraï"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 2001 lance la trilogie du Seigneur des Anneaux de Peter Jackson ?",
-      "choices": [
-        "La Communauté de l'Anneau",
-        "Les Deux Tours",
-        "Le Retour du Roi",
-        "Le Hobbit"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 2019 raconte l'histoire d'un musicien de rue et d'une chanteuse-actrice à Los Angeles ?",
-      "choices": [
-        "A Star Is Born",
-        "Rocketman",
-        "Bohemian Rhapsody",
-        "La La Land"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 1988 met en scène un policier nommé John McClane dans un immeuble à Los Angeles ?",
-      "choices": [
-        "Piège de cristal",
-        "L'Arme fatale",
-        "Speed",
-        "Heat"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de Quentin Tarantino se déroule notamment autour d'un mystérieux attaché-case ?",
-      "choices": [
-        "Pulp Fiction",
-        "Kill Bill",
-        "Django Unchained",
-        "Reservoir Dogs"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film d'animation Pixar raconte l'histoire d'un rat qui rêve de cuisiner ?",
-      "choices": [
-        "Ratatouille",
-        "Cars",
-        "Coco",
-        "Là-haut"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 1993 présente des dinosaures recréés grâce à l'ADN ?",
-      "choices": [
-        "Jurassic Park",
-        "Godzilla",
-        "King Kong",
-        "Avatar"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film met en scène Rocky Balboa, boxeur de Philadelphie ?",
-      "choices": [
-        "Rocky",
-        "Creed",
-        "Raging Bull",
-        "Million Dollar Baby"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 2014 suit un groupe de scientifiques traversant un trou de ver ?",
-      "choices": [
-        "Interstellar",
-        "Gravity",
-        "Arrival",
-        "Seul sur Mars"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 2019 raconte la vie du chanteur Elton John ?",
-      "choices": [
-        "Rocketman",
-        "Yesterday",
-        "Bohemian Rhapsody",
-        "Elvis"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 1975 met en scène un requin qui terrorise une station balnéaire ?",
-      "choices": [
-        "Les Dents de la mer",
-        "Alien",
-        "Predator",
-        "Twister"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 1997 met en scène le personnage de Jack Dawson ?",
-      "choices": [
-        "Titanic",
-        "Pearl Harbor",
-        "Le Patient anglais",
-        "Armageddon"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 2010 de Christopher Nolan se déroule autour des rêves ?",
-      "choices": [
-        "Inception",
-        "Tenet",
-        "Dunkerque",
-        "Oppenheimer"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 2000 avec Russell Crowe se déroule dans la Rome antique ?",
-      "choices": [
-        "Gladiator",
-        "Troie",
-        "Alexandre",
-        "Spartacus"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 1990 met en scène Kevin, oublié seul chez lui à Noël ?",
-      "choices": [
-        "Maman, j'ai raté l'avion",
-        "Beethoven",
-        "Jumanji",
-        "Hook"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 2003 met en scène le capitaine Jack Sparrow et le Black Pearl ?",
-      "choices": [
-        "Pirates des Caraïbes : La Malédiction du Black Pearl",
-        "Master and Commander",
-        "Troie",
-        "Le Dernier Samouraï"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel film de 2015 de Pixar suit Riley et ses émotions personnifiées ?",
-      "choices": [
-        "Vice-Versa",
-        "Coco",
-        "Soul",
-        "En avant"
-      ],
-      "answer": 0
-    }
+    {"q": "Quel film de 1999 raconte une réalité simulée contrôlée par des machines ?","choices": ["Matrix","Terminator","Minority Report","Inception"],"answer": 0},
+    {"q": "Quel film de Steven Spielberg met en scène un extraterrestre surnommé E.T. ?","choices": ["E.T. l'extra-terrestre","Jurassic Park","Rencontres du troisième type","A.I."],"answer": 0},
+    {"q": "Quel film de 1985 suit Marty McFly et le docteur Brown ?","choices": ["Retour vers le futur","Top Gun","Rocky IV","Gremlins"],"answer": 0},
+    {"q": "Quel film met en scène un archéologue nommé Indiana Jones ?","choices": ["Les Aventuriers de l'Arche perdue","Le Patient anglais","Gladiator","Le Dernier Samouraï"],"answer": 0},
+    {"q": "Quel film de 2001 lance la trilogie du Seigneur des Anneaux de Peter Jackson ?","choices": ["La Communauté de l'Anneau","Les Deux Tours","Le Retour du Roi","Le Hobbit"],"answer": 0},
+    {"q": "Quel film de 2019 raconte l'histoire d'un musicien de rue et d'une chanteuse-actrice à Los Angeles ?","choices": ["A Star Is Born","Rocketman","Bohemian Rhapsody","La La Land"],"answer": 0},
+    {"q": "Quel film de 1988 met en scène un policier nommé John McClane dans un immeuble à Los Angeles ?","choices": ["Piège de cristal","L'Arme fatale","Speed","Heat"],"answer": 0},
+    {"q": "Quel film de Quentin Tarantino se déroule notamment autour d'un mystérieux attaché-case ?","choices": ["Pulp Fiction","Kill Bill","Django Unchained","Reservoir Dogs"],"answer": 0},
+    {"q": "Quel film d'animation Pixar raconte l'histoire d'un rat qui rêve de cuisiner ?","choices": ["Ratatouille","Cars","Coco","Là-haut"],"answer": 0},
+    {"q": "Quel film de 1993 présente des dinosaures recréés grâce à l'ADN ?","choices": ["Jurassic Park","Godzilla","King Kong","Avatar"],"answer": 0},
+    {"q": "Quel film met en scène Rocky Balboa, boxeur de Philadelphie ?","choices": ["Rocky","Creed","Raging Bull","Million Dollar Baby"],"answer": 0},
+    {"q": "Quel film de 2014 suit un groupe de scientifiques traversant un trou de ver ?","choices": ["Interstellar","Gravity","Arrival","Seul sur Mars"],"answer": 0},
+    {"q": "Quel film de 2019 raconte la vie du chanteur Elton John ?","choices": ["Rocketman","Yesterday","Bohemian Rhapsody","Elvis"],"answer": 0},
+    {"q": "Quel film de 1975 met en scène un requin qui terrorise une station balnéaire ?","choices": ["Les Dents de la mer","Alien","Predator","Twister"],"answer": 0},
+    {"q": "Quel film de 1997 met en scène le personnage de Jack Dawson ?","choices": ["Titanic","Pearl Harbor","Le Patient anglais","Armageddon"],"answer": 0},
+    {"q": "Quel film de 2010 de Christopher Nolan se déroule autour des rêves ?","choices": ["Inception","Tenet","Dunkerque","Oppenheimer"],"answer": 0},
+    {"q": "Quel film de 2000 avec Russell Crowe se déroule dans la Rome antique ?","choices": ["Gladiator","Troie","Alexandre","Spartacus"],"answer": 0},
+    {"q": "Quel film de 1990 met en scène Kevin, oublié seul chez lui à Noël ?","choices": ["Maman, j'ai raté l'avion","Beethoven","Jumanji","Hook"],"answer": 0},
+    {"q": "Quel film de 2003 met en scène le capitaine Jack Sparrow et le Black Pearl ?","choices": ["Pirates des Caraïbes : La Malédiction du Black Pearl","Master and Commander","Troie","Le Dernier Samouraï"],"answer": 0},
+    {"q": "Quel film de 2015 de Pixar suit Riley et ses émotions personnifiées ?","choices": ["Vice-Versa","Coco","Soul","En avant"],"answer": 0},
+    {"q": "Quel film de 1994 raconte la vie de Forrest Gump à travers plusieurs décennies ?","choices": ["Forrest Gump","Big","Cast Away","The Green Mile"],"answer": 0},
+    {"q": "Quel film de 1977 de George Lucas lance la saga Star Wars ?","choices": ["Un nouvel espoir","L'Empire contre-attaque","Le Retour du Jedi","La Menace fantôme"],"answer": 0},
+    {"q": "Quel film de 1999 met en scène des hommes fondant des clubs de combat clandestins la nuit ?","choices": ["Fight Club","American Psycho","Seven","Very Bad Trip"],"answer": 0},
+    {"q": "Quel film de 2009 de James Cameron se déroule sur la planète Pandora ?","choices": ["Avatar","Interstellar","Dune","Gravity"],"answer": 0},
+    {"q": "Quel film de 2000 met en scène un homme perdu sur une île déserte avec pour seul compagnon un ballon de volley ?","choices": ["Seul au monde","Gravity","Seul sur Mars","Life of Pi"],"answer": 0},
+    {"q": "Quel film de 1994 met en scène un lion nommé Simba destiné à régner sur la savane ?","choices": ["Le Roi Lion","Madagascar","Tarzan","Frère des Ours"],"answer": 0},
+    {"q": "Quel film de 2019 met en scène Joaquin Phoenix dans le rôle du célèbre ennemi de Batman ?","choices": ["Joker","The Dark Knight","Batman Begins","Suicide Squad"],"answer": 0},
+    {"q": "Quel film de 2003 met en scène un poisson-clown parti à la recherche de son fils disparu dans l'océan ?","choices": ["Le Monde de Nemo","Le Monde de Dory","Vice-Versa","Rebelle"],"answer": 0},
+    {"q": "Quel film de 1994, adapté d'un roman de Stephen King, se déroule dans une prison du Maine ?","choices": ["Les Évadés","La Ligne verte","Le Fléau","Misery"],"answer": 0},
+    {"q": "Quel film Disney de 2013 met en scène les sœurs Elsa et Anna dans un royaume enneigé ?","choices": ["La Reine des Neiges","Raiponce","Vaiana","Encanto"],"answer": 0},
+    {"q": "Quel film de 1994 de Luc Besson met en scène un tueur à gages protégeant une jeune fille ?","choices": ["Léon","Nikita","Le Grand Bleu","Taxi"],"answer": 0},
+    {"q": "Quel film de 2008 met en scène Batman affrontant le Joker incarné par Heath Ledger ?","choices": ["The Dark Knight","Batman Begins","The Dark Knight Rises","Man of Steel"],"answer": 0},
+    {"q": "Quel film de 1995 est le tout premier long métrage d'animation entièrement en images de synthèse ?","choices": ["Toy Story","Toy Story 2","Monstres & Cie","Cars"],"answer": 0},
+    {"q": "Quel film de 2001 met en scène un ogre vert et un âne bavard dans un royaume de contes de fées ?","choices": ["Shrek","Madagascar","L'Âge de Glace","Kung Fu Panda"],"answer": 0},
+    {"q": "Quel film de 2012 clôt la trilogie Batman de Christopher Nolan ?","choices": ["The Dark Knight Rises","The Dark Knight","Batman Begins","Man of Steel"],"answer": 0},
+    {"q": "Quel film de 1987 met en scène un couple dansant sur « Time of My Life » lors d'un été à Kellerman's ?","choices": ["Dirty Dancing","Footloose","Flashdance","Grease"],"answer": 0},
+    {"q": "Quel film de 1968, réalisé par Stanley Kubrick, s'inspire d'une nouvelle d'Arthur C. Clarke sur l'espace ?","choices": ["2001, l'Odyssée de l'espace","Interstellar","Solaris","Gravity"],"answer": 0}
   ],
   "series": [
-    {
-      "q": "Quelle série suit les habitants de Westeros et les familles Stark et Lannister ?",
-      "choices": [
-        "Game of Thrones",
-        "Vikings",
-        "The Witcher",
-        "The Crown"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle série suit-on un professeur devenu fabricant de méthamphétamine ?",
-      "choices": [
-        "Breaking Bad",
-        "Dexter",
-        "Ozark",
-        "Narcos"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série met en scène un groupe d'amis dans le café Central Perk ?",
-      "choices": [
-        "Friends",
-        "Seinfeld",
-        "The Big Bang Theory",
-        "New Girl"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle série un groupe d'élèves participe-t-il à des jeux mortels en Corée du Sud ?",
-      "choices": [
-        "Squid Game",
-        "Alice in Borderland",
-        "Dark",
-        "Elite"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série raconte les aventures de la famille royale britannique sous Elizabeth II ?",
-      "choices": [
-        "The Crown",
-        "Downton Abbey",
-        "Bridgerton",
-        "Victoria"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série met en scène Sherlock Holmes dans le Londres moderne ?",
-      "choices": [
-        "Sherlock",
-        "Luther",
-        "Peaky Blinders",
-        "The Night Manager"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle série trouve-t-on les personnages Michael Scott et Dwight Schrute ?",
-      "choices": [
-        "The Office",
-        "Parks and Recreation",
-        "Community",
-        "Modern Family"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série fantastique met en scène Geralt de Riv ?",
-      "choices": [
-        "The Witcher",
-        "Vikings",
-        "Shadow and Bone",
-        "Merlin"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série se déroule dans une prison et suit notamment Michael Scofield ?",
-      "choices": [
-        "Prison Break",
-        "Lost",
-        "24",
-        "Suits"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série médicale suit notamment Meredith Grey ?",
-      "choices": [
-        "Grey's Anatomy",
-        "House",
-        "ER",
-        "The Good Doctor"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série raconte l'histoire de jeunes survivants après un crash d'avion sur une île mystérieuse ?",
-      "choices": [
-        "Lost",
-        "Manifest",
-        "Yellowjackets",
-        "From"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série française suit une famille de riches et pauvres habitants d'un quartier autour d'un bar-tabac ?",
-      "choices": [
-        "Plus belle la vie",
-        "Dix pour cent",
-        "Engrenages",
-        "Kaamelott"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle série se trouve le personnage de Wednesday Addams ?",
-      "choices": [
-        "Wednesday",
-        "Riverdale",
-        "Chilling Adventures of Sabrina",
-        "Stranger Things"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série se déroule dans une académie de jeunes sorciers à Nevermore ?",
-      "choices": [
-        "Wednesday",
-        "Harry Potter",
-        "The Magicians",
-        "Fate"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série met en scène une équipe qui braque la Fabrique nationale de la monnaie en Espagne ?",
-      "choices": [
-        "La Casa de Papel",
-        "Lupin",
-        "Berlin",
-        "Sky Rojo"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle série de science-fiction suit des humains vivant dans des mondes parallèles liés à un laboratoire mystérieux ?",
-      "choices": [
-        "Stranger Things",
-        "Dark",
-        "The Expanse",
-        "Westworld"
-      ],
-      "answer": 0
-    }
+    {"q": "Quelle série suit les habitants de Westeros et les familles Stark et Lannister ?","choices": ["Game of Thrones","Vikings","The Witcher","The Crown"],"answer": 0},
+    {"q": "Dans quelle série suit-on un professeur devenu fabricant de méthamphétamine ?","choices": ["Breaking Bad","Dexter","Ozark","Narcos"],"answer": 0},
+    {"q": "Quelle série met en scène un groupe d'amis dans le café Central Perk ?","choices": ["Friends","Seinfeld","The Big Bang Theory","New Girl"],"answer": 0},
+    {"q": "Dans quelle série un groupe d'élèves participe-t-il à des jeux mortels en Corée du Sud ?","choices": ["Squid Game","Alice in Borderland","Dark","Elite"],"answer": 0},
+    {"q": "Quelle série raconte les aventures de la famille royale britannique sous Elizabeth II ?","choices": ["The Crown","Downton Abbey","Bridgerton","Victoria"],"answer": 0},
+    {"q": "Quelle série met en scène Sherlock Holmes dans le Londres moderne ?","choices": ["Sherlock","Luther","Peaky Blinders","The Night Manager"],"answer": 0},
+    {"q": "Dans quelle série trouve-t-on les personnages Michael Scott et Dwight Schrute ?","choices": ["The Office","Parks and Recreation","Community","Modern Family"],"answer": 0},
+    {"q": "Quelle série fantastique met en scène Geralt de Riv ?","choices": ["The Witcher","Vikings","Shadow and Bone","Merlin"],"answer": 0},
+    {"q": "Quelle série se déroule dans une prison et suit notamment Michael Scofield ?","choices": ["Prison Break","Lost","24","Suits"],"answer": 0},
+    {"q": "Quelle série médicale suit notamment Meredith Grey ?","choices": ["Grey's Anatomy","House","ER","The Good Doctor"],"answer": 0},
+    {"q": "Quelle série raconte l'histoire de jeunes survivants après un crash d'avion sur une île mystérieuse ?","choices": ["Lost","Manifest","Yellowjackets","From"],"answer": 0},
+    {"q": "Quelle série française suit une famille de riches et pauvres habitants d'un quartier autour d'un bar-tabac ?","choices": ["Plus belle la vie","Dix pour cent","Engrenages","Kaamelott"],"answer": 0},
+    {"q": "Dans quelle série se trouve le personnage de Wednesday Addams ?","choices": ["Wednesday","Riverdale","Chilling Adventures of Sabrina","Stranger Things"],"answer": 0},
+    {"q": "Quelle série se déroule dans une académie de jeunes sorciers à Nevermore ?","choices": ["Wednesday","Harry Potter","The Magicians","Fate"],"answer": 0},
+    {"q": "Quelle série met en scène une équipe qui braque la Fabrique nationale de la monnaie en Espagne ?","choices": ["La Casa de Papel","Lupin","Berlin","Sky Rojo"],"answer": 0},
+    {"q": "Quelle série de science-fiction suit des humains vivant dans des mondes parallèles liés à un laboratoire mystérieux ?","choices": ["Stranger Things","Dark","The Expanse","Westworld"],"answer": 0},
+    {"q": "Quelle série suit un groupe d'adolescents dans la ville fictive d'Hawkins, confrontés à une dimension parallèle appelée le Monde à l'Envers ?","choices": ["Stranger Things","Dark","The OA","Chilling Adventures of Sabrina"],"answer": 0},
+    {"q": "Quelle série met en scène des super-héros dysfonctionnels au sein de la Vought International ?","choices": ["The Boys","Invincible","Watchmen","Titans"],"answer": 0},
+    {"q": "Quelle série suit un avocat véreux devenu personnage principal, spin-off de Breaking Bad ?","choices": ["Better Call Saul","Ozark","Narcos","The Wire"],"answer": 0},
+    {"q": "Quelle série met en scène des dragons et la maison Targaryen, préquelle de Game of Thrones ?","choices": ["House of the Dragon","Game of Thrones","The Witcher","Vikings"],"answer": 0},
+    {"q": "Quelle série britannique suit un gang de gangsters à Birmingham dans les années 1920 ?","choices": ["Peaky Blinders","Sherlock","Luther","The Crown"],"answer": 0},
+    {"q": "Quelle série suit les vies amoureuses de quatre amies new-yorkaises, dont Carrie Bradshaw ?","choices": ["Sex and the City","Girls","Emily in Paris","Younger"],"answer": 0},
+    {"q": "Quelle série française met en scène les coulisses d'une agence de talents à Paris, avec des acteurs jouant leur propre rôle ?","choices": ["Dix pour cent","Kaamelott","Engrenages","Plus belle la vie"],"answer": 0},
+    {"q": "Quelle série d'animation américaine met en scène la famille Simpson à Springfield ?","choices": ["Les Simpson","Family Guy","South Park","Bob's Burgers"],"answer": 0},
+    {"q": "Quelle série suit un cambrioleur français, Assane Diop, inspiré d'Arsène Lupin ?","choices": ["Lupin","La Casa de Papel","Dix pour cent","Le Bureau des Légendes"],"answer": 0},
+    {"q": "Quelle série met en scène des zombies envahissant les États-Unis, suivie par un groupe de survivants menés par Rick Grimes ?","choices": ["The Walking Dead","Fear the Walking Dead","Z Nation","The Last of Us"],"answer": 0},
+    {"q": "Quelle série met en scène un homme d'affaires impitoyable, Logan Roy, à la tête d'un empire médiatique familial ?","choices": ["Succession","Billions","Empire","Dynastie"],"answer": 0},
+    {"q": "Quelle série française met en scène un espion infiltré, le personnage de Guillaume Debailly ?","choices": ["Le Bureau des Légendes","Engrenages","La Mante","Le Chalet"],"answer": 0},
+    {"q": "Quelle série d'animation américaine met en scène un chimiste excentrique et son petit-fils partant dans des aventures interdimensionnelles ?","choices": ["Rick et Morty","Les Simpson","Family Guy","Bob's Burgers"],"answer": 0},
+    {"q": "Quelle série d'animation met en scène une famille dysfonctionnelle dans la ville fictive de Quahog ?","choices": ["Family Guy","Les Simpson","South Park","American Dad"],"answer": 0},
+    {"q": "Quelle série suit les tribulations d'internes dans un hôpital dirigé par le sarcastique docteur Cox ?","choices": ["Scrubs","Grey's Anatomy","House","ER"],"answer": 0},
+    {"q": "Quelle série met en scène des adolescents fréquentant le lycée de Riverdale, inspirée des comics Archie ?","choices": ["Riverdale","Gossip Girl","Élite","13 Reasons Why"],"answer": 0},
+    {"q": "Quelle série scandinave, pionnière du « Nordic noir », suit l'enquêtrice Saga Norén sur un pont reliant deux pays ?","choices": ["Bron/Broen","Forbrydelsen","Wallander","Trapped"],"answer": 0}
   ],
   "musique": [
-    {
-      "q": "Quel groupe a enregistré « We Will Rock You » ?",
-      "choices": [
-        "Queen",
-        "ABBA",
-        "U2",
-        "Kiss"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel artiste chante « Billie Jean » ?",
-      "choices": [
-        "Michael Jackson",
-        "Prince",
-        "Stevie Wonder",
-        "Marvin Gaye"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel groupe a sorti « Smells Like Teen Spirit » ?",
-      "choices": [
-        "Nirvana",
-        "Pearl Jam",
-        "Metallica",
-        "Radiohead"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle chanteuse est derrière « Bad Guy » ?",
-      "choices": [
-        "Billie Eilish",
-        "Dua Lipa",
-        "Taylor Swift",
-        "Lorde"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel artiste a sorti « Shape of You » ?",
-      "choices": [
-        "Ed Sheeran",
-        "Sam Smith",
-        "Shawn Mendes",
-        "Justin Timberlake"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel groupe français a composé « One More Time » ?",
-      "choices": [
-        "Daft Punk",
-        "Justice",
-        "Air",
-        "Phoenix"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel chanteur est associé au personnage de Ziggy Stardust ?",
-      "choices": [
-        "David Bowie",
-        "Elton John",
-        "Bono",
-        "Mick Jagger"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle chanteuse a interprété « I Will Always Love You » dans Bodyguard ?",
-      "choices": [
-        "Whitney Houston",
-        "Mariah Carey",
-        "Céline Dion",
-        "Tina Turner"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel groupe britannique est connu pour « Wonderwall » ?",
-      "choices": [
-        "Oasis",
-        "Blur",
-        "Radiohead",
-        "Coldplay"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel chanteur français a chanté « Formidable » ?",
-      "choices": [
-        "Stromae",
-        "Orelsan",
-        "Vianney",
-        "Soprano"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel groupe a sorti « Another One Bites the Dust » ?",
-      "choices": [
-        "Queen",
-        "AC/DC",
-        "The Police",
-        "Dire Straits"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel artiste est connu pour l'album « Back to Black » ?",
-      "choices": [
-        "Amy Winehouse",
-        "Adele",
-        "Sia",
-        "Duffy"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel groupe suédois a gagné l'Eurovision avec « Waterloo » ?",
-      "choices": [
-        "ABBA",
-        "Roxette",
-        "Europe",
-        "Ace of Base"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel compositeur a signé la musique de nombreux films de Christopher Nolan, dont Inception ?",
-      "choices": [
-        "Hans Zimmer",
-        "John Williams",
-        "Howard Shore",
-        "James Horner"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel artiste a chanté « Purple Rain » ?",
-      "choices": [
-        "Prince",
-        "Lenny Kravitz",
-        "George Michael",
-        "Sting"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel groupe irlandais a sorti « Zombie » ?",
-      "choices": [
-        "The Cranberries",
-        "U2",
-        "The Corrs",
-        "Westlife"
-      ],
-      "answer": 0
-    }
+    {"q": "Quel groupe a enregistré « We Will Rock You » ?","choices": ["Queen","ABBA","U2","Kiss"],"answer": 0},
+    {"q": "Quel artiste chante « Billie Jean » ?","choices": ["Michael Jackson","Prince","Stevie Wonder","Marvin Gaye"],"answer": 0},
+    {"q": "Quel groupe a sorti « Smells Like Teen Spirit » ?","choices": ["Nirvana","Pearl Jam","Metallica","Radiohead"],"answer": 0},
+    {"q": "Quelle chanteuse est derrière « Bad Guy » ?","choices": ["Billie Eilish","Dua Lipa","Taylor Swift","Lorde"],"answer": 0},
+    {"q": "Quel artiste a sorti « Shape of You » ?","choices": ["Ed Sheeran","Sam Smith","Shawn Mendes","Justin Timberlake"],"answer": 0},
+    {"q": "Quel groupe français a composé « One More Time » ?","choices": ["Daft Punk","Justice","Air","Phoenix"],"answer": 0},
+    {"q": "Quel chanteur est associé au personnage de Ziggy Stardust ?","choices": ["David Bowie","Elton John","Bono","Mick Jagger"],"answer": 0},
+    {"q": "Quelle chanteuse a interprété « I Will Always Love You » dans Bodyguard ?","choices": ["Whitney Houston","Mariah Carey","Céline Dion","Tina Turner"],"answer": 0},
+    {"q": "Quel groupe britannique est connu pour « Wonderwall » ?","choices": ["Oasis","Blur","Radiohead","Coldplay"],"answer": 0},
+    {"q": "Quel chanteur français a chanté « Formidable » ?","choices": ["Stromae","Orelsan","Vianney","Soprano"],"answer": 0},
+    {"q": "Quel groupe a sorti « Another One Bites the Dust » ?","choices": ["Queen","AC/DC","The Police","Dire Straits"],"answer": 0},
+    {"q": "Quel artiste est connu pour l'album « Back to Black » ?","choices": ["Amy Winehouse","Adele","Sia","Duffy"],"answer": 0},
+    {"q": "Quel groupe suédois a gagné l'Eurovision avec « Waterloo » ?","choices": ["ABBA","Roxette","Europe","Ace of Base"],"answer": 0},
+    {"q": "Quel compositeur a signé la musique de nombreux films de Christopher Nolan, dont Inception ?","choices": ["Hans Zimmer","John Williams","Howard Shore","James Horner"],"answer": 0},
+    {"q": "Quel artiste a chanté « Purple Rain » ?","choices": ["Prince","Lenny Kravitz","George Michael","Sting"],"answer": 0},
+    {"q": "Quel groupe irlandais a sorti « Zombie » ?","choices": ["The Cranberries","U2","The Corrs","Westlife"],"answer": 0},
+    {"q": "Quel groupe britannique a enregistré « Bohemian Rhapsody » en 1975 ?","choices": ["Queen","The Beatles","Led Zeppelin","Pink Floyd"],"answer": 0},
+    {"q": "Quelle chanteuse britannique a interprété « Rolling in the Deep » en 2010 ?","choices": ["Adele","Amy Winehouse","Sam Smith","Duffy"],"answer": 0},
+    {"q": "Quel groupe britannique a sorti l'album concept « The Dark Side of the Moon » en 1973 ?","choices": ["Pink Floyd","Led Zeppelin","The Rolling Stones","Genesis"],"answer": 0},
+    {"q": "Quel rappeur américain, assassiné en 1996, est connu pour l'album « All Eyez on Me » ?","choices": ["Tupac Shakur","The Notorious B.I.G.","Snoop Dogg","Dr. Dre"],"answer": 0},
+    {"q": "Quelle chanteuse islandaise est connue pour son univers musical atypique et l'album « Debut » en 1993 ?","choices": ["Björk","Sinéad O'Connor","Enya","Kate Bush"],"answer": 0},
+    {"q": "Quel chanteur canadien est connu pour les titres « Blinding Lights » et « Starboy » ?","choices": ["The Weeknd","Drake","Justin Bieber","Shawn Mendes"],"answer": 0},
+    {"q": "Quel groupe américain a interprété « Hotel California » en 1976 ?","choices": ["Eagles","Fleetwood Mac","The Doors","Creedence Clearwater Revival"],"answer": 0},
+    {"q": "Quelle chanteuse française est connue pour le titre « Djadja » en 2018 ?","choices": ["Aya Nakamura","Angèle","Clara Luciani","Yseult"],"answer": 0},
+    {"q": "Quel groupe britannique de rock progressif a sorti l'album « The Wall » en 1979 ?","choices": ["Pink Floyd","Genesis","Yes","King Crimson"],"answer": 0},
+    {"q": "Quel chanteur belge est connu pour le titre « Papaoutai » en 2013 ?","choices": ["Stromae","Angèle","Orelsan","Damso"],"answer": 0},
+    {"q": "Quelle chanteuse américaine, surnommée la Reine de la Pop, a sorti « Like a Prayer » en 1989 ?","choices": ["Madonna","Cyndi Lauper","Cher","Janet Jackson"],"answer": 0},
+    {"q": "Quel groupe britannique a interprété « Don't Stop Me Now » en 1979 ?","choices": ["Queen","ELO","The Who","Supertramp"],"answer": 0},
+    {"q": "Quel rappeur américain est connu pour l'album « The Marshall Mathers LP » sorti en 2000 ?","choices": ["Eminem","50 Cent","Jay-Z","Dr. Dre"],"answer": 0},
+    {"q": "Quelle chanteuse américaine interprète « Shallow » avec Bradley Cooper dans le film « A Star Is Born » ?","choices": ["Lady Gaga","Beyoncé","Rihanna","Katy Perry"],"answer": 0},
+    {"q": "Quel guitariste américain, surnommé « Slash », est connu pour son chapeau haut de forme et son groupe Guns N' Roses ?","choices": ["Slash","Axl Rose","Duff McKagan","Izzy Stradlin"],"answer": 0},
+    {"q": "Quelle chanteuse française est connue pour le titre « Je veux » en 2010 ?","choices": ["Zaz","Cœur de Pirate","Camille","Pomme"],"answer": 0},
+    {"q": "Quel groupe britannique de trip-hop est connu pour l'album « Mezzanine » en 1998 ?","choices": ["Massive Attack","Portishead","Tricky","Morcheeba"],"answer": 0}
   ],
   "jeux_video": [
-    {
-      "q": "Quel personnage de Nintendo porte une casquette rouge et saute sur des ennemis ?",
-      "choices": [
-        "Mario",
-        "Link",
-        "Kirby",
-        "Fox"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle série trouve-t-on Pikachu ?",
-      "choices": [
-        "Pokémon",
-        "Final Fantasy",
-        "Dragon Quest",
-        "Sonic"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel jeu de construction permet de créer librement avec des blocs ?",
-      "choices": [
-        "Minecraft",
-        "Fortnite",
-        "Roblox",
-        "Terraria"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage est le héros de la série The Legend of Zelda ?",
-      "choices": [
-        "Link",
-        "Zelda",
-        "Ganondorf",
-        "Mario"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel jeu de course met en scène Mario et ses amis sur des circuits ?",
-      "choices": [
-        "Mario Kart",
-        "F-Zero",
-        "Crash Team Racing",
-        "Gran Turismo"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel hérisson bleu est une mascotte de Sega ?",
-      "choices": [
-        "Sonic",
-        "Tails",
-        "Knuckles",
-        "Shadow"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quel jeu peut-on jouer avec des personnages comme Pikachu, Dracaufeu et Mewtwo dans des combats ?",
-      "choices": [
-        "Super Smash Bros.",
-        "Street Fighter",
-        "Mortal Kombat",
-        "Tekken"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel jeu de football d'EA Sports a longtemps porté le nom FIFA ?",
-      "choices": [
-        "EA Sports FC",
-        "NBA 2K",
-        "Madden",
-        "NHL"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel jeu propose de construire et défendre une base tout en explorant un monde de zombies et de monstres ?",
-      "choices": [
-        "Minecraft",
-        "Animal Crossing",
-        "The Sims",
-        "Mario Party"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage est une boule rose qui peut aspirer ses ennemis ?",
-      "choices": [
-        "Kirby",
-        "Yoshi",
-        "Toad",
-        "Jigglypuff"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel jeu de simulation permet de créer des personnages et de gérer leur vie quotidienne ?",
-      "choices": [
-        "Les Sims",
-        "SimCity",
-        "Cities: Skylines",
-        "Animal Crossing"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel jeu Nintendo met en scène des courses de kart et des objets comme les carapaces rouges ?",
-      "choices": [
-        "Mario Kart",
-        "Mario Party",
-        "F-Zero",
-        "WarioWare"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel jeu en ligne de type battle royale a popularisé la construction pendant les combats ?",
-      "choices": [
-        "Fortnite",
-        "Apex Legends",
-        "PUBG",
-        "Overwatch"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel jeu de Nintendo se déroule dans un monde peuplé de villages d'animaux anthropomorphes ?",
-      "choices": [
-        "Animal Crossing",
-        "Pikmin",
-        "Splatoon",
-        "Kirby"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de Nintendo est un dinosaure vert et l'ami de Mario ?",
-      "choices": [
-        "Yoshi",
-        "Bowser",
-        "Luigi",
-        "Toad"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quel jeu incarne-t-on souvent un chasseur de trésors nommé Nathan Drake ?",
-      "choices": [
-        "Uncharted",
-        "Tomb Raider",
-        "Assassin's Creed",
-        "Far Cry"
-      ],
-      "answer": 0
-    }
+    {"q": "Quel personnage de Nintendo porte une casquette rouge et saute sur des ennemis ?","choices": ["Mario","Link","Kirby","Fox"],"answer": 0},
+    {"q": "Dans quelle série trouve-t-on Pikachu ?","choices": ["Pokémon","Final Fantasy","Dragon Quest","Sonic"],"answer": 0},
+    {"q": "Quel jeu de construction permet de créer librement avec des blocs ?","choices": ["Minecraft","Fortnite","Roblox","Terraria"],"answer": 0},
+    {"q": "Quel personnage est le héros de la série The Legend of Zelda ?","choices": ["Link","Zelda","Ganondorf","Mario"],"answer": 0},
+    {"q": "Quel jeu de course met en scène Mario et ses amis sur des circuits ?","choices": ["Mario Kart","F-Zero","Crash Team Racing","Gran Turismo"],"answer": 0},
+    {"q": "Quel hérisson bleu est une mascotte de Sega ?","choices": ["Sonic","Tails","Knuckles","Shadow"],"answer": 0},
+    {"q": "Dans quel jeu peut-on jouer avec des personnages comme Pikachu, Dracaufeu et Mewtwo dans des combats ?","choices": ["Super Smash Bros.","Street Fighter","Mortal Kombat","Tekken"],"answer": 0},
+    {"q": "Quel jeu de football d'EA Sports a longtemps porté le nom FIFA ?","choices": ["EA Sports FC","NBA 2K","Madden","NHL"],"answer": 0},
+    {"q": "Quel jeu propose de construire et défendre une base tout en explorant un monde de zombies et de monstres ?","choices": ["Minecraft","Animal Crossing","The Sims","Mario Party"],"answer": 0},
+    {"q": "Quel personnage est une boule rose qui peut aspirer ses ennemis ?","choices": ["Kirby","Yoshi","Toad","Jigglypuff"],"answer": 0},
+    {"q": "Quel jeu de simulation permet de créer des personnages et de gérer leur vie quotidienne ?","choices": ["Les Sims","SimCity","Cities: Skylines","Animal Crossing"],"answer": 0},
+    {"q": "Quel jeu Nintendo met en scène des courses de kart et des objets comme les carapaces rouges ?","choices": ["Mario Kart","Mario Party","F-Zero","WarioWare"],"answer": 0},
+    {"q": "Quel jeu en ligne de type battle royale a popularisé la construction pendant les combats ?","choices": ["Fortnite","Apex Legends","PUBG","Overwatch"],"answer": 0},
+    {"q": "Quel jeu de Nintendo se déroule dans un monde peuplé de villages d'animaux anthropomorphes ?","choices": ["Animal Crossing","Pikmin","Splatoon","Kirby"],"answer": 0},
+    {"q": "Quel personnage de Nintendo est un dinosaure vert et l'ami de Mario ?","choices": ["Yoshi","Bowser","Luigi","Toad"],"answer": 0},
+    {"q": "Dans quel jeu incarne-t-on souvent un chasseur de trésors nommé Nathan Drake ?","choices": ["Uncharted","Tomb Raider","Assassin's Creed","Far Cry"],"answer": 0},
+    {"q": "Quel jeu vidéo de tir, sorti en 2003, met en scène des soldats dans des conflits historiques et modernes, avec de nombreux opus annuels ?","choices": ["Call of Duty","Battlefield","Medal of Honor","Halo"],"answer": 0},
+    {"q": "Quel jeu vidéo d'aventure met en scène une archéologue britannique nommée Lara Croft ?","choices": ["Tomb Raider","Uncharted","Assassin's Creed","Prince of Persia"],"answer": 0},
+    {"q": "Quelle saga de jeux de rôle japonais, débutée en 1987, met en scène des invocations et de nombreux opus numérotés ?","choices": ["Final Fantasy","Dragon Quest","Kingdom Hearts","Chrono Trigger"],"answer": 0},
+    {"q": "Quel jeu vidéo en monde ouvert met en scène des gangsters à Los Santos, ville fictive inspirée de Los Angeles ?","choices": ["Grand Theft Auto V","Saints Row","Watch Dogs","Mafia"],"answer": 0},
+    {"q": "Quel jeu vidéo d'horreur met en scène un survivant dans un monde infesté par un champignon mutant, adapté en série HBO ?","choices": ["The Last of Us","Resident Evil","Days Gone","Dying Light"],"answer": 0},
+    {"q": "Quel jeu vidéo de simulation musicale permet de jouer de la guitare en plastique sur des tubes rock ?","choices": ["Guitar Hero","Rock Band","Just Dance","Singstar"],"answer": 0},
+    {"q": "Quel jeu vidéo d'action met en scène un assassin voyageant à travers différentes époques historiques, de la croisade à la Révolution française ?","choices": ["Assassin's Creed","Tomb Raider","Prince of Persia","Uncharted"],"answer": 0},
+    {"q": "Quel jeu vidéo de rythme et de danse propose de reproduire des chorégraphies devant sa caméra ou sa manette ?","choices": ["Just Dance","Dance Dance Revolution","Guitar Hero","Singstar"],"answer": 0},
+    {"q": "Quel jeu vidéo en monde ouvert met en scène des cow-boys dans l'Ouest américain du début du XXe siècle ?","choices": ["Red Dead Redemption 2","Grand Theft Auto V","Days Gone","Far Cry"],"answer": 0},
+    {"q": "Quel jeu vidéo de combat japonais met en scène des combattants comme Ryu et Ken dans des tournois d'arts martiaux ?","choices": ["Street Fighter","Mortal Kombat","Tekken","King of Fighters"],"answer": 0},
+    {"q": "Quel jeu vidéo, sorti en 2017, propose une expérience de survie en monde ouvert où cent joueurs s'affrontent, précurseur du genre battle royale ?","choices": ["PUBG","Fortnite","Apex Legends","Warzone"],"answer": 0},
+    {"q": "Quel jeu vidéo de plateforme met en scène un bandicoot orange chasseur de trésors ?","choices": ["Crash Bandicoot","Spyro","Rayman","Sonic"],"answer": 0},
+    {"q": "Quel jeu vidéo de rôle et d'action, développé par CD Projekt Red, se déroule dans une mégapole futuriste appelée Night City ?","choices": ["Cyberpunk 2077","Deus Ex","Watch Dogs","Fallout"],"answer": 0},
+    {"q": "Quel jeu vidéo de plateforme met en scène un dragon violet appelé Spyro ?","choices": ["Spyro","Crash Bandicoot","Rayman","Banjo-Kazooie"],"answer": 0},
+    {"q": "Quel jeu vidéo de rôle et d'aventure met en scène un sorcier chasseur de monstres nommé Geralt de Riv ?","choices": ["The Witcher 3","Skyrim","Dragon Age","Dark Souls"],"answer": 0},
+    {"q": "Quel jeu vidéo de tir en équipe, développé par Blizzard, met en scène des héros aux capacités uniques dans des arènes futuristes ?","choices": ["Overwatch","Valorant","Apex Legends","Team Fortress 2"],"answer": 0},
+    {"q": "Quel jeu vidéo indépendant, sorti en 2015, permet d'épargner tous ses ennemis dans un monde souterrain peuplé de monstres attachants ?","choices": ["Undertale","Hollow Knight","Celeste","Hades"],"answer": 0}
   ],
   "super_heros": [
-    {
-      "q": "Quel héros Marvel utilise un marteau appelé Mjolnir ?",
-      "choices": [
-        "Thor",
-        "Iron Man",
-        "Hulk",
-        "Hawkeye"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel héros DC est le milliardaire Bruce Wayne ?",
-      "choices": [
-        "Batman",
-        "Superman",
-        "Flash",
-        "Green Lantern"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel héros Marvel est Peter Parker ?",
-      "choices": [
-        "Spider-Man",
-        "Ant-Man",
-        "Daredevil",
-        "Star-Lord"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle héroïne est princesse d'Amazones dans l'univers DC ?",
-      "choices": [
-        "Wonder Woman",
-        "Black Widow",
-        "Captain Marvel",
-        "Supergirl"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel héros porte un bouclier étoilé aux couleurs américaines ?",
-      "choices": [
-        "Captain America",
-        "Falcon",
-        "Winter Soldier",
-        "Hawkeye"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel héros Marvel peut rétrécir et est associé aux fourmis ?",
-      "choices": [
-        "Ant-Man",
-        "Giant-Man",
-        "The Wasp",
-        "Hulk"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel mutant des X-Men contrôle les champs magnétiques ?",
-      "choices": [
-        "Magneto",
-        "Professor X",
-        "Cyclope",
-        "Wolverine"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel mutant possède des griffes rétractables en métal ?",
-      "choices": [
-        "Wolverine",
-        "Deadpool",
-        "Gambit",
-        "Cyclope"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel héros DC peut courir à une vitesse extraordinaire ?",
-      "choices": [
-        "Flash",
-        "Aquaman",
-        "Cyborg",
-        "Green Arrow"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage Marvel est roi du Wakanda ?",
-      "choices": [
-        "Black Panther",
-        "Falcon",
-        "Doctor Strange",
-        "Luke Cage"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel héros possède une armure technologique et s'appelle Tony Stark ?",
-      "choices": [
-        "Iron Man",
-        "War Machine",
-        "Vision",
-        "Ant-Man"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel héros est surnommé l'Homme d'Acier ?",
-      "choices": [
-        "Superman",
-        "Batman",
-        "Thor",
-        "Captain America"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage Marvel est un sorcier portant une cape rouge ?",
-      "choices": [
-        "Doctor Strange",
-        "Doctor Doom",
-        "Loki",
-        "Vision"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel anti-héros Marvel est connu pour ses plaisanteries et son costume rouge ?",
-      "choices": [
-        "Deadpool",
-        "Punisher",
-        "Daredevil",
-        "Blade"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel héros des Gardiens de la Galaxie se fait appeler Star-Lord ?",
-      "choices": [
-        "Peter Quill",
-        "Rocket",
-        "Drax",
-        "Groot"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage est un arbre humanoïde qui dit essentiellement « Je s'appelle Groot » ?",
-      "choices": [
-        "Groot",
-        "Rocket",
-        "Drax",
-        "Yondu"
-      ],
-      "answer": 0
-    }
+    {"q": "Quel héros Marvel utilise un marteau appelé Mjolnir ?","choices": ["Thor","Iron Man","Hulk","Hawkeye"],"answer": 0},
+    {"q": "Quel héros DC est le milliardaire Bruce Wayne ?","choices": ["Batman","Superman","Flash","Green Lantern"],"answer": 0},
+    {"q": "Quel héros Marvel est Peter Parker ?","choices": ["Spider-Man","Ant-Man","Daredevil","Star-Lord"],"answer": 0},
+    {"q": "Quelle héroïne est princesse d'Amazones dans l'univers DC ?","choices": ["Wonder Woman","Black Widow","Captain Marvel","Supergirl"],"answer": 0},
+    {"q": "Quel héros porte un bouclier étoilé aux couleurs américaines ?","choices": ["Captain America","Falcon","Winter Soldier","Hawkeye"],"answer": 0},
+    {"q": "Quel héros Marvel peut rétrécir et est associé aux fourmis ?","choices": ["Ant-Man","Giant-Man","The Wasp","Hulk"],"answer": 0},
+    {"q": "Quel mutant des X-Men contrôle les champs magnétiques ?","choices": ["Magneto","Professor X","Cyclope","Wolverine"],"answer": 0},
+    {"q": "Quel mutant possède des griffes rétractables en métal ?","choices": ["Wolverine","Deadpool","Gambit","Cyclope"],"answer": 0},
+    {"q": "Quel héros DC peut courir à une vitesse extraordinaire ?","choices": ["Flash","Aquaman","Cyborg","Green Arrow"],"answer": 0},
+    {"q": "Quel personnage Marvel est roi du Wakanda ?","choices": ["Black Panther","Falcon","Doctor Strange","Luke Cage"],"answer": 0},
+    {"q": "Quel héros possède une armure technologique et s'appelle Tony Stark ?","choices": ["Iron Man","War Machine","Vision","Ant-Man"],"answer": 0},
+    {"q": "Quel héros est surnommé l'Homme d'Acier ?","choices": ["Superman","Batman","Thor","Captain America"],"answer": 0},
+    {"q": "Quel personnage Marvel est un sorcier portant une cape rouge ?","choices": ["Doctor Strange","Doctor Doom","Loki","Vision"],"answer": 0},
+    {"q": "Quel anti-héros Marvel est connu pour ses plaisanteries et son costume rouge ?","choices": ["Deadpool","Punisher","Daredevil","Blade"],"answer": 0},
+    {"q": "Quel héros des Gardiens de la Galaxie se fait appeler Star-Lord ?","choices": ["Peter Quill","Rocket","Drax","Groot"],"answer": 0},
+    {"q": "Quel personnage est un arbre humanoïde qui dit essentiellement « Je s'appelle Groot » ?","choices": ["Groot","Rocket","Drax","Yondu"],"answer": 0},
+    {"q": "Quelle héroïne Marvel est aussi connue sous le nom de Natasha Romanoff ?","choices": ["Black Widow","Scarlet Witch","Captain Marvel","Gamora"],"answer": 0},
+    {"q": "Quel héros Marvel se transforme en géant vert lorsqu'il est en colère ?","choices": ["Hulk","Thing","Juggernaut","Abomination"],"answer": 0},
+    {"q": "Quelle héroïne Marvel, incarnée par Brie Larson au cinéma, possède des pouvoirs cosmiques et est aussi appelée Carol Danvers ?","choices": ["Captain Marvel","Ms. Marvel","Scarlet Witch","Storm"],"answer": 0},
+    {"q": "Quel héros Marvel utilise un arc et des flèches, membre fondateur des Avengers ?","choices": ["Hawkeye","Green Arrow","Katniss","Legolas"],"answer": 0},
+    {"q": "Quel super-vilain Marvel, adversaire des 4 Fantastiques, est un dévoreur de planètes ?","choices": ["Galactus","Thanos","Dark Phoenix","Apocalypse"],"answer": 0},
+    {"q": "Quel héros Marvel, alter ego de Matt Murdock, est aveugle mais possède des sens surdéveloppés ?","choices": ["Daredevil","Punisher","Blade","Moon Knight"],"answer": 0},
+    {"q": "Quel personnage Marvel, adversaire de Thor, est aussi son frère adoptif et dieu de la malice ?","choices": ["Loki","Hela","Malekith","Surtur"],"answer": 0},
+    {"q": "Quelle héroïne des X-Men peut contrôler la météo et les éléments naturels ?","choices": ["Tornade","Jean Grey","Mystique","Rogue"],"answer": 0},
+    {"q": "Quel super-vilain Marvel, titan violet, cherche à réunir les six pierres d'infinité ?","choices": ["Thanos","Galactus","Ultron","Apocalypse"],"answer": 0},
+    {"q": "Quel héros DC est un extraterrestre venu de la planète Krypton, doué d'une force surhumaine ?","choices": ["Superman","Martian Manhunter","Green Lantern","Aquaman"],"answer": 0},
+    {"q": "Quel héros DC, roi des océans, communique avec les créatures marines ?","choices": ["Aquaman","Namor","Flash","Cyborg"],"answer": 0},
+    {"q": "Quel héros DC, doté d'un anneau lui permettant de matérialiser ses pensées, appartient au Corps des Green Lanterns ?","choices": ["Green Lantern","Flash","Cyborg","Aquaman"],"answer": 0},
+    {"q": "Quel super-vilain, ennemi juré de Spider-Man, est un scientifique doté de quatre bras mécaniques ?","choices": ["Doc Ock","Green Goblin","Venom","Vulture"],"answer": 0},
+    {"q": "Quel héros Marvel, ancien soldat de l'armée, devient le partenaire ailé de Captain America ?","choices": ["Falcon","Winter Soldier","War Machine","Vision"],"answer": 0},
+    {"q": "Quelle héroïne Marvel, télépathe et télékinésiste, dirige parfois les X-Men et devient Dark Phoenix ?","choices": ["Jean Grey","Tornade","Mystique","Emma Frost"],"answer": 0},
+    {"q": "Quel héros DC est un justicier archer opérant dans la ville de Star City ?","choices": ["Green Arrow","Hawkeye","Red Arrow","Robin"],"answer": 0},
+    {"q": "Quel super-vilain, créé par Tony Stark lui-même, est une intelligence artificielle qui se retourne contre l'humanité dans « Avengers : L'Ère d'Ultron » ?","choices": ["Ultron","Jarvis","Vision","Hank Pym"],"answer": 0}
   ],
   "personnages_pop_culture": [
-    {
-      "q": "Comment s'appelle le personnage principal de la saga Harry Potter ?",
-      "choices": [
-        "Harry Potter",
-        "Ron Weasley",
-        "Draco Malfoy",
-        "Neville Londubat"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de Star Wars est le maître Jedi de Luke Skywalker ?",
-      "choices": [
-        "Yoda",
-        "Chewbacca",
-        "Jabba",
-        "Lando"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment s'appelle le hobbit joué par Elijah Wood dans Le Seigneur des Anneaux ?",
-      "choices": [
-        "Frodon Sacquet",
-        "Sam Gamegie",
-        "Merry",
-        "Pippin"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de Disney possède des oreilles rondes et est une souris ?",
-      "choices": [
-        "Mickey",
-        "Donald",
-        "Dingo",
-        "Pluto"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de Disney est une princesse qui perd une chaussure de verre ?",
-      "choices": [
-        "Cendrillon",
-        "Belle",
-        "Ariel",
-        "Jasmine"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage est le meilleur ami de Woody dans Toy Story ?",
-      "choices": [
-        "Buzz l'Éclair",
-        "Andy",
-        "Rex",
-        "Zigzag"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment s'appelle le lion héros du Roi Lion ?",
-      "choices": [
-        "Simba",
-        "Mufasa",
-        "Scar",
-        "Timon"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de Shrek est une princesse qui devient ogresse ?",
-      "choices": [
-        "Fiona",
-        "Doris",
-        "Lillian",
-        "Dragonne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel détective britannique habite au 221B Baker Street ?",
-      "choices": [
-        "Sherlock Holmes",
-        "Hercule Poirot",
-        "Columbo",
-        "Miss Marple"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage est le pirate au chapeau de paille dans One Piece ?",
-      "choices": [
-        "Monkey D. Luffy",
-        "Roronoa Zoro",
-        "Sanji",
-        "Nami"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de la famille Addams porte souvent des nattes et une robe noire ?",
-      "choices": [
-        "Mercredi Addams",
-        "Morticia",
-        "Enid",
-        "Grand-mère"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de Peanuts est un chien blanc appartenant à Charlie Brown ?",
-      "choices": [
-        "Snoopy",
-        "Garfield",
-        "Odie",
-        "Pluto"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de Disney vit sous la mer et rêve de découvrir le monde humain ?",
-      "choices": [
-        "Ariel",
-        "Elsa",
-        "Vaiana",
-        "Pocahontas"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de Pokémon est jaune avec des oreilles pointues et une queue en éclair ?",
-      "choices": [
-        "Pikachu",
-        "Evoli",
-        "Pichu",
-        "Raichu"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de Mario est le frère vêtu de vert ?",
-      "choices": [
-        "Luigi",
-        "Wario",
-        "Toad",
-        "Bowser"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de Scooby-Doo est le chien peureux du groupe ?",
-      "choices": [
-        "Scooby-Doo",
-        "Shaggy",
-        "Fred",
-        "Scrappy-Doo"
-      ],
-      "answer": 0
-    }
+    {"q": "Comment s'appelle le personnage principal de la saga Harry Potter ?","choices": ["Harry Potter","Ron Weasley","Draco Malfoy","Neville Londubat"],"answer": 0},
+    {"q": "Quel personnage de Star Wars est le maître Jedi de Luke Skywalker ?","choices": ["Yoda","Chewbacca","Jabba","Lando"],"answer": 0},
+    {"q": "Comment s'appelle le hobbit joué par Elijah Wood dans Le Seigneur des Anneaux ?","choices": ["Frodon Sacquet","Sam Gamegie","Merry","Pippin"],"answer": 0},
+    {"q": "Quel personnage de Disney possède des oreilles rondes et est une souris ?","choices": ["Mickey","Donald","Dingo","Pluto"],"answer": 0},
+    {"q": "Quel personnage de Disney est une princesse qui perd une chaussure de verre ?","choices": ["Cendrillon","Belle","Ariel","Jasmine"],"answer": 0},
+    {"q": "Quel personnage est le meilleur ami de Woody dans Toy Story ?","choices": ["Buzz l'Éclair","Andy","Rex","Zigzag"],"answer": 0},
+    {"q": "Comment s'appelle le lion héros du Roi Lion ?","choices": ["Simba","Mufasa","Scar","Timon"],"answer": 0},
+    {"q": "Quel personnage de Shrek est une princesse qui devient ogresse ?","choices": ["Fiona","Doris","Lillian","Dragonne"],"answer": 0},
+    {"q": "Quel détective britannique habite au 221B Baker Street ?","choices": ["Sherlock Holmes","Hercule Poirot","Columbo","Miss Marple"],"answer": 0},
+    {"q": "Quel personnage est le pirate au chapeau de paille dans One Piece ?","choices": ["Monkey D. Luffy","Roronoa Zoro","Sanji","Nami"],"answer": 0},
+    {"q": "Quel personnage de la famille Addams porte souvent des nattes et une robe noire ?","choices": ["Mercredi Addams","Morticia","Enid","Grand-mère"],"answer": 0},
+    {"q": "Quel personnage de Peanuts est un chien blanc appartenant à Charlie Brown ?","choices": ["Snoopy","Garfield","Odie","Pluto"],"answer": 0},
+    {"q": "Quel personnage de Disney vit sous la mer et rêve de découvrir le monde humain ?","choices": ["Ariel","Elsa","Vaiana","Pocahontas"],"answer": 0},
+    {"q": "Quel personnage de Pokémon est jaune avec des oreilles pointues et une queue en éclair ?","choices": ["Pikachu","Evoli","Pichu","Raichu"],"answer": 0},
+    {"q": "Quel personnage de Mario est le frère vêtu de vert ?","choices": ["Luigi","Wario","Toad","Bowser"],"answer": 0},
+    {"q": "Quel personnage de Scooby-Doo est le chien peureux du groupe ?","choices": ["Scooby-Doo","Shaggy","Fred","Scrappy-Doo"],"answer": 0},
+    {"q": "Quel personnage de Star Wars, doté d'un sabre laser rouge, est le grand méchant de la trilogie originale ?","choices": ["Dark Vador","Palpatine","Boba Fett","Jabba"],"answer": 0},
+    {"q": "Quel personnage de bande dessinée belge est un jeune reporter accompagné de son chien Milou ?","choices": ["Tintin","Spirou","Lucky Luke","Gaston Lagaffe"],"answer": 0},
+    {"q": "Quel personnage de Harry Potter est le meilleur ami du héros, roux et issu d'une famille nombreuse de sorciers ?","choices": ["Ron Weasley","Neville Londubat","Drago Malefoy","Seamus Finnigan"],"answer": 0},
+    {"q": "Quel personnage de Disney est un cow-boy en jouet, meilleur ami de Buzz l'Éclair ?","choices": ["Woody","Buzz","Rex","Zigzag"],"answer": 0},
+    {"q": "Quel personnage du Seigneur des Anneaux est un magicien errant, aussi appelé Gandalf le Gris puis le Blanc ?","choices": ["Gandalf","Saroumane","Elrond","Radagast"],"answer": 0},
+    {"q": "Quel personnage de bande dessinée franco-belge est un cow-boy solitaire qui tire plus vite que son ombre ?","choices": ["Lucky Luke","Blueberry","Rantanplan","Jolly Jumper"],"answer": 0},
+    {"q": "Quel personnage de manga est un jeune ninja déterminé à devenir le chef de son village, Konoha ?","choices": ["Naruto","Sasuke","Goku","Ichigo"],"answer": 0},
+    {"q": "Quel personnage de Disney est un renne, fidèle compagnon de Kristoff dans « La Reine des Neiges » ?","choices": ["Sven","Olaf","Marshmallow","Hans"],"answer": 0},
+    {"q": "Quel personnage de manga/anime est un guerrier saiyan à la recherche des Dragon Balls ?","choices": ["Son Goku","Vegeta","Piccolo","Gohan"],"answer": 0},
+    {"q": "Quel personnage de dessin animé est un ours jaune vêtu d'un simple t-shirt rouge, ami de Porcinet ?","choices": ["Winnie l'Ourson","Paddington","Baloo","Yogi"],"answer": 0},
+    {"q": "Quel personnage de la saga Star Wars est un droïde doré, poli et un brin anxieux ?","choices": ["C-3PO","R2-D2","BB-8","K-2SO"],"answer": 0},
+    {"q": "Quel personnage de bande dessinée est un chat gros et paresseux, adorant les lasagnes ?","choices": ["Garfield","Snoopy","Tom","Félix le Chat"],"answer": 0},
+    {"q": "Quel personnage de la saga Harry Potter est le directeur bienveillant de l'école de Poudlard ?","choices": ["Albus Dumbledore","Severus Rogue","Sirius Black","Rubeus Hagrid"],"answer": 0},
+    {"q": "Quel personnage de Disney est un poisson-clown parti à la recherche de son fils Nemo ?","choices": ["Marin","Dory","Bruce","Crush"],"answer": 0},
+    {"q": "Quel personnage de bande dessinée japonaise est un détective lycéen rétréci en enfant après avoir bu un poison mystérieux ?","choices": ["Conan Edogawa","Kindaichi","L","Light Yagami"],"answer": 0},
+    {"q": "Quel personnage de Disney est le prince transformé en Bête, amoureux de Belle ?","choices": ["La Bête","Gaston","Le Chapelier Fou","Le Prince Charmant"],"answer": 0},
+    {"q": "Quel personnage de comics DC est un clown criminel, némésis emblématique de Batman ?","choices": ["Le Joker","Bane","L'Épouvantail","Double-Face"],"answer": 0}
   ]
 }

@@ -1,1014 +1,216 @@
 {
   "france": [
-    {
-      "q": "Quelle est la capitale de la France ?",
-      "choices": [
-        "Paris",
-        "Lyon",
-        "Marseille",
-        "Toulouse"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel fleuve traverse Lyon ?",
-      "choices": [
-        "Rhône",
-        "Seine",
-        "Garonne",
-        "Loire"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle région française est célèbre pour ses châteaux de la Loire ?",
-      "choices": [
-        "Centre-Val de Loire",
-        "Bretagne",
-        "Alsace",
-        "Normandie"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument parisien a été construit pour l'Exposition universelle de 1889 ?",
-      "choices": [
-        "Tour Eiffel",
-        "Arc de Triomphe",
-        "Panthéon",
-        "Sacré-Cœur"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville est surnommée la « Ville rose » ?",
-      "choices": [
-        "Toulouse",
-        "Montpellier",
-        "Bordeaux",
-        "Nantes"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel sommet est le plus haut des Alpes et de France ?",
-      "choices": [
-        "Mont Blanc",
-        "Vignemale",
-        "Barre des Écrins",
-        "Puy de Sancy"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle région se trouve la ville de Strasbourg ?",
-      "choices": [
-        "Grand Est",
-        "Hauts-de-France",
-        "Occitanie",
-        "Bretagne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel fromage est associé à la Normandie ?",
-      "choices": [
-        "Camembert",
-        "Roquefort",
-        "Comté",
-        "Reblochon"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle île française est surnommée l'Île de Beauté ?",
-      "choices": [
-        "Corse",
-        "Réunion",
-        "Martinique",
-        "Guadeloupe"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville est célèbre pour son festival de cinéma international ?",
-      "choices": [
-        "Cannes",
-        "Nice",
-        "Avignon",
-        "Arles"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel fleuve est le plus long de France métropolitaine ?",
-      "choices": [
-        "Loire",
-        "Seine",
-        "Rhône",
-        "Garonne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle ville peut-on visiter la Cité de l'espace ?",
-      "choices": [
-        "Toulouse",
-        "Bordeaux",
-        "Lille",
-        "Dijon"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle région est célèbre pour ses vignobles de Bordeaux ?",
-      "choices": [
-        "Nouvelle-Aquitaine",
-        "Bourgogne-Franche-Comté",
-        "Bretagne",
-        "Normandie"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument se trouve au bout de l'avenue des Champs-Élysées ?",
-      "choices": [
-        "Arc de Triomphe",
-        "Louvre",
-        "Invalides",
-        "Opéra Garnier"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville est connue pour son Vieux-Port ?",
-      "choices": [
-        "Marseille",
-        "Le Havre",
-        "Calais",
-        "Brest"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel château royal se trouve près de Paris et fut la résidence de Louis XIV ?",
-      "choices": [
-        "Versailles",
-        "Chambord",
-        "Chenonceau",
-        "Amboise"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel département d'outre-mer est une île des Caraïbes ?",
-      "choices": [
-        "Guadeloupe",
-        "Guyane",
-        "Mayotte",
-        "La Réunion"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville française est célèbre pour son festival de théâtre en juillet ?",
-      "choices": [
-        "Avignon",
-        "Cannes",
-        "Biarritz",
-        "Deauville"
-      ],
-      "answer": 0
-    }
+    {"q": "Quelle est la capitale de la France ?","choices": ["Paris","Lyon","Marseille","Toulouse"],"answer": 0},
+    {"q": "Quel fleuve traverse Lyon ?","choices": ["Rhône","Seine","Garonne","Loire"],"answer": 0},
+    {"q": "Quelle région française est célèbre pour ses châteaux de la Loire ?","choices": ["Centre-Val de Loire","Bretagne","Alsace","Normandie"],"answer": 0},
+    {"q": "Quel monument parisien a été construit pour l'Exposition universelle de 1889 ?","choices": ["Tour Eiffel","Arc de Triomphe","Panthéon","Sacré-Cœur"],"answer": 0},
+    {"q": "Quelle ville est surnommée la « Ville rose » ?","choices": ["Toulouse","Montpellier","Bordeaux","Nantes"],"answer": 0},
+    {"q": "Quel sommet est le plus haut des Alpes et de France ?","choices": ["Mont Blanc","Vignemale","Barre des Écrins","Puy de Sancy"],"answer": 0},
+    {"q": "Dans quelle région se trouve la ville de Strasbourg ?","choices": ["Grand Est","Hauts-de-France","Occitanie","Bretagne"],"answer": 0},
+    {"q": "Quel fromage est associé à la Normandie ?","choices": ["Camembert","Roquefort","Comté","Reblochon"],"answer": 0},
+    {"q": "Quelle île française est surnommée l'Île de Beauté ?","choices": ["Corse","Réunion","Martinique","Guadeloupe"],"answer": 0},
+    {"q": "Quelle ville est célèbre pour son festival de cinéma international ?","choices": ["Cannes","Nice","Avignon","Arles"],"answer": 0},
+    {"q": "Quel fleuve est le plus long de France métropolitaine ?","choices": ["Loire","Seine","Rhône","Garonne"],"answer": 0},
+    {"q": "Dans quelle ville peut-on visiter la Cité de l'espace ?","choices": ["Toulouse","Bordeaux","Lille","Dijon"],"answer": 0},
+    {"q": "Quelle région est célèbre pour ses vignobles de Bordeaux ?","choices": ["Nouvelle-Aquitaine","Bourgogne-Franche-Comté","Bretagne","Normandie"],"answer": 0},
+    {"q": "Quel monument se trouve au bout de l'avenue des Champs-Élysées ?","choices": ["Arc de Triomphe","Louvre","Invalides","Opéra Garnier"],"answer": 0},
+    {"q": "Quelle ville est connue pour son Vieux-Port ?","choices": ["Marseille","Le Havre","Calais","Brest"],"answer": 0},
+    {"q": "Quel château royal se trouve près de Paris et fut la résidence de Louis XIV ?","choices": ["Versailles","Chambord","Chenonceau","Amboise"],"answer": 0},
+    {"q": "Quel département d'outre-mer est une île des Caraïbes ?","choices": ["Guadeloupe","Guyane","Mayotte","La Réunion"],"answer": 0},
+    {"q": "Quelle ville française est célèbre pour son festival de théâtre en juillet ?","choices": ["Avignon","Cannes","Biarritz","Deauville"],"answer": 0},
+    {"q": "Quelle est la deuxième ville la plus peuplée de France ?","choices": ["Marseille","Lyon","Toulouse","Nice"],"answer": 0},
+    {"q": "Quel fleuve traverse la ville de Paris ?","choices": ["La Seine","La Loire","Le Rhône","La Garonne"],"answer": 0},
+    {"q": "Quelle région française est célèbre pour sa choucroute et son vin blanc ?","choices": ["Alsace","Bretagne","Auvergne","Franche-Comté"],"answer": 0},
+    {"q": "Quelle ville est célèbre pour son carnaval et sa promenade des Anglais ?","choices": ["Nice","Cannes","Antibes","Menton"],"answer": 0},
+    {"q": "Quel massif montagneux sépare la France de l'Espagne ?","choices": ["Les Pyrénées","Les Alpes","Le Massif central","Le Jura"],"answer": 0},
+    {"q": "Quelle spécialité bretonne est une crêpe salée à base de farine de sarrasin ?","choices": ["La galette","La crêpe","La brioche","La fougasse"],"answer": 0},
+    {"q": "Quelle ville normande est célèbre pour sa cathédrale gothique et sa tapisserie brodée du XIe siècle ?","choices": ["Bayeux","Rouen","Caen","Le Havre"],"answer": 0},
+    {"q": "Quel monument parisien abrite le tombeau de Napoléon Ier ?","choices": ["Les Invalides","Le Panthéon","Notre-Dame","Le Louvre"],"answer": 0},
+    {"q": "Quelle région est célèbre pour sa lavande et ses champs violets en été ?","choices": ["Provence","Occitanie","Auvergne","Bourgogne"],"answer": 0},
+    {"q": "Quelle ville accueille chaque année la célèbre course automobile des 24 Heures ?","choices": ["Le Mans","Angers","Tours","Rennes"],"answer": 0},
+    {"q": "Quelle ville, capitale historique des ducs de Bourgogne, est célèbre pour sa moutarde ?","choices": ["Dijon","Beaune","Auxerre","Chalon-sur-Saône"],"answer": 0},
+    {"q": "Quelle chaîne de montagnes se situe au centre de la France, formée d'anciens volcans ?","choices": ["Le Massif central","Les Vosges","Le Jura","Les Cévennes"],"answer": 0},
+    {"q": "Quelle île bretonne, réputée pour ses falaises, se trouve au large de Quiberon ?","choices": ["Belle-Île-en-Mer","Île de Ré","Île d'Oléron","Île d'Yeu"],"answer": 0},
+    {"q": "Quel département d'outre-mer se trouve dans l'océan Indien, près de Madagascar ?","choices": ["La Réunion","La Martinique","La Guadeloupe","Mayotte"],"answer": 0},
+    {"q": "Quelle ville du sud de la France se trouve à proximité du célèbre pont romain, le Pont du Gard ?","choices": ["Nîmes","Avignon","Arles","Uzès"],"answer": 0},
+    {"q": "Quel océan borde la façade ouest de la France métropolitaine ?","choices": ["L'océan Atlantique","La mer Méditerranée","La mer du Nord","La Manche"],"answer": 0},
+    {"q": "Quel débarquement allié de juin 1944 s'est déroulé sur les plages de Normandie ?","choices": ["Le débarquement de Normandie","La bataille de la Marne","La bataille de Verdun","La libération de Paris"],"answer": 0}
   ],
   "pays_du_monde": [
-    {
-      "q": "Quelle est la capitale du Portugal ?",
-      "choices": [
-        "Lisbonne",
-        "Porto",
-        "Faro",
-        "Braga"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays a pour capitale Buenos Aires ?",
-      "choices": [
-        "Argentine",
-        "Chili",
-        "Uruguay",
-        "Paraguay"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle est la capitale de l'Islande ?",
-      "choices": [
-        "Reykjavik",
-        "Oslo",
-        "Helsinki",
-        "Stockholm"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays est surnommé le pays du Soleil-Levant ?",
-      "choices": [
-        "Japon",
-        "Chine",
-        "Corée du Sud",
-        "Thaïlande"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle est la capitale du Maroc ?",
-      "choices": [
-        "Rabat",
-        "Casablanca",
-        "Marrakech",
-        "Fès"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quel pays se trouve la ville de Prague ?",
-      "choices": [
-        "Tchéquie",
-        "Slovaquie",
-        "Hongrie",
-        "Pologne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle est la capitale de la Nouvelle-Zélande ?",
-      "choices": [
-        "Wellington",
-        "Auckland",
-        "Christchurch",
-        "Dunedin"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays possède les villes de Rio de Janeiro et São Paulo ?",
-      "choices": [
-        "Brésil",
-        "Argentine",
-        "Colombie",
-        "Pérou"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle est la capitale de la Norvège ?",
-      "choices": [
-        "Oslo",
-        "Bergen",
-        "Stockholm",
-        "Copenhague"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quel pays se trouve Petra ?",
-      "choices": [
-        "Jordanie",
-        "Égypte",
-        "Israël",
-        "Liban"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle est la capitale de la Grèce ?",
-      "choices": [
-        "Athènes",
-        "Thessalonique",
-        "Sparte",
-        "Corinthe"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays a pour capitale Nairobi ?",
-      "choices": [
-        "Kenya",
-        "Tanzanie",
-        "Ouganda",
-        "Éthiopie"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle est la capitale de la Corée du Sud ?",
-      "choices": [
-        "Séoul",
-        "Busan",
-        "Incheon",
-        "Daegu"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quel pays se trouve la ville de Marrakech ?",
-      "choices": [
-        "Maroc",
-        "Algérie",
-        "Tunisie",
-        "Égypte"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle est la capitale de la Suisse ?",
-      "choices": [
-        "Berne",
-        "Zurich",
-        "Genève",
-        "Bâle"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays est célèbre pour ses fjords et sa capitale Oslo ?",
-      "choices": [
-        "Norvège",
-        "Suède",
-        "Finlande",
-        "Danemark"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle est la capitale du Mexique ?",
-      "choices": [
-        "Mexico",
-        "Guadalajara",
-        "Cancún",
-        "Monterrey"
-      ],
-      "answer": 0
-    }
+    {"q": "Quelle est la capitale du Portugal ?","choices": ["Lisbonne","Porto","Faro","Braga"],"answer": 0},
+    {"q": "Quel pays a pour capitale Buenos Aires ?","choices": ["Argentine","Chili","Uruguay","Paraguay"],"answer": 0},
+    {"q": "Quelle est la capitale de l'Islande ?","choices": ["Reykjavik","Oslo","Helsinki","Stockholm"],"answer": 0},
+    {"q": "Quel pays est surnommé le pays du Soleil-Levant ?","choices": ["Japon","Chine","Corée du Sud","Thaïlande"],"answer": 0},
+    {"q": "Quelle est la capitale du Maroc ?","choices": ["Rabat","Casablanca","Marrakech","Fès"],"answer": 0},
+    {"q": "Dans quel pays se trouve la ville de Prague ?","choices": ["Tchéquie","Slovaquie","Hongrie","Pologne"],"answer": 0},
+    {"q": "Quelle est la capitale de la Nouvelle-Zélande ?","choices": ["Wellington","Auckland","Christchurch","Dunedin"],"answer": 0},
+    {"q": "Quel pays possède les villes de Rio de Janeiro et São Paulo ?","choices": ["Brésil","Argentine","Colombie","Pérou"],"answer": 0},
+    {"q": "Quelle est la capitale de la Norvège ?","choices": ["Oslo","Bergen","Stockholm","Copenhague"],"answer": 0},
+    {"q": "Dans quel pays se trouve Petra ?","choices": ["Jordanie","Égypte","Israël","Liban"],"answer": 0},
+    {"q": "Quelle est la capitale de la Grèce ?","choices": ["Athènes","Thessalonique","Sparte","Corinthe"],"answer": 0},
+    {"q": "Quel pays a pour capitale Nairobi ?","choices": ["Kenya","Tanzanie","Ouganda","Éthiopie"],"answer": 0},
+    {"q": "Quelle est la capitale de la Corée du Sud ?","choices": ["Séoul","Busan","Incheon","Daegu"],"answer": 0},
+    {"q": "Dans quel pays se trouve la ville de Marrakech ?","choices": ["Maroc","Algérie","Tunisie","Égypte"],"answer": 0},
+    {"q": "Quelle est la capitale de la Suisse ?","choices": ["Berne","Zurich","Genève","Bâle"],"answer": 0},
+    {"q": "Quel pays est célèbre pour ses fjords et sa capitale Oslo ?","choices": ["Norvège","Suède","Finlande","Danemark"],"answer": 0},
+    {"q": "Quelle est la capitale du Mexique ?","choices": ["Mexico","Guadalajara","Cancún","Monterrey"],"answer": 0},
+    {"q": "Quelle est la capitale de l'Allemagne ?","choices": ["Berlin","Munich","Hambourg","Francfort"],"answer": 0},
+    {"q": "Quelle est la capitale de l'Italie ?","choices": ["Rome","Milan","Naples","Turin"],"answer": 0},
+    {"q": "Quelle est la capitale de la Pologne ?","choices": ["Varsovie","Cracovie","Gdansk","Poznan"],"answer": 0},
+    {"q": "Quel pays a pour capitale Ottawa ?","choices": ["Le Canada","Les États-Unis","L'Australie","La Nouvelle-Zélande"],"answer": 0},
+    {"q": "Quelle est la capitale de l'Égypte ?","choices": ["Le Caire","Alexandrie","Louxor","Gizeh"],"answer": 0},
+    {"q": "Quel pays a pour capitale Pékin ?","choices": ["La Chine","Le Japon","La Corée du Sud","La Mongolie"],"answer": 0},
+    {"q": "Quelle est la capitale de l'Inde ?","choices": ["New Delhi","Mumbai","Bangalore","Calcutta"],"answer": 0},
+    {"q": "Quel pays a pour capitale Madrid ?","choices": ["L'Espagne","Le Portugal","L'Italie","La France"],"answer": 0},
+    {"q": "Quelle est la capitale de la Thaïlande ?","choices": ["Bangkok","Phuket","Chiang Mai","Pattaya"],"answer": 0},
+    {"q": "Quel pays a pour capitale Canberra, différente de sa métropole la plus connue, Sydney ?","choices": ["L'Australie","La Nouvelle-Zélande","L'Afrique du Sud","Le Canada"],"answer": 0},
+    {"q": "Quelle est la capitale du Vietnam ?","choices": ["Hanoï","Hô Chi Minh-Ville","Da Nang","Huế"],"answer": 0},
+    {"q": "Quel pays a pour capitale Dublin ?","choices": ["L'Irlande","L'Écosse","Le Pays de Galles","L'Angleterre"],"answer": 0},
+    {"q": "Quelle est la capitale de la Turquie, différente de sa plus grande ville Istanbul ?","choices": ["Ankara","Istanbul","Izmir","Antalya"],"answer": 0},
+    {"q": "Quel pays a pour capitale Copenhague ?","choices": ["Le Danemark","La Suède","La Norvège","La Finlande"],"answer": 0},
+    {"q": "Quelle ville est la capitale législative de l'Afrique du Sud ?","choices": ["Le Cap","Pretoria","Johannesburg","Bloemfontein"],"answer": 0},
+    {"q": "Quel pays a pour capitale La Havane ?","choices": ["Cuba","La République dominicaine","Porto Rico","La Jamaïque"],"answer": 0},
+    {"q": "Quelle est la capitale de la Mongolie ?","choices": ["Oulan-Bator","Almaty","Bichkek","Tachkent"],"answer": 0}
   ],
   "monuments": [
-    {
-      "q": "Dans quelle ville se trouve le Colisée ?",
-      "choices": [
-        "Rome",
-        "Athènes",
-        "Paris",
-        "Madrid"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument se trouve à Agra en Inde ?",
-      "choices": [
-        "Taj Mahal",
-        "Temple d'Or",
-        "Fort Rouge uniquement",
-        "Hawa Mahal"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle ville se trouve Big Ben ?",
-      "choices": [
-        "Londres",
-        "Dublin",
-        "Édimbourg",
-        "Manchester"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument est associé à la ville de Pise ?",
-      "choices": [
-        "Tour penchée",
-        "Colisée",
-        "Pont Vecchio",
-        "Duomo de Milan"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quel pays se trouve le site de Chichén Itzá ?",
-      "choices": [
-        "Mexique",
-        "Pérou",
-        "Brésil",
-        "Cuba"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument domine Rio de Janeiro au sommet du Corcovado ?",
-      "choices": [
-        "Christ Rédempteur",
-        "Pain de Sucre",
-        "Copacabana",
-        "Maracanã"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle ville se trouve l'Acropole ?",
-      "choices": [
-        "Athènes",
-        "Rome",
-        "Istanbul",
-        "Naples"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument parisien abrite notamment la Vénus de Milo ?",
-      "choices": [
-        "Louvre",
-        "Orsay",
-        "Centre Pompidou",
-        "Petit Palais"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quel pays se trouve Angkor Wat ?",
-      "choices": [
-        "Cambodge",
-        "Vietnam",
-        "Laos",
-        "Thaïlande"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel célèbre monument est situé à Istanbul et fut successivement basilique, mosquée puis musée avant de redevenir une mosquée ?",
-      "choices": [
-        "Sainte-Sophie",
-        "Tour de Galata",
-        "Palais de Topkapı",
-        "Mosquée de Soliman"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument londonien est une forteresse historique située sur la Tamise ?",
-      "choices": [
-        "Tour de Londres",
-        "Buckingham Palace",
-        "Westminster Abbey",
-        "Tower Bridge"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument américain est situé à New York et représente une femme tenant une torche ?",
-      "choices": [
-        "Statue de la Liberté",
-        "Lincoln Memorial",
-        "Golden Gate Bridge",
-        "Empire State Building"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel site antique se trouve près d'Athènes ?",
-      "choices": [
-        "Acropole",
-        "Pompéi",
-        "Stonehenge",
-        "Machu Picchu"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument français est une célèbre abbaye construite sur un îlot rocheux en Normandie ?",
-      "choices": [
-        "Mont-Saint-Michel",
-        "Château de Chambord",
-        "Fort Boyard",
-        "Pont du Gard"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument romain se trouve dans la ville de Nîmes ?",
-      "choices": [
-        "Arènes de Nîmes",
-        "Panthéon",
-        "Thermes de Caracalla",
-        "Circus Maximus"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument est reconnaissable à ses arches rouges dans la baie de San Francisco ?",
-      "choices": [
-        "Golden Gate Bridge",
-        "Brooklyn Bridge",
-        "Tower Bridge",
-        "Pont du Rialto"
-      ],
-      "answer": 0
-    }
+    {"q": "Dans quelle ville se trouve le Colisée ?","choices": ["Rome","Athènes","Paris","Madrid"],"answer": 0},
+    {"q": "Quel monument se trouve à Agra en Inde ?","choices": ["Taj Mahal","Temple d'Or","Fort Rouge uniquement","Hawa Mahal"],"answer": 0},
+    {"q": "Dans quelle ville se trouve Big Ben ?","choices": ["Londres","Dublin","Édimbourg","Manchester"],"answer": 0},
+    {"q": "Quel monument est associé à la ville de Pise ?","choices": ["Tour penchée","Colisée","Pont Vecchio","Duomo de Milan"],"answer": 0},
+    {"q": "Dans quel pays se trouve le site de Chichén Itzá ?","choices": ["Mexique","Pérou","Brésil","Cuba"],"answer": 0},
+    {"q": "Quel monument domine Rio de Janeiro au sommet du Corcovado ?","choices": ["Christ Rédempteur","Pain de Sucre","Copacabana","Maracanã"],"answer": 0},
+    {"q": "Dans quelle ville se trouve l'Acropole ?","choices": ["Athènes","Rome","Istanbul","Naples"],"answer": 0},
+    {"q": "Quel monument parisien abrite notamment la Vénus de Milo ?","choices": ["Louvre","Orsay","Centre Pompidou","Petit Palais"],"answer": 0},
+    {"q": "Dans quel pays se trouve Angkor Wat ?","choices": ["Cambodge","Vietnam","Laos","Thaïlande"],"answer": 0},
+    {"q": "Quel célèbre monument est situé à Istanbul et fut successivement basilique, mosquée puis musée avant de redevenir une mosquée ?","choices": ["Sainte-Sophie","Tour de Galata","Palais de Topkapı","Mosquée de Soliman"],"answer": 0},
+    {"q": "Quel monument londonien est une forteresse historique située sur la Tamise ?","choices": ["Tour de Londres","Buckingham Palace","Westminster Abbey","Tower Bridge"],"answer": 0},
+    {"q": "Quel monument américain est situé à New York et représente une femme tenant une torche ?","choices": ["Statue de la Liberté","Lincoln Memorial","Golden Gate Bridge","Empire State Building"],"answer": 0},
+    {"q": "Quel site antique se trouve près d'Athènes ?","choices": ["Acropole","Pompéi","Stonehenge","Machu Picchu"],"answer": 0},
+    {"q": "Quel monument français est une célèbre abbaye construite sur un îlot rocheux en Normandie ?","choices": ["Mont-Saint-Michel","Château de Chambord","Fort Boyard","Pont du Gard"],"answer": 0},
+    {"q": "Quel monument romain se trouve dans la ville de Nîmes ?","choices": ["Arènes de Nîmes","Panthéon","Thermes de Caracalla","Circus Maximus"],"answer": 0},
+    {"q": "Quel monument est reconnaissable à ses arches rouges dans la baie de San Francisco ?","choices": ["Golden Gate Bridge","Brooklyn Bridge","Tower Bridge","Pont du Rialto"],"answer": 0},
+    {"q": "Dans quelle ville se trouve la tour Eiffel ?","choices": ["Paris","Lyon","Marseille","Nice"],"answer": 0},
+    {"q": "Dans quel pays se trouve le site du Machu Picchu ?","choices": ["Le Pérou","La Bolivie","L'Équateur","Le Chili"],"answer": 0},
+    {"q": "Quel monument mégalithique préhistorique se trouve dans la plaine de Salisbury en Angleterre ?","choices": ["Stonehenge","Avebury","Newgrange","Carnac"],"answer": 0},
+    {"q": "Dans quelle ville se trouve la Sagrada Família, œuvre de l'architecte Gaudí ?","choices": ["Barcelone","Madrid","Séville","Valence"],"answer": 0},
+    {"q": "Quel site antique romain, ensevelie par l'éruption du Vésuve en 79 après J.-C., se visite près de Naples ?","choices": ["Pompéi","Herculanum","Ostie","Paestum"],"answer": 0},
+    {"q": "Dans quel pays se trouve la Grande Muraille ?","choices": ["La Chine","La Mongolie","La Corée du Nord","Le Vietnam"],"answer": 0},
+    {"q": "Quel palais fortifié moscovite abrite le siège du pouvoir russe, aux portes de la place Rouge ?","choices": ["Le Kremlin","Le Palais d'Hiver","Le Palais Catherine","Le Palais de Peterhof"],"answer": 0},
+    {"q": "Dans quelle ville se trouve l'opéra emblématique en forme de voiles, sur le port ?","choices": ["Sydney","Melbourne","Auckland","Wellington"],"answer": 0},
+    {"q": "Quel gratte-ciel new-yorkais Art déco culmine à 443 mètres ?","choices": ["L'Empire State Building","Le Chrysler Building","Le One World Trade Center","Le Rockefeller Center"],"answer": 0},
+    {"q": "Dans quel pays se trouve le site antique de Pétra, taillé dans la roche rose ?","choices": ["La Jordanie","L'Égypte","Israël","Le Liban"],"answer": 0},
+    {"q": "Quel monument bouddhiste doré se trouve à Yangon, au Myanmar ?","choices": ["La pagode Shwedagon","Le temple Wat Arun","Angkor Wat","Le temple Borobudur"],"answer": 0},
+    {"q": "Dans quelle ville se trouve le Vatican, plus petit État du monde ?","choices": ["Rome","Milan","Florence","Venise"],"answer": 0},
+    {"q": "Quel monument indonésien, plus grand temple bouddhiste du monde, se trouve à Java ?","choices": ["Borobudur","Angkor Wat","Prambanan","Shwedagon"],"answer": 0},
+    {"q": "Dans quelle capitale se trouve le palais de Buckingham, résidence des souverains britanniques ?","choices": ["Londres","Édimbourg","Dublin","Windsor"],"answer": 0},
+    {"q": "Quel plateau égyptien abrite les pyramides de Khéops, Khéphren et Mykérinos ?","choices": ["Gizeh","Louxor","Saqqarah","Abou Simbel"],"answer": 0},
+    {"q": "Dans quelle ville se trouve la place Rouge ?","choices": ["Moscou","Saint-Pétersbourg","Kiev","Minsk"],"answer": 0},
+    {"q": "Quel temple grec, dédié à la déesse Athéna, domine l'Acropole d'Athènes ?","choices": ["Le Parthénon","L'Érechthéion","Le Temple de Zeus","Les Propylées"],"answer": 0}
   ],
   "cuisine_monde": [
-    {
-      "q": "Quel plat japonais est composé notamment de riz vinaigré et de poisson ou légumes ?",
-      "choices": [
-        "Sushi",
-        "Paella",
-        "Couscous",
-        "Goulash"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat mexicain est généralement une tortilla garnie puis roulée ou pliée ?",
-      "choices": [
-        "Taco",
-        "Risotto",
-        "Ramen",
-        "Moussaka"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat italien est préparé avec du riz cuit progressivement dans un bouillon ?",
-      "choices": [
-        "Risotto",
-        "Paella",
-        "Pilaf",
-        "Couscous"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat marocain est souvent cuit dans un récipient conique du même nom ?",
-      "choices": [
-        "Tajine",
-        "Ramen",
-        "Pho",
-        "Biryani"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat vietnamien est une soupe de nouilles très populaire ?",
-      "choices": [
-        "Pho",
-        "Tom Yum",
-        "Miso",
-        "Laksa"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat espagnol mélange généralement riz, légumes et fruits de mer ou viande ?",
-      "choices": [
-        "Paella",
-        "Tortilla",
-        "Gazpacho",
-        "Tapas"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat grec associe aubergines, viande hachée et sauce béchamel ?",
-      "choices": [
-        "Moussaka",
-        "Souvlaki",
-        "Tzatziki",
-        "Dolma"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat indien est un riz parfumé cuisiné avec épices et souvent viande ou légumes ?",
-      "choices": [
-        "Biryani",
-        "Falafel",
-        "Ceviche",
-        "Gyoza"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat péruvien est préparé à partir de poisson cru mariné dans des agrumes ?",
-      "choices": [
-        "Ceviche",
-        "Chili con carne",
-        "Empanada",
-        "Feijoada"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat libanais est une purée de pois chiches au tahini ?",
-      "choices": [
-        "Houmous",
-        "Taboulé",
-        "Baklava",
-        "Falafel"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel dessert italien est fait notamment de mascarpone et de café ?",
-      "choices": [
-        "Tiramisu",
-        "Gelato",
-        "Cannoli",
-        "Panna cotta"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat britannique est traditionnellement composé de poisson pané avec des frites ?",
-      "choices": [
-        "Fish and chips",
-        "Shepherd's pie",
-        "Bangers and mash",
-        "Roast beef"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat coréen est un mélange de légumes fermentés, souvent très épicé ?",
-      "choices": [
-        "Kimchi",
-        "Bibimbap",
-        "Bulgogi",
-        "Japchae"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat brésilien est un ragoût de haricots noirs et de viande ?",
-      "choices": [
-        "Feijoada",
-        "Moqueca",
-        "Churrasco",
-        "Coxinha"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel dessert français est une pâte cuite avec une crème et des fruits, souvent des pommes ?",
-      "choices": [
-        "Tarte aux pommes",
-        "Baklava",
-        "Cheesecake",
-        "Brownie"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel fromage italien est souvent utilisé sur la pizza ?",
-      "choices": [
-        "Mozzarella",
-        "Feta",
-        "Gouda",
-        "Manchego"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle boisson chaude est traditionnellement associée au Royaume-Uni ?",
-      "choices": [
-        "Thé",
-        "Espresso",
-        "Maté",
-        "Sake"
-      ],
-      "answer": 0
-    }
+    {"q": "Quel plat japonais est composé notamment de riz vinaigré et de poisson ou légumes ?","choices": ["Sushi","Paella","Couscous","Goulash"],"answer": 0},
+    {"q": "Quel plat mexicain est généralement une tortilla garnie puis roulée ou pliée ?","choices": ["Taco","Risotto","Ramen","Moussaka"],"answer": 0},
+    {"q": "Quel plat italien est préparé avec du riz cuit progressivement dans un bouillon ?","choices": ["Risotto","Paella","Pilaf","Couscous"],"answer": 0},
+    {"q": "Quel plat marocain est souvent cuit dans un récipient conique du même nom ?","choices": ["Tajine","Ramen","Pho","Biryani"],"answer": 0},
+    {"q": "Quel plat vietnamien est une soupe de nouilles très populaire ?","choices": ["Pho","Tom Yum","Miso","Laksa"],"answer": 0},
+    {"q": "Quel plat espagnol mélange généralement riz, légumes et fruits de mer ou viande ?","choices": ["Paella","Tortilla","Gazpacho","Tapas"],"answer": 0},
+    {"q": "Quel plat grec associe aubergines, viande hachée et sauce béchamel ?","choices": ["Moussaka","Souvlaki","Tzatziki","Dolma"],"answer": 0},
+    {"q": "Quel plat indien est un riz parfumé cuisiné avec épices et souvent viande ou légumes ?","choices": ["Biryani","Falafel","Ceviche","Gyoza"],"answer": 0},
+    {"q": "Quel plat péruvien est préparé à partir de poisson cru mariné dans des agrumes ?","choices": ["Ceviche","Chili con carne","Empanada","Feijoada"],"answer": 0},
+    {"q": "Quel plat libanais est une purée de pois chiches au tahini ?","choices": ["Houmous","Taboulé","Baklava","Falafel"],"answer": 0},
+    {"q": "Quel dessert italien est fait notamment de mascarpone et de café ?","choices": ["Tiramisu","Gelato","Cannoli","Panna cotta"],"answer": 0},
+    {"q": "Quel plat britannique est traditionnellement composé de poisson pané avec des frites ?","choices": ["Fish and chips","Shepherd's pie","Bangers and mash","Roast beef"],"answer": 0},
+    {"q": "Quel plat coréen est un mélange de légumes fermentés, souvent très épicé ?","choices": ["Kimchi","Bibimbap","Bulgogi","Japchae"],"answer": 0},
+    {"q": "Quel plat brésilien est un ragoût de haricots noirs et de viande ?","choices": ["Feijoada","Moqueca","Churrasco","Coxinha"],"answer": 0},
+    {"q": "Quel dessert français est une pâte cuite avec une crème et des fruits, souvent des pommes ?","choices": ["Tarte aux pommes","Baklava","Cheesecake","Brownie"],"answer": 0},
+    {"q": "Quel fromage italien est souvent utilisé sur la pizza ?","choices": ["Mozzarella","Feta","Gouda","Manchego"],"answer": 0},
+    {"q": "Quelle boisson chaude est traditionnellement associée au Royaume-Uni ?","choices": ["Thé","Espresso","Maté","Sake"],"answer": 0},
+    {"q": "Quel plat allemand est une saucisse traditionnellement servie avec de la choucroute ?","choices": ["La saucisse","Le schnitzel","Le pretzel","Le strudel"],"answer": 0},
+    {"q": "Quel plat suisse consiste à faire fondre du fromage à partager, dans lequel on trempe du pain ?","choices": ["La fondue","La raclette","La tartiflette","Le rösti"],"answer": 0},
+    {"q": "Quel plat hongrois est un ragoût de viande mijoté au paprika ?","choices": ["Le goulash","Le bortsch","Le tajine","Le chili con carne"],"answer": 0},
+    {"q": "Quel plat thaïlandais est une soupe épicée et acidulée à base de citronnelle et de piment ?","choices": ["Le tom yum","Le pho","Le laksa","Le curry vert"],"answer": 0},
+    {"q": "Quel plat russe et est-européen est une soupe rouge à base de betteraves ?","choices": ["Le bortsch","Le goulash","Le chtchi","Le solianka"],"answer": 0},
+    {"q": "Quel pain plat indien accompagne traditionnellement les currys ?","choices": ["Le naan","Le chapati","Le roti","Le paratha"],"answer": 0},
+    {"q": "Quel dessert autrichien-hongrois est une pâtisserie feuilletée fourrée aux pommes et à la cannelle ?","choices": ["Le strudel","Le tiramisu","Le baklava","Le cheesecake"],"answer": 0},
+    {"q": "Quel plat allemand est une escalope panée et frite, souvent servie avec des pommes de terre ?","choices": ["Le schnitzel","Le goulash","Le strudel","Le bretzel"],"answer": 0},
+    {"q": "Quel plat chinois est composé de fines lamelles de canard laqué, souvent servi en rouleaux ?","choices": ["Le canard laqué","Le dim sum","Le chow mein","Le riz cantonais"],"answer": 0},
+    {"q": "Quel plat japonais consiste en des nouilles servies dans un bouillon, souvent accompagnées d'œuf et de porc ?","choices": ["Le ramen","Le udon","Le soba","Le yakisoba"],"answer": 0},
+    {"q": "Quel plat maghrébin est à base de semoule roulée, servie avec légumes et viande ?","choices": ["Le couscous","Le tajine","Le pastilla","Le méchoui"],"answer": 0},
+    {"q": "Quel plat turc est composé de fines tranches de viande empilées et grillées à la verticale ?","choices": ["Le kebab","Le mezze","Le baklava","Le köfte"],"answer": 0},
+    {"q": "Quel dessert du Moyen-Orient est une pâtisserie feuilletée au miel et aux fruits secs ?","choices": ["Le baklava","Le loukoum","Le knafeh","Le halva"],"answer": 0},
+    {"q": "Quel plat belge est une pomme de terre coupée en bâtonnets puis frite deux fois ?","choices": ["La frite belge","La chips","La pomme dauphine","La croquette"],"answer": 0},
+    {"q": "Quel plat coréen est un bol de riz garni de légumes, de viande et d'un œuf, servi avec une sauce piquante ?","choices": ["Le bibimbap","Le japchae","Le bulgogi","Le kimbap"],"answer": 0},
+    {"q": "Quel dessert américain est une tarte souvent garnie de citrouille, traditionnelle à Thanksgiving ?","choices": ["La tarte à la citrouille","La tarte aux pommes","Le cheesecake","Le brownie"],"answer": 0},
+    {"q": "Quel plat éthiopien se déguste sur une grande galette spongieuse appelée injera ?","choices": ["Le wat","Le tajine","Le curry","Le berbéré"],"answer": 0}
   ],
   "langues_expressions": [
-    {
-      "q": "Que signifie « Hello » en anglais ?",
-      "choices": [
-        "Bonjour",
-        "Merci",
-        "Au revoir",
-        "S'il vous plaît"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie « Gracias » en espagnol ?",
-      "choices": [
-        "Merci",
-        "Bonjour",
-        "Pardon",
-        "Bonsoir"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle langue dit-on « Danke » pour remercier quelqu'un ?",
-      "choices": [
-        "Allemand",
-        "Italien",
-        "Néerlandais",
-        "Suédois"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie « Ciao » en italien ?",
-      "choices": [
-        "Salut / au revoir",
-        "Merci",
-        "Bonne nuit",
-        "S'il vous plaît"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel mot japonais signifie « merci » ?",
-      "choices": [
-        "Arigatō",
-        "Sayonara",
-        "Konnichiwa",
-        "Hai"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie « Bonjour » en portugais dans la formule « Bom dia » ?",
-      "choices": [
-        "Bonjour",
-        "Bonne nuit",
-        "Merci",
-        "À bientôt"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle langue utilise le mot « gracias » ?",
-      "choices": [
-        "Espagnol",
-        "Français",
-        "Italien",
-        "Roumain"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie « merci » en anglais ?",
-      "choices": [
-        "Thank you",
-        "Please",
-        "Sorry",
-        "Welcome"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle langue « oui » se dit « ja » ?",
-      "choices": [
-        "Allemand",
-        "Espagnol",
-        "Italien",
-        "Portugais"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel mot français signifie le contraire de « bonjour » lorsqu'on prend congé ?",
-      "choices": [
-        "Au revoir",
-        "Merci",
-        "Pardon",
-        "Bienvenue"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie « please » en anglais ?",
-      "choices": [
-        "S'il vous plaît",
-        "Merci",
-        "Pardon",
-        "Attention"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel mot italien signifie « merci » ?",
-      "choices": [
-        "Grazie",
-        "Prego",
-        "Salve",
-        "Buongiorno"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie « guten Morgen » en allemand ?",
-      "choices": [
-        "Bonjour / bon matin",
-        "Bonne nuit",
-        "Merci beaucoup",
-        "À bientôt"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle langue « merci beaucoup » se dit « muchas gracias » ?",
-      "choices": [
-        "Espagnol",
-        "Portugais",
-        "Italien",
-        "Catalan"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel mot japonais signifie généralement « oui » ?",
-      "choices": [
-        "Hai",
-        "Iie",
-        "Arigatō",
-        "Sayonara"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie « bon appétit » en anglais ?",
-      "choices": [
-        "Enjoy your meal",
-        "Good morning",
-        "Take care",
-        "See you"
-      ],
-      "answer": 0
-    }
+    {"q": "Que signifie « Hello » en anglais ?","choices": ["Bonjour","Merci","Au revoir","S'il vous plaît"],"answer": 0},
+    {"q": "Que signifie « Gracias » en espagnol ?","choices": ["Merci","Bonjour","Pardon","Bonsoir"],"answer": 0},
+    {"q": "Dans quelle langue dit-on « Danke » pour remercier quelqu'un ?","choices": ["Allemand","Italien","Néerlandais","Suédois"],"answer": 0},
+    {"q": "Que signifie « Ciao » en italien ?","choices": ["Salut / au revoir","Merci","Bonne nuit","S'il vous plaît"],"answer": 0},
+    {"q": "Quel mot japonais signifie « merci » ?","choices": ["Arigatō","Sayonara","Konnichiwa","Hai"],"answer": 0},
+    {"q": "Que signifie « Bonjour » en portugais dans la formule « Bom dia » ?","choices": ["Bonjour","Bonne nuit","Merci","À bientôt"],"answer": 0},
+    {"q": "Quelle langue utilise le mot « gracias » ?","choices": ["Espagnol","Français","Italien","Roumain"],"answer": 0},
+    {"q": "Que signifie « merci » en anglais ?","choices": ["Thank you","Please","Sorry","Welcome"],"answer": 0},
+    {"q": "Dans quelle langue « oui » se dit « ja » ?","choices": ["Allemand","Espagnol","Italien","Portugais"],"answer": 0},
+    {"q": "Quel mot français signifie le contraire de « bonjour » lorsqu'on prend congé ?","choices": ["Au revoir","Merci","Pardon","Bienvenue"],"answer": 0},
+    {"q": "Que signifie « please » en anglais ?","choices": ["S'il vous plaît","Merci","Pardon","Attention"],"answer": 0},
+    {"q": "Quel mot italien signifie « merci » ?","choices": ["Grazie","Prego","Salve","Buongiorno"],"answer": 0},
+    {"q": "Que signifie « guten Morgen » en allemand ?","choices": ["Bonjour / bon matin","Bonne nuit","Merci beaucoup","À bientôt"],"answer": 0},
+    {"q": "Dans quelle langue « merci beaucoup » se dit « muchas gracias » ?","choices": ["Espagnol","Portugais","Italien","Catalan"],"answer": 0},
+    {"q": "Quel mot japonais signifie généralement « oui » ?","choices": ["Hai","Iie","Arigatō","Sayonara"],"answer": 0},
+    {"q": "Que signifie « bon appétit » en anglais ?","choices": ["Enjoy your meal","Good morning","Take care","See you"],"answer": 0},
+    {"q": "Que signifie « Konnichiwa » en japonais ?","choices": ["Bonjour","Merci","Au revoir","Bonsoir"],"answer": 0},
+    {"q": "Que signifie « Auf Wiedersehen » en allemand ?","choices": ["Au revoir","Bonjour","Merci","Bonne nuit"],"answer": 0},
+    {"q": "Que signifie « Namaste », salutation utilisée en Inde ?","choices": ["Bonjour","Merci","Au revoir","Bienvenue"],"answer": 0},
+    {"q": "Que signifie « Sí » en espagnol ?","choices": ["Oui","Non","Peut-être","Merci"],"answer": 0},
+    {"q": "Dans quelle langue dit-on « Xie xie » pour dire merci ?","choices": ["Le chinois","Le japonais","Le coréen","Le vietnamien"],"answer": 0},
+    {"q": "Que signifie « Bitte » en allemand, selon le contexte ?","choices": ["S'il vous plaît","Merci","Pardon","Bonjour"],"answer": 0},
+    {"q": "Que signifie « Kalimera » en grec ?","choices": ["Bonjour","Bonsoir","Merci","Au revoir"],"answer": 0},
+    {"q": "Que signifie « Sorry » en anglais ?","choices": ["Pardon","Merci","S'il vous plaît","Bienvenue"],"answer": 0},
+    {"q": "Dans quelle langue dit-on « Obrigado » pour remercier quelqu'un ?","choices": ["Le portugais","L'espagnol","L'italien","Le roumain"],"answer": 0},
+    {"q": "Que signifie « Yes » en anglais ?","choices": ["Oui","Non","Merci","Bonjour"],"answer": 0},
+    {"q": "Que signifie « Salaam », salutation courante dans le monde arabe ?","choices": ["Paix / bonjour","Merci","Au revoir","Bienvenue"],"answer": 0},
+    {"q": "Que signifie « Buongiorno » en italien ?","choices": ["Bonjour","Bonsoir","Bonne nuit","Merci"],"answer": 0},
+    {"q": "Dans quelle langue dit-on « Spasibo » pour dire merci ?","choices": ["Le russe","Le polonais","L'ukrainien","Le bulgare"],"answer": 0},
+    {"q": "Que signifie « Welcome » en anglais ?","choices": ["Bienvenue","Merci","Pardon","Au revoir"],"answer": 0},
+    {"q": "Que signifie « Sawasdee », salutation thaïlandaise ?","choices": ["Bonjour","Merci","Au revoir","Bon appétit"],"answer": 0},
+    {"q": "Que signifie « Adiós » en espagnol ?","choices": ["Au revoir","Bonjour","Merci","Pardon"],"answer": 0},
+    {"q": "Que signifie « Shalom », salutation hébraïque utilisée pour dire bonjour comme au revoir ?","choices": ["Paix","Bonheur","Amour","Chance"],"answer": 0}
   ],
   "voyages_insolites": [
-    {
-      "q": "Quel pays possède le plus grand nombre d'îles selon les décomptes géographiques courants ?",
-      "choices": [
-        "Suède",
-        "Indonésie",
-        "Japon",
-        "Philippines"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel désert est le plus vaste désert chaud du monde ?",
-      "choices": [
-        "Sahara",
-        "Gobi",
-        "Kalahari",
-        "Atacama"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays est célèbre pour sa route panoramique Great Ocean Road ?",
-      "choices": [
-        "Australie",
-        "Canada",
-        "Afrique du Sud",
-        "Nouvelle-Zélande"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel phénomène naturel illumine parfois le ciel des régions polaires de vert ou de violet ?",
-      "choices": [
-        "Aurores polaires",
-        "Arc-en-ciel",
-        "Halo solaire",
-        "Mirage"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays possède le site naturel des chutes d'Iguazú avec l'Argentine ?",
-      "choices": [
-        "Brésil",
-        "Chili",
-        "Pérou",
-        "Bolivie"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel est le plus grand pays du monde par superficie ?",
-      "choices": [
-        "Russie",
-        "Canada",
-        "Chine",
-        "États-Unis"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel lac est souvent présenté comme le plus profond du monde ?",
-      "choices": [
-        "Baïkal",
-        "Victoria",
-        "Titicaca",
-        "Supérieur"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays est traversé par la ligne de l'équateur et possède les îles Galápagos ?",
-      "choices": [
-        "Équateur",
-        "Pérou",
-        "Colombie",
-        "Bolivie"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays abrite la ville de Reykjavik et de nombreux volcans ?",
-      "choices": [
-        "Islande",
-        "Irlande",
-        "Norvège",
-        "Finlande"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays est célèbre pour ses temples de Bagan ?",
-      "choices": [
-        "Myanmar",
-        "Cambodge",
-        "Laos",
-        "Népal"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays abrite la région de Cappadoce ?",
-      "choices": [
-        "Turquie",
-        "Grèce",
-        "Géorgie",
-        "Arménie"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel archipel portugais se trouve dans l'Atlantique et est célèbre pour ses paysages volcaniques ?",
-      "choices": [
-        "Açores",
-        "Baléares",
-        "Canaries",
-        "Maldives"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays possède les célèbres lignes de Nazca ?",
-      "choices": [
-        "Pérou",
-        "Mexique",
-        "Chili",
-        "Équateur"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays est traversé par le canal de Panama ?",
-      "choices": [
-        "Panama",
-        "Costa Rica",
-        "Colombie",
-        "Nicaragua"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel grand fleuve traverse Budapest ?",
-      "choices": [
-        "Danube",
-        "Rhin",
-        "Seine",
-        "Tamise"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays possède le volcan Fuji ?",
-      "choices": [
-        "Japon",
-        "Indonésie",
-        "Philippines",
-        "Chine"
-      ],
-      "answer": 0
-    }
+    {"q": "Quel pays possède le plus grand nombre d'îles selon les décomptes géographiques courants ?","choices": ["Suède","Indonésie","Japon","Philippines"],"answer": 0},
+    {"q": "Quel désert est le plus vaste désert chaud du monde ?","choices": ["Sahara","Gobi","Kalahari","Atacama"],"answer": 0},
+    {"q": "Quel pays est célèbre pour sa route panoramique Great Ocean Road ?","choices": ["Australie","Canada","Afrique du Sud","Nouvelle-Zélande"],"answer": 0},
+    {"q": "Quel phénomène naturel illumine parfois le ciel des régions polaires de vert ou de violet ?","choices": ["Aurores polaires","Arc-en-ciel","Halo solaire","Mirage"],"answer": 0},
+    {"q": "Quel pays possède le site naturel des chutes d'Iguazú avec l'Argentine ?","choices": ["Brésil","Chili","Pérou","Bolivie"],"answer": 0},
+    {"q": "Quel est le plus grand pays du monde par superficie ?","choices": ["Russie","Canada","Chine","États-Unis"],"answer": 0},
+    {"q": "Quel lac est souvent présenté comme le plus profond du monde ?","choices": ["Baïkal","Victoria","Titicaca","Supérieur"],"answer": 0},
+    {"q": "Quel pays est traversé par la ligne de l'équateur et possède les îles Galápagos ?","choices": ["Équateur","Pérou","Colombie","Bolivie"],"answer": 0},
+    {"q": "Quel pays abrite la ville de Reykjavik et de nombreux volcans ?","choices": ["Islande","Irlande","Norvège","Finlande"],"answer": 0},
+    {"q": "Quel pays est célèbre pour ses temples de Bagan ?","choices": ["Myanmar","Cambodge","Laos","Népal"],"answer": 0},
+    {"q": "Quel pays abrite la région de Cappadoce ?","choices": ["Turquie","Grèce","Géorgie","Arménie"],"answer": 0},
+    {"q": "Quel archipel portugais se trouve dans l'Atlantique et est célèbre pour ses paysages volcaniques ?","choices": ["Açores","Baléares","Canaries","Maldives"],"answer": 0},
+    {"q": "Quel pays possède les célèbres lignes de Nazca ?","choices": ["Pérou","Mexique","Chili","Équateur"],"answer": 0},
+    {"q": "Quel pays est traversé par le canal de Panama ?","choices": ["Panama","Costa Rica","Colombie","Nicaragua"],"answer": 0},
+    {"q": "Quel grand fleuve traverse Budapest ?","choices": ["Danube","Rhin","Seine","Tamise"],"answer": 0},
+    {"q": "Quel pays possède le volcan Fuji ?","choices": ["Japon","Indonésie","Philippines","Chine"],"answer": 0},
+    {"q": "Quel est le plus grand océan du monde ?","choices": ["L'océan Pacifique","L'océan Atlantique","L'océan Indien","L'océan Arctique"],"answer": 0},
+    {"q": "Quelle chaîne de montagnes est la plus haute du monde, abritant l'Everest ?","choices": ["L'Himalaya","Les Andes","Les Alpes","Les Rocheuses"],"answer": 0},
+    {"q": "Quel pays d'Amérique du Sud possède le salar d'Uyuni, plus grand désert de sel du monde ?","choices": ["La Bolivie","Le Chili","Le Pérou","L'Argentine"],"answer": 0},
+    {"q": "Quel pays possède la Grande Barrière de corail, le plus grand récif corallien du monde ?","choices": ["L'Australie","Les Philippines","L'Indonésie","Les Maldives"],"answer": 0},
+    {"q": "Quel pays africain abrite le massif du Kilimandjaro, plus haut sommet du continent ?","choices": ["La Tanzanie","Le Kenya","L'Ouganda","L'Éthiopie"],"answer": 0},
+    {"q": "Quel continent est presque entièrement recouvert par un désert de glace ?","choices": ["L'Antarctique","Le Groenland","La Sibérie","Le Sahara"],"answer": 0},
+    {"q": "Quels pays sud-américains se partagent le lac Titicaca, plus haut lac navigable du monde ?","choices": ["Le Pérou et la Bolivie","Le Chili et l'Argentine","L'Équateur et la Colombie","Le Brésil et le Paraguay"],"answer": 0},
+    {"q": "Quel pays abrite la ville sainte de La Mecque ?","choices": ["L'Arabie saoudite","Les Émirats arabes unis","La Jordanie","L'Égypte"],"answer": 0},
+    {"q": "Quel archipel espagnol, situé au large du Maroc, est réputé pour son climat printanier toute l'année ?","choices": ["Les Canaries","Les Baléares","Les Açores","Les Maldives"],"answer": 0},
+    {"q": "Quel pays abrite la plus grande partie de la forêt amazonienne ?","choices": ["Le Brésil","Le Pérou","La Colombie","Le Venezuela"],"answer": 0},
+    {"q": "Quel pays scandinave, traversé par le cercle polaire arctique, a pour capitale Helsinki ?","choices": ["La Finlande","La Norvège","La Suède","L'Islande"],"answer": 0},
+    {"q": "Quel pays possède le Grand Canyon, immense gorge creusée par le fleuve Colorado ?","choices": ["Les États-Unis","Le Canada","Le Mexique","L'Argentine"],"answer": 0},
+    {"q": "Quel pays africain abrite les chutes Victoria, partagées avec la Zambie ?","choices": ["Le Zimbabwe","Le Botswana","La Namibie","Le Mozambique"],"answer": 0},
+    {"q": "Quel pays d'Amérique du Sud possède le Machu Picchu et la ville de Cusco ?","choices": ["Le Pérou","La Bolivie","L'Équateur","Le Chili"],"answer": 0},
+    {"q": "Quel désert asiatique, situé entre la Chine et la Mongolie, est réputé pour ses étendues arides et froides ?","choices": ["Le désert de Gobi","Le Sahara","Le Kalahari","Le désert du Taklamakan"],"answer": 0},
+    {"q": "Quel pays possède la Cité interdite et la Grande Muraille ?","choices": ["La Chine","Le Japon","La Mongolie","La Corée du Nord"],"answer": 0},
+    {"q": "Quel archipel norvégien, situé dans l'océan Arctique, est réputé pour ses ours polaires et sa proximité avec le pôle Nord ?","choices": ["Le Svalbard","Les Lofoten","Les Féroé","La Nouvelle-Zemble"],"answer": 0}
   ]
 }
