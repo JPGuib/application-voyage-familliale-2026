@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "scope": "accueil-only",
-  "generated_at": "2026-08-03T17:35:28.755760+00:00",
+  "generated_at": "2026-08-15T10:44:09.568846+00:00",
   "generation_mode": "deterministic-no-llm",
   "routes": [
     "dashboard"
@@ -50,6 +50,50 @@
       "priority": 80,
       "audience_level": "decouverte",
       "fingerprint": "8dc3838880512115"
+    },
+    {
+      "step_id": "accueil-arcade",
+      "route": "dashboard",
+      "selector": "[data-tutorial-id=\"dashboard-arcade\"]",
+      "title": "Espace ludique",
+      "description": "Accédez aux petits jeux disponibles en solo ou en équipe : Trivial Turquie, Bazar Crush, L'Ordalie et L'Imposteur.",
+      "category": "divertissement",
+      "priority": 78,
+      "audience_level": "decouverte",
+      "fingerprint": "8097e5f897025e63"
+    },
+    {
+      "step_id": "accueil-stay-presentation",
+      "route": "dashboard",
+      "selector": "[data-tutorial-id=\"dashboard-stay-presentation\"]",
+      "title": "Présentation du séjour",
+      "description": "Ouvrez la visionneuse pour parcourir les images de présentation du séjour.",
+      "category": "exploration",
+      "priority": 77,
+      "audience_level": "decouverte",
+      "fingerprint": "f2bb6744b1224df1"
+    },
+    {
+      "step_id": "accueil-checklist",
+      "route": "dashboard",
+      "selector": "[data-tutorial-id=\"dashboard-quick-checklist\"]",
+      "title": "Checklist",
+      "description": "Retrouvez ici les éléments à préparer avant le départ et suivez votre progression.",
+      "category": "preparation",
+      "priority": 76,
+      "audience_level": "premiere-utilisation",
+      "fingerprint": "7053640338c0148d"
+    },
+    {
+      "step_id": "accueil-offline-media",
+      "route": "dashboard",
+      "selector": "[data-tutorial-id=\"dashboard-offline-media\"]",
+      "title": "Mode hors-ligne",
+      "description": "Téléchargez à l'avance les contenus du séjour pour y accéder sans connexion.",
+      "category": "preparation",
+      "priority": 75,
+      "audience_level": "premiere-utilisation",
+      "fingerprint": "d5331c6279f7d525"
     },
     {
       "step_id": "accueil-bottom-nav",

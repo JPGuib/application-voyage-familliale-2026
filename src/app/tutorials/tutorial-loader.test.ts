@@ -39,6 +39,9 @@ describe("tutorial-loader global tutorial", () => {
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="results-back"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="dashboard-quick-tips"]')).toBe(true);
     expect(interactiveSteps.some((step) => step.element === '[data-tutorial-id="tips-back"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="dashboard-stay-presentation"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="dashboard-quick-checklist"]')).toBe(true);
+    expect(steps.some((step) => step.element === '[data-tutorial-id="dashboard-offline-media"]')).toBe(true);
   });
 
   it("skips scan-specific tutorial steps for visitor profiles", () => {

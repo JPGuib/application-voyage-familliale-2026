@@ -46,10 +46,24 @@ export const ACCUEIL_DRIVER_STEPS: DriverStepConfig[] = [
     },
   },
   {
+    element: "[data-tutorial-id=\"dashboard-stay-presentation\"]",
+    popover: {
+      title: "Présentation du séjour",
+      description: "Ouvrez la visionneuse pour parcourir les images de présentation du séjour.",
+    },
+  },
+  {
+    element: "[data-tutorial-id=\"dashboard-quick-checklist\"]",
+    popover: {
+      title: "Checklist",
+      description: "Retrouvez ici les éléments à préparer avant le départ et suivez votre progression.",
+    },
+  },
+  {
     element: "[data-tutorial-id=\"dashboard-offline-media\"]",
     popover: {
       title: "Mode hors-ligne",
-      description: "Téléchargez à l'avance les contenus (guides, audios, images) pour y accéder sans connexion. Pratique lors des visites en zones sans réseau.",
+      description: "Téléchargez à l'avance les contenus du séjour pour y accéder sans connexion.",
     },
   },
   {

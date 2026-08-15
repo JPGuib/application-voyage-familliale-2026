@@ -4,18 +4,17 @@ Route scope: dashboard
 
 ## Summary
 
-- Added: 5
+- Added: 4
 - Updated: 0
 - Removed: 0
-- Unchanged: 0
+- Unchanged: 5
 
 ## Added
 
-- 4190805de7c91aec
-- 6bcc6759b1248f14
-- 8dc3838880512115
-- 97306759ca818d51
-- a238c2d80b5c0ee7
+- 7053640338c0148d
+- 8097e5f897025e63
+- d5331c6279f7d525
+- f2bb6744b1224df1
 
 ## Updated
 

@@ -437,12 +437,42 @@ export function loadGlobalTutorialSteps(
       waitForElement: 2000,
     },
     {
+      id: "dashboard-stay-presentation",
+      screen: "dashboard",
+      element: '[data-tutorial-id="dashboard-stay-presentation"]',
+      popover: {
+        title: "Présentation du séjour",
+        description: "Cette brique ouvre une visionneuse avec les images de présentation du séjour.",
+      },
+      waitForElement: 2000,
+    },
+    {
+      id: "dashboard-checklist",
+      screen: "dashboard",
+      element: '[data-tutorial-id="dashboard-quick-checklist"]',
+      popover: {
+        title: "Checklist",
+        description: "Retrouvez les éléments à préparer avant le départ et suivez ce qui est déjà prêt.",
+      },
+      waitForElement: 2000,
+    },
+    {
+      id: "dashboard-offline-media",
+      screen: "dashboard",
+      element: '[data-tutorial-id="dashboard-offline-media"]',
+      popover: {
+        title: "Mode hors-ligne",
+        description: "Téléchargez les guides, audios et images nécessaires pour les consulter sans connexion.",
+      },
+      waitForElement: 2000,
+    },
+    {
       id: "dashboard-polarsteps",
       screen: "dashboard",
       element: '[data-tutorial-id="dashboard-polarsteps-link"]',
       popover: {
         title: "Polarsteps",
-        description: "Nous y déposerons les photos du séjour pour garder un journal de voyage partagé. Le tutoriel se termine ici.",
+        description: "Ouvrez Polarsteps pour retrouver le journal photo partagé du séjour. Le tutoriel se termine ici.",
       },
       waitForElement: 2000,
     },
