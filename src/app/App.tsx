@@ -1807,12 +1807,21 @@ function CloudLoginScreen({
     `${candidate.surname} ${candidate.role === "proprietaire" ? "(Propriétaire)" : candidate.role === "visiteur" ? "(Visiteur)" : "(Voyageur)"}`;
 
   const normalizedProfileSearch = profileSearch.trim().toLocaleLowerCase("fr-FR");
-  const filteredProfiles = profiles.filter((candidate) => {
-    if (!normalizedProfileSearch) return true;
-    const surname = candidate.surname.trim().toLocaleLowerCase("fr-FR");
-    const fullLabel = formatProfileLabel(candidate).toLocaleLowerCase("fr-FR");
-    return surname.startsWith(normalizedProfileSearch) || fullLabel.startsWith(normalizedProfileSearch);
-  });
+  const filteredProfiles = profiles
+    .filter((candidate) => {
+      if (!normalizedProfileSearch) return true;
+      const surname = candidate.surname.trim().toLocaleLowerCase("fr-FR");
+      const fullLabel = formatProfileLabel(candidate).toLocaleLowerCase("fr-FR");
+      return surname.startsWith(normalizedProfileSearch) || fullLabel.startsWith(normalizedProfileSearch);
+    })
+    .sort((left, right) => {
+      const roleOrder: Record<LoginCandidate["role"], number> = {
+        utilisateur: 0,
+        visiteur: 1,
+        proprietaire: 2,
+      };
+      return roleOrder[left.role] - roleOrder[right.role];
+    });
 
   const handleLogin = () => {
     setLocalError(null);
@@ -2806,7 +2815,7 @@ function DashboardScreen({
             </div>
             <div className="text-right pt-1">
               <p className="text-sm font-bold opacity-80">{todayFormatted}</p>
-              <p className="mt-1 text-sm font-bold">Bonjour {profileSurname} !</p>
+              <p className="mt-2 text-sm font-bold">Bonjour {profileSurname} !</p>
             </div>
           </div>
           {daysUntilStart === null && (

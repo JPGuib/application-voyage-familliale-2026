@@ -5,6 +5,5 @@ Evolutions :
 
 CONTENU : 
 * revoir les textes et mettre en gras
-* Revoir certains tags
-* Changer code ADMIN?
+
 

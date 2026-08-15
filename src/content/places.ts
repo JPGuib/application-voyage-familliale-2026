@@ -117,7 +117,7 @@
     jour: [2],
     name: "Sainte-Sophie",
     shortDesc: "Chef-d'œuvre byzantin aux mille histoires",
-    tag: "Monument",
+    tag: "Visite",
     ville: "Istanbul",
     image: "/images/Jour 2/sainte_sophie_photo_1.webp",
     photos: [
@@ -142,7 +142,7 @@
     jour: [2],
     name: "Citerne Basilique",
     shortDesc: "Un palais souterrain aux colonnes mystérieuses",
-    tag: "Monument",
+    tag: "Visite",
     ville: "Istanbul",
     image: "/images/Jour 2/citerne-basilique 1.webp",
     photos: [
@@ -166,7 +166,7 @@
     jour: [2],
     name: "Mosquée Süleymaniye",
     shortDesc: "La mosquée de Soliman le Magnifique",
-    tag: "Monument",
+    tag: "Visite",
     ville: "Istanbul",  
     image: "/images/Jour 2/suleymaniye 1.webp",
     photos: [
@@ -191,7 +191,7 @@
     jour: [2],
     name: "Palais de Dolmabahçe",
     shortDesc: "Le palais baroque des sultans",
-    tag: "Monument",
+    tag: "Visite",
     ville: "Istanbul",
     image: "/images/Jour 2/Dolmabahce 1.webp",
     photos: [
@@ -215,7 +215,7 @@
     jour: [2],
     name: "Mosquée Büyük Mecidiye d'Ortaköy",
     shortDesc: "La mosquée de la photo iconique",
-    tag: "Monument",
+    tag: "Visite",
     ville: "Istanbul",
     image: "/images/Jour 2/Mosquée Büyük Mecidiye d’Ortakoy.webp",
     photos: [
@@ -240,7 +240,7 @@
     jour: [2],
     name: "Promenade et achats quartier de Kadıköy",
     shortDesc: "Le cœur branché de la rive asiatique",
-    tag: "Quartier",
+    tag: "Promenade",
     ville: "Istanbul",
     image: "/images/Jour 2/Kadikoy 1.webp",
     photos: [
@@ -269,7 +269,7 @@
     jour: [2],
     name: "Croisière sur le Bosphore",
     shortDesc: "Entre deux continents, entre deux mondes",
-    tag: "Activité",
+    tag: "promenade",
     ville: "Istanbul",
     image: "/images/Jour 2/croisiere_sur_le_bosphore_photo_1.webp",
     photos: [
@@ -293,7 +293,7 @@
     jour: [2],
     name: "Saint-Sauveur in Chora",
     shortDesc: "Un trésor de mosaïques byzantines",
-    tag: "Monument",
+    tag: "Visite",
     ville: "Istanbul",
     image: "/images/Jour 2/Sainte-sauveur in chora 1.webp",
     photos: [
@@ -324,7 +324,7 @@
     jour: [2], // à préciser selon votre programme
     name: "Quartier de Balat",
     shortDesc: "Ruelles colorées entre Corne d'Or et collines historiques",
-    tag: "Quartier",
+    tag: "promenade",
     ville: "Istanbul",
     image: "/images/Jour 2/Balat 1.webp",
     photos: [
@@ -353,7 +353,7 @@
     jour: [2],
     name: "Croisière nocturne",
     shortDesc: "Istanbul illuminée depuis l'eau",
-    tag: "Activité",
+    tag: "promenade",
     ville: "Istanbul",
     image: "/images/Jour 2/croisiere_de_nuit.webp",
     photos: [
@@ -377,7 +377,7 @@
     jour: [2],
     name: "La Vina Garden 1864 Restaurant",
     shortDesc: "Une table à réserver à Sultanahmet",
-    tag: "Restaurant",
+    tag: "restaurant",
     ville: "Istanbul",
     image: "/images/Jour 2/Vina Garden 1.webp",
     photos: [
@@ -435,7 +435,7 @@
     jour: [3],
     name: "Palais de Topkapi",
     shortDesc: "Le cœur du pouvoir des sultans ottomans pendant près de quatre siècles",
-    tag: "Monument",
+    tag: "visite",
     ville: "Istanbul",
     image: "/images/Jour 3/Topkapi/Topkapi 2.webp",
     photos: [
@@ -467,7 +467,7 @@
     name: "Mosquée Bleue",
     shortDesc: "La mosquée aux six minarets et 21 403 faïences",
     ville: "Istanbul",
-    tag: "Monument",
+    tag: "visite",
     image: "/images/Jour 3/Mosquee bleue 3.webp",
     photos: [
       "/images/Jour 3/Mosquee bleue 3.webp",
@@ -493,7 +493,7 @@
     jour: [3],
     name: "Hippodrome byzantin",
     shortDesc: "Le cœur antique de Constantinople",
-    tag: "Monument",
+    tag: "visite",
     ville: "Istanbul",
     image: "/images/Jour 3/Hippodrome 1.webp",
     photos: [
@@ -517,7 +517,7 @@
     name: "Place Taksim",
     shortDesc: "Le cœur battant de l'Istanbul moderne",
     ville: "Istanbul",
-    tag: "Quartier",
+    tag: "promenade",
     image: "/images/Jour 3/Taksim 1.webp",
     photos: [
       "/images/Jour 3/Taksim 1.webp",
@@ -541,7 +541,7 @@
     name: "Quartier de Péra",
     shortDesc: "L'élégance d'antan au cœur de Beyoğlu",
     ville: "Istanbul",
-    tag: "Quartier",
+    tag: "promenade",
     image: "/images/Jour 3/pera_photo_1.webp",
     photos: [
       "/images/Jour 3/pera_photo_1.webp",
@@ -563,7 +563,7 @@
     jour: [3],
     name: "Tour de Galata",
     shortDesc: "Un emblème médiéval dominant Istanbul depuis près de 700 ans",
-    tag: "Monument",
+    tag: "Promenade",
     ville: "Istanbul",
     image: "/images/Jour 3/Tour Galata 1.webp",
     photos: [
@@ -801,7 +801,7 @@
     jour: [5],
     name: "Mausolée d'Atatürk",
     shortDesc: "Le monument national de la République turque",
-    tag: "Monument",
+    tag: "visite",
     ville: "Ankara",
     image: "/images/Jour 5/Anitkabir_1.webp",
     photos: [
@@ -824,7 +824,7 @@
   jour: [5],
   name: "D'Ankara à la Cappadoce",
   shortDesc: "En route vers les paysages les plus étonnants de Turquie",
-  tag: "Trajet",
+  tag: "trajet",
   ville: "Ankara",
   image: "/images/Bus.webp",
   photos: [
@@ -894,7 +894,7 @@
     jour: [5],
     name: "Ville souterraine byzantine",
     shortDesc: "Refuge souterrain creusé dans la roche volcanique",
-    tag: "Histoire",
+    tag: "visite",
     ville: "Cappadoce",
     image: "/images/Jour 5/Ville_souterraine_1.webp",
     photos: [
@@ -1095,7 +1095,7 @@
     jour: [6],
     name: "Musée en plein air de Göreme",
     shortDesc: "Églises rupestres et fresques byzantines — UNESCO",
-    tag: "Patrimoine",
+    tag: "visite",
     ville: "Göreme",
     image: "/images/Jour 6/goreme_photo_1.webp",
     photos: [
@@ -1286,7 +1286,7 @@
     jour: [7],
     name: "Caravansérail Seldjoukide",
     shortDesc: "Ancien relais de caravanes sur la Route de la Soie",
-    tag: "Histoire",
+    tag: "visite",
     ville: "Konya",
     image: "/images/Jour 7/Caravanserai_1.webp",
     photos: [
@@ -1455,7 +1455,7 @@
     jour: [8],
     name: "Ephèse",
     shortDesc: "La cité d'Artémis, joyau antique de Turquie",
-    tag: "Patrimoine",
+    tag: "visite",
     ville: "Éphèse",
     image: "/images/Jour 8/Ephese_1.webp",
     photos: [
@@ -1636,7 +1636,7 @@
     jour: [9],
     name: "Bursa",
     shortDesc: "Première capitale de l'Empire ottoman",
-    tag: "Patrimoine",
+    tag: "ville",
     ville: "Bursa",
     image: "/images/Jour 9/Bursa.webp",
     photos: [
@@ -1658,7 +1658,7 @@
     jour: [9],
     name: "Mosquée et Mausolée verts de Bursa",
     shortDesc: "Le remarquable complexe de Mehmed Ier, joyau de l'architecture ottomane primitive",
-    tag: "Monument",
+    tag: "visite",
     ville: "Bursa",
     image: "/images/Jour 9/Mosquee verte 1.webp",
     photos: [
