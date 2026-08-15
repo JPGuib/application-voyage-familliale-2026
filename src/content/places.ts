@@ -269,7 +269,7 @@
     jour: [2],
     name: "Croisière sur le Bosphore",
     shortDesc: "Entre deux continents, entre deux mondes",
-    tag: "promenade",
+    tag: "Promenade",
     ville: "Istanbul",
     image: "/images/Jour 2/croisiere_sur_le_bosphore_photo_1.webp",
     photos: [
@@ -324,7 +324,7 @@
     jour: [2], // à préciser selon votre programme
     name: "Quartier de Balat",
     shortDesc: "Ruelles colorées entre Corne d'Or et collines historiques",
-    tag: "promenade",
+    tag: "Promenade",
     ville: "Istanbul",
     image: "/images/Jour 2/Balat 1.webp",
     photos: [
@@ -353,7 +353,7 @@
     jour: [2],
     name: "Croisière nocturne",
     shortDesc: "Istanbul illuminée depuis l'eau",
-    tag: "promenade",
+    tag: "Promenade",
     ville: "Istanbul",
     image: "/images/Jour 2/croisiere_de_nuit.webp",
     photos: [
@@ -377,7 +377,7 @@
     jour: [2],
     name: "La Vina Garden 1864 Restaurant",
     shortDesc: "Une table à réserver à Sultanahmet",
-    tag: "restaurant",
+    tag: "Restaurant",
     ville: "Istanbul",
     image: "/images/Jour 2/Vina Garden 1.webp",
     photos: [
@@ -406,7 +406,7 @@
     jour: [2],
     name: "hôtel WINDSOR HOTEL & CONVENTION CENTER 5*",
     shortDesc: "Nuit à l'hôtel Windsor",
-    tag: "hotel",
+    tag: "Hôtel",
     ville: "Istanbul",
     image: "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
     photos: [
@@ -435,7 +435,7 @@
     jour: [3],
     name: "Palais de Topkapi",
     shortDesc: "Le cœur du pouvoir des sultans ottomans pendant près de quatre siècles",
-    tag: "visite",
+    tag: "Visite",
     ville: "Istanbul",
     image: "/images/Jour 3/Topkapi/Topkapi 2.webp",
     photos: [
@@ -467,7 +467,7 @@
     name: "Mosquée Bleue",
     shortDesc: "La mosquée aux six minarets et 21 403 faïences",
     ville: "Istanbul",
-    tag: "visite",
+    tag: "Visite",
     image: "/images/Jour 3/Mosquee bleue 3.webp",
     photos: [
       "/images/Jour 3/Mosquee bleue 3.webp",
@@ -493,7 +493,7 @@
     jour: [3],
     name: "Hippodrome byzantin",
     shortDesc: "Le cœur antique de Constantinople",
-    tag: "visite",
+    tag: "Visite",
     ville: "Istanbul",
     image: "/images/Jour 3/Hippodrome 1.webp",
     photos: [
@@ -517,7 +517,7 @@
     name: "Place Taksim",
     shortDesc: "Le cœur battant de l'Istanbul moderne",
     ville: "Istanbul",
-    tag: "promenade",
+    tag: "Promenade",
     image: "/images/Jour 3/Taksim 1.webp",
     photos: [
       "/images/Jour 3/Taksim 1.webp",
@@ -541,7 +541,7 @@
     name: "Quartier de Péra",
     shortDesc: "L'élégance d'antan au cœur de Beyoğlu",
     ville: "Istanbul",
-    tag: "promenade",
+    tag: "Promenade",
     image: "/images/Jour 3/pera_photo_1.webp",
     photos: [
       "/images/Jour 3/pera_photo_1.webp",
@@ -670,7 +670,7 @@
     jour: [4],
     name: "Grand Bazar",
     shortDesc: "Le plus célèbre marché couvert d'Istanbul",
-    tag: "Marché",
+    tag: "Visite",
     ville: "Istanbul",
     image: "/images/Jour 4/bazaar_photo_1.webp",
     photos: [
@@ -772,7 +772,7 @@
     jour: [4],
     name: "hôtel HILTONSA ANKARA 5*",
     shortDesc: "Diner et nuit à l'hôtel HILTONSA ANKARA",
-    tag: "hotel",
+    tag: "Hôtel",
     ville: "Ankara",
     image: "/images/Jour 4/Nuit hotel jour 3 - 1.webp",
     photos: [
@@ -801,7 +801,7 @@
     jour: [5],
     name: "Mausolée d'Atatürk",
     shortDesc: "Le monument national de la République turque",
-    tag: "visite",
+    tag: "Visite",
     ville: "Ankara",
     image: "/images/Jour 5/Anitkabir_1.webp",
     photos: [
@@ -824,7 +824,7 @@
   jour: [5],
   name: "D'Ankara à la Cappadoce",
   shortDesc: "En route vers les paysages les plus étonnants de Turquie",
-  tag: "trajet",
+  tag: "Trajet",
   ville: "Ankara",
   image: "/images/Bus.webp",
   photos: [
@@ -867,7 +867,7 @@
     jour: [5],
     name: "Lac salé (Tuz Gölü)",
     shortDesc: "Une étendue salée scintillante au cœur de l'Anatolie",
-    tag: "Nature",
+    tag: "Découvrir",
     ville: "Cappadoce",
     image: "/images/Jour 5/Lac_Sale_1.webp",
     photos: [
@@ -894,7 +894,7 @@
     jour: [5],
     name: "Ville souterraine byzantine",
     shortDesc: "Refuge souterrain creusé dans la roche volcanique",
-    tag: "visite",
+    tag: "Visite",
     ville: "Cappadoce",
     image: "/images/Jour 5/Ville_souterraine_1.webp",
     photos: [
@@ -1004,7 +1004,7 @@
     jour: [5],
     name: "hôtel BURCU KAYA - CAPPADOCE 4*",
     shortDesc: "Nuit (et diner?) à l'hôtel BURCU KAYA - CAPPADOCE",
-    tag: "hotel",
+    tag: "Hôtel",
     ville: "Cappadoce",
     image: "/images/Jour 5/Nuit hotel jour 5 - 1.webp",
     photos: [
@@ -1039,7 +1039,7 @@
     jour: [6],
     name: "Vol en montgolfière",
     shortDesc: "Survoler les cheminées de fées au lever du jour",
-    tag: "Activité",
+    tag: "Montgolfière",
     ville: "Cappadoce",
     image: "/images/Jour 6/Montgolfiere_1.webp",
     photos: [
@@ -1067,7 +1067,7 @@
     jour: [6],
     name: "Cappadoce",
     shortDesc: "Un paysage lunaire aux cheminées de fées",
-    tag: "Nature",
+    tag: "Découvrir",
     ville: "Cappadoce",
     image: "/images/Jour 6/Cappadoce_1.webp",
     photos: [
@@ -1095,7 +1095,7 @@
     jour: [6],
     name: "Musée en plein air de Göreme",
     shortDesc: "Églises rupestres et fresques byzantines — UNESCO",
-    tag: "visite",
+    tag: "Visite",
     ville: "Göreme",
     image: "/images/Jour 6/goreme_photo_1.webp",
     photos: [
@@ -1126,7 +1126,7 @@
     jour: [6],
     name: "Vallées d'Avcilar et Güvercinlik",
     shortDesc: "Cheminées de fées aux formes étonnantes",
-    tag: "Nature",
+    tag: "Découvrir",
     ville: "Cappadoce",
     image: "/images/Jour 6/Vallée de Guvercinlik.webp",
     photos: [
@@ -1215,7 +1215,7 @@
     jour: [6],
     name: "hôtel BURCU KAYA - CAPPADOCE 4*",
     shortDesc: "Nuit (et diner?) à l'hôtel BURCU KAYA - CAPPADOCE",
-    tag: "hotel",
+    tag: "Hôtel",
     image: "/images/Jour 5/Nuit hotel jour 5 - 1.webp",
     photos: [
       "/images/Jour 5/Nuit hotel jour 5 - 1.webp",
@@ -1286,7 +1286,7 @@
     jour: [7],
     name: "Caravansérail Seldjoukide",
     shortDesc: "Ancien relais de caravanes sur la Route de la Soie",
-    tag: "visite",
+    tag: "Visite",
     ville: "Konya",
     image: "/images/Jour 7/Caravanserai_1.webp",
     photos: [
@@ -1356,7 +1356,7 @@
     jour: [7],
     name: "Pamukkale",
     shortDesc: "Les Châteaux de Coton, merveille naturelle — UNESCO",
-    tag: "Nature",
+    tag: "Découvrir",
     ville: "Pamukkale",
     image: "/images/Jour 7/Pamukkale_1.webp",
     photos: [
@@ -1455,7 +1455,7 @@
     jour: [8],
     name: "Ephèse",
     shortDesc: "La cité d'Artémis, joyau antique de Turquie",
-    tag: "visite",
+    tag: "Visite",
     ville: "Éphèse",
     image: "/images/Jour 8/Ephese_1.webp",
     photos: [
@@ -1530,7 +1530,7 @@
     jour: [8],
     name: "Izmir",
     shortDesc: "La perle de la côte égéenne",
-    tag: "Ville / Bord de mer",
+    tag: "Ville",
     ville: "Izmir",
     image: "/images/Jour 7/Izmir_1.webp",
     photos: [
@@ -1636,7 +1636,7 @@
     jour: [9],
     name: "Bursa",
     shortDesc: "Première capitale de l'Empire ottoman",
-    tag: "ville",
+    tag: "Ville",
     ville: "Bursa",
     image: "/images/Jour 9/Bursa.webp",
     photos: [
@@ -1658,7 +1658,7 @@
     jour: [9],
     name: "Mosquée et Mausolée verts de Bursa",
     shortDesc: "Le remarquable complexe de Mehmed Ier, joyau de l'architecture ottomane primitive",
-    tag: "visite",
+    tag: "Visite",
     ville: "Bursa",
     image: "/images/Jour 9/Mosquee verte 1.webp",
     photos: [
@@ -1750,7 +1750,7 @@
     jour: [9],
     name: "Pont d'Osmangazi",
     shortDesc: "Le géant des eaux turques",
-    tag: "Monument / Infrastructures",
+    tag: "Découvrir",
     ville: "Bursa",
     image: "/images/Jour 9/Osmangazi_1.webp",
     photos: [
@@ -1775,7 +1775,7 @@
     jour: [9],
     name: "hôtel WINDSOR HOTEL & CONVENTION CENTER 5*",
     shortDesc: "Nuit à l'hôtel Windsor",
-    tag: "hotel",
+    tag: "Hôtel",
     ville: "Istanbul",
     image: "/images/Jour 2/Nuit hotel jour 1 et 2 - 1.webp",
     photos: [
