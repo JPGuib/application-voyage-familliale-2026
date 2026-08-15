@@ -119,6 +119,7 @@ describe("App access-control integration", () => {
 
     expect(screen.getByRole("button", { name: "Accueil" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Séjour" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Documents" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
     await waitFor(() => {

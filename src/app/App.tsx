@@ -14,7 +14,6 @@ import {
   Pause,
   Home,
   BookOpen,
-  FileText,
   Gamepad2,
   Star,
   Plane,
@@ -658,7 +657,6 @@ const STAY_PRESENTATION_IMAGES = Array.from(
 const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> = [
   { id: "dashboard", icon: Home, label: "Accueil" },
   { id: "guide", icon: BookOpen, label: "Séjour" },
-  { id: "documents", icon: FileText, label: "Documents" },
   { id: "map", icon: MapIcon, label: "Carte" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
   { id: "tips", icon: Lightbulb, label: "Conseils" },
