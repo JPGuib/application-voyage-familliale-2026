@@ -650,6 +650,11 @@ const EXTERNAL_APP_LINKS: ExternalAppLink[] = [
   },
 ];
 
+const STAY_PRESENTATION_IMAGES = Array.from(
+  { length: 22 },
+  (_, index) => `/images/Séjour/page_${index + 1}.webp`
+);
+
 const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> = [
   { id: "dashboard", icon: Home, label: "Accueil" },
   { id: "guide", icon: BookOpen, label: "Séjour" },
@@ -2718,6 +2723,7 @@ function DashboardScreen({
   todayFormatted: string;
 }) {
   const [mapLightboxOpen, setMapLightboxOpen] = useState(false);
+  const [stayPresentationImageIndex, setStayPresentationImageIndex] = useState<number | null>(null);
   const isArcadeOfflineLocked = Boolean(canPlayArcade) && !isOnline;
   const offlineSummary = useMemo(() => {
     const registry = readOfflineDownloadRegistry();
@@ -2864,7 +2870,30 @@ function DashboardScreen({
           })}
         </div>
         <div className="grid grid-cols-2 gap-3 mt-3">
-          {canAccessChecklist && (
+          {canPlayArcade && (
+            <ActionCard
+              tutorialId="dashboard-arcade"
+              emoji="🕹️"
+              title="Espace ludique"
+              subtitle={isArcadeOfflineLocked ? "Connexion requise" : "Petits jeux en solo ou en équipe"}
+              colorBg="bg-[#FFF3E0]"
+              colorText="text-[#E65100]"
+              onClick={() => onNavigate("jeux")}
+              disabled={isArcadeOfflineLocked}
+            />
+          )}
+          <ActionCard
+            tutorialId="dashboard-stay-presentation"
+            emoji="🎈"
+            title="Présentation du séjour"
+            subtitle="Voir les images du voyage"
+            colorBg="bg-[#E3F2FD]"
+            colorText="text-[#1565C0]"
+            onClick={() => setStayPresentationImageIndex(0)}
+          />
+        </div>
+        {canAccessChecklist && (
+          <div className="mt-3">
             <ActionCard
               tutorialId="dashboard-quick-checklist"
               emoji="✅"
@@ -2874,17 +2903,8 @@ function DashboardScreen({
               colorText="text-[#2E7D32]"
               onClick={() => onNavigate("checklist")}
             />
-          )}
-          <ActionCard
-            tutorialId="dashboard-start-tutorial"
-            emoji="🎯"
-            title="Tutoriel interactif"
-            subtitle="Découvrir l'accueil pas à pas"
-            colorBg="bg-[#FFE0B2]"
-            colorText="text-[#BF360C]"
-            onClick={onStartTutorial}
-          />
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Circuit du séjour */}
@@ -2964,36 +2984,8 @@ function DashboardScreen({
         </div>
       </div>
 
-      {canPlayArcade && (
-        <div className="px-4 mt-4">
-          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
-            Espace ludique
-          </p>
-          <button
-            onClick={() => onNavigate("jeux")}
-            disabled={isArcadeOfflineLocked}
-            aria-label="Jeux"
-            data-tutorial-id="dashboard-arcade"
-            className={`w-full flex items-center gap-3 bg-card border border-border rounded-2xl p-4 text-left shadow-sm ${
-              isArcadeOfflineLocked
-                ? "opacity-60 cursor-not-allowed"
-                : "active:scale-[0.98] transition-transform"
-            }`}
-          >
-            <div className="text-3xl">🕹️</div>
-            <div className="flex-1">
-              <div className="font-black text-foreground text-sm">Espace ludique pour passer le temps</div>
-              <div className="text-xs text-muted-foreground">
-                {isArcadeOfflineLocked ? "Connexion requise" : "Petits jeux en solo ou en équipe"}
-              </div>
-            </div>
-            <ChevronRight size={18} className="text-muted-foreground" />
-          </button>
-        </div>
-      )}
-
       {canAccessOfflineMedia && (
-        <div className="px-4 mt-4 mb-6">
+        <div className="px-4 mt-4">
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
             Offline media
           </p>
@@ -3016,6 +3008,91 @@ function DashboardScreen({
               {offlineSummary.completed}/{offlineSummary.total} ressources en cache
             </p>
           </button>
+        </div>
+      )}
+
+      <div className="px-4 mt-4 mb-6">
+        <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+          TUTORIEL INTERACTIF
+        </p>
+        <button
+          onClick={onStartTutorial}
+          data-tutorial-id="dashboard-start-tutorial"
+          className="w-full flex items-center justify-between gap-3 rounded-2xl border border-[#FFCC80] bg-[#FFF3E0] px-4 py-3.5 text-left active:scale-95 transition-transform"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-xl">🎯</span>
+            <div>
+              <p className="font-black text-sm text-[#BF360C]">Tutoriel interactif</p>
+              <p className="text-xs text-[#E65100]">Découvrir l'accueil pas à pas</p>
+            </div>
+          </div>
+          <ChevronRight size={16} className="text-[#E65100]" />
+        </button>
+      </div>
+
+      {stayPresentationImageIndex !== null && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex flex-col"
+          onClick={() => setStayPresentationImageIndex(null)}
+        >
+          <div className="flex items-center justify-between gap-3 px-4 pt-12 pb-3 text-white flex-shrink-0">
+            <p className="text-sm font-black">Présentation du séjour</p>
+            <button
+              onClick={() => setStayPresentationImageIndex(null)}
+              aria-label="Fermer la présentation du séjour"
+              className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div
+            className="flex-1 flex items-center justify-center gap-2 px-2 min-h-0"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              onClick={() => setStayPresentationImageIndex((current) =>
+                current === null
+                  ? 0
+                  : (current - 1 + STAY_PRESENTATION_IMAGES.length) % STAY_PRESENTATION_IMAGES.length
+              )}
+              aria-label="Image précédente"
+              className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-white flex-shrink-0"
+            >
+              <ChevronLeft size={22} />
+            </button>
+            <img
+              src={STAY_PRESENTATION_IMAGES[stayPresentationImageIndex]}
+              alt={`Image ${stayPresentationImageIndex + 1} du séjour`}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+            <button
+              onClick={() => setStayPresentationImageIndex((current) =>
+                current === null ? 0 : (current + 1) % STAY_PRESENTATION_IMAGES.length
+              )}
+              aria-label="Image suivante"
+              className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-white flex-shrink-0"
+            >
+              <ChevronRight size={22} />
+            </button>
+          </div>
+          <div
+            className="flex gap-2 overflow-x-auto px-4 py-4 flex-shrink-0"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {STAY_PRESENTATION_IMAGES.map((image, index) => (
+              <button
+                key={image}
+                onClick={() => setStayPresentationImageIndex(index)}
+                aria-label={`Afficher l'image ${index + 1}`}
+                className={`w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 border-2 ${
+                  index === stayPresentationImageIndex ? "border-white" : "border-transparent opacity-60"
+                }`}
+              >
+                <img src={image} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
