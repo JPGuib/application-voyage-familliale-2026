@@ -6,19 +6,6 @@ Evolutions :
 CONTENU : 
 * revoir les textes et mettre en gras
 * Revoir certains tags
-* Changer code ADMI?
+* Changer code ADMIN?
 * Revoir l'utilisateur visiteur
-* vérifier la rotation smartphone de la vidéo et carnet de voyage
 
-Questions du Trivial par pack :
-- Trivial Turquie : 215 
-- Culture générale : 164 
-- Quiz Disney : 214 
-- Quiz Musique : 186 
-- Quiz Cinéma : 181 
-- Grand classique familial : 100 
-- Tour du monde : 202 
-- Pop Culture : 202 
-- Neurones en famille : 100 
-- Générations : 202 
-- Sport : 171 

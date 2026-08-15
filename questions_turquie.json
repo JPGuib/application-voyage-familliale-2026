@@ -1,1681 +1,331 @@
 {
   "histoire": [
-    {"q": "Quelle ville s'appelait Constantinople avant de devenir Istanbul ?", "choices": ["Istanbul elle-même", "Ankara", "Izmir", "Bursa"], "answer": 0},
-    {"q": "Quel empire a régné sur la Turquie pendant environ 600 ans jusqu'en 1922 ?", "choices": ["Empire byzantin", "Empire ottoman", "Empire perse", "Empire romain"], "answer": 1},
-    {"q": "Qui est le fondateur de la République turque moderne en 1923 ?", "choices": ["Recep Erdogan", "Mehmet II", "Mustafa Kemal Atatürk", "Soliman le Magnifique"], "answer": 2},
-    {"q": "En quelle année Constantinople est-elle prise par les Ottomans ?", "choices": ["1453", "1204", "1071", "1600"], "answer": 0},
-    {"q": "Quel détroit sépare l'Europe et l'Asie à Istanbul ?", "choices": ["Bosphore", "Détroit de Gibraltar", "Dardanelles", "Détroit d'Ormuz"], "answer": 0},
-    {"q": "Quel sultan ottoman est surnommé 'le Magnifique' ?", "choices": ["Mehmet II", "Soliman Ier", "Selim Ier", "Osman Ier"], "answer": 1},
-    {"q": "Quelle bataille de 1071 ouvre l'Anatolie aux Turcs seldjoukides ?", "choices": ["Manzikert", "Ankara", "Gallipoli", "Konya"], "answer": 0},
-    {"q": "Quelle ville antique gréco-romaine se trouve près d'Izmir et fut l'une des plus grandes cités du monde antique ?", "choices": ["Éphèse", "Troie", "Pergame", "Milet"], "answer": 0},
-    {"q": "Quelle bataille de la Première Guerre mondiale s'est déroulée sur la péninsule de Gallipoli ?", "choices": ["Bataille des Dardanelles", "Bataille de la Somme", "Bataille de Verdun", "Bataille d'Ypres"], "answer": 0},
-    {"q": "Quelle cité antique aurait inspiré le mythe du cheval de bois ?", "choices": ["Troie", "Éphèse", "Pergame", "Antalya"], "answer": 0},
-    {"q": "Quel est le nom turc de la mosquée Sainte-Sophie ?", "choices": ["Ayasofya", "Sultanahmet Camii", "Süleymaniye", "Rüstem Pasha"], "answer": 0},
-    {"q": "Quelle civilisation a construit les cités souterraines de Cappadoce ?", "choices": ["Hittites et premiers chrétiens", "Ottomans", "Romains uniquement", "Perses"], "answer": 0},
-    {"q": "Quel empire a précédé la République de Turquie sur une grande partie de son territoire ?",
-      "choices": [
-        "Empire ottoman",
-        "Empire romain",
-        "Empire perse",
-        "Empire byzantin"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "En quelle année la République de Turquie a-t-elle été proclamée ?",
-      "choices": [
-        "1923",
-        "1918",
-        "1938",
-        "1908"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Qui est considéré comme le fondateur de la République de Turquie ?",
-      "choices": [
-        "Mustafa Kemal Atatürk",
-        "Süleyman le Magnifique",
-        "Mehmed II",
-        "Turgut Özal"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville était la capitale de l'Empire ottoman avant Ankara ?",
-      "choices": [
-        "Istanbul",
-        "Izmir",
-        "Bursa",
-        "Edirne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel sultan a conquis Constantinople en 1453 ?",
-      "choices": [
-        "Mehmed II",
-        "Soliman le Magnifique",
-        "Bayezid Ier",
-        "Selim Ier"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "En quelle année Constantinople est-elle tombée aux mains des Ottomans ?",
-      "choices": [
-        "1453",
-        "1492",
-        "1517",
-        "1389"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment s'appelait Constantinople avant de devenir Istanbul ?",
-      "choices": [
-        "Constantinople",
-        "Byzance uniquement",
-        "Anatolie",
-        "Smyrne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel célèbre sultan ottoman est surnommé Soliman le Magnifique ?",
-      "choices": [
-        "Soliman Ier",
-        "Selim II",
-        "Murad IV",
-        "Osman Ier"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel était le nom du fondateur de la dynastie ottomane ?",
-      "choices": [
-        "Osman Ier",
-        "Orhan",
-        "Mehmed Ier",
-        "Bayezid II"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle bataille de 1071 a favorisé l'installation des Turcs seldjoukides en Anatolie ?",
-      "choices": [
-        "Manzikert",
-        "Lépante",
-        "Gallipoli",
-        "Mohács"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel empire contrôlait Constantinople avant les Ottomans ?",
-      "choices": [
-        "Empire byzantin",
-        "Empire perse",
-        "Empire mongol",
-        "Empire carolingien"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel événement marque le début de la guerre d'indépendance turque en 1919 ?",
-      "choices": [
-        "Le débarquement de Mustafa Kemal à Samsun",
-        "La prise d'Istanbul",
-        "La proclamation de la République",
-        "Le traité de Lausanne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville est associée au début de la guerre d'indépendance turque en 1919 ?",
-      "choices": [
-        "Samsun",
-        "Ankara",
-        "Bursa",
-        "Antalya"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel traité de 1923 a confirmé les frontières de la nouvelle Turquie ?",
-      "choices": [
-        "Traité de Lausanne",
-        "Traité de Sèvres",
-        "Traité de Paris",
-        "Traité de Mudros"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel traité de 1920 avait prévu un démembrement de l'Empire ottoman ?",
-      "choices": [
-        "Traité de Sèvres",
-        "Traité de Lausanne",
-        "Traité de Versailles",
-        "Traité de Londres"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville est devenue capitale de la Turquie en 1923 ?",
-      "choices": [
-        "Ankara",
-        "Istanbul",
-        "Izmir",
-        "Bursa"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel sultan ottoman a fait construire le palais de Topkapı après la conquête de Constantinople ?",
-      "choices": [
-        "Mehmed II",
-        "Soliman Ier",
-        "Selim III",
-        "Abdülhamid II"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel palais fut la résidence principale des sultans ottomans pendant plusieurs siècles ?",
-      "choices": [
-        "Topkapı",
-        "Dolmabahçe",
-        "Yıldız",
-        "Çırağan"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel conflit a profondément affaibli l'Empire ottoman au début du XXe siècle ?",
-      "choices": [
-        "Première Guerre mondiale",
-        "Guerre de Crimée uniquement",
-        "Guerre de Cent Ans",
-        "Guerre de Sept Ans"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "De quel côté l'Empire ottoman combattait-il pendant la Première Guerre mondiale ?",
-      "choices": [
-        "Les Empires centraux",
-        "Les Alliés",
-        "Il resta neutre",
-        "La Société des Nations"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel détroit a été le théâtre de la campagne de Gallipoli pendant la Première Guerre mondiale ?",
-      "choices": [
-        "Dardanelles",
-        "Bosphore",
-        "Gibraltar",
-        "Détroit d'Ormuz"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel changement majeur Atatürk a-t-il introduit concernant l'écriture du turc ?",
-      "choices": [
-        "Il a remplacé l'alphabet arabe par l'alphabet latin",
-        "Il a supprimé l'écriture",
-        "Il a adopté le cyrillique",
-        "Il a créé les hiéroglyphes turcs"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel ancien nom grec est associé à Istanbul avant Constantinople ?",
-      "choices": [
-        "Byzance",
-        "Smyrne",
-        "Éphèse",
-        "Pergame"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle civilisation a construit la cité antique d'Éphèse ?",
-      "choices": [
-        "Les Grecs",
-        "Les Vikings",
-        "Les Incas",
-        "Les Mongols"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel sultan ottoman a dirigé l'empire lors de son apogée au XVIe siècle ?",
-      "choices": [
-        "Soliman le Magnifique",
-        "Osman Ier",
-        "Mehmed II",
-        "Murad Ier"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument d'Istanbul était à l'origine une basilique byzantine ?",
-      "choices": [
-        "Sainte-Sophie",
-        "Palais de Topkapı",
-        "Grand Bazar",
-        "Tour de Galata"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle dynastie a précédé les Ottomans dans une partie de l'Anatolie avec un sultanat centré à Konya ?",
-      "choices": [
-        "Seldjoukides de Roum",
-        "Mamelouks",
-        "Safavides",
-        "Fatimides"
-      ],
-      "answer": 0
-    }
+    {"q": "Quelle ville s'appelait Constantinople avant de devenir Istanbul ?","choices": ["Istanbul elle-même","Ankara","Izmir","Bursa"],"answer": 0},
+    {"q": "Quel empire a régné sur la Turquie pendant environ 600 ans jusqu'en 1922 ?","choices": ["Empire byzantin","Empire ottoman","Empire perse","Empire romain"],"answer": 1},
+    {"q": "Qui est le fondateur de la République turque moderne en 1923 ?","choices": ["Recep Erdogan","Mehmet II","Mustafa Kemal Atatürk","Soliman le Magnifique"],"answer": 2},
+    {"q": "En quelle année Constantinople est-elle prise par les Ottomans ?","choices": ["1453","1204","1071","1600"],"answer": 0},
+    {"q": "Quel détroit sépare l'Europe et l'Asie à Istanbul ?","choices": ["Bosphore","Détroit de Gibraltar","Dardanelles","Détroit d'Ormuz"],"answer": 0},
+    {"q": "Quel sultan ottoman est surnommé 'le Magnifique' ?","choices": ["Mehmet II","Soliman Ier","Selim Ier","Osman Ier"],"answer": 1},
+    {"q": "Quelle bataille de 1071 ouvre l'Anatolie aux Turcs seldjoukides ?","choices": ["Manzikert","Ankara","Gallipoli","Konya"],"answer": 0},
+    {"q": "Quelle ville antique gréco-romaine se trouve près d'Izmir et fut l'une des plus grandes cités du monde antique ?","choices": ["Éphèse","Troie","Pergame","Milet"],"answer": 0},
+    {"q": "Quelle bataille de la Première Guerre mondiale s'est déroulée sur la péninsule de Gallipoli ?","choices": ["Bataille des Dardanelles","Bataille de la Somme","Bataille de Verdun","Bataille d'Ypres"],"answer": 0},
+    {"q": "Quelle cité antique aurait inspiré le mythe du cheval de bois ?","choices": ["Troie","Éphèse","Pergame","Antalya"],"answer": 0},
+    {"q": "Quel est le nom turc de la mosquée Sainte-Sophie ?","choices": ["Ayasofya","Sultanahmet Camii","Süleymaniye","Rüstem Pasha"],"answer": 0},
+    {"q": "Quelle civilisation a construit les cités souterraines de Cappadoce ?","choices": ["Hittites et premiers chrétiens","Ottomans","Romains uniquement","Perses"],"answer": 0},
+    {"q": "Quel empire a précédé la République de Turquie sur une grande partie de son territoire ?","choices": ["Empire ottoman","Empire romain","Empire perse","Empire byzantin"],"answer": 0},
+    {"q": "En quelle année la République de Turquie a-t-elle été proclamée ?","choices": ["1923","1918","1938","1908"],"answer": 0},
+    {"q": "Qui est considéré comme le fondateur de la République de Turquie ?","choices": ["Mustafa Kemal Atatürk","Süleyman le Magnifique","Mehmed II","Turgut Özal"],"answer": 0},
+    {"q": "Quelle ville était la capitale de l'Empire ottoman avant Ankara ?","choices": ["Istanbul","Izmir","Bursa","Edirne"],"answer": 0},
+    {"q": "Quel sultan a conquis Constantinople en 1453 ?","choices": ["Mehmed II","Soliman le Magnifique","Bayezid Ier","Selim Ier"],"answer": 0},
+    {"q": "En quelle année Constantinople est-elle tombée aux mains des Ottomans ?","choices": ["1453","1492","1517","1389"],"answer": 0},
+    {"q": "Comment s'appelait Constantinople avant de devenir Istanbul ?","choices": ["Constantinople","Byzance uniquement","Anatolie","Smyrne"],"answer": 0},
+    {"q": "Quel célèbre sultan ottoman est surnommé Soliman le Magnifique ?","choices": ["Soliman Ier","Selim II","Murad IV","Osman Ier"],"answer": 0},
+    {"q": "Quel était le nom du fondateur de la dynastie ottomane ?","choices": ["Osman Ier","Orhan","Mehmed Ier","Bayezid II"],"answer": 0},
+    {"q": "Quelle bataille de 1071 a favorisé l'installation des Turcs seldjoukides en Anatolie ?","choices": ["Manzikert","Lépante","Gallipoli","Mohács"],"answer": 0},
+    {"q": "Quel empire contrôlait Constantinople avant les Ottomans ?","choices": ["Empire byzantin","Empire perse","Empire mongol","Empire carolingien"],"answer": 0},
+    {"q": "Quel événement marque le début de la guerre d'indépendance turque en 1919 ?","choices": ["Le débarquement de Mustafa Kemal à Samsun","La prise d'Istanbul","La proclamation de la République","Le traité de Lausanne"],"answer": 0},
+    {"q": "Quelle ville est associée au début de la guerre d'indépendance turque en 1919 ?","choices": ["Samsun","Ankara","Bursa","Antalya"],"answer": 0},
+    {"q": "Quel traité de 1923 a confirmé les frontières de la nouvelle Turquie ?","choices": ["Traité de Lausanne","Traité de Sèvres","Traité de Paris","Traité de Mudros"],"answer": 0},
+    {"q": "Quel traité de 1920 avait prévu un démembrement de l'Empire ottoman ?","choices": ["Traité de Sèvres","Traité de Lausanne","Traité de Versailles","Traité de Londres"],"answer": 0},
+    {"q": "Quelle ville est devenue capitale de la Turquie en 1923 ?","choices": ["Ankara","Istanbul","Izmir","Bursa"],"answer": 0},
+    {"q": "Quel sultan ottoman a fait construire le palais de Topkapı après la conquête de Constantinople ?","choices": ["Mehmed II","Soliman Ier","Selim III","Abdülhamid II"],"answer": 0},
+    {"q": "Quel palais fut la résidence principale des sultans ottomans pendant plusieurs siècles ?","choices": ["Topkapı","Dolmabahçe","Yıldız","Çırağan"],"answer": 0},
+    {"q": "Quel conflit a profondément affaibli l'Empire ottoman au début du XXe siècle ?","choices": ["Première Guerre mondiale","Guerre de Crimée uniquement","Guerre de Cent Ans","Guerre de Sept Ans"],"answer": 0},
+    {"q": "De quel côté l'Empire ottoman combattait-il pendant la Première Guerre mondiale ?","choices": ["Les Empires centraux","Les Alliés","Il resta neutre","La Société des Nations"],"answer": 0},
+    {"q": "Quel détroit a été le théâtre de la campagne de Gallipoli pendant la Première Guerre mondiale ?","choices": ["Dardanelles","Bosphore","Gibraltar","Détroit d'Ormuz"],"answer": 0},
+    {"q": "Quel changement majeur Atatürk a-t-il introduit concernant l'écriture du turc ?","choices": ["Il a remplacé l'alphabet arabe par l'alphabet latin","Il a supprimé l'écriture","Il a adopté le cyrillique","Il a créé les hiéroglyphes turcs"],"answer": 0},
+    {"q": "Quel ancien nom grec est associé à Istanbul avant Constantinople ?","choices": ["Byzance","Smyrne","Éphèse","Pergame"],"answer": 0},
+    {"q": "Quelle civilisation a construit la cité antique d'Éphèse ?","choices": ["Les Grecs","Les Vikings","Les Incas","Les Mongols"],"answer": 0},
+    {"q": "Quel sultan ottoman a dirigé l'empire lors de son apogée au XVIe siècle ?","choices": ["Soliman le Magnifique","Osman Ier","Mehmed II","Murad Ier"],"answer": 0},
+    {"q": "Quel monument d'Istanbul était à l'origine une basilique byzantine ?","choices": ["Sainte-Sophie","Palais de Topkapı","Grand Bazar","Tour de Galata"],"answer": 0},
+    {"q": "Quelle dynastie a précédé les Ottomans dans une partie de l'Anatolie avec un sultanat centré à Konya ?","choices": ["Seldjoukides de Roum","Mamelouks","Safavides","Fatimides"],"answer": 0},
+    {"q": "En quelle année la Turquie a-t-elle rejoint l'OTAN ?","choices": ["1952","1945","1960","1973"],"answer": 0},
+    {"q": "Quel est le nom de la monnaie officielle de la Turquie ?","choices": ["La livre turque","Le dinar","Le dirham","Le lira grec"],"answer": 0},
+    {"q": "Quel coup d'État militaire majeur a eu lieu en Turquie en 1980 ?","choices": ["Le coup d'État du 12 septembre 1980","Le coup d'État de 1960","La tentative de coup d'État de 2016","La révolution des Jeunes-Turcs"],"answer": 0},
+    {"q": "Quel parti politique, fondé par Atatürk, a dominé la vie politique turque pendant des décennies ?","choices": ["Le Parti républicain du peuple","Le Parti de la justice et du développement","Le Parti démocrate","Le Parti du mouvement nationaliste"],"answer": 0},
+    {"q": "Quel nom est donné à l'ensemble des réformes modernisatrices menées par Atatürk dans les années 1920-1930 ?","choices": ["Les réformes kémalistes","La Tanzimat","Les capitulations","La révolution des Jeunes-Turcs"],"answer": 0},
+    {"q": "Quelle dynastie a dirigé l'Empire ottoman pendant plus de 600 ans ?","choices": ["La Maison d'Osman","La dynastie séfévide","La dynastie abbasside","La dynastie omeyyade"],"answer": 0},
+    {"q": "Quel sultan du XIXe siècle a lancé les réformes de modernisation appelées la Tanzimat ?","choices": ["Abdülmecid Ier","Mahmud II","Abdülhamid II","Selim III"],"answer": 0},
+    {"q": "Quelle ville fut la toute première capitale de l'Empire ottoman naissant ?","choices": ["Bursa","Edirne","Konya","Izmir"],"answer": 0},
+    {"q": "Quel traité de 1699 marque le début du déclin territorial de l'Empire ottoman en Europe ?","choices": ["Le traité de Karlowitz","Le traité de Lausanne","Le traité de Sèvres","Le traité de Küçük Kaynarca"],"answer": 0},
+    {"q": "Quel nom est donné au mouvement réformateur turc qui a conduit à la révolution de 1908 ?","choices": ["Les Jeunes-Turcs","Les Kémalistes","Les Tanzimatistes","Les Mevlevis"],"answer": 0},
+    {"q": "Quelle guerre opposa la Grèce et la Turquie de 1919 à 1922, se concluant par le traité de Lausanne ?","choices": ["La guerre gréco-turque","La guerre des Balkans","La guerre de Crimée","La guerre italo-turque"],"answer": 0},
+    {"q": "Quel nom est donné aux soldats d'élite de l'armée ottomane, formés dès l'enfance ?","choices": ["Les janissaires","Les mamelouks","Les sipahis","Les akıncı"],"answer": 0},
+    {"q": "Quelle bataille navale de 1571 a vu la flotte ottomane vaincue par une coalition chrétienne ?","choices": ["La bataille de Lépante","La bataille de Préveza","Le siège de Vienne","La bataille de Chios"],"answer": 0},
+    {"q": "Quel empereur byzantin a défendu Constantinople lors du siège de 1453 ?","choices": ["Constantin XI","Justinien","Constantin le Grand","Basile II"],"answer": 0},
+    {"q": "Quel siège de 1683 marque l'échec de la dernière grande offensive ottomane en Europe centrale ?","choices": ["Le siège de Vienne","Le siège de Malte","Le siège de Rhodes","Le siège de Belgrade"],"answer": 0},
+    {"q": "Quel personnage légendaire et sage, connu pour ses histoires drôles et philosophiques, est très populaire dans les contes turcs ?","choices": ["Nasreddin Hodja","Dede Korkut","Karagöz","Keloğlan"],"answer": 0},
+    {"q": "Quelle bataille de 1402 a vu le sultan ottoman Bayezid Ier vaincu et capturé par Tamerlan ?","choices": ["La bataille d'Ankara","La bataille de Nicopolis","La bataille de Kosovo","La bataille de Varna"],"answer": 0}
   ],
   "gastronomie": [
-    {"q": "Comment s'appelle la brochette de viande grillée typique turque ?", "choices": ["Şiş kebap", "Baklava", "Meze", "Lahmacun"], "answer": 0},
-    {"q": "Qu'est-ce que le 'baklava' ?", "choices": ["Une pâtisserie au miel et aux noix", "Une soupe froide", "Un fromage", "Un plat de riz"], "answer": 0},
-    {"q": "Quelle boisson anisée est souvent appelée 'lait de lion' en Turquie ?", "choices": ["Raki", "Ayran", "Şalgam", "Çay"], "answer": 0},
-    {"q": "Qu'est-ce que l' 'ayran' ?", "choices": ["Une boisson au yaourt salée", "Un dessert au chocolat", "Un pain plat", "Un thé sucré"], "answer": 0},
-    {"q": "Comment s'appelle la 'pizza turque' fine et croustillante à la viande hachée ?", "choices": ["Lahmacun", "Pide", "Simit", "Manti"], "answer": 0},
-    {"q": "Qu'est-ce que le 'simit' vendu dans la rue ?", "choices": ["Un pain rond recouvert de graines de sésame", "Un fromage fumé", "Une soupe de lentilles", "Un dessert glacé"], "answer": 0},
-    {"q": "Qu'est-ce que le 'manti' ?", "choices": ["De petits raviolis servis avec du yaourt", "Un ragoût d'agneau", "Une salade fraîche", "Un poisson grillé"], "answer": 0},
-    {"q": "Quelle boisson chaude, servie dans un petit verre tulipe, est omniprésente en Turquie ?", "choices": ["Le thé (çay)", "Le café filtre", "Le chocolat chaud", "Le vin chaud"], "answer": 0},
-    {"q": "Qu'est-ce que le café turc a de particulier ?", "choices": ["Il est non filtré, avec le marc au fond", "Il est servi glacé", "Il est mélangé au lait", "Il est décaféiné"], "answer": 0},
-    {"q": "Comment s'appelle la soupe de lentilles rouges très populaire en Turquie ?", "choices": ["Mercimek çorbası", "Ezogelin", "Yayla çorbası", "Işkembe"], "answer": 0},
-    {"q": "Qu'est-ce qu'un 'meze' ?", "choices": ["Un assortiment de petites entrées à partager", "Un dessert au miel", "Un plat unique de viande", "Une boisson fermentée"], "answer": 0},
-    {"q": "Quel fruit sec est très utilisé dans la cuisine turque, notamment en dessert ?", "choices": ["L'abricot sec", "La banane séchée", "L'ananas séché", "La pomme séchée"], "answer": 0},
-        {
-      "q": "Quel plat turc est composé de viande grillée sur une broche verticale ?",
-      "choices": [
-        "Döner kebab",
-        "Mantı",
-        "Menemen",
-        "Pilav"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat consiste en de petites ravioles turques souvent servies avec du yaourt et de l'ail ?",
-      "choices": [
-        "Mantı",
-        "Börek",
-        "Lahmacun",
-        "Köfte"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel petit-déjeuner turc traditionnel est particulièrement copieux et varié ?",
-      "choices": [
-        "Kahvaltı",
-        "Meze",
-        "İftar",
-        "Lokma"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pain plat turc est souvent cuit dans un four traditionnel et consommé notamment pendant le Ramadan ?",
-      "choices": [
-        "Pide",
-        "Simit",
-        "Bazlama",
-        "Yufka"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel aliment en forme d'anneau couvert de graines de sésame est très populaire en Turquie ?",
-      "choices": [
-        "Simit",
-        "Pide",
-        "Lahmacun",
-        "Gözleme"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat turc ressemble à une pizza très fine garnie de viande hachée et d'herbes ?",
-      "choices": [
-        "Lahmacun",
-        "Pide",
-        "Börek",
-        "Köfte"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel dessert est constitué de fines feuilles de pâte, de fruits secs et de sirop ?",
-      "choices": [
-        "Baklava",
-        "Lokum",
-        "Sütlaç",
-        "Helva"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel nom turc désigne les loukoums ?",
-      "choices": [
-        "Lokum",
-        "Baklava",
-        "Kadayıf",
-        "Aşure"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel dessert turc à base de lait et de riz est appelé sütlaç ?",
-      "choices": [
-        "Riz au lait",
-        "Baklava",
-        "Flan de semoule",
-        "Glace"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle boisson chaude est traditionnellement servie dans de petits verres en forme de tulipe ?",
-      "choices": [
-        "Çay",
-        "Salep",
-        "Ayran",
-        "Şıra"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle boisson turque est préparée avec du yaourt, de l'eau et du sel ?",
-      "choices": [
-        "Ayran",
-        "Rakı",
-        "Boza",
-        "Şalgam"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel alcool anisé est considéré comme une boisson emblématique de Turquie ?",
-      "choices": [
-        "Rakı",
-        "Ouzo",
-        "Arak",
-        "Rhum"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat de viande hachée grillée est appelé köfte ?",
-      "choices": [
-        "Boulettes ou galettes de viande",
-        "Soupe",
-        "Riz aux légumes",
-        "Pâtisserie"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat turc est généralement préparé avec des œufs, des tomates et des poivrons ?",
-      "choices": [
-        "Menemen",
-        "İmam bayıldı",
-        "Mantı",
-        "Karnıyarık"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat signifie littéralement 'l'imam s'est évanoui' ?",
-      "choices": [
-        "İmam bayıldı",
-        "Menemen",
-        "Hünkar beğendi",
-        "Künefe"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel dessert chaud associe fromage et cheveux de pâte très fins, souvent avec du sirop ?",
-      "choices": [
-        "Künefe",
-        "Baklava",
-        "Lokum",
-        "Sütlaç"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pain plat est souvent cuit sur une plaque ou une poêle et peut être farci ?",
-      "choices": [
-        "Gözleme",
-        "Simit",
-        "Pide",
-        "Bazlama"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat turc est composé d'aubergines farcies ou cuisinées avec de la viande hachée ?",
-      "choices": [
-        "Karnıyarık",
-        "Menemen",
-        "Mercimek çorbası",
-        "Mantı"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle soupe turque très populaire est préparée avec des lentilles rouges ?",
-      "choices": [
-        "Mercimek çorbası",
-        "Tarhana çorbası",
-        "Yayla çorbası",
-        "Ezogelin"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel condiment ou accompagnement est souvent servi avec le döner sous forme de légumes et sauces ?",
-      "choices": [
-        "Salade et garnitures",
-        "Chocolat",
-        "Confiture uniquement",
-        "Fromage bleu"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel fruit sec est très utilisé dans les pâtisseries turques ?",
-      "choices": [
-        "Pistache",
-        "Noix de coco uniquement",
-        "Noix de macadamia uniquement",
-        "Cacahuète uniquement"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel café traditionnel est préparé très finement et non filtré ?",
-      "choices": [
-        "Türk kahvesi",
-        "Espresso",
-        "Café filtre",
-        "Cold brew"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment appelle-t-on en turc le café turc ?",
-      "choices": [
-        "Türk kahvesi",
-        "Türk çayı",
-        "Kahvaltı",
-        "Salep"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat de riz est couramment appelé pilav en Turquie ?",
-      "choices": [
-        "Riz cuisiné",
-        "Soupe",
-        "Pâtisserie",
-        "Brochette"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat turc végétarien peut être composé de feuilles de vigne farcies ?",
-      "choices": [
-        "Yaprak sarma",
-        "Döner",
-        "Köfte",
-        "Lahmacun"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel plat est généralement préparé avec des aubergines, des tomates, de l'ail et de l'huile d'olive dans une cuisine turque ?",
-      "choices": [
-        "İmam bayıldı",
-        "Baklava",
-        "Simit",
-        "Mantı"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle spécialité sucrée est souvent associée à Gaziantep et aux pistaches ?",
-      "choices": [
-        "Baklava",
-        "Sütlaç",
-        "Lokum",
-        "Aşure"
-      ],
-      "answer": 0
-    }
-
+    {"q": "Comment s'appelle la brochette de viande grillée typique turque ?","choices": ["Şiş kebap","Baklava","Meze","Lahmacun"],"answer": 0},
+    {"q": "Qu'est-ce que le 'baklava' ?","choices": ["Une pâtisserie au miel et aux noix","Une soupe froide","Un fromage","Un plat de riz"],"answer": 0},
+    {"q": "Quelle boisson anisée est souvent appelée 'lait de lion' en Turquie ?","choices": ["Raki","Ayran","Şalgam","Çay"],"answer": 0},
+    {"q": "Qu'est-ce que l' 'ayran' ?","choices": ["Une boisson au yaourt salée","Un dessert au chocolat","Un pain plat","Un thé sucré"],"answer": 0},
+    {"q": "Comment s'appelle la 'pizza turque' fine et croustillante à la viande hachée ?","choices": ["Lahmacun","Pide","Simit","Manti"],"answer": 0},
+    {"q": "Qu'est-ce que le 'simit' vendu dans la rue ?","choices": ["Un pain rond recouvert de graines de sésame","Un fromage fumé","Une soupe de lentilles","Un dessert glacé"],"answer": 0},
+    {"q": "Qu'est-ce que le 'manti' ?","choices": ["De petits raviolis servis avec du yaourt","Un ragoût d'agneau","Une salade fraîche","Un poisson grillé"],"answer": 0},
+    {"q": "Quelle boisson chaude, servie dans un petit verre tulipe, est omniprésente en Turquie ?","choices": ["Le thé (çay)","Le café filtre","Le chocolat chaud","Le vin chaud"],"answer": 0},
+    {"q": "Qu'est-ce que le café turc a de particulier ?","choices": ["Il est non filtré, avec le marc au fond","Il est servi glacé","Il est mélangé au lait","Il est décaféiné"],"answer": 0},
+    {"q": "Comment s'appelle la soupe de lentilles rouges très populaire en Turquie ?","choices": ["Mercimek çorbası","Ezogelin","Yayla çorbası","Işkembe"],"answer": 0},
+    {"q": "Qu'est-ce qu'un 'meze' ?","choices": ["Un assortiment de petites entrées à partager","Un dessert au miel","Un plat unique de viande","Une boisson fermentée"],"answer": 0},
+    {"q": "Quel fruit sec est très utilisé dans la cuisine turque, notamment en dessert ?","choices": ["L'abricot sec","La banane séchée","L'ananas séché","La pomme séchée"],"answer": 0},
+    {"q": "Quel plat turc est composé de viande grillée sur une broche verticale ?","choices": ["Döner kebab","Mantı","Menemen","Pilav"],"answer": 0},
+    {"q": "Quel plat consiste en de petites ravioles turques souvent servies avec du yaourt et de l'ail ?","choices": ["Mantı","Börek","Lahmacun","Köfte"],"answer": 0},
+    {"q": "Quel petit-déjeuner turc traditionnel est particulièrement copieux et varié ?","choices": ["Kahvaltı","Meze","İftar","Lokma"],"answer": 0},
+    {"q": "Quel pain plat turc est souvent cuit dans un four traditionnel et consommé notamment pendant le Ramadan ?","choices": ["Pide","Simit","Bazlama","Yufka"],"answer": 0},
+    {"q": "Quel aliment en forme d'anneau couvert de graines de sésame est très populaire en Turquie ?","choices": ["Simit","Pide","Lahmacun","Gözleme"],"answer": 0},
+    {"q": "Quel plat turc ressemble à une pizza très fine garnie de viande hachée et d'herbes ?","choices": ["Lahmacun","Pide","Börek","Köfte"],"answer": 0},
+    {"q": "Quel dessert est constitué de fines feuilles de pâte, de fruits secs et de sirop ?","choices": ["Baklava","Lokum","Sütlaç","Helva"],"answer": 0},
+    {"q": "Quel nom turc désigne les loukoums ?","choices": ["Lokum","Baklava","Kadayıf","Aşure"],"answer": 0},
+    {"q": "Quel dessert turc à base de lait et de riz est appelé sütlaç ?","choices": ["Riz au lait","Baklava","Flan de semoule","Glace"],"answer": 0},
+    {"q": "Quelle boisson chaude est traditionnellement servie dans de petits verres en forme de tulipe ?","choices": ["Çay","Salep","Ayran","Şıra"],"answer": 0},
+    {"q": "Quelle boisson turque est préparée avec du yaourt, de l'eau et du sel ?","choices": ["Ayran","Rakı","Boza","Şalgam"],"answer": 0},
+    {"q": "Quel alcool anisé est considéré comme une boisson emblématique de Turquie ?","choices": ["Rakı","Ouzo","Arak","Rhum"],"answer": 0},
+    {"q": "Quel plat de viande hachée grillée est appelé köfte ?","choices": ["Boulettes ou galettes de viande","Soupe","Riz aux légumes","Pâtisserie"],"answer": 0},
+    {"q": "Quel plat turc est généralement préparé avec des œufs, des tomates et des poivrons ?","choices": ["Menemen","İmam bayıldı","Mantı","Karnıyarık"],"answer": 0},
+    {"q": "Quel plat signifie littéralement 'l'imam s'est évanoui' ?","choices": ["İmam bayıldı","Menemen","Hünkar beğendi","Künefe"],"answer": 0},
+    {"q": "Quel dessert chaud associe fromage et cheveux de pâte très fins, souvent avec du sirop ?","choices": ["Künefe","Baklava","Lokum","Sütlaç"],"answer": 0},
+    {"q": "Quel pain plat est souvent cuit sur une plaque ou une poêle et peut être farci ?","choices": ["Gözleme","Simit","Pide","Bazlama"],"answer": 0},
+    {"q": "Quel plat turc est composé d'aubergines farcies ou cuisinées avec de la viande hachée ?","choices": ["Karnıyarık","Menemen","Mercimek çorbası","Mantı"],"answer": 0},
+    {"q": "Quelle soupe turque très populaire est préparée avec des lentilles rouges ?","choices": ["Mercimek çorbası","Tarhana çorbası","Yayla çorbası","Ezogelin"],"answer": 0},
+    {"q": "Quel condiment ou accompagnement est souvent servi avec le döner sous forme de légumes et sauces ?","choices": ["Salade et garnitures","Chocolat","Confiture uniquement","Fromage bleu"],"answer": 0},
+    {"q": "Quel fruit sec est très utilisé dans les pâtisseries turques ?","choices": ["Pistache","Noix de coco uniquement","Noix de macadamia uniquement","Cacahuète uniquement"],"answer": 0},
+    {"q": "Quel café traditionnel est préparé très finement et non filtré ?","choices": ["Türk kahvesi","Espresso","Café filtre","Cold brew"],"answer": 0},
+    {"q": "Comment appelle-t-on en turc le café turc ?","choices": ["Türk kahvesi","Türk çayı","Kahvaltı","Salep"],"answer": 0},
+    {"q": "Quel plat de riz est couramment appelé pilav en Turquie ?","choices": ["Riz cuisiné","Soupe","Pâtisserie","Brochette"],"answer": 0},
+    {"q": "Quel plat turc végétarien peut être composé de feuilles de vigne farcies ?","choices": ["Yaprak sarma","Döner","Köfte","Lahmacun"],"answer": 0},
+    {"q": "Quel plat est généralement préparé avec des aubergines, des tomates, de l'ail et de l'huile d'olive dans une cuisine turque ?","choices": ["İmam bayıldı","Baklava","Simit","Mantı"],"answer": 0},
+    {"q": "Quelle spécialité sucrée est souvent associée à Gaziantep et aux pistaches ?","choices": ["Baklava","Sütlaç","Lokum","Aşure"],"answer": 0},
+    {"q": "Quel plat turc est une pâtisserie feuilletée fourrée au fromage ou à la viande ?","choices": ["Le börek","Le simit","Le lahmacun","Le pide"],"answer": 0},
+    {"q": "Quel légume, avec la tomate, est essentiel dans la préparation du 'çoban salatası', salade turque traditionnelle ?","choices": ["Le concombre","La carotte","Le chou","La betterave"],"answer": 0},
+    {"q": "Quelle boisson fermentée à base de millet, légèrement acidulée, est traditionnellement consommée en hiver en Turquie ?","choices": ["Le boza","Le şalgam","L'ayran","Le rakı"],"answer": 0},
+    {"q": "Quelle boisson turque est préparée à base de jus de navet fermenté et épicé ?","choices": ["Le şalgam","Le boza","L'ayran","Le rakı"],"answer": 0},
+    {"q": "Quel plat de riz turc est souvent préparé avec des vermicelles grillées avant cuisson ?","choices": ["Le pilav","Le mantı","Le köfte","Le meze"],"answer": 0},
+    {"q": "Quelle noix ou graine est traditionnellement saupoudrée sur le künefe ?","choices": ["La pistache","La noisette","L'amande","La noix de cajou"],"answer": 0},
+    {"q": "Quelle viande séchée et épicée, spécialité de la ville de Kayseri, est très appréciée en Turquie ?","choices": ["Le pastırma","Le sucuk","Le döner","Le köfte"],"answer": 0},
+    {"q": "Quelle saucisse épicée turque, souvent grillée, est couramment servie au petit-déjeuner ?","choices": ["Le sucuk","Le pastırma","Le köfte","Le döner"],"answer": 0},
+    {"q": "Quel dessert turc à base de semoule est souvent servi lors de célébrations religieuses ou de deuils ?","choices": ["Le helva","Le lokum","Le baklava","L'aşure"],"answer": 0},
+    {"q": "Quel dessert turc, aussi appelé « pudding de Noé », contient de nombreux fruits secs, céréales et légumineuses ?","choices": ["L'aşure","Le helva","Le sütlaç","Le künefe"],"answer": 0},
+    {"q": "Quelle spécialité de la ville d'Adana est une brochette de viande hachée épicée, pressée à la main ?","choices": ["L'Adana kebab","Le şiş kebap","Le döner","Le köfte"],"answer": 0},
+    {"q": "Quelle noisette, largement cultivée sur la côte de la mer Noire, fait de la Turquie le premier producteur mondial ?","choices": ["La noisette","L'amande","La noix","La pistache"],"answer": 0},
+    {"q": "Quel plat turc consiste en des feuilles de chou farcies de riz et de viande, similaire aux feuilles de vigne ?","choices": ["Le lahana sarma","Le yaprak sarma","Le mantı","Le köfte"],"answer": 0},
+    {"q": "Quel type de fromage turc, blanc et salé, est souvent servi au petit-déjeuner ?","choices": ["Le beyaz peynir","Le kaşar","Le tulum","Le lor"],"answer": 0},
+    {"q": "Comment appelle-t-on la catégorie de plats de légumes turcs cuits lentement à l'huile d'olive et servis froids ?","choices": ["Les plats zeytinyağlı","Les mezes chauds","Les köfte","Les böreks"],"answer": 0},
+    {"q": "Quelle confiture ou pâte sucrée à base de coings est traditionnelle en Turquie ?","choices": ["La confiture de coing","La confiture de fraise","Le miel","La mélasse de raisin"],"answer": 0},
+    {"q": "Quel plat traditionnel ottoman raffiné associe agneau et purée d'aubergine fumée, appelé « hünkar beğendi » ?","choices": ["Le hünkar beğendi","L'imam bayıldı","Le karnıyarık","Le musakka"],"answer": 0}
   ],
   "langue": [
-    {"q": "Comment dit-on 'merci' en turc ?", "choices": ["Teşekkür ederim", "Lütfen", "Günaydın", "Afiyet olsun"], "answer": 0},
-    {"q": "Comment dit-on 'bonjour' (littéralement 'bon matin') en turc ?", "choices": ["Günaydın", "İyi akşamlar", "Merhaba", "Hoşça kal"], "answer": 0},
-    {"q": "Que signifie 'lütfen' ?", "choices": ["S'il vous plaît", "Merci", "Au revoir", "Pardon"], "answer": 0},
-    {"q": "Que dit-on avant de commencer un repas, équivalent de 'bon appétit' ?", "choices": ["Afiyet olsun", "Şerefe", "Merhaba", "Güle güle"], "answer": 0},
-    {"q": "Comment dit-on 'combien ça coûte ?' en turc ?", "choices": ["Ne kadar?", "Nasılsın?", "Nerede?", "Kaç yaşındasın?"], "answer": 0},
-    {"q": "Que signifie 'evet' ?", "choices": ["Oui", "Non", "Peut-être", "Jamais"], "answer": 0},
-    {"q": "Que signifie 'hayır' ?", "choices": ["Non", "Oui", "Bonjour", "Merci"], "answer": 0},
-    {"q": "Quel alphabet est utilisé pour écrire le turc moderne ?", "choices": ["L'alphabet latin", "L'alphabet arabe", "L'alphabet cyrillique", "Les idéogrammes"], "answer": 0},
-    {"q": "Que signifie 'güle güle', dit à une personne qui part ?", "choices": ["Au revoir", "Bienvenue", "Félicitations", "Bon courage"], "answer": 0},
-    {"q": "Comment dit-on 'je ne comprends pas' en turc ?", "choices": ["Anlamıyorum", "Biliyorum", "Seviyorum", "Görüşürüz"], "answer": 0},
-      {
-      "q": "Comment dit-on 'bonjour' en turc ?",
-      "choices": [
-        "Merhaba",
-        "Teşekkürler",
-        "Güle güle",
-        "Hoşça kal"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'teşekkür ederim' ?",
-      "choices": [
-        "Merci",
-        "Bonjour",
-        "Au revoir",
-        "Excusez-moi"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'evet' ?",
-      "choices": [
-        "Oui",
-        "Non",
-        "Peut-être",
-        "Merci"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'hayır' ?",
-      "choices": [
-        "Non",
-        "Oui",
-        "Bonjour",
-        "Pardon"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment dit-on 'au revoir' à quelqu'un qui reste, lorsqu'on est celui qui part ?",
-      "choices": [
-        "Hoşça kal",
-        "Güle güle",
-        "Merhaba",
-        "Teşekkürler"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment répond-on traditionnellement à quelqu'un qui dit 'Hoşça kal' ?",
-      "choices": [
-        "Güle güle",
-        "Merhaba",
-        "Evet",
-        "Afiyet olsun"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'afiyet olsun' ?",
-      "choices": [
-        "Bon appétit",
-        "Bonne nuit",
-        "Bienvenue",
-        "À bientôt"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'su' en turc ?",
-      "choices": [
-        "Eau",
-        "Pain",
-        "Lait",
-        "Thé"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'ekmek' ?",
-      "choices": [
-        "Pain",
-        "Eau",
-        "Viande",
-        "Fromage"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'çay' ?",
-      "choices": [
-        "Thé",
-        "Café",
-        "Eau",
-        "Jus"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'kahve' ?",
-      "choices": [
-        "Café",
-        "Thé",
-        "Sucre",
-        "Lait"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment dit-on 'combien ça coûte ?' en turc ?",
-      "choices": [
-        "Ne kadar?",
-        "Nerede?",
-        "Nasılsın?",
-        "Saat kaç?"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'nerede?' ?",
-      "choices": [
-        "Où ?",
-        "Combien ?",
-        "Pourquoi ?",
-        "Quand ?"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'nasılsın?' ?",
-      "choices": [
-        "Comment vas-tu ?",
-        "Où es-tu ?",
-        "Quel âge as-tu ?",
-        "Comment t'appelles-tu ?"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'çok güzel' ?",
-      "choices": [
-        "Très beau / très joli",
-        "Très cher",
-        "Très loin",
-        "Très chaud"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'tamam' dans la conversation courante ?",
-      "choices": [
-        "D'accord / OK",
-        "Non",
-        "Merci",
-        "Attention"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'yavaş' ?",
-      "choices": [
-        "Lentement / lent",
-        "Rapidement",
-        "À droite",
-        "À gauche"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'hızlı' ?",
-      "choices": [
-        "Rapide",
-        "Lent",
-        "Grand",
-        "Petit"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment dit-on 'un' en turc ?",
-      "choices": [
-        "Bir",
-        "İki",
-        "Üç",
-        "Dört"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment dit-on 'deux' en turc ?",
-      "choices": [
-        "İki",
-        "Bir",
-        "Üç",
-        "Beş"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment dit-on 'trois' en turc ?",
-      "choices": [
-        "Üç",
-        "Dört",
-        "İki",
-        "Altı"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Comment dit-on 'dix' en turc ?",
-      "choices": [
-        "On",
-        "Yirmi",
-        "Sekiz",
-        "Dokuz"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'güzel' ?",
-      "choices": [
-        "Beau / joli",
-        "Grand",
-        "Petit",
-        "Vieux"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'büyük' ?",
-      "choices": [
-        "Grand",
-        "Petit",
-        "Nouveau",
-        "Rapide"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'küçük' ?",
-      "choices": [
-        "Petit",
-        "Grand",
-        "Cher",
-        "Froid"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Que signifie 'istanbul' dans l'expression grecque souvent citée comme origine de son nom moderne ?",
-      "choices": [
-        "Vers la ville / à la ville",
-        "Ville blanche",
-        "Ville des sultans",
-        "Ville des deux mers"
-      ],
-      "answer": 0
-    }
-
+    {"q": "Comment dit-on 'merci' en turc ?","choices": ["Teşekkür ederim","Lütfen","Günaydın","Afiyet olsun"],"answer": 0},
+    {"q": "Comment dit-on 'bonjour' (littéralement 'bon matin') en turc ?","choices": ["Günaydın","İyi akşamlar","Merhaba","Hoşça kal"],"answer": 0},
+    {"q": "Que signifie 'lütfen' ?","choices": ["S'il vous plaît","Merci","Au revoir","Pardon"],"answer": 0},
+    {"q": "Que dit-on avant de commencer un repas, équivalent de 'bon appétit' ?","choices": ["Afiyet olsun","Şerefe","Merhaba","Güle güle"],"answer": 0},
+    {"q": "Comment dit-on 'combien ça coûte ?' en turc ?","choices": ["Ne kadar?","Nasılsın?","Nerede?","Kaç yaşındasın?"],"answer": 0},
+    {"q": "Que signifie 'evet' ?","choices": ["Oui","Non","Peut-être","Jamais"],"answer": 0},
+    {"q": "Que signifie 'hayır' ?","choices": ["Non","Oui","Bonjour","Merci"],"answer": 0},
+    {"q": "Quel alphabet est utilisé pour écrire le turc moderne ?","choices": ["L'alphabet latin","L'alphabet arabe","L'alphabet cyrillique","Les idéogrammes"],"answer": 0},
+    {"q": "Que signifie 'güle güle', dit à une personne qui part ?","choices": ["Au revoir","Bienvenue","Félicitations","Bon courage"],"answer": 0},
+    {"q": "Comment dit-on 'je ne comprends pas' en turc ?","choices": ["Anlamıyorum","Biliyorum","Seviyorum","Görüşürüz"],"answer": 0},
+    {"q": "Comment dit-on 'bonjour' en turc ?","choices": ["Merhaba","Teşekkürler","Güle güle","Hoşça kal"],"answer": 0},
+    {"q": "Que signifie 'teşekkür ederim' ?","choices": ["Merci","Bonjour","Au revoir","Excusez-moi"],"answer": 0},
+    {"q": "Que signifie 'evet' ?","choices": ["Oui","Non","Peut-être","Merci"],"answer": 0},
+    {"q": "Que signifie 'hayır' ?","choices": ["Non","Oui","Bonjour","Pardon"],"answer": 0},
+    {"q": "Comment dit-on 'au revoir' à quelqu'un qui reste, lorsqu'on est celui qui part ?","choices": ["Hoşça kal","Güle güle","Merhaba","Teşekkürler"],"answer": 0},
+    {"q": "Comment répond-on traditionnellement à quelqu'un qui dit 'Hoşça kal' ?","choices": ["Güle güle","Merhaba","Evet","Afiyet olsun"],"answer": 0},
+    {"q": "Que signifie 'afiyet olsun' ?","choices": ["Bon appétit","Bonne nuit","Bienvenue","À bientôt"],"answer": 0},
+    {"q": "Que signifie 'su' en turc ?","choices": ["Eau","Pain","Lait","Thé"],"answer": 0},
+    {"q": "Que signifie 'ekmek' ?","choices": ["Pain","Eau","Viande","Fromage"],"answer": 0},
+    {"q": "Que signifie 'çay' ?","choices": ["Thé","Café","Eau","Jus"],"answer": 0},
+    {"q": "Que signifie 'kahve' ?","choices": ["Café","Thé","Sucre","Lait"],"answer": 0},
+    {"q": "Comment dit-on 'combien ça coûte ?' en turc ?","choices": ["Ne kadar?","Nerede?","Nasılsın?","Saat kaç?"],"answer": 0},
+    {"q": "Que signifie 'nerede?' ?","choices": ["Où ?","Combien ?","Pourquoi ?","Quand ?"],"answer": 0},
+    {"q": "Que signifie 'nasılsın?' ?","choices": ["Comment vas-tu ?","Où es-tu ?","Quel âge as-tu ?","Comment t'appelles-tu ?"],"answer": 0},
+    {"q": "Que signifie 'çok güzel' ?","choices": ["Très beau / très joli","Très cher","Très loin","Très chaud"],"answer": 0},
+    {"q": "Que signifie 'tamam' dans la conversation courante ?","choices": ["D'accord / OK","Non","Merci","Attention"],"answer": 0},
+    {"q": "Que signifie 'yavaş' ?","choices": ["Lentement / lent","Rapidement","À droite","À gauche"],"answer": 0},
+    {"q": "Que signifie 'hızlı' ?","choices": ["Rapide","Lent","Grand","Petit"],"answer": 0},
+    {"q": "Comment dit-on 'un' en turc ?","choices": ["Bir","İki","Üç","Dört"],"answer": 0},
+    {"q": "Comment dit-on 'deux' en turc ?","choices": ["İki","Bir","Üç","Beş"],"answer": 0},
+    {"q": "Comment dit-on 'trois' en turc ?","choices": ["Üç","Dört","İki","Altı"],"answer": 0},
+    {"q": "Comment dit-on 'dix' en turc ?","choices": ["On","Yirmi","Sekiz","Dokuz"],"answer": 0},
+    {"q": "Que signifie 'güzel' ?","choices": ["Beau / joli","Grand","Petit","Vieux"],"answer": 0},
+    {"q": "Que signifie 'büyük' ?","choices": ["Grand","Petit","Nouveau","Rapide"],"answer": 0},
+    {"q": "Que signifie 'küçük' ?","choices": ["Petit","Grand","Cher","Froid"],"answer": 0},
+    {"q": "Que signifie 'istanbul' dans l'expression grecque souvent citée comme origine de son nom moderne ?","choices": ["Vers la ville / à la ville","Ville blanche","Ville des sultans","Ville des deux mers"],"answer": 0},
+    {"q": "Que signifie 'dört' en turc ?","choices": ["Quatre","Trois","Cinq","Six"],"answer": 0},
+    {"q": "Que signifie 'beş' en turc ?","choices": ["Cinq","Quatre","Six","Sept"],"answer": 0},
+    {"q": "Comment dit-on 'je t'aime' en turc ?","choices": ["Seni seviyorum","Seni özledim","Seni anlıyorum","Seni görüyorum"],"answer": 0},
+    {"q": "Que signifie 'anne' en turc ?","choices": ["Mère","Père","Sœur","Frère"],"answer": 0},
+    {"q": "Que signifie 'baba' en turc ?","choices": ["Père","Mère","Fils","Fille"],"answer": 0},
+    {"q": "Que signifie 'ev' en turc ?","choices": ["Maison","Voiture","École","Ville"],"answer": 0},
+    {"q": "Comment dit-on 'bienvenue' en turc ?","choices": ["Hoş geldiniz","Hoş bulduk","Güle güle","Merhaba"],"answer": 0},
+    {"q": "Quelle est la réponse traditionnelle à 'Hoş geldiniz' (bienvenue) ?","choices": ["Hoş bulduk","Hoş geldiniz","Teşekkürler","Merhaba"],"answer": 0},
+    {"q": "Que signifie 'kırmızı' en turc ?","choices": ["Rouge","Bleu","Vert","Jaune"],"answer": 0},
+    {"q": "Que signifie 'mavi' en turc ?","choices": ["Bleu","Rouge","Vert","Noir"],"answer": 0},
+    {"q": "Comment dit-on 'excusez-moi' pour attirer poliment l'attention en turc ?","choices": ["Affedersiniz","Özür dilerim","Lütfen","Buyurun"],"answer": 0},
+    {"q": "Que signifie 'buyurun', souvent utilisé pour inviter quelqu'un à entrer ou se servir ?","choices": ["Je vous en prie","Bonjour","Merci","Excusez-moi"],"answer": 0},
+    {"q": "Que signifie 'deniz' en turc ?","choices": ["Mer","Montagne","Rivière","Ciel"],"answer": 0},
+    {"q": "Que signifie 'gün' en turc ?","choices": ["Jour","Nuit","Semaine","Mois"],"answer": 0},
+    {"q": "Que signifie 'akşam' en turc ?","choices": ["Soir","Matin","Nuit","Après-midi"],"answer": 0},
+    {"q": "Comment dit-on 'oui, s'il vous plaît' en turc ?","choices": ["Evet, lütfen","Hayır, teşekkürler","Belki","Tamam mı"],"answer": 0},
+    {"q": "À quelle famille de langues appartient le turc, comme certaines langues d'Asie centrale ?","choices": ["Les langues turciques","Les langues slaves","Les langues sémitiques","Les langues indo-européennes"],"answer": 0}
   ],
   "geographie": [
-    {"q": "Quelle est la capitale de la Turquie ?", "choices": ["Ankara", "Istanbul", "Izmir", "Antalya"], "answer": 0},
-    {"q": "Quelle région est célèbre pour ses vols en montgolfière au-dessus de cheminées de fées ?", "choices": ["Cappadoce", "Pamukkale", "Antalya", "Trabzon"], "answer": 0},
-    {"q": "Quel site est célèbre pour ses bassins de travertin blancs en terrasses ?", "choices": ["Pamukkale", "Cappadoce", "Ephèse", "Bodrum"], "answer": 0},
-    {"q": "Quelle mer borde la Turquie au nord ?", "choices": ["La mer Noire", "La mer Rouge", "La mer Baltique", "La mer d'Aral"], "answer": 0},
-    {"q": "Quelle chaîne de montagnes traverse une grande partie de la Turquie ?", "choices": ["Les monts Taurus", "Les Alpes", "Les Carpates", "L'Oural"], "answer": 0},
-    {"q": "Quelle ville turque est en partie en Europe et en partie en Asie ?", "choices": ["Istanbul", "Ankara", "Izmir", "Konya"], "answer": 0},
-    {"q": "Sur quel plateau se trouve la majeure partie de l'Anatolie centrale ?", "choices": ["Le plateau anatolien", "Le plateau tibétain", "Le plateau iranien", "Le plateau arménien"], "answer": 0},
-    {"q": "Quelle station balnéaire du sud-ouest est réputée pour ses criques et sa 'côte turquoise' ?", "choices": ["Fethiye/Ölüdeniz", "Trabzon", "Samsun", "Van"], "answer": 0},
-    {"q": "Quel grand lac se trouve à l'est de la Turquie ?", "choices": ["Le lac Van", "Le lac Léman", "Le lac Titicaca", "Le lac Baïkal"], "answer": 0},
-    {"q": "Quel pays ne partage PAS de frontière avec la Turquie ?", "choices": ["Egypte", "Grèce", "Iran", "Syrie"], "answer": 0},
-   {
-      "q": "Quelle est la capitale de la Turquie ?",
-      "choices": [
-        "Ankara",
-        "Istanbul",
-        "Izmir",
-        "Bursa"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle est la plus grande ville de Turquie ?",
-      "choices": [
-        "Istanbul",
-        "Ankara",
-        "Izmir",
-        "Antalya"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Sur quels deux continents s'étend la Turquie ?",
-      "choices": [
-        "Europe et Asie",
-        "Asie et Afrique",
-        "Europe et Afrique",
-        "Asie et Amérique"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel détroit sépare la partie européenne et la partie asiatique d'Istanbul ?",
-      "choices": [
-        "Bosphore",
-        "Dardanelles",
-        "Gibraltar",
-        "Béring"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle mer se trouve au nord de la Turquie ?",
-      "choices": [
-        "Mer Noire",
-        "Mer Égée",
-        "Méditerranée",
-        "Mer Caspienne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle mer se trouve à l'ouest de la Turquie ?",
-      "choices": [
-        "Mer Égée",
-        "Mer Noire",
-        "Mer Rouge",
-        "Mer Caspienne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle mer se trouve au sud de la Turquie ?",
-      "choices": [
-        "Méditerranée",
-        "Mer Noire",
-        "Mer Baltique",
-        "Mer du Nord"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel est le plus grand lac de Turquie ?",
-      "choices": [
-        "Lac de Van",
-        "Lac de Tuz",
-        "Lac Beyşehir",
-        "Lac d'Iznik"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville est célèbre pour ses cheminées de fées et ses paysages de Cappadoce ?",
-      "choices": [
-        "Göreme",
-        "Bodrum",
-        "Trabzon",
-        "Mersin"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle région se trouve Antalya ?",
-      "choices": [
-        "Côte méditerranéenne",
-        "Mer Noire",
-        "Thrace",
-        "Anatolie orientale"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville est connue historiquement sous le nom de Smyrne ?",
-      "choices": [
-        "Izmir",
-        "Bursa",
-        "Edirne",
-        "Konya"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle chaîne de montagnes longe notamment le nord de la Turquie ?",
-      "choices": [
-        "Pontiques",
-        "Alpes",
-        "Pyrénées",
-        "Carpates"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle chaîne montagneuse se trouve notamment au sud de l'Anatolie ?",
-      "choices": [
-        "Taurus",
-        "Himalaya",
-        "Caucase",
-        "Balkans"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel fleuve traverse la Turquie et est l'un des plus longs du pays ?",
-      "choices": [
-        "Kızılırmak",
-        "Seine",
-        "Danube uniquement",
-        "Tigre uniquement"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel grand fleuve du Moyen-Orient prend sa source en Turquie ?",
-      "choices": [
-        "Euphrate",
-        "Nil",
-        "Jourdain",
-        "Indus"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel autre grand fleuve du Moyen-Orient prend sa source en Turquie ?",
-      "choices": [
-        "Tigre",
-        "Nil",
-        "Gange",
-        "Jourdain"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle région turque est particulièrement connue pour ses paysages de Cappadoce ?",
-      "choices": [
-        "Anatolie centrale",
-        "Thrace orientale",
-        "Région égéenne",
-        "Région de Marmara"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville est réputée pour ses plantations de thé dans le nord-est de la Turquie ?",
-      "choices": [
-        "Rize",
-        "Antalya",
-        "Bodrum",
-        "Konya"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville est célèbre pour ses ruines antiques et la bibliothèque de Celsus ?",
-      "choices": [
-        "Éphèse",
-        "Ankara",
-        "Bursa",
-        "Samsun"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel site naturel de Pamukkale est célèbre pour ses terrasses blanches ?",
-      "choices": [
-        "Travertins calcaires",
-        "Volcans noirs",
-        "Dunes rouges",
-        "Falaises de granit"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel volcan est le plus haut sommet de Turquie ?",
-      "choices": [
-        "Ararat",
-        "Erciyes",
-        "Nemrut",
-        "Uludağ"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle région se trouve le mont Ararat ?",
-      "choices": [
-        "Anatolie orientale",
-        "Côte égéenne",
-        "Thrace",
-        "Région méditerranéenne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays ne possède pas de frontière terrestre avec la Turquie ?",
-      "choices": [
-        "Égypte",
-        "Grèce",
-        "Bulgarie",
-        "Géorgie"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pays partage une frontière avec la Turquie à l'est et possède la capitale Erevan ?",
-      "choices": [
-        "Arménie",
-        "Iran",
-        "Irak",
-        "Géorgie"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle ville turque se trouve près de la frontière syrienne et est célèbre pour sa gastronomie ?",
-      "choices": [
-        "Gaziantep",
-        "Bodrum",
-        "Bolu",
-        "Edirne"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle mer intérieure est reliée à la mer Noire et à la mer Égée par les détroits turcs ?",
-      "choices": [
-        "Mer de Marmara",
-        "Mer Caspienne",
-        "Mer d'Azov",
-        "Mer d'Aral"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel archipel ou ensemble d'îles proche d'Istanbul est connu sous le nom d'Îles des Princes ?",
-      "choices": [
-        "Adalar",
-        "Cyclades",
-        "Dodécanèse",
-        "Sporades"
-      ],
-      "answer": 0
-    }
-
+    {"q": "Quelle est la capitale de la Turquie ?","choices": ["Ankara","Istanbul","Izmir","Antalya"],"answer": 0},
+    {"q": "Quelle région est célèbre pour ses vols en montgolfière au-dessus de cheminées de fées ?","choices": ["Cappadoce","Pamukkale","Antalya","Trabzon"],"answer": 0},
+    {"q": "Quel site est célèbre pour ses bassins de travertin blancs en terrasses ?","choices": ["Pamukkale","Cappadoce","Ephèse","Bodrum"],"answer": 0},
+    {"q": "Quelle mer borde la Turquie au nord ?","choices": ["La mer Noire","La mer Rouge","La mer Baltique","La mer d'Aral"],"answer": 0},
+    {"q": "Quelle chaîne de montagnes traverse une grande partie de la Turquie ?","choices": ["Les monts Taurus","Les Alpes","Les Carpates","L'Oural"],"answer": 0},
+    {"q": "Quelle ville turque est en partie en Europe et en partie en Asie ?","choices": ["Istanbul","Ankara","Izmir","Konya"],"answer": 0},
+    {"q": "Sur quel plateau se trouve la majeure partie de l'Anatolie centrale ?","choices": ["Le plateau anatolien","Le plateau tibétain","Le plateau iranien","Le plateau arménien"],"answer": 0},
+    {"q": "Quelle station balnéaire du sud-ouest est réputée pour ses criques et sa 'côte turquoise' ?","choices": ["Fethiye/Ölüdeniz","Trabzon","Samsun","Van"],"answer": 0},
+    {"q": "Quel grand lac se trouve à l'est de la Turquie ?","choices": ["Le lac Van","Le lac Léman","Le lac Titicaca","Le lac Baïkal"],"answer": 0},
+    {"q": "Quel pays ne partage PAS de frontière avec la Turquie ?","choices": ["Egypte","Grèce","Iran","Syrie"],"answer": 0},
+    {"q": "Quelle est la capitale de la Turquie ?","choices": ["Ankara","Istanbul","Izmir","Bursa"],"answer": 0},
+    {"q": "Quelle est la plus grande ville de Turquie ?","choices": ["Istanbul","Ankara","Izmir","Antalya"],"answer": 0},
+    {"q": "Sur quels deux continents s'étend la Turquie ?","choices": ["Europe et Asie","Asie et Afrique","Europe et Afrique","Asie et Amérique"],"answer": 0},
+    {"q": "Quel détroit sépare la partie européenne et la partie asiatique d'Istanbul ?","choices": ["Bosphore","Dardanelles","Gibraltar","Béring"],"answer": 0},
+    {"q": "Quelle mer se trouve au nord de la Turquie ?","choices": ["Mer Noire","Mer Égée","Méditerranée","Mer Caspienne"],"answer": 0},
+    {"q": "Quelle mer se trouve à l'ouest de la Turquie ?","choices": ["Mer Égée","Mer Noire","Mer Rouge","Mer Caspienne"],"answer": 0},
+    {"q": "Quelle mer se trouve au sud de la Turquie ?","choices": ["Méditerranée","Mer Noire","Mer Baltique","Mer du Nord"],"answer": 0},
+    {"q": "Quel est le plus grand lac de Turquie ?","choices": ["Lac de Van","Lac de Tuz","Lac Beyşehir","Lac d'Iznik"],"answer": 0},
+    {"q": "Quelle ville est célèbre pour ses cheminées de fées et ses paysages de Cappadoce ?","choices": ["Göreme","Bodrum","Trabzon","Mersin"],"answer": 0},
+    {"q": "Dans quelle région se trouve Antalya ?","choices": ["Côte méditerranéenne","Mer Noire","Thrace","Anatolie orientale"],"answer": 0},
+    {"q": "Quelle ville est connue historiquement sous le nom de Smyrne ?","choices": ["Izmir","Bursa","Edirne","Konya"],"answer": 0},
+    {"q": "Quelle chaîne de montagnes longe notamment le nord de la Turquie ?","choices": ["Pontiques","Alpes","Pyrénées","Carpates"],"answer": 0},
+    {"q": "Quelle chaîne montagneuse se trouve notamment au sud de l'Anatolie ?","choices": ["Taurus","Himalaya","Caucase","Balkans"],"answer": 0},
+    {"q": "Quel fleuve traverse la Turquie et est l'un des plus longs du pays ?","choices": ["Kızılırmak","Seine","Danube uniquement","Tigre uniquement"],"answer": 0},
+    {"q": "Quel grand fleuve du Moyen-Orient prend sa source en Turquie ?","choices": ["Euphrate","Nil","Jourdain","Indus"],"answer": 0},
+    {"q": "Quel autre grand fleuve du Moyen-Orient prend sa source en Turquie ?","choices": ["Tigre","Nil","Gange","Jourdain"],"answer": 0},
+    {"q": "Quelle région turque est particulièrement connue pour ses paysages de Cappadoce ?","choices": ["Anatolie centrale","Thrace orientale","Région égéenne","Région de Marmara"],"answer": 0},
+    {"q": "Quelle ville est réputée pour ses plantations de thé dans le nord-est de la Turquie ?","choices": ["Rize","Antalya","Bodrum","Konya"],"answer": 0},
+    {"q": "Quelle ville est célèbre pour ses ruines antiques et la bibliothèque de Celsus ?","choices": ["Éphèse","Ankara","Bursa","Samsun"],"answer": 0},
+    {"q": "Quel site naturel de Pamukkale est célèbre pour ses terrasses blanches ?","choices": ["Travertins calcaires","Volcans noirs","Dunes rouges","Falaises de granit"],"answer": 0},
+    {"q": "Quel volcan est le plus haut sommet de Turquie ?","choices": ["Ararat","Erciyes","Nemrut","Uludağ"],"answer": 0},
+    {"q": "Dans quelle région se trouve le mont Ararat ?","choices": ["Anatolie orientale","Côte égéenne","Thrace","Région méditerranéenne"],"answer": 0},
+    {"q": "Quel pays ne possède pas de frontière terrestre avec la Turquie ?","choices": ["Égypte","Grèce","Bulgarie","Géorgie"],"answer": 0},
+    {"q": "Quel pays partage une frontière avec la Turquie à l'est et possède la capitale Erevan ?","choices": ["Arménie","Iran","Irak","Géorgie"],"answer": 0},
+    {"q": "Quelle ville turque se trouve près de la frontière syrienne et est célèbre pour sa gastronomie ?","choices": ["Gaziantep","Bodrum","Bolu","Edirne"],"answer": 0},
+    {"q": "Quelle mer intérieure est reliée à la mer Noire et à la mer Égée par les détroits turcs ?","choices": ["Mer de Marmara","Mer Caspienne","Mer d'Azov","Mer d'Aral"],"answer": 0},
+    {"q": "Quel archipel ou ensemble d'îles proche d'Istanbul est connu sous le nom d'Îles des Princes ?","choices": ["Adalar","Cyclades","Dodécanèse","Sporades"],"answer": 0},
+    {"q": "Quelle est la deuxième plus grande ville de Turquie après Istanbul ?","choices": ["Ankara","Izmir","Bursa","Antalya"],"answer": 0},
+    {"q": "Quel lac salé d'Anatolie centrale est célèbre pour sa couleur rose en été et sa production de sel ?","choices": ["Le lac Tuz","Le lac Van","Le lac Beyşehir","Le lac Eğirdir"],"answer": 0},
+    {"q": "Quelle région historique occupe la partie européenne de la Turquie ?","choices": ["La Thrace orientale","La Cappadoce","L'Anatolie centrale","La région égéenne"],"answer": 0},
+    {"q": "Quelle ville turque est célèbre pour son trafic maritime intense et sa proximité avec le détroit des Dardanelles ?","choices": ["Çanakkale","Edirne","Bursa","Samsun"],"answer": 0},
+    {"q": "Quel détroit turc relie la mer Égée à la mer de Marmara ?","choices": ["Les Dardanelles","Le Bosphore","Le détroit de Kerch","Le détroit d'Otrante"],"answer": 0},
+    {"q": "Quelle station balnéaire du sud de la Turquie est très prisée pour son port de plaisance et sa vieille ville ?","choices": ["Bodrum","Marmaris","Kuşadası","Alanya"],"answer": 0},
+    {"q": "Quelle région du nord-est de la Turquie est réputée pour ses plateaux verdoyants (yayla) et son folklore ?","choices": ["La région de la mer Noire","La Cappadoce","La région égéenne","La Thrace"],"answer": 0},
+    {"q": "Quelle ville turque est le principal port et centre économique de la mer Noire ?","choices": ["Trabzon","Samsun","Sinop","Rize"],"answer": 0},
+    {"q": "Quel parc national, proche d'Antalya, est célèbre pour ses cascades et ses eaux turquoise ?","choices": ["Köprülü Canyon","Pamukkale","Cappadoce","Nemrut Dağı"],"answer": 0},
+    {"q": "Quelle ville anatolienne est célèbre pour son architecture seldjoukide et son rôle de centre spirituel du soufisme, lié à Rumi ?","choices": ["Konya","Kayseri","Sivas","Erzurum"],"answer": 0},
+    {"q": "Quelle mer sépare la Turquie de Chypre au sud ?","choices": ["La mer Méditerranée","La mer Égée","La mer Noire","La mer de Marmara"],"answer": 0},
+    {"q": "Quelle grande ville turque est un centre industriel important, historiquement lié à la soie et aux premiers sultans ottomans ?","choices": ["Bursa","Konya","Kayseri","Adana"],"answer": 0},
+    {"q": "Quel plateau du sud-est de la Turquie abrite les statues monumentales du mont Nemrut ?","choices": ["Le Nemrut Dağı","Le mont Ararat","Le mont Erciyes","L'Ida"],"answer": 0},
+    {"q": "Quelle est la plus grande île de Turquie, située dans la mer Égée près des Dardanelles ?","choices": ["Gökçeada","Bozcaada","Marmara Adası","Avşa"],"answer": 0},
+    {"q": "Quelle petite ville turque, classée à l'UNESCO, est célèbre pour ses maisons ottomanes en bois traditionnelles ?","choices": ["Safranbolu","Amasya","Mudurnu","Beypazarı"],"answer": 0},
+    {"q": "Quel fleuve traverse la ville d'Adana avant de se jeter dans la Méditerranée ?","choices": ["Le Seyhan","Le Ceyhan","Le Kızılırmak","Le Sakarya"],"answer": 0},
+    {"q": "Quel est le nom du volcan qui domine la ville de Kayseri, en Anatolie centrale ?","choices": ["L'Erciyes","L'Ararat","Le Nemrut","L'Uludağ"],"answer": 0}
   ],
   "culture": [
-    {"q": "Comment s'appelle la danse tournoyante des derviches soufis ?", "choices": ["Sema", "Zeybek", "Halay", "Horon"], "answer": 0},
-    {"q": "Qu'est-ce qu'un 'hamam' ?", "choices": ["Un bain public traditionnel", "Un marché couvert", "Une mosquée", "Un caravansérail"], "answer": 0},
-    {"q": "Qu'est-ce que le 'Grand Bazar' à Istanbul ?", "choices": ["Un des plus grands marchés couverts du monde", "Un palais royal", "Un musée d'art moderne", "Un stade"], "answer": 0},
-    {"q": "Quel objet bleu en forme d'œil est censé porter chance et éloigner le mauvais œil ?", "choices": ["Le nazar boncuğu", "Le tespih", "Le fes", "Le tulipe d'Iznik"], "answer": 0},
-    {"q": "Quel tapis est une spécialité artisanale traditionnelle turque très réputée ?", "choices": ["Le tapis noué à la main", "Le tapis persan uniquement", "La tapisserie française", "Le kilim indien"], "answer": 0},
-    {"q": "Quel sport traditionnel turc oppose des lutteurs enduits d'huile d'olive ?", "choices": ["Yağlı güreş (lutte à l'huile)", "Le judo", "La lutte gréco-romaine olympique", "Le sumo"], "answer": 0},
-    {"q": "Quelle fête religieuse marque la fin du Ramadan en Turquie ?", "choices": ["Şeker Bayramı (fête du sucre)", "Kurban Bayramı uniquement", "Nevruz", "Cumhuriyet Bayramı"], "answer": 0},
-    {"q": "Quel motif décoratif en céramique est typique de la ville d'Iznik ?", "choices": ["Motifs floraux bleus et blancs/rouges", "Motifs géométriques noirs et blancs uniquement", "Portraits", "Paysages marins"], "answer": 0},
-    {"q": "Comment s'appelle le narguilé traditionnel turc ?", "choices": ["Nargile", "Chicha égyptienne", "Hookah indien", "Kalyan persan"], "answer": 0},
-    {"q": "Quel instrument à cordes est emblématique de la musique turque traditionnelle ?", "choices": ["Le saz", "Le sitar", "L'oud égyptien", "Le violon seul"], "answer": 0},
-    {
-      "q": "Quel monument d'Istanbul est célèbre pour son immense dôme et son histoire byzantine puis ottomane ?",
-      "choices": [
-        "Sainte-Sophie",
-        "Tour de Galata",
-        "Palais de Topkapı",
-        "Grand Bazar"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel palais d'Istanbul était le centre administratif de l'Empire ottoman ?",
-      "choices": [
-        "Topkapı",
-        "Dolmabahçe",
-        "Çırağan",
-        "Yıldız"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument religieux est célèbre pour ses six minarets à Istanbul ?",
-      "choices": [
-        "Mosquée bleue",
-        "Sainte-Sophie",
-        "Mosquée Süleymaniye",
-        "Mosquée Rüstem Pacha"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel architecte ottoman est considéré comme l'un des plus grands architectes de l'histoire de l'Empire ?",
-      "choices": [
-        "Mimar Sinan",
-        "Antoni Gaudí",
-        "Le Corbusier",
-        "Michel-Ange"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle mosquée de l'époque de Soliman le Magnifique est l'une des œuvres majeures de Sinan ?",
-      "choices": [
-        "Mosquée Süleymaniye",
-        "Mosquée bleue",
-        "Mosquée d'Ortaköy",
-        "Mosquée Eyüp Sultan"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel artisanat turc est particulièrement célèbre pour ses motifs colorés sur des carreaux de céramique ?",
-      "choices": [
-        "Iznik çinileri",
-        "Tapis de Cappadoce",
-        "Dentelle de Bursa",
-        "Cuivre d'Ankara"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel art traditionnel turc consiste à créer des motifs colorés à la surface de l'eau puis à les transférer sur du papier ?",
-      "choices": [
-        "Ebru",
-        "Minyatür",
-        "Hat",
-        "Çini"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel art traditionnel correspond à la calligraphie islamique ottomane ?",
-      "choices": [
-        "Hat",
-        "Ebru",
-        "Karagöz",
-        "Çini"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel théâtre d'ombres traditionnel turc met en scène Karagöz et Hacivat ?",
-      "choices": [
-        "Karagöz",
-        "Meddah",
-        "Orta oyunu",
-        "Semah"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel personnage de théâtre d'ombres est généralement le plus populaire et spontané ?",
-      "choices": [
-        "Karagöz",
-        "Hacivat",
-        "Nasreddin Hoca",
-        "Dede Korkut"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel instrument à cordes à long manche est emblématique de la musique populaire anatolienne ?",
-      "choices": [
-        "Bağlama",
-        "Ud uniquement",
-        "Kanun",
-        "Ney"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel instrument à anche est très associé à la musique soufie et à la tradition mevlevie ?",
-      "choices": [
-        "Ney",
-        "Bağlama",
-        "Saz électrique",
-        "Davul"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle danse traditionnelle est particulièrement associée à la région de la mer Noire ?",
-      "choices": [
-        "Horon",
-        "Zeybek",
-        "Halay",
-        "Semah"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle danse traditionnelle est notamment associée à l'ouest de l'Anatolie et à la région égéenne ?",
-      "choices": [
-        "Zeybek",
-        "Horon",
-        "Halay",
-        "Dabke"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel rituel soufi est associé aux derviches tourneurs ?",
-      "choices": [
-        "Sema",
-        "Horon",
-        "Zeybek",
-        "Hıdırellez"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "À quelle confrérie soufie les derviches tourneurs sont-ils historiquement associés ?",
-      "choices": [
-        "Mevlevi",
-        "Bektachi uniquement",
-        "Naqshbandi uniquement",
-        "Qadiriyya uniquement"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel festival célèbre le printemps autour du 21 mars chez plusieurs peuples de la région, dont en Turquie ?",
-      "choices": [
-        "Nevruz",
-        "Hıdırellez",
-        "Ramazan Bayramı",
-        "Kurban Bayramı"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle fête marque la fin du mois de Ramadan ?",
-      "choices": [
-        "Ramazan Bayramı",
-        "Nevruz",
-        "Kurban Bayramı",
-        "Republic Day"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle fête musulmane importante est associée au sacrifice ?",
-      "choices": [
-        "Kurban Bayramı",
-        "Ramazan Bayramı",
-        "Nevruz",
-        "Hıdırellez"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle couleur est souvent associée au drapeau turc ?",
-      "choices": [
-        "Rouge",
-        "Bleu",
-        "Vert",
-        "Orange"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel symbole figure au centre du drapeau turc ?",
-      "choices": [
-        "Croissant et étoile",
-        "Aigle et soleil",
-        "Loup et étoile",
-        "Tulipe et lune"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel écrivain turc a reçu le prix Nobel de littérature en 2006 ?",
-      "choices": [
-        "Orhan Pamuk",
-        "Yaşar Kemal",
-        "Nazım Hikmet",
-        "Elif Shafak"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel roman d'Orhan Pamuk se déroule notamment à Istanbul et évoque une ville mélancolique ?",
-      "choices": [
-        "Istanbul : Souvenirs d'une ville",
-        "Neige",
-        "Mon nom est Rouge",
-        "Le Musée de l'innocence"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel sport traditionnel turc consiste en une lutte avec les lutteurs enduits d'huile ?",
-      "choices": [
-        "Kırkpınar / lutte à l'huile",
-        "Judo",
-        "Güreş moderne",
-        "Polo"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Dans quelle ville se déroule le célèbre festival de lutte à l'huile de Kırkpınar ?",
-      "choices": [
-        "Edirne",
-        "Bursa",
-        "Konya",
-        "Antalya"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel animal mythique est un symbole culturel important dans de nombreuses traditions turques et turciques ?",
-      "choices": [
-        "Loup gris",
-        "Dragon marin",
-        "Aigle blanc",
-        "Cheval ailé"
-      ],
-      "answer": 0
-    }
-
+    {"q": "Comment s'appelle la danse tournoyante des derviches soufis ?","choices": ["Sema","Zeybek","Halay","Horon"],"answer": 0},
+    {"q": "Qu'est-ce qu'un 'hamam' ?","choices": ["Un bain public traditionnel","Un marché couvert","Une mosquée","Un caravansérail"],"answer": 0},
+    {"q": "Qu'est-ce que le 'Grand Bazar' à Istanbul ?","choices": ["Un des plus grands marchés couverts du monde","Un palais royal","Un musée d'art moderne","Un stade"],"answer": 0},
+    {"q": "Quel objet bleu en forme d'œil est censé porter chance et éloigner le mauvais œil ?","choices": ["Le nazar boncuğu","Le tespih","Le fes","Le tulipe d'Iznik"],"answer": 0},
+    {"q": "Quel tapis est une spécialité artisanale traditionnelle turque très réputée ?","choices": ["Le tapis noué à la main","Le tapis persan uniquement","La tapisserie française","Le kilim indien"],"answer": 0},
+    {"q": "Quel sport traditionnel turc oppose des lutteurs enduits d'huile d'olive ?","choices": ["Yağlı güreş (lutte à l'huile)","Le judo","La lutte gréco-romaine olympique","Le sumo"],"answer": 0},
+    {"q": "Quelle fête religieuse marque la fin du Ramadan en Turquie ?","choices": ["Şeker Bayramı (fête du sucre)","Kurban Bayramı uniquement","Nevruz","Cumhuriyet Bayramı"],"answer": 0},
+    {"q": "Quel motif décoratif en céramique est typique de la ville d'Iznik ?","choices": ["Motifs floraux bleus et blancs/rouges","Motifs géométriques noirs et blancs uniquement","Portraits","Paysages marins"],"answer": 0},
+    {"q": "Comment s'appelle le narguilé traditionnel turc ?","choices": ["Nargile","Chicha égyptienne","Hookah indien","Kalyan persan"],"answer": 0},
+    {"q": "Quel instrument à cordes est emblématique de la musique turque traditionnelle ?","choices": ["Le saz","Le sitar","L'oud égyptien","Le violon seul"],"answer": 0},
+    {"q": "Quel monument d'Istanbul est célèbre pour son immense dôme et son histoire byzantine puis ottomane ?","choices": ["Sainte-Sophie","Tour de Galata","Palais de Topkapı","Grand Bazar"],"answer": 0},
+    {"q": "Quel palais d'Istanbul était le centre administratif de l'Empire ottoman ?","choices": ["Topkapı","Dolmabahçe","Çırağan","Yıldız"],"answer": 0},
+    {"q": "Quel monument religieux est célèbre pour ses six minarets à Istanbul ?","choices": ["Mosquée bleue","Sainte-Sophie","Mosquée Süleymaniye","Mosquée Rüstem Pacha"],"answer": 0},
+    {"q": "Quel architecte ottoman est considéré comme l'un des plus grands architectes de l'histoire de l'Empire ?","choices": ["Mimar Sinan","Antoni Gaudí","Le Corbusier","Michel-Ange"],"answer": 0},
+    {"q": "Quelle mosquée de l'époque de Soliman le Magnifique est l'une des œuvres majeures de Sinan ?","choices": ["Mosquée Süleymaniye","Mosquée bleue","Mosquée d'Ortaköy","Mosquée Eyüp Sultan"],"answer": 0},
+    {"q": "Quel artisanat turc est particulièrement célèbre pour ses motifs colorés sur des carreaux de céramique ?","choices": ["Iznik çinileri","Tapis de Cappadoce","Dentelle de Bursa","Cuivre d'Ankara"],"answer": 0},
+    {"q": "Quel art traditionnel turc consiste à créer des motifs colorés à la surface de l'eau puis à les transférer sur du papier ?","choices": ["Ebru","Minyatür","Hat","Çini"],"answer": 0},
+    {"q": "Quel art traditionnel correspond à la calligraphie islamique ottomane ?","choices": ["Hat","Ebru","Karagöz","Çini"],"answer": 0},
+    {"q": "Quel théâtre d'ombres traditionnel turc met en scène Karagöz et Hacivat ?","choices": ["Karagöz","Meddah","Orta oyunu","Semah"],"answer": 0},
+    {"q": "Quel personnage de théâtre d'ombres est généralement le plus populaire et spontané ?","choices": ["Karagöz","Hacivat","Nasreddin Hoca","Dede Korkut"],"answer": 0},
+    {"q": "Quel instrument à cordes à long manche est emblématique de la musique populaire anatolienne ?","choices": ["Bağlama","Ud uniquement","Kanun","Ney"],"answer": 0},
+    {"q": "Quel instrument à anche est très associé à la musique soufie et à la tradition mevlevie ?","choices": ["Ney","Bağlama","Saz électrique","Davul"],"answer": 0},
+    {"q": "Quelle danse traditionnelle est particulièrement associée à la région de la mer Noire ?","choices": ["Horon","Zeybek","Halay","Semah"],"answer": 0},
+    {"q": "Quelle danse traditionnelle est notamment associée à l'ouest de l'Anatolie et à la région égéenne ?","choices": ["Zeybek","Horon","Halay","Dabke"],"answer": 0},
+    {"q": "Quel rituel soufi est associé aux derviches tourneurs ?","choices": ["Sema","Horon","Zeybek","Hıdırellez"],"answer": 0},
+    {"q": "À quelle confrérie soufie les derviches tourneurs sont-ils historiquement associés ?","choices": ["Mevlevi","Bektachi uniquement","Naqshbandi uniquement","Qadiriyya uniquement"],"answer": 0},
+    {"q": "Quel festival célèbre le printemps autour du 21 mars chez plusieurs peuples de la région, dont en Turquie ?","choices": ["Nevruz","Hıdırellez","Ramazan Bayramı","Kurban Bayramı"],"answer": 0},
+    {"q": "Quelle fête marque la fin du mois de Ramadan ?","choices": ["Ramazan Bayramı","Nevruz","Kurban Bayramı","Republic Day"],"answer": 0},
+    {"q": "Quelle fête musulmane importante est associée au sacrifice ?","choices": ["Kurban Bayramı","Ramazan Bayramı","Nevruz","Hıdırellez"],"answer": 0},
+    {"q": "Quelle couleur est souvent associée au drapeau turc ?","choices": ["Rouge","Bleu","Vert","Orange"],"answer": 0},
+    {"q": "Quel symbole figure au centre du drapeau turc ?","choices": ["Croissant et étoile","Aigle et soleil","Loup et étoile","Tulipe et lune"],"answer": 0},
+    {"q": "Quel écrivain turc a reçu le prix Nobel de littérature en 2006 ?","choices": ["Orhan Pamuk","Yaşar Kemal","Nazım Hikmet","Elif Shafak"],"answer": 0},
+    {"q": "Quel roman d'Orhan Pamuk se déroule notamment à Istanbul et évoque une ville mélancolique ?","choices": ["Istanbul : Souvenirs d'une ville","Neige","Mon nom est Rouge","Le Musée de l'innocence"],"answer": 0},
+    {"q": "Quel sport traditionnel turc consiste en une lutte avec les lutteurs enduits d'huile ?","choices": ["Kırkpınar / lutte à l'huile","Judo","Güreş moderne","Polo"],"answer": 0},
+    {"q": "Dans quelle ville se déroule le célèbre festival de lutte à l'huile de Kırkpınar ?","choices": ["Edirne","Bursa","Konya","Antalya"],"answer": 0},
+    {"q": "Quel animal mythique est un symbole culturel important dans de nombreuses traditions turques et turciques ?","choices": ["Loup gris","Dragon marin","Aigle blanc","Cheval ailé"],"answer": 0},
+    {"q": "Quel jeu de plateau, très populaire dans les cafés turcs, se joue avec des dés et des pions sur un plateau à triangles ?","choices": ["Le tavla","Les échecs","Le okey","Les dames"],"answer": 0},
+    {"q": "Quel breuvage traditionnel à base de racine d'orchidée est souvent bu chaud en hiver en Turquie ?","choices": ["Le salep","Le boza","Le çay","L'ayran"],"answer": 0},
+    {"q": "Quel type de tapis tissé sans nœuds, plus fin que le tapis classique, est une spécialité artisanale turque ?","choices": ["Le kilim","Le tapis noué","Le cicim","Le sumak"],"answer": 0},
+    {"q": "Quel chapelet turc, égrainé par plaisir ou pour se détendre, est un accessoire culturel courant ?","choices": ["Le tespih","Le nazar boncuğu","Le fes","Le kilim"],"answer": 0},
+    {"q": "Quel couvre-chef rouge, autrefois porté par les hommes ottomans, a été interdit par Atatürk en 1925 ?","choices": ["Le fez","Le turban","Le kalpak","Le sarık"],"answer": 0},
+    {"q": "Quelle fête nationale turque célèbre la proclamation de la République le 29 octobre ?","choices": ["Cumhuriyet Bayramı","Nevruz","Kurban Bayramı","Zafer Bayramı"],"answer": 0},
+    {"q": "Quelle fête nationale turque célèbre la victoire décisive de la guerre d'indépendance le 30 août ?","choices": ["Zafer Bayramı","Cumhuriyet Bayramı","23 Nisan","Gençlik Bayramı"],"answer": 0},
+    {"q": "Quelle fête turque du 23 avril est dédiée aux enfants et à la souveraineté nationale ?","choices": ["23 Nisan","Zafer Bayramı","Cumhuriyet Bayramı","Nevruz"],"answer": 0},
+    {"q": "Quel instrument à percussion, grand tambour cylindrique, accompagne souvent le zurna dans la musique populaire turque ?","choices": ["Le davul","Le darbuka","Le def","Le bendir"],"answer": 0},
+    {"q": "Quel petit tambour en forme de gobelet, tenu sous le bras, est très utilisé dans la musique turque ?","choices": ["Le darbuka","Le davul","Le def","Le ney"],"answer": 0},
+    {"q": "Quel instrument à vent, sorte de hautbois puissant, accompagne traditionnellement le davul lors des fêtes ?","choices": ["Le zurna","Le ney","Le kaval","Le mey"],"answer": 0},
+    {"q": "Quel sport est le plus populaire en Turquie, avec des clubs comme Galatasaray et Fenerbahçe ?","choices": ["Le football","Le basketball","Le volleyball","Le rugby"],"answer": 0},
+    {"q": "Quel derby footballistique oppose historiquement les deux plus grands clubs d'Istanbul, situés sur des rives différentes ?","choices": ["Fenerbahçe - Galatasaray","Beşiktaş - Fenerbahçe","Galatasaray - Beşiktaş","Trabzonspor - Galatasaray"],"answer": 0},
+    {"q": "Quel écrivain turc, connu pour son engagement politique, est l'un des plus grands poètes turcs du XXe siècle ?","choices": ["Nazım Hikmet","Orhan Pamuk","Yaşar Kemal","Elif Shafak"],"answer": 0},
+    {"q": "Quelle romancière turque contemporaine, souvent publiée en anglais, est notamment connue pour « Soufi, mon amour » ?","choices": ["Elif Shafak","Orhan Pamuk","Nazım Hikmet","Yaşar Kemal"],"answer": 0},
+    {"q": "Quelle fleur est un symbole culturel important en Turquie, associée à « l'ère des Tulipes » ottomane ?","choices": ["La tulipe","La rose","Le lys","L'œillet"],"answer": 0},
+    {"q": "Quel sultan ottoman du XVIIIe siècle a donné son nom à « l'ère des Tulipes », période de raffinement culturel ?","choices": ["Ahmed III","Mahmud Ier","Osman III","Mustafa III"],"answer": 0}
   ],
- "istanbul": [
-    {
-      "q": "Sur quel détroit Istanbul est-elle située ?",
-      "choices": [
-        "Bosphore",
-        "Dardanelles",
-        "Gibraltar",
-        "Ormuz"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel pont relie les rives européenne et asiatique d'Istanbul ?",
-      "choices": [
-        "Pont du Bosphore / 15 Juillet des Martyrs",
-        "Pont de Galata",
-        "Pont de Fatih Sultan Mehmet uniquement",
-        "Pont du Golden Horn"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel quartier historique d'Istanbul abrite Sainte-Sophie et la Mosquée bleue ?",
-      "choices": [
-        "Sultanahmet",
-        "Beyoğlu",
-        "Kadıköy",
-        "Beşiktaş"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel célèbre marché couvert d'Istanbul est l'un des plus anciens et des plus vastes au monde ?",
-      "choices": [
-        "Grand Bazar",
-        "Marché aux épices",
-        "Marché de Kadıköy",
-        "Marché de Beşiktaş"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel marché est particulièrement connu pour les épices, loukoums et produits alimentaires ?",
-      "choices": [
-        "Bazar égyptien / Marché aux épices",
-        "Grand Bazar",
-        "Bazar de Galata",
-        "Marché de Karaköy"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle tour médiévale offre une vue célèbre sur Istanbul depuis Beyoğlu ?",
-      "choices": [
-        "Tour de Galata",
-        "Tour de Léandre",
-        "Tour de Dolmabahçe",
-        "Tour de Rumeli"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel quartier est célèbre pour la rue İstiklal ?",
-      "choices": [
-        "Beyoğlu",
-        "Sultanahmet",
-        "Üsküdar",
-        "Fatih"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle place se trouve à l'extrémité de la rue İstiklal ?",
-      "choices": [
-        "Taksim",
-        "Eminönü",
-        "Ortaköy",
-        "Karaköy"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel quartier asiatique d'Istanbul est connu pour son marché et son ambiance animée ?",
-      "choices": [
-        "Kadıköy",
-        "Eminönü",
-        "Balat",
-        "Sultanahmet"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel quartier situé sur la rive asiatique est célèbre pour son front de mer et sa mosquée néo-baroque ?",
-      "choices": [
-        "Üsküdar",
-        "Karaköy",
-        "Galata",
-        "Eminönü"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel palais se trouve au bord du Bosphore et fut une résidence impériale ottomane ?",
-      "choices": [
-        "Dolmabahçe",
-        "Topkapı",
-        "Yıldız",
-        "Beylerbeyi uniquement"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel ancien hippodrome se trouve au cœur du quartier de Sultanahmet ?",
-      "choices": [
-        "Hippodrome de Constantinople",
-        "Hippodrome de Galata",
-        "Hippodrome de Topkapı",
-        "Hippodrome du Bosphore"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel monument est connu pour sa citerne souterraine aux centaines de colonnes ?",
-      "choices": [
-        "Basilique-citerne",
-        "Citerne de Théodose",
-        "Citerne de Galata",
-        "Citerne de Dolmabahçe"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel nom turc porte la Basilique-citerne ?",
-      "choices": [
-        "Yerebatan Sarnıcı",
-        "Kapalı Çarşı",
-        "Mısır Çarşısı",
-        "Ayasofya"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel quartier est célèbre pour ses maisons colorées et son patrimoine grec, arménien et juif ?",
-      "choices": [
-        "Balat",
-        "Levent",
-        "Maslak",
-        "Ataköy"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel quartier est connu pour ses restaurants, galeries et son ancienne identité portuaire ?",
-      "choices": [
-        "Karaköy",
-        "Sarıyer",
-        "Beykoz",
-        "Bakırköy"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel quartier du Bosphore est célèbre pour sa mosquée construite au bord de l'eau ?",
-      "choices": [
-        "Ortaköy",
-        "Eminönü",
-        "Balat",
-        "Fatih"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel est le nom turc du détroit du Bosphore ?",
-      "choices": [
-        "Boğaziçi",
-        "Haliç",
-        "Marmara",
-        "Çanakkale"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel est le nom turc de la Corne d'Or ?",
-      "choices": [
-        "Haliç",
-        "Boğaziçi",
-        "Marmara",
-        "Adalar"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel moyen de transport permet de traverser régulièrement le Bosphore entre les deux continents ?",
-      "choices": [
-        "Ferry",
-        "Métro uniquement",
-        "Tramway uniquement",
-        "Téléphérique uniquement"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel quartier abrite le palais de Topkapı ?",
-      "choices": [
-        "Sultanahmet / Fatih",
-        "Kadıköy",
-        "Beyoğlu",
-        "Beşiktaş"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quelle grande avenue piétonne est parcourue par un tramway rouge historique ?",
-      "choices": [
-        "İstiklal Caddesi",
-        "Bağdat Caddesi",
-        "Abdi İpekçi Caddesi",
-        "Ordu Caddesi"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel aéroport est devenu le principal aéroport international d'Istanbul après l'ouverture en 2018 ?",
-      "choices": [
-        "Istanbul Airport (IST)",
-        "Sabiha Gökçen",
-        "Atatürk Airport",
-        "Esenler Airport"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel aéroport se trouve sur la rive asiatique d'Istanbul ?",
-      "choices": [
-        "Sabiha Gökçen",
-        "Istanbul Airport",
-        "Atatürk Airport",
-        "Yeşilköy Airport"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel quartier d'Istanbul est connu pour ses cafés, boutiques et la rue Bağdat Caddesi ?",
-      "choices": [
-        "Kadıköy",
-        "Fatih",
-        "Eminönü",
-        "Balat"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel stade est le domicile du club de football Beşiktaş ?",
-      "choices": [
-        "Tüpraş Stadyumu",
-        "Şükrü Saracoğlu",
-        "Rams Park",
-        "Atatürk Olimpiyat"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel club joue au stade Rams Park ?",
-      "choices": [
-        "Galatasaray",
-        "Fenerbahçe",
-        "Beşiktaş",
-        "Başakşehir"
-      ],
-      "answer": 0
-    },
-    {
-      "q": "Quel club joue au stade Ülker Stadyumu, historiquement appelé Şükrü Saracoğlu ?",
-      "choices": [
-        "Fenerbahçe",
-        "Galatasaray",
-        "Beşiktaş",
-        "Kasımpaşa"
-      ],
-      "answer": 0
-    }
+  "istanbul": [
+    {"q": "Sur quel détroit Istanbul est-elle située ?","choices": ["Bosphore","Dardanelles","Gibraltar","Ormuz"],"answer": 0},
+    {"q": "Quel pont relie les rives européenne et asiatique d'Istanbul ?","choices": ["Pont du Bosphore / 15 Juillet des Martyrs","Pont de Galata","Pont de Fatih Sultan Mehmet uniquement","Pont du Golden Horn"],"answer": 0},
+    {"q": "Quel quartier historique d'Istanbul abrite Sainte-Sophie et la Mosquée bleue ?","choices": ["Sultanahmet","Beyoğlu","Kadıköy","Beşiktaş"],"answer": 0},
+    {"q": "Quel célèbre marché couvert d'Istanbul est l'un des plus anciens et des plus vastes au monde ?","choices": ["Grand Bazar","Marché aux épices","Marché de Kadıköy","Marché de Beşiktaş"],"answer": 0},
+    {"q": "Quel marché est particulièrement connu pour les épices, loukoums et produits alimentaires ?","choices": ["Bazar égyptien / Marché aux épices","Grand Bazar","Bazar de Galata","Marché de Karaköy"],"answer": 0},
+    {"q": "Quelle tour médiévale offre une vue célèbre sur Istanbul depuis Beyoğlu ?","choices": ["Tour de Galata","Tour de Léandre","Tour de Dolmabahçe","Tour de Rumeli"],"answer": 0},
+    {"q": "Quel quartier est célèbre pour la rue İstiklal ?","choices": ["Beyoğlu","Sultanahmet","Üsküdar","Fatih"],"answer": 0},
+    {"q": "Quelle place se trouve à l'extrémité de la rue İstiklal ?","choices": ["Taksim","Eminönü","Ortaköy","Karaköy"],"answer": 0},
+    {"q": "Quel quartier asiatique d'Istanbul est connu pour son marché et son ambiance animée ?","choices": ["Kadıköy","Eminönü","Balat","Sultanahmet"],"answer": 0},
+    {"q": "Quel quartier situé sur la rive asiatique est célèbre pour son front de mer et sa mosquée néo-baroque ?","choices": ["Üsküdar","Karaköy","Galata","Eminönü"],"answer": 0},
+    {"q": "Quel palais se trouve au bord du Bosphore et fut une résidence impériale ottomane ?","choices": ["Dolmabahçe","Topkapı","Yıldız","Beylerbeyi uniquement"],"answer": 0},
+    {"q": "Quel ancien hippodrome se trouve au cœur du quartier de Sultanahmet ?","choices": ["Hippodrome de Constantinople","Hippodrome de Galata","Hippodrome de Topkapı","Hippodrome du Bosphore"],"answer": 0},
+    {"q": "Quel monument est connu pour sa citerne souterraine aux centaines de colonnes ?","choices": ["Basilique-citerne","Citerne de Théodose","Citerne de Galata","Citerne de Dolmabahçe"],"answer": 0},
+    {"q": "Quel nom turc porte la Basilique-citerne ?","choices": ["Yerebatan Sarnıcı","Kapalı Çarşı","Mısır Çarşısı","Ayasofya"],"answer": 0},
+    {"q": "Quel quartier est célèbre pour ses maisons colorées et son patrimoine grec, arménien et juif ?","choices": ["Balat","Levent","Maslak","Ataköy"],"answer": 0},
+    {"q": "Quel quartier est connu pour ses restaurants, galeries et son ancienne identité portuaire ?","choices": ["Karaköy","Sarıyer","Beykoz","Bakırköy"],"answer": 0},
+    {"q": "Quel quartier du Bosphore est célèbre pour sa mosquée construite au bord de l'eau ?","choices": ["Ortaköy","Eminönü","Balat","Fatih"],"answer": 0},
+    {"q": "Quel est le nom turc du détroit du Bosphore ?","choices": ["Boğaziçi","Haliç","Marmara","Çanakkale"],"answer": 0},
+    {"q": "Quel est le nom turc de la Corne d'Or ?","choices": ["Haliç","Boğaziçi","Marmara","Adalar"],"answer": 0},
+    {"q": "Quel moyen de transport permet de traverser régulièrement le Bosphore entre les deux continents ?","choices": ["Ferry","Métro uniquement","Tramway uniquement","Téléphérique uniquement"],"answer": 0},
+    {"q": "Quel quartier abrite le palais de Topkapı ?","choices": ["Sultanahmet / Fatih","Kadıköy","Beyoğlu","Beşiktaş"],"answer": 0},
+    {"q": "Quelle grande avenue piétonne est parcourue par un tramway rouge historique ?","choices": ["İstiklal Caddesi","Bağdat Caddesi","Abdi İpekçi Caddesi","Ordu Caddesi"],"answer": 0},
+    {"q": "Quel aéroport est devenu le principal aéroport international d'Istanbul après l'ouverture en 2018 ?","choices": ["Istanbul Airport (IST)","Sabiha Gökçen","Atatürk Airport","Esenler Airport"],"answer": 0},
+    {"q": "Quel aéroport se trouve sur la rive asiatique d'Istanbul ?","choices": ["Sabiha Gökçen","Istanbul Airport","Atatürk Airport","Yeşilköy Airport"],"answer": 0},
+    {"q": "Quel quartier d'Istanbul est connu pour ses cafés, boutiques et la rue Bağdat Caddesi ?","choices": ["Kadıköy","Fatih","Eminönü","Balat"],"answer": 0},
+    {"q": "Quel stade est le domicile du club de football Beşiktaş ?","choices": ["Tüpraş Stadyumu","Şükrü Saracoğlu","Rams Park","Atatürk Olimpiyat"],"answer": 0},
+    {"q": "Quel club joue au stade Rams Park ?","choices": ["Galatasaray","Fenerbahçe","Beşiktaş","Başakşehir"],"answer": 0},
+    {"q": "Quel club joue au stade Ülker Stadyumu, historiquement appelé Şükrü Saracoğlu ?","choices": ["Fenerbahçe","Galatasaray","Beşiktaş","Kasımpaşa"],"answer": 0},
+    {"q": "Quel pont suspendu, le plus récent des trois reliant les rives du Bosphore, porte le nom d'un sultan ottoman ?","choices": ["Le pont Yavuz Sultan Selim","Le pont du Bosphore","Le pont Fatih Sultan Mehmet","Le pont de Galata"],"answer": 0},
+    {"q": "Quel pont enjambe la Corne d'Or près d'Eminönü, reliant le quartier historique à Karaköy ?","choices": ["Le pont de Galata","Le pont du Bosphore","Le pont Fatih Sultan Mehmet","Le pont Yavuz Sultan Selim"],"answer": 0},
+    {"q": "Quel quartier chic et résidentiel d'Istanbul, sur la rive européenne, est connu pour ses boutiques de luxe ?","choices": ["Nişantaşı","Etiler","Bebek","Levent"],"answer": 0},
+    {"q": "Quel village du Bosphore, sur la rive européenne, est réputé pour ses maisons en bois traditionnelles (yalı) ?","choices": ["Bebek","Arnavutköy","Rumeli Hisarı","Emirgan"],"answer": 0},
+    {"q": "Quelle forteresse médiévale, construite par Mehmet II avant la conquête de 1453, surplombe le Bosphore côté européen ?","choices": ["Rumeli Hisarı","Anadolu Hisarı","Yedikule","Château des Sept Tours"],"answer": 0},
+    {"q": "Quelle ancienne forteresse, aujourd'hui musée, se trouve près des anciennes murailles terrestres et servait de prison ottomane ?","choices": ["Yedikule","Rumeli Hisarı","Anadolu Hisarı","Galata Kulesi"],"answer": 0},
+    {"q": "Quel parc emblématique, situé près de la place Taksim, fut le théâtre de manifestations majeures en 2013 ?","choices": ["Le parc Gezi","Le parc Yıldız","Le parc Emirgan","Le parc Maçka"],"answer": 0},
+    {"q": "Quel grand parc, ancien terrain de chasse ottoman, est réputé pour ses tulipes sur la rive européenne du Bosphore ?","choices": ["Le parc Emirgan","Le parc Gezi","Le parc Yıldız","Le parc Maçka"],"answer": 0},
+    {"q": "Quelle île, la plus grande des Îles des Princes, est réputée pour l'absence de voitures et ses calèches ?","choices": ["Büyükada","Heybeliada","Burgazada","Kınalıada"],"answer": 0},
+    {"q": "Quel moyen de transport traditionnel, tiré par des chevaux, était utilisé sur les Îles des Princes ?","choices": ["La calèche","Le tramway","Le vélo","Le bus"],"answer": 0},
+    {"q": "Quel funiculaire historique, l'un des plus anciens au monde, relie Karaköy à Beyoğlu ?","choices": ["Le Tünel","Le métro M2","Le tramway T1","Le téléphérique de Maçka"],"answer": 0},
+    {"q": "Quel grand stade olympique d'Istanbul a accueilli la finale de la Ligue des champions 2005 ?","choices": ["Le stade olympique Atatürk","Rams Park","Ülker Stadyumu","Tüpraş Stadyumu"],"answer": 0},
+    {"q": "Quel quartier d'affaires moderne d'Istanbul, sur la rive européenne, concentre de nombreux gratte-ciel ?","choices": ["Levent","Sultanahmet","Balat","Üsküdar"],"answer": 0},
+    {"q": "Quelle grande mosquée moderne, achevée en 2019, domine la colline de Çamlıca sur la rive asiatique ?","choices": ["La grande mosquée de Çamlıca","La mosquée bleue","La mosquée Süleymaniye","La mosquée d'Ortaköy"],"answer": 0},
+    {"q": "Quel quartier historique, proche de Sultanahmet, abrite les anciennes murailles terrestres de Constantinople ?","choices": ["Fatih","Beyoğlu","Kadıköy","Üsküdar"],"answer": 0},
+    {"q": "Quel musée d'art moderne, situé sur les quais du Bosphore à Tophane, expose des artistes contemporains turcs ?","choices": ["Istanbul Modern","Pera Müzesi","Sakıp Sabancı Müzesi","Rahmi Koç Müzesi"],"answer": 0},
+    {"q": "Quel ancien palais ottoman, situé à Yıldız, servit de résidence au sultan Abdülhamid II à la fin du XIXe siècle ?","choices": ["Le palais de Yıldız","Le palais de Dolmabahçe","Le palais de Çırağan","Le palais de Beylerbeyi"],"answer": 0}
   ]
 }

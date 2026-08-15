@@ -214,9 +214,9 @@ export const CULTURE_TRADITION_TOPICS = [
     shortDesc: "Du football enflammé aux traditions nomades, une nation en mouvement",
     tag: "Sport",
     image:
-      "/images/Culture/Turquie sport.webp",
+      "/images/Culture/SportTurquie.webp",
     photos: [
-      "/images/Culture/Turquie sport.webp",
+      "/images/Culture/SportTurquie.webp",
       "/images/Culture/Sport en Turquie altero.webp",
     ],
     audioTitle: "Une nation en mouvement",
