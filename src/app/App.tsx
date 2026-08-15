@@ -2727,6 +2727,7 @@ function DashboardScreen({
   tripFinished,
   daysUntilStart,
   todayFormatted,
+  profileSurname,
 }: {
   quickActions: QuickAction[];
   canAccessChecklist: boolean;
@@ -2745,6 +2746,7 @@ function DashboardScreen({
   tripFinished: boolean;
   daysUntilStart: number | null;
   todayFormatted: string;
+  profileSurname: string;
 }) {
   const [mapLightboxOpen, setMapLightboxOpen] = useState(false);
   const [stayPresentationImageIndex, setStayPresentationImageIndex] = useState<number | null>(null);
@@ -2802,9 +2804,10 @@ function DashboardScreen({
                 {daysUntilStart !== null ? "avant le départ" : `sur ${totalDays} jours`}
               </p>
             </div>
-            <p className="text-sm font-bold opacity-80 text-right pt-1">
-              {todayFormatted}
-            </p>
+            <div className="text-right pt-1">
+              <p className="text-sm font-bold opacity-80">{todayFormatted}</p>
+              <p className="mt-1 text-sm font-bold">Bonjour {profileSurname} !</p>
+            </div>
           </div>
           {daysUntilStart === null && (
             <div className="flex gap-1 mt-3 flex-wrap">
@@ -13858,6 +13861,7 @@ const resetForProfileSwitch = () => {
             tripFinished={tripFinished}
             daysUntilStart={daysUntilStart}
             todayFormatted={todayFormatted}
+            profileSurname={profile.surname}
           />;
       }
 
@@ -14260,6 +14264,7 @@ const resetForProfileSwitch = () => {
             tripFinished={tripFinished}
             daysUntilStart={daysUntilStart}
             todayFormatted={todayFormatted}
+            profileSurname={profile.surname}
           />;
       case "guide":
         return (
@@ -14677,6 +14682,7 @@ const resetForProfileSwitch = () => {
             tripFinished={tripFinished}
             daysUntilStart={daysUntilStart}
             todayFormatted={todayFormatted}
+            profileSurname={profile.surname}
           />;
     }
   };
