@@ -2894,8 +2894,7 @@ function DashboardScreen({
           )}
           <ActionCard
             tutorialId="dashboard-stay-presentation"
-            emoji=""
-            iconSrc="/images/guide/Montgolfière%20jour%207%20-%201.webp"
+            emoji="🇹🇷"
             title="Présentation du séjour"
             subtitle="Voir les images du voyage"
             colorBg="bg-[#E3F2FD]"
