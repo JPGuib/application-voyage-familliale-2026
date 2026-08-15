@@ -10,6 +10,11 @@ export type LaunchFallbackStep = {
 };
 
 export const LAUNCH_VIDEO_SRC = "/voyage_istanbul.mp4";
+export const VISITOR_LAUNCH_VIDEO_SRC = "/voyage_istanbul_visiteur.mp4";
+
+export function getLaunchVideoSrc(role: Role | null): string {
+  return role === "visiteur" ? VISITOR_LAUNCH_VIDEO_SRC : LAUNCH_VIDEO_SRC;
+}
 
 export const LAUNCH_FALLBACK_STEPS: LaunchFallbackStep[] = [
   {

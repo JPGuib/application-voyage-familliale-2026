@@ -181,7 +181,7 @@ import {
 import { startGlobalTutorial } from "./tutorials/driver-runtime";
 import {
   LAUNCH_FALLBACK_STEPS,
-  LAUNCH_VIDEO_SRC,
+  getLaunchVideoSrc,
   getNextLaunchGateCycle,
   shouldForceLaunchGate,
 } from "./launch-gate";
@@ -1365,6 +1365,7 @@ function ActionCard({
   colorText,
   onClick,
   disabled = false,
+  disabledReason,
 }: {
   tutorialId?: string;
   emoji: string;
@@ -1375,6 +1376,7 @@ function ActionCard({
   colorText: string;
   onClick: () => void;
   disabled?: boolean;
+  disabledReason?: string;
 }) {
   return (
     <button
@@ -1399,6 +1401,11 @@ function ActionCard({
       )}
       <p className={`font-black text-sm ${colorText}`}>{title}</p>
       <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+      {disabledReason && (
+        <span className="mt-2 inline-block rounded-full bg-black/10 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-foreground/70">
+          {disabledReason}
+        </span>
+      )}
     </button>
   );
 }
@@ -2707,6 +2714,7 @@ function DashboardScreen({
   canAccessChecklist,
   canAccessOfflineMedia,
   canPlayArcade,
+  showVisitorLockedActions,
   isOnline,
   onNavigate,
   onNavigateToTodayGuide,
@@ -2724,6 +2732,7 @@ function DashboardScreen({
   canAccessChecklist: boolean;
   canAccessOfflineMedia: boolean;
   canPlayArcade?: boolean;
+  showVisitorLockedActions: boolean;
   isOnline: boolean;
   onNavigate: (s: Screen) => void;
   onNavigateToTodayGuide: () => void;
@@ -2868,6 +2877,8 @@ function DashboardScreen({
         <div className="grid grid-cols-2 gap-3">
           {quickActions.map((item) => {
             const isGameOfflineLocked = item.id === "game" && !isOnline;
+            const isVisitorLocked = showVisitorLockedActions && !canAccessScreen("visiteur", "during", item.id);
+            const isLocked = isGameOfflineLocked || isVisitorLocked;
 
             return (
               <ActionCard
@@ -2875,26 +2886,40 @@ function DashboardScreen({
                 tutorialId={`dashboard-quick-${item.id}`}
                 emoji={item.emoji}
                 title={item.title}
-                subtitle={isGameOfflineLocked ? "Connexion requise" : item.subtitle}
+                subtitle={
+                  isGameOfflineLocked
+                    ? "Connexion requise"
+                    : isVisitorLocked
+                      ? "Non disponible pour un visiteur"
+                      : item.subtitle
+                }
                 colorBg={item.colorBg}
                 colorText={item.colorText}
                 onClick={() => onNavigate(item.id)}
-                disabled={isGameOfflineLocked}
+                disabled={isLocked}
+                disabledReason={isVisitorLocked ? "Non disponible" : undefined}
               />
             );
           })}
         </div>
         <div className="grid grid-cols-2 gap-3 mt-3">
-          {canPlayArcade && (
+          {(canPlayArcade || showVisitorLockedActions) && (
             <ActionCard
               tutorialId="dashboard-arcade"
               emoji="🕹️"
               title="Espace ludique"
-              subtitle={isArcadeOfflineLocked ? "Connexion requise" : "Petits jeux en solo ou en équipe"}
+              subtitle={
+                isArcadeOfflineLocked
+                  ? "Connexion requise"
+                  : showVisitorLockedActions
+                    ? "Non disponible pour un visiteur"
+                    : "Petits jeux en solo ou en équipe"
+              }
               colorBg="bg-[#FFF3E0]"
               colorText="text-[#E65100]"
               onClick={() => onNavigate("jeux")}
-              disabled={isArcadeOfflineLocked}
+              disabled={isArcadeOfflineLocked || showVisitorLockedActions}
+              disabledReason={showVisitorLockedActions ? "Non disponible" : undefined}
             />
           )}
           <ActionCard
@@ -2986,24 +3011,31 @@ function DashboardScreen({
         </div>
       </div>
 
-      {canAccessChecklist && (
+      {(canAccessChecklist || showVisitorLockedActions) && (
         <div className="px-4 mt-4">
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
             CHECKLIST
           </p>
           <button
             onClick={() => onNavigate("checklist")}
+            disabled={showVisitorLockedActions}
             data-tutorial-id="dashboard-quick-checklist"
-            className="w-full flex items-center justify-between gap-3 rounded-2xl border border-[#C8E6C9] bg-[#E8F5E9] px-4 py-3.5 text-left active:scale-95 transition-transform"
+            className="w-full flex items-center justify-between gap-3 rounded-2xl border border-[#C8E6C9] bg-[#E8F5E9] px-4 py-3.5 text-left active:scale-95 transition-transform disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
           >
             <div className="flex items-center gap-3">
               <span className="text-xl">✅</span>
               <div>
                 <p className="font-black text-sm text-[#2E7D32]">Checklist</p>
-                <p className="text-xs text-[#388E3C]">Préparer le départ</p>
+                <p className="text-xs text-[#388E3C]">
+                  {showVisitorLockedActions ? "Non disponible pour un visiteur" : "Préparer le départ"}
+                </p>
               </div>
             </div>
-            <ChevronRight size={16} className="text-[#2E7D32]" />
+            {showVisitorLockedActions ? (
+              <span className="rounded-full bg-black/10 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-foreground/70">
+                Non disponible
+              </span>
+            ) : <ChevronRight size={16} className="text-[#2E7D32]" />}
           </button>
         </div>
       )}
@@ -7435,6 +7467,7 @@ function TipsScreen({
 }
 
 function LaunchGateScreen({
+  videoSrc,
   locked,
   message,
   mode,
@@ -7449,6 +7482,7 @@ function LaunchGateScreen({
   onClosePlayback,
   onCloseOwnerReplay,
 }: {
+  videoSrc: string;
   locked: boolean;
   message: string | null;
   mode: "idle" | "video" | "fallback" | "completed";
@@ -7549,7 +7583,7 @@ function LaunchGateScreen({
                 onEnded={onVideoEnded}
                 onError={onVideoError}
               >
-                <source src={LAUNCH_VIDEO_SRC} type="video/mp4" />
+                <source src={videoSrc} type="video/mp4" />
               </video>
               <p className="text-xs font-semibold text-white/70">
                 Si la vidéo ne se lance pas, utilise Revoir pour relancer la lecture ou Entrer pour continuer.
@@ -12742,9 +12776,9 @@ const resetForProfileSwitch = () => {
     return { ok: true, message: "Mot de passe du profil mis à jour." };
   };
 
-  const visibleQuickActions = QUICK_ACTIONS.filter((item) =>
-    canAccessScreen(profile.role, phase, item.id)
-  );
+  const visibleQuickActions = profile.role === "visiteur"
+    ? QUICK_ACTIONS
+    : QUICK_ACTIONS.filter((item) => canAccessScreen(profile.role, phase, item.id));
   const visibleBottomNavItems = BOTTOM_NAV_ITEMS.filter((item) =>
     canAccessScreen(profile.role, phase, item.id)
   );
@@ -13612,6 +13646,7 @@ const resetForProfileSwitch = () => {
     if (launchGateForced) {
       return (
         <LaunchGateScreen
+          videoSrc={getLaunchVideoSrc(profile.role)}
           locked={phase === "before"}
           message={launchGateMessage}
           mode={launchGateMode}
@@ -13807,6 +13842,7 @@ const resetForProfileSwitch = () => {
             canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
             canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
+            showVisitorLockedActions={profile.role === "visiteur"}
           isOnline={isOnline}
             onNavigate={goToScreen}
             onNavigateToTodayGuide={() => {
@@ -14208,6 +14244,7 @@ const resetForProfileSwitch = () => {
             canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
             canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
+            showVisitorLockedActions={profile.role === "visiteur"}
           isOnline={isOnline}
             onNavigate={goToScreen}
             onNavigateToTodayGuide={() => {
@@ -14628,6 +14665,8 @@ const resetForProfileSwitch = () => {
           canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
             canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
+            showVisitorLockedActions={profile.role === "visiteur"}
+            isOnline={isOnline}
             onNavigate={goToScreen}
           onStartTutorial={startAccueilTutorial}
             currentDay={currentDay}

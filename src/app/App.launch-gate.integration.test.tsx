@@ -311,6 +311,7 @@ describe("App launch gate integration", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Let's go/i }));
     const video = document.querySelector("video");
+    expect(video?.querySelector("source")?.getAttribute("src")).toBe("/voyage_istanbul_visiteur.mp4");
     fireEvent.error(video as HTMLVideoElement);
 
     await waitFor(() => {
@@ -322,7 +323,9 @@ describe("App launch gate integration", () => {
       expect(screen.getByText(/Destination du jour/i)).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("button", { name: /Checklist/i })).not.toBeInTheDocument();
+    const checklistButton = screen.getByRole("button", { name: /Checklist/i });
+    expect(checklistButton).toBeDisabled();
+    expect(screen.getAllByText(/Non disponible pour un visiteur/i).length).toBeGreaterThan(0);
   });
 
   it("allows owner to open replay from settings at any time", async () => {
