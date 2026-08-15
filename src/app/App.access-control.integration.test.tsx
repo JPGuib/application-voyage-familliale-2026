@@ -395,7 +395,7 @@ describe("App access-control integration", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    const gameButton = screen.getByRole("button", { name: /Jeux/i });
+    const gameButton = screen.getByRole("button", { name: /Jeu du jour/i });
     expect(gameButton).toBeDisabled();
     expect(screen.getAllByText(/Connexion requise/i).length).toBeGreaterThan(0);
     expect(screen.queryByRole("heading", { name: /Jeu du jour/i })).not.toBeInTheDocument();

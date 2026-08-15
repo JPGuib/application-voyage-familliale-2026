@@ -6,29 +6,18 @@ Evolutions :
 CONTENU : 
 * revoir les textes et mettre en gras
 * Revoir certains tags
-* nettoyer les points du jeu
-* Revoir photos histoire (notamment la première brique) 
+* Changer code ADMI?
+* Revoir l'utilisateur visiteur
 
-TESTER TOUTE L'APPLICATION
-* tester le mode offline
-
-
-
-TESTS DE L'APPLICATION
-- Jeux 
-    - Candy crush : ok
-    - Imposteur : ok
-    - Trivial : ok
-            * Trivial Turquie : 215
-            * Culture Générale : 64
-            * Quiz Disney : 112
-            * Quiz Musique : 84
-            * Quiz Cinéma : 79
-            * Grand classique familial : 100
-            * Tour du monde : 100
-            * Pop Culture : 100
-            * Neurones en famille : 100
-            * Générations : 100
-            * Sport : 171
-- Quiz du jour / enigme 
-  
+Questions du Trivial par pack :
+- Trivial Turquie : 215 
+- Culture générale : 164 
+- Quiz Disney : 214 
+- Quiz Musique : 186 
+- Quiz Cinéma : 181 
+- Grand classique familial : 100 
+- Tour du monde : 202 
+- Pop Culture : 202 
+- Neurones en famille : 100 
+- Générations : 202 
+- Sport : 171 
