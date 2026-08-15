@@ -1358,6 +1358,7 @@ function ReactionCountersBadge({
 function ActionCard({
   tutorialId,
   emoji,
+  iconSrc,
   title,
   subtitle,
   colorBg,
@@ -1367,6 +1368,7 @@ function ActionCard({
 }: {
   tutorialId?: string;
   emoji: string;
+  iconSrc?: string;
   title: string;
   subtitle: string;
   colorBg: string;
@@ -1381,7 +1383,15 @@ function ActionCard({
       data-tutorial-id={tutorialId}
       className={`${colorBg} rounded-2xl p-4 text-left active:scale-95 transition-transform w-full shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100`}
     >
-      <span className="text-3xl mb-2 block">{emoji}</span>
+      {iconSrc ? (
+        <img
+          src={iconSrc}
+          alt="Montgolfière"
+          className="w-12 h-12 mb-2 rounded-xl object-cover"
+        />
+      ) : (
+        <span className="text-3xl mb-2 block">{emoji}</span>
+      )}
       <p className={`font-black text-sm ${colorText}`}>{title}</p>
       <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
     </button>
@@ -2884,7 +2894,8 @@ function DashboardScreen({
           )}
           <ActionCard
             tutorialId="dashboard-stay-presentation"
-            emoji="🎈"
+            emoji=""
+            iconSrc="/images/guide/Montgolfière%20jour%207%20-%201.webp"
             title="Présentation du séjour"
             subtitle="Voir les images du voyage"
             colorBg="bg-[#E3F2FD]"
@@ -2892,19 +2903,6 @@ function DashboardScreen({
             onClick={() => setStayPresentationImageIndex(0)}
           />
         </div>
-        {canAccessChecklist && (
-          <div className="mt-3">
-            <ActionCard
-              tutorialId="dashboard-quick-checklist"
-              emoji="✅"
-              title="Checklist"
-              subtitle="Préparer le départ"
-              colorBg="bg-[#E8F5E9]"
-              colorText="text-[#2E7D32]"
-              onClick={() => onNavigate("checklist")}
-            />
-          </div>
-        )}
       </div>
 
       {/* Circuit du séjour */}
@@ -2983,6 +2981,28 @@ function DashboardScreen({
           ))}
         </div>
       </div>
+
+      {canAccessChecklist && (
+        <div className="px-4 mt-4">
+          <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
+            CHECKLIST
+          </p>
+          <button
+            onClick={() => onNavigate("checklist")}
+            data-tutorial-id="dashboard-quick-checklist"
+            className="w-full flex items-center justify-between gap-3 rounded-2xl border border-[#C8E6C9] bg-[#E8F5E9] px-4 py-3.5 text-left active:scale-95 transition-transform"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xl">✅</span>
+              <div>
+                <p className="font-black text-sm text-[#2E7D32]">Checklist</p>
+                <p className="text-xs text-[#388E3C]">Préparer le départ</p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-[#2E7D32]" />
+          </button>
+        </div>
+      )}
 
       {canAccessOfflineMedia && (
         <div className="px-4 mt-4">
