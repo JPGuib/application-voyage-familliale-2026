@@ -12,6 +12,7 @@ import {
   pushFamilyPhaseChange,
   pushGameDayOverride,
   pushGameScoring,
+  pushPlaceVisibility,
   pushPlaceDayOverride,
   pushTripStartDate,
   resetGameProgressInCloud,
@@ -706,6 +707,19 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  const setPlaceVisibility = useCallback(
+    async (placeId: string, visibility: PlaceVisibilityState | null): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await ensureOwnerMembership(database, familyId, cloudUserUid);
+      await pushPlaceVisibility(database, familyId, placeId, visibility);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   const setPlaceDayOverride = useCallback(
     async (
       placeId: string,
@@ -892,6 +906,7 @@ export function useCloudSync() {
     claimRoleForProfile,
     deleteProfile,
     setGameDayOverride,
+    setPlaceVisibility,
     setPlaceDayOverride,
     setTripStartDate,
     setGameScoring,

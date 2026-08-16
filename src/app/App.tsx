@@ -9383,6 +9383,7 @@ export default function App() {
     deleteProfile,
     setGameDayOverride,
     setPlaceDayOverride,
+    setPlaceVisibility: setPlaceVisibilityInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
     resetGameResults,
@@ -11645,6 +11646,18 @@ export default function App() {
       }
       return next;
     });
+
+    if (cloudEnabled) {
+      void setPlaceVisibilityInCloud(placeId, nextState === "visible" ? null : nextState).catch(
+        (error) => {
+          console.error("[place-visibility] cloud write failed", {
+            placeId,
+            nextState,
+            error,
+          });
+        }
+      );
+    }
   };
 
   const setPlaceDaysForOwner = async (

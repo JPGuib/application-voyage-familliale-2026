@@ -1024,6 +1024,17 @@ export async function pushDestinationSurveyVoteOnly(
   await update(ref(database, familyPath(familyId)), updates);
 }
 
+export async function pushPlaceVisibility(
+  database: Database,
+  familyId: string,
+  placeId: string,
+  visibility: PlaceVisibilityState | null
+): Promise<void> {
+  await update(ref(database, familyPath(familyId)), {
+    [`placeVisibilityMap/${placeId}`]: visibility,
+  });
+}
+
 export async function pushPlaceDayOverride(
   database: Database,
   familyId: string,
