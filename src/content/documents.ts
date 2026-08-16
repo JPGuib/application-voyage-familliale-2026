@@ -653,7 +653,7 @@ export const DOCUMENTS: TravelDocument[] = [
     category: "ACTIVITES",
     title: "Tour en montgolfière",
     day: 5,
-    tag: "Résevé",
+    tag: "Annulé",
     content:
       "Vol en montgolfière au lever du soleil à Göreme.\n" +
       "Départ vers 4h30 pour une durée de 3h30 environ.",

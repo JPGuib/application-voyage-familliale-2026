@@ -108,7 +108,7 @@ describe("App document visibility integration (story 26.3)", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Documents" }));
+    fireEvent.click(screen.getByRole("button", { name: /Documents et informations importants/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Documents et informations importants/i })).toBeInTheDocument();
@@ -163,7 +163,7 @@ describe("App document visibility integration (story 26.3)", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Documents" }));
+    fireEvent.click(screen.getByRole("button", { name: /Documents et informations importants/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Documents et informations importants/i })).toBeInTheDocument();
@@ -193,7 +193,7 @@ describe("App document visibility integration (story 26.3)", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Documents" }));
+    fireEvent.click(screen.getByRole("button", { name: /Documents et informations importants/i }));
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Documents et informations importants/i })).toBeInTheDocument();
