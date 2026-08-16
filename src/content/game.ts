@@ -1,6 +1,6 @@
-export const QUESTION_POINTS = 0;
-export const RIDDLE_POINTS = 0;
-export const CHALLENGE_POINTS = 0;
+export const QUESTION_POINTS = 20;
+export const RIDDLE_POINTS = 40;
+export const CHALLENGE_POINTS = 40;
 
 export type DestinationProposalScoring = {
   basePoints: number;
