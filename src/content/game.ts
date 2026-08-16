@@ -1,6 +1,6 @@
-export const QUESTION_POINTS = 20;
-export const RIDDLE_POINTS = 20;
-export const CHALLENGE_POINTS = 20;
+export const QUESTION_POINTS = 0;
+export const RIDDLE_POINTS = 0;
+export const CHALLENGE_POINTS = 0;
 
 export type QuizQuestion = {
   q: string;

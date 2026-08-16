@@ -34,9 +34,9 @@ export type DestinationSurveyResults = {
 };
 
 const DESTINATION_PROPOSAL_SCORING = [
-  { basePoints: 30, bonusPoints: 10 },
-  { basePoints: 30, bonusPoints: 5 },
-  { basePoints: 20, bonusPoints: 0 },
+  { basePoints: 0, bonusPoints: 0 },
+  { basePoints: 0, bonusPoints: 0 },
+  { basePoints: 0, bonusPoints: 0 },
 ] as const;
 
 export function normalizeDestinationText(value: string): string {
