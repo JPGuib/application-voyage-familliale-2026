@@ -6795,9 +6795,9 @@ function ResultsScreen({
     emoji: ChallengeReactionEmoji
   ) => void;
 }) {
-  const chartMembers = familyMembers.filter((member) => member.role !== "proprietaire");
+  const chartMembers = familyMembers.filter((member) => member.role === "utilisateur");
   const visibleDestinationSurveyResults = destinationSurveyResults.filter(
-    (row) => row.role !== "proprietaire"
+    (row) => row.role === "utilisateur"
   );
   const [chartProfileId, setChartProfileId] = useState(
     () => chartMembers.some((m) => m.profileId === currentProfileId)
