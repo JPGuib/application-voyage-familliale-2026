@@ -1,0 +1,2552 @@
+{
+  "puzzles": [
+    {
+      "id": "turquie-general",
+      "title": "Panorama de la Turquie",
+      "rows": 15,
+      "cols": 21,
+      "words": [
+        {
+          "word": "ISTANBUL",
+          "clue": "Plus grande ville de Turquie, à cheval sur deux continents",
+          "r": 4,
+          "c": 13,
+          "horiz": true
+        },
+        {
+          "word": "ANKARA",
+          "clue": "Capitale de la Turquie",
+          "r": 0,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "BOSPHORE",
+          "clue": "Détroit séparant l'Europe et l'Asie à Istanbul",
+          "r": 13,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "CAPPADOCE",
+          "clue": "Région célèbre pour ses cheminées de fées et ses vols en montgolfière",
+          "r": 5,
+          "c": 5,
+          "horiz": true
+        },
+        {
+          "word": "KEBAB",
+          "clue": "Plat de viande grillée très populaire en Turquie",
+          "r": 9,
+          "c": 7,
+          "horiz": true
+        },
+        {
+          "word": "BAKLAVA",
+          "clue": "Pâtisserie sucrée aux noix et au miel",
+          "r": 8,
+          "c": 10,
+          "horiz": false
+        },
+        {
+          "word": "SULTAN",
+          "clue": "Titre porté par les souverains ottomans",
+          "r": 11,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "OTTOMAN",
+          "clue": "Empire qui régna sur la Turquie pendant des siècles",
+          "r": 7,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "ANATOLIE",
+          "clue": "Péninsule qui forme la majeure partie de la Turquie asiatique",
+          "r": 9,
+          "c": 13,
+          "horiz": true
+        },
+        {
+          "word": "EPHESE",
+          "clue": "Site antique grec puis romain près d'Izmir",
+          "r": 6,
+          "c": 20,
+          "horiz": false
+        },
+        {
+          "word": "TROIE",
+          "clue": "Cité antique rendue célèbre par Homère",
+          "r": 1,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "HAMMAM",
+          "clue": "Bain de vapeur traditionnel turc",
+          "r": 0,
+          "c": 14,
+          "horiz": true
+        },
+        {
+          "word": "RAKI",
+          "clue": "Boisson alcoolisée anisée typiquement turque",
+          "r": 12,
+          "c": 9,
+          "horiz": true
+        },
+        {
+          "word": "EGEE",
+          "clue": "Mer qui borde l'ouest de la Turquie",
+          "r": 6,
+          "c": 17,
+          "horiz": true
+        },
+        {
+          "word": "PAMUKKALE",
+          "clue": "Site aux bassins blancs de travertin",
+          "r": 5,
+          "c": 7,
+          "horiz": false
+        },
+        {
+          "word": "BAZAR",
+          "clue": "Grand marché couvert d'Istanbul (le Grand ...)",
+          "r": 14,
+          "c": 9,
+          "horiz": true
+        },
+        {
+          "word": "MOSQUEE",
+          "clue": "Lieu de culte musulman, comme la Bleue à Istanbul",
+          "r": 0,
+          "c": 19,
+          "horiz": false
+        },
+        {
+          "word": "TULIPE",
+          "clue": "Fleur emblématique originaire de Turquie",
+          "r": 9,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "THE",
+          "clue": "Boisson chaude très consommée en Turquie",
+          "r": 7,
+          "c": 5,
+          "horiz": false
+        },
+        {
+          "word": "LIVRE",
+          "clue": "Monnaie officielle de la Turquie (... turque)",
+          "r": 2,
+          "c": 10,
+          "horiz": true
+        }
+      ]
+    },
+    {
+      "id": "istanbul-quartiers",
+      "title": "Istanbul, quartier par quartier",
+      "rows": 11,
+      "cols": 23,
+      "words": [
+        {
+          "word": "SAINTESOPHIE",
+          "clue": "Ancienne basilique byzantine devenue mosquée puis musée",
+          "r": 7,
+          "c": 11,
+          "horiz": true
+        },
+        {
+          "word": "TOPKAPI",
+          "clue": "Palais où résidaient les sultans ottomans",
+          "r": 4,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "GALATA",
+          "clue": "Célèbre tour médiévale qui domine la Corne d'Or",
+          "r": 1,
+          "c": 4,
+          "horiz": false
+        },
+        {
+          "word": "BEYOGLU",
+          "clue": "Quartier animé de la rive européenne, avenue Istiklal",
+          "r": 1,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "USKUDAR",
+          "clue": "Quartier historique situé côté asiatique d'Istanbul",
+          "r": 4,
+          "c": 16,
+          "horiz": true
+        },
+        {
+          "word": "SULTANAHMET",
+          "clue": "Quartier historique où se trouve la Mosquée Bleue",
+          "r": 2,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "DOLMABAHCE",
+          "clue": "Palais du 19e siècle construit en bord de Bosphore",
+          "r": 0,
+          "c": 2,
+          "horiz": false
+        },
+        {
+          "word": "BAZAR",
+          "clue": "Immense marché couvert aux milliers de boutiques",
+          "r": 6,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "TAKSIM",
+          "clue": "Grande place centrale et animée d'Istanbul",
+          "r": 3,
+          "c": 21,
+          "horiz": false
+        },
+        {
+          "word": "FERRY",
+          "clue": "Bateau du quotidien qui traverse le détroit",
+          "r": 6,
+          "c": 16,
+          "horiz": false
+        },
+        {
+          "word": "TRAMWAY",
+          "clue": "Moyen de transport historique de l'avenue Istiklal",
+          "r": 2,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "SIMIT",
+          "clue": "Pain en forme d'anneau vendu par les marchands ambulants",
+          "r": 1,
+          "c": 14,
+          "horiz": false
+        },
+        {
+          "word": "CHAT",
+          "clue": "Animal que l'on croise à chaque coin de rue à Istanbul",
+          "r": 0,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "RIVE",
+          "clue": "Chacun des deux bords du Bosphore",
+          "r": 6,
+          "c": 5,
+          "horiz": false
+        },
+        {
+          "word": "PONT",
+          "clue": "Ouvrage qui relie les deux rives du Bosphore",
+          "r": 7,
+          "c": 19,
+          "horiz": false
+        },
+        {
+          "word": "DETROIT",
+          "clue": "Bras de mer qui sépare l'Europe de l'Asie",
+          "r": 9,
+          "c": 4,
+          "horiz": true
+        }
+      ]
+    },
+    {
+      "id": "cappadoce-nature",
+      "title": "Cappadoce, terre de légendes",
+      "rows": 13,
+      "cols": 23,
+      "words": [
+        {
+          "word": "MONTGOLFIERE",
+          "clue": "Ballon qui survole les vallées au lever du jour",
+          "r": 5,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "CHEMINEE",
+          "clue": "Formation rocheuse en forme de tour, dite de fée",
+          "r": 3,
+          "c": 15,
+          "horiz": true
+        },
+        {
+          "word": "TROGLODYTE",
+          "clue": "Type d'habitation creusée dans la roche",
+          "r": 5,
+          "c": 13,
+          "horiz": true
+        },
+        {
+          "word": "GOREME",
+          "clue": "Vallée et village célèbres pour leurs églises rupestres",
+          "r": 0,
+          "c": 22,
+          "horiz": false
+        },
+        {
+          "word": "VALLEE",
+          "clue": "Grande dépression naturelle entre deux reliefs",
+          "r": 7,
+          "c": 17,
+          "horiz": false
+        },
+        {
+          "word": "FRESQUE",
+          "clue": "Peinture murale que l'on trouve dans les églises rupestres",
+          "r": 9,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "EROSION",
+          "clue": "Phénomène naturel à l'origine des cheminées de fées",
+          "r": 1,
+          "c": 8,
+          "horiz": false
+        },
+        {
+          "word": "PANORAMA",
+          "clue": "Vue d'ensemble depuis une montgolfière",
+          "r": 8,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "AUBE",
+          "clue": "Moment idéal de la journée pour un vol en montgolfière",
+          "r": 12,
+          "c": 14,
+          "horiz": true
+        },
+        {
+          "word": "GROTTE",
+          "clue": "Cavité naturelle ou creusée dans la roche",
+          "r": 1,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "CANYON",
+          "clue": "Vallée encaissée aux parois abruptes",
+          "r": 7,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "ROCHER",
+          "clue": "Bloc de pierre sculpté par le vent et la pluie",
+          "r": 2,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "RANDONNEE",
+          "clue": "Activité de marche à pied dans les vallées",
+          "r": 1,
+          "c": 5,
+          "horiz": false
+        },
+        {
+          "word": "VOLCAN",
+          "clue": "Relief à l'origine des roches volcaniques de la région",
+          "r": 0,
+          "c": 2,
+          "horiz": false
+        },
+        {
+          "word": "HOTELCAVE",
+          "clue": "Type d'hébergement original creusé dans la roche",
+          "r": 2,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "TUFA",
+          "clue": "Roche volcanique tendre facile à creuser",
+          "r": 5,
+          "c": 21,
+          "horiz": false
+        }
+      ]
+    },
+    {
+      "id": "antiquite-sites",
+      "title": "Sur les traces de l'Antiquité",
+      "rows": 19,
+      "cols": 15,
+      "words": [
+        {
+          "word": "EPHESE",
+          "clue": "Cité antique grecque puis romaine près d'Izmir",
+          "r": 2,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "TROIE",
+          "clue": "Cité rendue célèbre par le poète Homère",
+          "r": 5,
+          "c": 5,
+          "horiz": true
+        },
+        {
+          "word": "PERGAME",
+          "clue": "Cité antique connue pour sa bibliothèque et son acropole",
+          "r": 11,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "HOMERE",
+          "clue": "Poète grec auquel on attribue l'Iliade",
+          "r": 9,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "COLONNE",
+          "clue": "Élément architectural vertical soutenant un édifice antique",
+          "r": 1,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "RUINE",
+          "clue": "Vestige d'un édifice ancien effondré",
+          "r": 5,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "MARBRE",
+          "clue": "Pierre blanche utilisée pour sculptures et colonnes antiques",
+          "r": 2,
+          "c": 0,
+          "horiz": false
+        },
+        {
+          "word": "ROMAIN",
+          "clue": "Adjectif qualifiant l'empire qui domina Ephèse après les Grecs",
+          "r": 9,
+          "c": 5,
+          "horiz": false
+        },
+        {
+          "word": "MYTHOLOGIE",
+          "clue": "Ensemble des récits légendaires des dieux grecs",
+          "r": 2,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "ARTEMIS",
+          "clue": "Déesse à qui était dédié un temple célèbre à Ephèse",
+          "r": 11,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "TEMPLE",
+          "clue": "Édifice religieux dédié à une divinité antique",
+          "r": 11,
+          "c": 10,
+          "horiz": false
+        },
+        {
+          "word": "MOSAIQUE",
+          "clue": "Assemblage de petites pierres colorées formant un motif",
+          "r": 11,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "ARCHEOLOGUE",
+          "clue": "Spécialiste qui étudie les vestiges du passé",
+          "r": 16,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "ANTIQUE",
+          "clue": "Qualifie ce qui appartient à l'Antiquité",
+          "r": 5,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "AMPHITHEATRE",
+          "clue": "Édifice en gradins destiné aux spectacles antiques",
+          "r": 7,
+          "c": 2,
+          "horiz": true
+        },
+        {
+          "word": "AGORA",
+          "clue": "Place publique centrale d'une cité grecque antique",
+          "r": 0,
+          "c": 4,
+          "horiz": false
+        }
+      ]
+    },
+    {
+      "id": "cuisine-turque",
+      "title": "Saveurs de la cuisine turque",
+      "rows": 12,
+      "cols": 17,
+      "words": [
+        {
+          "word": "KEBAB",
+          "clue": "Plat de viande grillée à la broche",
+          "r": 0,
+          "c": 8,
+          "horiz": false
+        },
+        {
+          "word": "MEZE",
+          "clue": "Petite entrée servie en assortiment avant le plat principal",
+          "r": 8,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "DOLMA",
+          "clue": "Légume farci, souvent une feuille de vigne ou un poivron",
+          "r": 2,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "BOREK",
+          "clue": "Feuilleté farci au fromage, aux épinards ou à la viande",
+          "r": 1,
+          "c": 14,
+          "horiz": false
+        },
+        {
+          "word": "PIDE",
+          "clue": "Pain plat garni, souvent appelé la pizza turque",
+          "r": 3,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "LAHMACUN",
+          "clue": "Fine galette garnie de viande hachée épicée",
+          "r": 6,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "YAOURT",
+          "clue": "Produit laitier souvent servi avec les plats turcs",
+          "r": 3,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "AUBERGINE",
+          "clue": "Légume violet très présent dans la cuisine turque",
+          "r": 4,
+          "c": 6,
+          "horiz": true
+        },
+        {
+          "word": "GRENADE",
+          "clue": "Fruit rouge dont on tire une mélasse acidulée",
+          "r": 11,
+          "c": 6,
+          "horiz": true
+        },
+        {
+          "word": "EPICE",
+          "clue": "Ingrédient comme le cumin ou le paprika qui parfume les plats",
+          "r": 1,
+          "c": 4,
+          "horiz": true
+        },
+        {
+          "word": "GRILLADE",
+          "clue": "Mode de cuisson au feu très courant pour la viande",
+          "r": 2,
+          "c": 16,
+          "horiz": false
+        },
+        {
+          "word": "SIMIT",
+          "clue": "Pain en forme d'anneau recouvert de sésame",
+          "r": 8,
+          "c": 2,
+          "horiz": true
+        },
+        {
+          "word": "THE",
+          "clue": "Boisson chaude servie dans un petit verre en forme de tulipe",
+          "r": 9,
+          "c": 14,
+          "horiz": false
+        },
+        {
+          "word": "CAFE",
+          "clue": "Boisson épaisse et forte, servie traditionnellement non filtrée",
+          "r": 6,
+          "c": 9,
+          "horiz": true
+        },
+        {
+          "word": "MENTHE",
+          "clue": "Herbe aromatique qui parfume nombre de plats et boissons",
+          "r": 9,
+          "c": 11,
+          "horiz": true
+        },
+        {
+          "word": "CITRON",
+          "clue": "Agrume que l'on presse sur de nombreux plats turcs",
+          "r": 6,
+          "c": 9,
+          "horiz": false
+        }
+      ]
+    },
+    {
+      "id": "douceurs-boissons",
+      "title": "Douceurs et boissons turques",
+      "rows": 13,
+      "cols": 16,
+      "words": [
+        {
+          "word": "BAKLAVA",
+          "clue": "Pâtisserie feuilletée aux noix et au miel",
+          "r": 6,
+          "c": 4,
+          "horiz": false
+        },
+        {
+          "word": "LOKUM",
+          "clue": "Confiserie moelleuse et sucrée, dite loukoum",
+          "r": 1,
+          "c": 11,
+          "horiz": true
+        },
+        {
+          "word": "RAKI",
+          "clue": "Boisson alcoolisée anisée qui blanchit avec l'eau",
+          "r": 5,
+          "c": 14,
+          "horiz": false
+        },
+        {
+          "word": "THE",
+          "clue": "Boisson chaude la plus consommée en Turquie",
+          "r": 3,
+          "c": 15,
+          "horiz": false
+        },
+        {
+          "word": "CAFE",
+          "clue": "Boisson dont le marc se lit parfois dans la tasse",
+          "r": 7,
+          "c": 9,
+          "horiz": true
+        },
+        {
+          "word": "MIEL",
+          "clue": "Ingrédient sucré qui nappe la baklava",
+          "r": 6,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "PISTACHE",
+          "clue": "Fruit sec vert utilisé dans de nombreuses pâtisseries",
+          "r": 7,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "SIROP",
+          "clue": "Liquide sucré qui imbibe certains gâteaux turcs",
+          "r": 0,
+          "c": 5,
+          "horiz": true
+        },
+        {
+          "word": "CANNELLE",
+          "clue": "Épice douce utilisée dans plusieurs desserts turcs",
+          "r": 12,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "GLACE",
+          "clue": "Dessert froid, la dondurma en est une variante turque",
+          "r": 9,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "SORBET",
+          "clue": "Dessert glacé à base de fruits",
+          "r": 0,
+          "c": 5,
+          "horiz": false
+        },
+        {
+          "word": "SUCRE",
+          "clue": "Ingrédient de base de toutes les douceurs turques",
+          "r": 3,
+          "c": 7,
+          "horiz": false
+        },
+        {
+          "word": "NOISETTE",
+          "clue": "Fruit sec cultivé en abondance sur la mer Noire",
+          "r": 0,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "AMANDE",
+          "clue": "Fruit sec utilisé dans de nombreuses pâtisseries orientales",
+          "r": 7,
+          "c": 10,
+          "horiz": false
+        },
+        {
+          "word": "GATEAU",
+          "clue": "Pâtisserie sucrée en général",
+          "r": 4,
+          "c": 2,
+          "horiz": true
+        },
+        {
+          "word": "CONFITURE",
+          "clue": "Préparation de fruits cuits avec du sucre",
+          "r": 5,
+          "c": 7,
+          "horiz": true
+        }
+      ]
+    },
+    {
+      "id": "empire-ottoman",
+      "title": "L'Empire ottoman",
+      "rows": 17,
+      "cols": 16,
+      "words": [
+        {
+          "word": "SULTAN",
+          "clue": "Titre porté par le souverain de l'empire",
+          "r": 7,
+          "c": 4,
+          "horiz": true
+        },
+        {
+          "word": "OTTOMAN",
+          "clue": "Nom de l'empire fondé au 14e siècle",
+          "r": 5,
+          "c": 2,
+          "horiz": false
+        },
+        {
+          "word": "EMPIRE",
+          "clue": "Vaste territoire gouverné par un sultan",
+          "r": 9,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "JANISSAIRE",
+          "clue": "Soldat d'élite de l'infanterie ottomane",
+          "r": 2,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "HAREM",
+          "clue": "Partie privée du palais réservée à la famille du sultan",
+          "r": 16,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "CALIFE",
+          "clue": "Titre religieux également porté par certains sultans",
+          "r": 14,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "CONQUETE",
+          "clue": "Prise de Constantinople en 1453, par exemple",
+          "r": 9,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "PALAIS",
+          "clue": "Résidence somptueuse du sultan, comme Topkapi",
+          "r": 11,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "DYNASTIE",
+          "clue": "Succession de souverains d'une même famille",
+          "r": 1,
+          "c": 5,
+          "horiz": true
+        },
+        {
+          "word": "SOLIMAN",
+          "clue": "Sultan dit le Magnifique, apogée de l'empire",
+          "r": 5,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "MEHMET",
+          "clue": "Prénom du sultan conquérant de Constantinople",
+          "r": 5,
+          "c": 15,
+          "horiz": false
+        },
+        {
+          "word": "ARMEE",
+          "clue": "Force militaire qui étendit les frontières de l'empire",
+          "r": 14,
+          "c": 2,
+          "horiz": true
+        },
+        {
+          "word": "TRONE",
+          "clue": "Siège symbolisant le pouvoir du sultan",
+          "r": 4,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "VIZIR",
+          "clue": "Haut dignitaire, principal ministre du sultan",
+          "r": 0,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "CONSTANTINOPLE",
+          "clue": "Ancien nom de la ville devenue Istanbul",
+          "r": 11,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "ARCHIVE",
+          "clue": "Document conservé témoignant de l'histoire de l'empire",
+          "r": 7,
+          "c": 8,
+          "horiz": false
+        }
+      ]
+    },
+    {
+      "id": "villes-turquie",
+      "title": "Les grandes villes de Turquie",
+      "rows": 12,
+      "cols": 19,
+      "words": [
+        {
+          "word": "ANKARA",
+          "clue": "Capitale politique du pays",
+          "r": 0,
+          "c": 5,
+          "horiz": false
+        },
+        {
+          "word": "ISTANBUL",
+          "clue": "Plus grande métropole, entre Europe et Asie",
+          "r": 11,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "IZMIR",
+          "clue": "Grand port de la mer Égée, ancienne Smyrne",
+          "r": 2,
+          "c": 12,
+          "horiz": true
+        },
+        {
+          "word": "ANTALYA",
+          "clue": "Grande station balnéaire du sud de la Turquie",
+          "r": 2,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "BURSA",
+          "clue": "Ancienne capitale ottomane connue pour ses stations thermales",
+          "r": 0,
+          "c": 7,
+          "horiz": false
+        },
+        {
+          "word": "KONYA",
+          "clue": "Ville associée aux derviches tourneurs",
+          "r": 5,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "TRABZON",
+          "clue": "Grande ville portuaire de la mer Noire",
+          "r": 5,
+          "c": 14,
+          "horiz": false
+        },
+        {
+          "word": "BODRUM",
+          "clue": "Station balnéaire réputée du sud-ouest",
+          "r": 10,
+          "c": 13,
+          "horiz": true
+        },
+        {
+          "word": "ADANA",
+          "clue": "Grande ville du sud connue pour son kebab épicé",
+          "r": 8,
+          "c": 7,
+          "horiz": true
+        },
+        {
+          "word": "MERSIN",
+          "clue": "Port important du sud-est méditerranéen",
+          "r": 1,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "EDIRNE",
+          "clue": "Ancienne capitale ottomane proche de la frontière européenne",
+          "r": 0,
+          "c": 15,
+          "horiz": false
+        },
+        {
+          "word": "KAYSERI",
+          "clue": "Ville d'Anatolie centrale au pied de l'Erciyes",
+          "r": 5,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "SAMSUN",
+          "clue": "Ville de la mer Noire où débuta un mouvement national",
+          "r": 3,
+          "c": 4,
+          "horiz": true
+        },
+        {
+          "word": "GAZIANTEP",
+          "clue": "Ville réputée pour sa gastronomie et sa mosaïque romaine",
+          "r": 5,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "VAN",
+          "clue": "Grande ville de l'est, au bord d'un lac salé",
+          "r": 4,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "ESKISEHIR",
+          "clue": "Ville étudiante traversée de canaux, dite la Venise turque",
+          "r": 0,
+          "c": 10,
+          "horiz": true
+        }
+      ]
+    },
+    {
+      "id": "cotes-mers",
+      "title": "Les mers et côtes de Turquie",
+      "rows": 15,
+      "cols": 16,
+      "words": [
+        {
+          "word": "EGEE",
+          "clue": "Mer qui borde l'ouest du pays",
+          "r": 11,
+          "c": 2,
+          "horiz": false
+        },
+        {
+          "word": "MEDITERRANEE",
+          "clue": "Mer qui borde le sud du pays",
+          "r": 8,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "NOIRE",
+          "clue": "Mer qui borde le nord du pays",
+          "r": 12,
+          "c": 11,
+          "horiz": true
+        },
+        {
+          "word": "MARMARA",
+          "clue": "Petite mer intérieure entre Bosphore et Dardanelles",
+          "r": 4,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "DETROIT",
+          "clue": "Bras de mer étroit comme le Bosphore",
+          "r": 7,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "PLAGE",
+          "clue": "Étendue de sable où l'on se baigne",
+          "r": 2,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "CRIQUE",
+          "clue": "Petite baie abritée entre deux rochers",
+          "r": 3,
+          "c": 4,
+          "horiz": false
+        },
+        {
+          "word": "LITTORAL",
+          "clue": "Bande de terre qui borde la mer",
+          "r": 10,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "PORT",
+          "clue": "Lieu où accostent bateaux de pêche et ferries",
+          "r": 2,
+          "c": 12,
+          "horiz": true
+        },
+        {
+          "word": "ILE",
+          "clue": "Terre entourée d'eau, comme les îles des Princes",
+          "r": 6,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "PENINSULE",
+          "clue": "Terre presque entièrement entourée d'eau",
+          "r": 14,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "GOLFE",
+          "clue": "Grande échancrure de la côte, comme celui d'Izmir",
+          "r": 4,
+          "c": 8,
+          "horiz": false
+        },
+        {
+          "word": "FALAISE",
+          "clue": "Paroi rocheuse abrupte qui surplombe la mer",
+          "r": 5,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "DAUPHIN",
+          "clue": "Mammifère marin que l'on peut observer en mer Égée",
+          "r": 8,
+          "c": 5,
+          "horiz": false
+        },
+        {
+          "word": "VOILIER",
+          "clue": "Bateau à voile prisé pour naviguer le long des côtes",
+          "r": 2,
+          "c": 10,
+          "horiz": false
+        },
+        {
+          "word": "PLONGEE",
+          "clue": "Activité pour explorer les fonds marins turcs",
+          "r": 0,
+          "c": 6,
+          "horiz": false
+        }
+      ]
+    },
+    {
+      "id": "nature-montagnes",
+      "title": "Montagnes et nature sauvage",
+      "rows": 12,
+      "cols": 21,
+      "words": [
+        {
+          "word": "ARARAT",
+          "clue": "Plus haut sommet du pays, à l'extrême est",
+          "r": 6,
+          "c": 15,
+          "horiz": true
+        },
+        {
+          "word": "TAURUS",
+          "clue": "Chaîne de montagnes qui longe le sud du pays",
+          "r": 10,
+          "c": 13,
+          "horiz": true
+        },
+        {
+          "word": "PLATEAU",
+          "clue": "Vaste étendue élevée et relativement plane d'Anatolie",
+          "r": 4,
+          "c": 15,
+          "horiz": false
+        },
+        {
+          "word": "FORET",
+          "clue": "Massif boisé, particulièrement dense sur la mer Noire",
+          "r": 3,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "SOURCE",
+          "clue": "Point d'émergence naturelle de l'eau",
+          "r": 0,
+          "c": 7,
+          "horiz": false
+        },
+        {
+          "word": "GLACIER",
+          "clue": "Masse de glace que l'on trouve en haute montagne",
+          "r": 8,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "VALLEE",
+          "clue": "Creux allongé entre deux versants montagneux",
+          "r": 5,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "CANYON",
+          "clue": "Gorge profonde creusée par une rivière",
+          "r": 1,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "GROTTE",
+          "clue": "Cavité naturelle que l'on peut visiter et explorer",
+          "r": 7,
+          "c": 7,
+          "horiz": true
+        },
+        {
+          "word": "SOMMET",
+          "clue": "Point culminant d'une montagne",
+          "r": 6,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "RANDONNEE",
+          "clue": "Activité de marche en pleine nature",
+          "r": 10,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "VOLCAN",
+          "clue": "Relief pouvant entrer en éruption, comme l'Erciyes",
+          "r": 5,
+          "c": 3,
+          "horiz": false
+        },
+        {
+          "word": "RIVIERE",
+          "clue": "Cours d'eau qui serpente à travers les vallées",
+          "r": 3,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "LAC",
+          "clue": "Étendue d'eau intérieure, comme le lac de Van",
+          "r": 8,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "RESERVE",
+          "clue": "Zone naturelle protégée pour préserver la faune et la flore",
+          "r": 8,
+          "c": 12,
+          "horiz": true
+        },
+        {
+          "word": "PIC",
+          "clue": "Sommet pointu d'une montagne",
+          "r": 4,
+          "c": 15,
+          "horiz": true
+        }
+      ]
+    },
+    {
+      "id": "faune-flore",
+      "title": "Faune et flore de Turquie",
+      "rows": 13,
+      "cols": 18,
+      "words": [
+        {
+          "word": "TULIPE",
+          "clue": "Fleur emblématique dont le pays est l'un des berceaux",
+          "r": 4,
+          "c": 5,
+          "horiz": false
+        },
+        {
+          "word": "CIGOGNE",
+          "clue": "Grand oiseau migrateur qui niche sur les toits",
+          "r": 6,
+          "c": 7,
+          "horiz": false
+        },
+        {
+          "word": "TORTUE",
+          "clue": "Reptile marin qui pond ses œufs sur certaines plages",
+          "r": 2,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "DAUPHIN",
+          "clue": "Mammifère marin visible le long des côtes égéennes",
+          "r": 6,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "OLIVIER",
+          "clue": "Arbre emblématique des régions méditerranéennes du pays",
+          "r": 3,
+          "c": 11,
+          "horiz": true
+        },
+        {
+          "word": "LOUP",
+          "clue": "Grand prédateur présent dans certaines régions montagneuses",
+          "r": 1,
+          "c": 2,
+          "horiz": false
+        },
+        {
+          "word": "AIGLE",
+          "clue": "Rapace majestueux qui plane au-dessus des montagnes",
+          "r": 5,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "CHAT",
+          "clue": "Animal domestique omniprésent et choyé à Istanbul",
+          "r": 2,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "CHEVAL",
+          "clue": "Animal élevé traditionnellement par les nomades d'Anatolie",
+          "r": 6,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "FIGUIER",
+          "clue": "Arbre fruitier très cultivé sur les côtes turques",
+          "r": 6,
+          "c": 15,
+          "horiz": false
+        },
+        {
+          "word": "LAVANDE",
+          "clue": "Plante aromatique mauve cultivée dans certaines régions",
+          "r": 12,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "ROSE",
+          "clue": "Fleur cultivée notamment autour d'Isparta pour son parfum",
+          "r": 7,
+          "c": 17,
+          "horiz": false
+        },
+        {
+          "word": "GRENADIER",
+          "clue": "Arbre qui produit un fruit rouge acidulé",
+          "r": 7,
+          "c": 9,
+          "horiz": true
+        },
+        {
+          "word": "ANEMONE",
+          "clue": "Fleur sauvage qui colore les prairies au printemps",
+          "r": 9,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "CYPRES",
+          "clue": "Arbre fin et élancé typique des paysages méditerranéens",
+          "r": 0,
+          "c": 17,
+          "horiz": false
+        },
+        {
+          "word": "PLATANE",
+          "clue": "Grand arbre qui ombrage souvent les places de village",
+          "r": 4,
+          "c": 2,
+          "horiz": true
+        }
+      ]
+    },
+    {
+      "id": "bazar-artisanat",
+      "title": "Le Grand Bazar et l'artisanat",
+      "rows": 18,
+      "cols": 15,
+      "words": [
+        {
+          "word": "TAPIS",
+          "clue": "Ouvrage tissé à la main, célèbre spécialité turque",
+          "r": 13,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "CERAMIQUE",
+          "clue": "Art de la poterie décorée, notamment à Iznik",
+          "r": 6,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "CUIVRE",
+          "clue": "Métal utilisé pour fabriquer plateaux et ustensiles",
+          "r": 4,
+          "c": 6,
+          "horiz": true
+        },
+        {
+          "word": "SOIE",
+          "clue": "Tissu précieux autrefois transporté par la route commerciale",
+          "r": 14,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "CUIR",
+          "clue": "Matière travaillée pour fabriquer sacs et chaussures",
+          "r": 4,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "BIJOU",
+          "clue": "Objet précieux que l'on marchande au Grand Bazar",
+          "r": 3,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "LAMPE",
+          "clue": "Objet décoratif en verre coloré typique de l'artisanat turc",
+          "r": 0,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "MOSAIQUE",
+          "clue": "Technique décorative utilisée pour les lampes et objets",
+          "r": 0,
+          "c": 8,
+          "horiz": false
+        },
+        {
+          "word": "POTERIE",
+          "clue": "Objet façonné dans l'argile puis cuit",
+          "r": 2,
+          "c": 3,
+          "horiz": false
+        },
+        {
+          "word": "BRODERIE",
+          "clue": "Ornementation textile réalisée à l'aiguille",
+          "r": 9,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "ARGENT",
+          "clue": "Métal précieux utilisé pour les bijoux traditionnels",
+          "r": 17,
+          "c": 2,
+          "horiz": true
+        },
+        {
+          "word": "MARCHAND",
+          "clue": "Personne qui tient une échoppe au bazar",
+          "r": 14,
+          "c": 7,
+          "horiz": true
+        },
+        {
+          "word": "ECHOPPE",
+          "clue": "Petite boutique typique des marchés couverts",
+          "r": 5,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "NEGOCIATION",
+          "clue": "Pratique courante avant d'acheter au Grand Bazar",
+          "r": 11,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "SOUVENIR",
+          "clue": "Objet que l'on rapporte de voyage",
+          "r": 10,
+          "c": 3,
+          "horiz": false
+        },
+        {
+          "word": "ANTIQUAIRE",
+          "clue": "Marchand spécialisé dans les objets anciens",
+          "r": 8,
+          "c": 5,
+          "horiz": false
+        }
+      ]
+    },
+    {
+      "id": "religion-architecture",
+      "title": "Religion et architecture",
+      "rows": 13,
+      "cols": 21,
+      "words": [
+        {
+          "word": "MOSQUEE",
+          "clue": "Édifice religieux musulman reconnaissable à son dôme et ses minarets",
+          "r": 1,
+          "c": 20,
+          "horiz": false
+        },
+        {
+          "word": "MINARET",
+          "clue": "Tour effilée d'où l'appel à la prière est lancé",
+          "r": 0,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "DOME",
+          "clue": "Toit arrondi qui coiffe une mosquée",
+          "r": 4,
+          "c": 4,
+          "horiz": false
+        },
+        {
+          "word": "CALLIGRAPHIE",
+          "clue": "Art de l'écriture décorative, très présent dans l'art islamique",
+          "r": 3,
+          "c": 5,
+          "horiz": true
+        },
+        {
+          "word": "COUPOLE",
+          "clue": "Autre nom pour désigner un dôme architectural",
+          "r": 5,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "FONTAINE",
+          "clue": "Élément souvent présent dans la cour d'une mosquée pour les ablutions",
+          "r": 11,
+          "c": 4,
+          "horiz": true
+        },
+        {
+          "word": "COUR",
+          "clue": "Espace ouvert au centre d'un complexe religieux",
+          "r": 5,
+          "c": 0,
+          "horiz": false
+        },
+        {
+          "word": "ARCADE",
+          "clue": "Suite d'arches soutenant une galerie couverte",
+          "r": 6,
+          "c": 15,
+          "horiz": true
+        },
+        {
+          "word": "VITRAIL",
+          "clue": "Assemblage de verres colorés qui filtre la lumière",
+          "r": 2,
+          "c": 15,
+          "horiz": false
+        },
+        {
+          "word": "PRIERE",
+          "clue": "Acte de dévotion accompli plusieurs fois par jour",
+          "r": 3,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "MUEZZIN",
+          "clue": "Personne chargée de lancer l'appel à la prière",
+          "r": 4,
+          "c": 2,
+          "horiz": false
+        },
+        {
+          "word": "SANCTUAIRE",
+          "clue": "Lieu considéré comme sacré",
+          "r": 0,
+          "c": 18,
+          "horiz": false
+        },
+        {
+          "word": "ARCHITECTE",
+          "clue": "Concepteur des grands édifices religieux ottomans",
+          "r": 2,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "SINAN",
+          "clue": "Célèbre architecte de l'âge d'or ottoman",
+          "r": 1,
+          "c": 5,
+          "horiz": true
+        },
+        {
+          "word": "MIHRAB",
+          "clue": "Niche indiquant la direction de la prière dans une mosquée",
+          "r": 9,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "MINBAR",
+          "clue": "Chaire surélevée d'où l'imam prononce son sermon",
+          "r": 7,
+          "c": 8,
+          "horiz": false
+        }
+      ]
+    },
+    {
+      "id": "langue-turque",
+      "title": "Petit lexique turc",
+      "rows": 10,
+      "cols": 18,
+      "words": [
+        {
+          "word": "MERHABA",
+          "clue": "Mot turc pour dire bonjour",
+          "r": 3,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "TESEKKUR",
+          "clue": "Mot turc pour dire merci",
+          "r": 5,
+          "c": 9,
+          "horiz": true
+        },
+        {
+          "word": "EVET",
+          "clue": "Mot turc pour dire oui",
+          "r": 9,
+          "c": 11,
+          "horiz": true
+        },
+        {
+          "word": "HAYIR",
+          "clue": "Mot turc pour dire non",
+          "r": 7,
+          "c": 13,
+          "horiz": true
+        },
+        {
+          "word": "GUNAYDIN",
+          "clue": "Mot turc pour dire bonjour le matin",
+          "r": 1,
+          "c": 0,
+          "horiz": false
+        },
+        {
+          "word": "LOKANTA",
+          "clue": "Mot turc désignant un restaurant simple et populaire",
+          "r": 0,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "OTOBUS",
+          "clue": "Mot turc désignant un autobus",
+          "r": 1,
+          "c": 7,
+          "horiz": true
+        },
+        {
+          "word": "SU",
+          "clue": "Mot turc désignant l'eau",
+          "r": 0,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "EKMEK",
+          "clue": "Mot turc désignant le pain",
+          "r": 1,
+          "c": 3,
+          "horiz": false
+        },
+        {
+          "word": "CAY",
+          "clue": "Mot turc désignant le thé",
+          "r": 3,
+          "c": 14,
+          "horiz": true
+        },
+        {
+          "word": "KAHVE",
+          "clue": "Mot turc désignant le café",
+          "r": 5,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "PARA",
+          "clue": "Mot turc désignant l'argent",
+          "r": 1,
+          "c": 5,
+          "horiz": false
+        },
+        {
+          "word": "YARDIM",
+          "clue": "Mot turc désignant l'aide",
+          "r": 3,
+          "c": 16,
+          "horiz": false
+        },
+        {
+          "word": "DOST",
+          "clue": "Mot turc désignant un ami",
+          "r": 3,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "AILE",
+          "clue": "Mot turc désignant la famille",
+          "r": 3,
+          "c": 7,
+          "horiz": false
+        },
+        {
+          "word": "GULE",
+          "clue": "Premier mot de l'expression turque utilisée pour dire au revoir (... güle)",
+          "r": 1,
+          "c": 0,
+          "horiz": true
+        }
+      ]
+    },
+    {
+      "id": "transports-voyage",
+      "title": "Préparer le voyage",
+      "rows": 17,
+      "cols": 14,
+      "words": [
+        {
+          "word": "AVION",
+          "clue": "Moyen de transport le plus rapide pour rejoindre la Turquie",
+          "r": 11,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "AEROPORT",
+          "clue": "Lieu de départ et d'arrivée des vols",
+          "r": 2,
+          "c": 7,
+          "horiz": false
+        },
+        {
+          "word": "VALISE",
+          "clue": "Bagage que l'on prépare avant le départ",
+          "r": 0,
+          "c": 3,
+          "horiz": false
+        },
+        {
+          "word": "PASSEPORT",
+          "clue": "Document d'identité indispensable pour voyager à l'étranger",
+          "r": 4,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "BILLET",
+          "clue": "Titre de transport que l'on achète pour un trajet",
+          "r": 2,
+          "c": 10,
+          "horiz": false
+        },
+        {
+          "word": "BAGAGE",
+          "clue": "Ensemble des affaires que l'on emporte en voyage",
+          "r": 11,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "DOUANE",
+          "clue": "Contrôle effectué au passage d'une frontière",
+          "r": 8,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "HOTEL",
+          "clue": "Lieu d'hébergement pour la durée du séjour",
+          "r": 6,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "GUIDE",
+          "clue": "Personne ou livre qui accompagne les visites touristiques",
+          "r": 13,
+          "c": 5,
+          "horiz": true
+        },
+        {
+          "word": "CARTE",
+          "clue": "Document utile pour se repérer pendant le voyage",
+          "r": 1,
+          "c": 2,
+          "horiz": true
+        },
+        {
+          "word": "ITINERAIRE",
+          "clue": "Trajet prévu tout au long du voyage",
+          "r": 7,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "RESERVATION",
+          "clue": "Démarche à effectuer avant de partir en voyage",
+          "r": 9,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "EXCURSION",
+          "clue": "Sortie organisée pour découvrir une région",
+          "r": 15,
+          "c": 3,
+          "horiz": true
+        },
+        {
+          "word": "BUS",
+          "clue": "Moyen de transport pratique pour les longs trajets",
+          "r": 2,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "TAXI",
+          "clue": "Moyen de transport pratique pour de courtes distances",
+          "r": 7,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "FERRY",
+          "clue": "Bateau utilisé pour traverser le Bosphore",
+          "r": 8,
+          "c": 3,
+          "horiz": false
+        }
+      ]
+    },
+    {
+      "id": "fetes-traditions",
+      "title": "Fêtes et traditions",
+      "rows": 16,
+      "cols": 19,
+      "words": [
+        {
+          "word": "RAMADAN",
+          "clue": "Mois de jeûne observé par de nombreux musulmans",
+          "r": 2,
+          "c": 5,
+          "horiz": true
+        },
+        {
+          "word": "BAYRAM",
+          "clue": "Mot turc désignant une fête religieuse ou nationale",
+          "r": 1,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "MARIAGE",
+          "clue": "Célébration familiale marquée par de nombreuses traditions",
+          "r": 4,
+          "c": 17,
+          "horiz": false
+        },
+        {
+          "word": "HENNE",
+          "clue": "Pigment végétal utilisé lors de certaines cérémonies",
+          "r": 0,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "DANSE",
+          "clue": "Expression artistique présente lors de nombreuses fêtes",
+          "r": 7,
+          "c": 11,
+          "horiz": true
+        },
+        {
+          "word": "MUSIQUE",
+          "clue": "Art sonore qui accompagne les célébrations traditionnelles",
+          "r": 9,
+          "c": 5,
+          "horiz": false
+        },
+        {
+          "word": "TAPIS",
+          "clue": "Objet artisanal parfois offert lors d'un mariage",
+          "r": 12,
+          "c": 14,
+          "horiz": true
+        },
+        {
+          "word": "FOLKLORE",
+          "clue": "Ensemble des traditions populaires d'une région",
+          "r": 5,
+          "c": 8,
+          "horiz": false
+        },
+        {
+          "word": "COSTUME",
+          "clue": "Habit traditionnel porté lors des fêtes",
+          "r": 9,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "DERVICHE",
+          "clue": "Danseur tourneur, figure du soufisme turc",
+          "r": 12,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "TAMBOUR",
+          "clue": "Instrument de percussion utilisé dans la musique traditionnelle",
+          "r": 6,
+          "c": 4,
+          "horiz": true
+        },
+        {
+          "word": "FLUTE",
+          "clue": "Instrument à vent utilisé par les derviches",
+          "r": 3,
+          "c": 4,
+          "horiz": false
+        },
+        {
+          "word": "FESTIVAL",
+          "clue": "Événement rassemblant musique, danse et culture",
+          "r": 6,
+          "c": 15,
+          "horiz": false
+        },
+        {
+          "word": "CEREMONIE",
+          "clue": "Rite organisé selon un protocole précis",
+          "r": 15,
+          "c": 4,
+          "horiz": true
+        },
+        {
+          "word": "TRADITION",
+          "clue": "Coutume transmise de génération en génération",
+          "r": 5,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "HOSPITALITE",
+          "clue": "Qualité d'accueil très valorisée en Turquie",
+          "r": 10,
+          "c": 7,
+          "horiz": true
+        }
+      ]
+    },
+    {
+      "id": "personnages-histoire",
+      "title": "Personnages qui ont marqué l'histoire",
+      "rows": 16,
+      "cols": 16,
+      "words": [
+        {
+          "word": "ATATURK",
+          "clue": "Fondateur de la République turque moderne",
+          "r": 15,
+          "c": 6,
+          "horiz": true
+        },
+        {
+          "word": "SOLIMAN",
+          "clue": "Sultan dit le Magnifique, apogée de l'empire ottoman",
+          "r": 0,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "MEHMET",
+          "clue": "Sultan qui prit Constantinople en 1453",
+          "r": 10,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "OSMAN",
+          "clue": "Fondateur de la dynastie qui donna son nom à l'empire ottoman",
+          "r": 6,
+          "c": 4,
+          "horiz": false
+        },
+        {
+          "word": "HOMERE",
+          "clue": "Poète grec à qui l'on attribue le récit de la guerre de Troie",
+          "r": 13,
+          "c": 7,
+          "horiz": true
+        },
+        {
+          "word": "HERODOTE",
+          "clue": "Historien grec surnommé le père de l'Histoire",
+          "r": 4,
+          "c": 2,
+          "horiz": false
+        },
+        {
+          "word": "SINAN",
+          "clue": "Architecte qui conçut de nombreuses mosquées impériales",
+          "r": 3,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "SELIM",
+          "clue": "Prénom porté par plusieurs sultans ottomans",
+          "r": 4,
+          "c": 4,
+          "horiz": true
+        },
+        {
+          "word": "ALEXANDRE",
+          "clue": "Conquérant macédonien qui traversa l'Anatolie antique",
+          "r": 3,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "CONSTANTIN",
+          "clue": "Empereur romain qui fonda Constantinople",
+          "r": 7,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "JUSTINIEN",
+          "clue": "Empereur byzantin qui fit construire Sainte-Sophie",
+          "r": 1,
+          "c": 15,
+          "horiz": false
+        },
+        {
+          "word": "XERXES",
+          "clue": "Roi perse qui mena une célèbre expédition en Grèce",
+          "r": 11,
+          "c": 5,
+          "horiz": true
+        },
+        {
+          "word": "MIDAS",
+          "clue": "Roi légendaire d'Anatolie dont le toucher changeait tout en or",
+          "r": 0,
+          "c": 4,
+          "horiz": false
+        },
+        {
+          "word": "CROESUS",
+          "clue": "Roi de Lydie réputé pour son immense richesse",
+          "r": 3,
+          "c": 9,
+          "horiz": true
+        },
+        {
+          "word": "SAPPHO",
+          "clue": "Poétesse grecque originaire de la région égéenne",
+          "r": 0,
+          "c": 0,
+          "horiz": false
+        },
+        {
+          "word": "TRAJAN",
+          "clue": "Empereur romain sous lequel l'empire atteignit son apogée",
+          "r": 2,
+          "c": 10,
+          "horiz": false
+        }
+      ]
+    },
+    {
+      "id": "anatolie-centrale",
+      "title": "Anatolie centrale, terre de steppe",
+      "rows": 11,
+      "cols": 22,
+      "words": [
+        {
+          "word": "KONYA",
+          "clue": "Grande ville associée aux derviches tourneurs",
+          "r": 0,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "CAPPADOCE",
+          "clue": "Région voisine célèbre pour ses paysages et vols en montgolfière",
+          "r": 7,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "DERVICHE",
+          "clue": "Danseur tourneur soufi originaire de cette région",
+          "r": 9,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "STEPPE",
+          "clue": "Vaste plaine semi-aride typique du plateau anatolien",
+          "r": 4,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "PLATEAU",
+          "clue": "Vaste étendue élevée qui caractérise le centre du pays",
+          "r": 1,
+          "c": 19,
+          "horiz": false
+        },
+        {
+          "word": "CARAVANSERAIL",
+          "clue": "Ancien lieu d'étape pour les caravanes de marchands",
+          "r": 4,
+          "c": 4,
+          "horiz": true
+        },
+        {
+          "word": "ROUTE",
+          "clue": "Voie empruntée autrefois par les caravanes de la soie",
+          "r": 0,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "SOIE",
+          "clue": "Précieuse marchandise transportée sur la route commerciale",
+          "r": 6,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "NOMADE",
+          "clue": "Personne qui se déplace avec ses troupeaux sans habitat fixe",
+          "r": 6,
+          "c": 16,
+          "horiz": true
+        },
+        {
+          "word": "TROUPEAU",
+          "clue": "Groupe d'animaux menés par un berger",
+          "r": 0,
+          "c": 11,
+          "horiz": true
+        },
+        {
+          "word": "BERGER",
+          "clue": "Personne qui garde et déplace les troupeaux",
+          "r": 5,
+          "c": 21,
+          "horiz": false
+        },
+        {
+          "word": "LAC",
+          "clue": "Étendue d'eau salée que l'on trouve sur le plateau, comme le Tuz",
+          "r": 3,
+          "c": 14,
+          "horiz": false
+        },
+        {
+          "word": "SALINE",
+          "clue": "Lieu où l'on extrait le sel d'un lac asséché",
+          "r": 2,
+          "c": 16,
+          "horiz": false
+        },
+        {
+          "word": "VOLCAN",
+          "clue": "Relief comme l'Erciyes qui domine la région de Kayseri",
+          "r": 4,
+          "c": 8,
+          "horiz": false
+        },
+        {
+          "word": "GROTTE",
+          "clue": "Cavité creusée dans la roche tendre de la région",
+          "r": 3,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "HITTITE",
+          "clue": "Ancien peuple qui régna sur l'Anatolie centrale dans l'Antiquité",
+          "r": 8,
+          "c": 0,
+          "horiz": true
+        }
+      ]
+    },
+    {
+      "id": "mer-noire",
+      "title": "La région de la mer Noire",
+      "rows": 12,
+      "cols": 18,
+      "words": [
+        {
+          "word": "TRABZON",
+          "clue": "Grande ville portuaire de cette région",
+          "r": 2,
+          "c": 1,
+          "horiz": true
+        },
+        {
+          "word": "THE",
+          "clue": "Culture emblématique des collines qui bordent la mer Noire",
+          "r": 7,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "NOISETTE",
+          "clue": "Fruit sec dont la Turquie est le premier producteur mondial",
+          "r": 9,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "PLUIE",
+          "clue": "Précipitation fréquente qui rend la région particulièrement verte",
+          "r": 5,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "FORET",
+          "clue": "Végétation dense qui recouvre les montagnes de la région",
+          "r": 6,
+          "c": 15,
+          "horiz": false
+        },
+        {
+          "word": "MONTAGNE",
+          "clue": "Relief qui plonge abruptement dans la mer Noire",
+          "r": 0,
+          "c": 7,
+          "horiz": false
+        },
+        {
+          "word": "PECHE",
+          "clue": "Activité économique importante le long de cette côte",
+          "r": 1,
+          "c": 10,
+          "horiz": false
+        },
+        {
+          "word": "ANCHOIS",
+          "clue": "Petit poisson emblématique de la pêche locale",
+          "r": 4,
+          "c": 7,
+          "horiz": true
+        },
+        {
+          "word": "BATEAU",
+          "clue": "Moyen utilisé par les pêcheurs pour sortir en mer",
+          "r": 5,
+          "c": 17,
+          "horiz": false
+        },
+        {
+          "word": "BRUME",
+          "clue": "Voile de vapeur d'eau fréquent sur ce littoral humide",
+          "r": 0,
+          "c": 4,
+          "horiz": true
+        },
+        {
+          "word": "VERDURE",
+          "clue": "Paysage typique de cette région très arrosée",
+          "r": 4,
+          "c": 4,
+          "horiz": false
+        },
+        {
+          "word": "COTE",
+          "clue": "Bande de terre qui longe la mer Noire",
+          "r": 8,
+          "c": 9,
+          "horiz": false
+        },
+        {
+          "word": "PONT",
+          "clue": "Ouvrage qui enjambe les nombreuses rivières de la région",
+          "r": 7,
+          "c": 14,
+          "horiz": true
+        },
+        {
+          "word": "VILLAGE",
+          "clue": "Petite localité perchée dans les collines verdoyantes",
+          "r": 3,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "HUMIDITE",
+          "clue": "Caractéristique du climat de cette région pluvieuse",
+          "r": 7,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "PLATEAU",
+          "clue": "Zone d'altitude utilisée en été pour l'élevage",
+          "r": 11,
+          "c": 5,
+          "horiz": true
+        }
+      ]
+    },
+    {
+      "id": "iles-peninsules",
+      "title": "Îles et péninsules",
+      "rows": 16,
+      "cols": 16,
+      "words": [
+        {
+          "word": "BUYUKADA",
+          "clue": "Plus grande des îles des Princes, sans voitures",
+          "r": 13,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "CUNDA",
+          "clue": "Petite île réputée pour ses ruelles et ses restaurants de poisson",
+          "r": 9,
+          "c": 11,
+          "horiz": false
+        },
+        {
+          "word": "MARMARA",
+          "clue": "Île qui a donné son nom à la mer voisine",
+          "r": 5,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "PENINSULE",
+          "clue": "Terre presque entièrement entourée d'eau, comme celle de Datça",
+          "r": 11,
+          "c": 7,
+          "horiz": true
+        },
+        {
+          "word": "GOLFE",
+          "clue": "Grande échancrure du littoral, comme celui de Gökova",
+          "r": 8,
+          "c": 4,
+          "horiz": true
+        },
+        {
+          "word": "CRIQUE",
+          "clue": "Petite baie abritée idéale pour la baignade",
+          "r": 15,
+          "c": 2,
+          "horiz": true
+        },
+        {
+          "word": "PLAGE",
+          "clue": "Étendue de sable très recherchée l'été",
+          "r": 11,
+          "c": 7,
+          "horiz": false
+        },
+        {
+          "word": "PORT",
+          "clue": "Lieu où accostent les bateaux de pêcheurs et les ferries",
+          "r": 3,
+          "c": 13,
+          "horiz": false
+        },
+        {
+          "word": "PECHEUR",
+          "clue": "Personne dont le métier est de pêcher en mer",
+          "r": 8,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "PHARE",
+          "clue": "Tour qui guide les bateaux la nuit",
+          "r": 11,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "VOILE",
+          "clue": "Toile qui capte le vent pour faire avancer un bateau",
+          "r": 5,
+          "c": 6,
+          "horiz": false
+        },
+        {
+          "word": "TRAVERSEE",
+          "clue": "Trajet en bateau entre le continent et une île",
+          "r": 0,
+          "c": 10,
+          "horiz": false
+        },
+        {
+          "word": "HORIZON",
+          "clue": "Ligne où le ciel semble rejoindre la mer",
+          "r": 1,
+          "c": 8,
+          "horiz": true
+        },
+        {
+          "word": "MOUETTE",
+          "clue": "Oiseau marin que l'on croise près des ports",
+          "r": 5,
+          "c": 8,
+          "horiz": false
+        },
+        {
+          "word": "SABLE",
+          "clue": "Matière fine qui recouvre les plus belles plages",
+          "r": 15,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "FALAISE",
+          "clue": "Paroi rocheuse abrupte qui borde certaines îles",
+          "r": 9,
+          "c": 14,
+          "horiz": false
+        }
+      ]
+    },
+    {
+      "id": "sport-loisirs",
+      "title": "Sport et loisirs en Turquie",
+      "rows": 12,
+      "cols": 23,
+      "words": [
+        {
+          "word": "FOOTBALL",
+          "clue": "Sport le plus populaire du pays",
+          "r": 4,
+          "c": 3,
+          "horiz": false
+        },
+        {
+          "word": "GALATASARAY",
+          "clue": "Célèbre club de football basé à Istanbul",
+          "r": 10,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "FENERBAHCE",
+          "clue": "Club de football basé côté asiatique d'Istanbul",
+          "r": 7,
+          "c": 5,
+          "horiz": true
+        },
+        {
+          "word": "BESIKTAS",
+          "clue": "Club de football au maillot noir et blanc",
+          "r": 3,
+          "c": 1,
+          "horiz": false
+        },
+        {
+          "word": "LUTTE",
+          "clue": "Sport traditionnel pratiqué à même l'huile lors du festival de Kirkpinar",
+          "r": 8,
+          "c": 15,
+          "horiz": true
+        },
+        {
+          "word": "HUILE",
+          "clue": "Substance dont s'enduisent les lutteurs traditionnels turcs",
+          "r": 7,
+          "c": 12,
+          "horiz": false
+        },
+        {
+          "word": "STADE",
+          "clue": "Enceinte où se déroulent les grands matchs",
+          "r": 2,
+          "c": 18,
+          "horiz": true
+        },
+        {
+          "word": "SUPPORTER",
+          "clue": "Personne qui encourage bruyamment son équipe",
+          "r": 2,
+          "c": 18,
+          "horiz": false
+        },
+        {
+          "word": "MAILLOT",
+          "clue": "Vêtement porté par les joueurs d'une équipe",
+          "r": 1,
+          "c": 7,
+          "horiz": true
+        },
+        {
+          "word": "ARBITRE",
+          "clue": "Personne chargée de faire respecter les règles du jeu",
+          "r": 1,
+          "c": 8,
+          "horiz": false
+        },
+        {
+          "word": "BALLON",
+          "clue": "Objet rond indispensable au football",
+          "r": 4,
+          "c": 10,
+          "horiz": true
+        },
+        {
+          "word": "CHAMPION",
+          "clue": "Titre décerné au vainqueur d'une compétition",
+          "r": 0,
+          "c": 20,
+          "horiz": false
+        },
+        {
+          "word": "COURSE",
+          "clue": "Épreuve sportive où l'on mesure sa vitesse",
+          "r": 6,
+          "c": 16,
+          "horiz": false
+        },
+        {
+          "word": "NATATION",
+          "clue": "Sport pratiqué notamment sur les côtes égéennes",
+          "r": 9,
+          "c": 0,
+          "horiz": true
+        },
+        {
+          "word": "VOILE",
+          "clue": "Sport nautique populaire sur les côtes turques",
+          "r": 3,
+          "c": 14,
+          "horiz": false
+        },
+        {
+          "word": "VELO",
+          "clue": "Moyen de transport aussi utilisé comme loisir sportif",
+          "r": 6,
+          "c": 6,
+          "horiz": false
+        }
+      ]
+    }
+  ]
+}

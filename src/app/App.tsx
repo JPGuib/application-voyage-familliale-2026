@@ -37,6 +37,7 @@ import { OfflineMediaScreen } from "./OfflineMediaScreen";
 import { TrivialGameScreen } from "./TrivialGameScreen";
 import { ArcadeHubScreen } from "./ArcadeHubScreen";
 import { CandyCrushScreen } from "./CandyCrushScreen";
+import { CrosswordScreen } from "./CrosswordScreen";
 import { OrdalieScreen } from "./OrdalieScreen";
 import { ImposteurScreen } from "./ImposteurScreen";
 import { TRIP } from "../content/trip";
@@ -382,8 +383,8 @@ const MAX_CHALLENGE_RESPONSE_LENGTH = 280;
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "trivial" | "jeux" | "candy-crush" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
-const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "results", "tips", "settings"];
+type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "trivial" | "jeux" | "candy-crush" | "crossword" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "trivial", "jeux", "candy-crush", "crossword", "ordalie", "imposteur", "results", "tips", "settings"];
 type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
 
 const INTERNAL_DOCUMENT_LINK_PREFIX = "app://document/";
@@ -2756,7 +2757,6 @@ function DashboardScreen({
 }) {
   const [mapLightboxOpen, setMapLightboxOpen] = useState(false);
   const [stayPresentationImageIndex, setStayPresentationImageIndex] = useState<number | null>(null);
-  const isArcadeOfflineLocked = Boolean(canPlayArcade) && !isOnline;
   const offlineSummary = useMemo(() => {
     const registry = readOfflineDownloadRegistry();
     const totals = Object.values(registry.sectionProgress).reduce(
@@ -2918,16 +2918,14 @@ function DashboardScreen({
               emoji="🕹️"
               title="Espace ludique"
               subtitle={
-                isArcadeOfflineLocked
-                  ? "Connexion requise"
-                  : showVisitorLockedActions
+                showVisitorLockedActions
                     ? "Non disponible pour un visiteur"
                     : "Petits jeux en solo ou en équipe"
               }
               colorBg="bg-[#FFF3E0]"
               colorText="text-[#E65100]"
               onClick={() => onNavigate("jeux")}
-              disabled={isArcadeOfflineLocked || showVisitorLockedActions}
+              disabled={showVisitorLockedActions}
               disabledReason={showVisitorLockedActions ? "Non disponible" : undefined}
             />
           )}
@@ -11562,7 +11560,7 @@ export default function App() {
       return;
     }
 
-    if ((s === "jeux" || s === "trivial" || s === "candy-crush" || s === "ordalie" || s === "imposteur") && !isOnline) {
+    if ((s === "trivial" || s === "candy-crush" || s === "ordalie" || s === "imposteur") && !isOnline) {
       setAccessDeniedMessage(
         s === "trivial"
           ? "Trivial Turquie indisponible hors ligne. Reconnectez-vous pour rejoindre une partie."
@@ -14604,6 +14602,7 @@ const resetForProfileSwitch = () => {
             onBack={() => goToScreen("dashboard")}
             onPlayTrivial={() => goToScreen("trivial")}
             onPlayCandyCrush={() => goToScreen("candy-crush")}
+            onPlayCrossword={() => goToScreen("crossword")}
             onPlayOrdalie={() => goToScreen("ordalie")}
             onPlayImposteur={() => goToScreen("imposteur")}
           />
@@ -14617,6 +14616,8 @@ const resetForProfileSwitch = () => {
         );
       case "candy-crush":
         return <CandyCrushScreen onBack={() => goToScreen("jeux")} />;
+      case "crossword":
+        return <CrosswordScreen onBack={() => goToScreen("jeux")} />;
       case "ordalie":
         return <OrdalieScreen onBack={() => goToScreen("jeux")} />;
       case "imposteur":

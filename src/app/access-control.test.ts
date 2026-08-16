@@ -117,12 +117,12 @@ describe("access-control policy", () => {
     expect(canAccessSection("visiteur", "during", "settings")).toBe(true);
   });
 
-  // Le Trivial Turquie (screen "trivial"), Candy Crush ("candy-crush") et le
-  // hub "jeux" suivent exactement les mêmes règles que le jeu du jour
+  // Les jeux d'arcade et le hub "jeux" suivent exactement les mêmes règles que le jeu du jour
   // ("game"), via leur mapping dans screenToSection.
   describe.each([
     ["trivial", "Trivial Turquie"],
     ["candy-crush", "Candy Crush"],
+    ["crossword", "Mots croisés Turquie"],
     ["jeux", "hub Jeux"],
     ["ordalie", "Ordalie des 5 Sens"],
     ["imposteur", "Imposteur Turque"],

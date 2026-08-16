@@ -1,3 +1,6 @@
+- source_spec: `guidelines/_bmad-output/implementation-artifacts/spec-integrer-mots-croises-turquie.md`
+	summary: Validate every restored `jp-screen` value against role, phase, and connectivity before applying it.
+	evidence: Adversarial review found the existing cloud restoration paths assign persisted screens directly, which can bypass access policy for any restricted route; this behavior predates the crossword integration and requires a dedicated cross-route fix.
 # Deferred Work
 
 ## Deferred from: code review of 9-2-reinitialiser-le-code-via-le-flow-code-oublie (2026-07-16)
