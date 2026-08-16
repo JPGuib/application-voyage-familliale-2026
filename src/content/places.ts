@@ -94,6 +94,7 @@
     audioTitle: "Istanbul, entre deux mondes",
     audioDuration: "3 min 40 sec",
     audioSrc: "/audio/places/Istanbul.mp3",
+    historyLabel:"Présentation",
     history:
       "Istanbul est la plus grande ville de Turquie et un point de rencontre entre deux continents. Son histoire s'étend sur des siècles, entre héritage byzantin, ottoman et vie urbaine contemporaine. C'est le meilleur point de départ pour comprendre le voyage en Turquie.",
     anecdotes: [
@@ -254,6 +255,7 @@
     audioDuration: "3 min 10 sec",
     audioSrc: "/audio/places/kadikoy.mp3",
     gps: "40.988750 , 29.027639",
+    historyLabel:"Présentation",
     history:
       "Kadıköy est l'un des quartiers les plus vivants de la rive asiatique d'Istanbul. Son marché (çarşı) regorge de produits frais, d'épices, de poissons et de boutiques locales. C'est un lieu de rencontre authentique, loin du tourisme de masse.",
     anecdotes: [
@@ -280,6 +282,7 @@
     audioTitle: "Le Bosphore, frontière liquide",
     audioDuration: "3 min 00 sec",
     audioSrc: "/audio/places/Croisiere_Bosphore.mp3",
+    historyLabel:"Présentation",
     history:
       "La croisière sur le Bosphore est l'une des expériences incontournables d'Istanbul. Ce détroit reliant la mer Noire à la mer de Marmara sépare l'Europe de l'Asie et offre des vues spectaculaires sur les palais, les mosquées et les villas ottomanes qui bordent ses rives.",
     anecdotes: [
@@ -339,6 +342,7 @@
     audioDuration: "3 min 00 sec",
     audioSrc: "/audio/places/Balat.mp3",
     gps: "41.0286,28.9489",
+    historyLabel: "Présentation",
     history:
       "Balat est l'un des plus anciens quartiers d'Istanbul, longtemps habité par les communautés juive, grecque et arménienne de la ville. Ses maisons ottomanes aux façades colorées, restaurées ou patinées par le temps, s'étagent sur les collines qui dominent la Corne d'Or. Aujourd'hui, artistes et cafés branchés se mêlent aux habitants historiques, donnant au quartier une atmosphère unique entre authenticité populaire et renouveau créatif.",
     anecdotes: [
@@ -363,6 +367,7 @@
     audioTitle: "Istanbul la nuit, du Bosphore",
     audioDuration: "2 min 30 sec",
     audioSrc: "/audio/places/Croisiere_Nocturne.mp3",
+    historyLabel: "Présentation",
     history:
       "La croisière nocturne sur le Bosphore offre une perspective magique sur Istanbul. Les palais, les mosquées et les ponts illuminés se reflètent dans l'eau, créant une atmosphère féerique et romantique.",
     anecdotes: [
