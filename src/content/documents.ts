@@ -41,11 +41,12 @@ export const DOCUMENTS: TravelDocument[] = [
       "Vol **AF7507** de Nantes (NTE) à Paris Charles de Gaulle (CDG).\n" +
       "Départ à **19h45** pour une arrivée à **20h55**.\n" +
       "Arrivée à Charles de Gaulle terminal **2F**.\n" +
-      "**Réservation** : ZT59SQ",
+      "**Réservation** : ZT59SQ\n"+
+      "**Sièges** : 27A, 27C, 27D, 27E, 27F\n",
     details: [
       "Petit sac : 40 x 30 x 15 cm",
       "Valise cabine : 55 x 25 x 35 cm",
-      "Valide soute : 158 cm (sommes des 3 dimensions)",
+      "Valise soute : 158 cm (sommes des 3 dimensions)",
       "Poids cabine (sac + valise): 12 kg max",
       "Poids soute : 23 kg max",
     ],
@@ -55,6 +56,11 @@ export const DOCUMENTS: TravelDocument[] = [
       "/images/Vol/Carte-d’embarquement-16 août EMMA NTE CDG.webp",
       "/images/Vol/Carte-d’embarquement-16 août THOMAS NTE CDG.webp",
       "/images/Vol/Carte-d’embarquement-16 août JULIE NTE CDG.webp",
+      "/images/Vol/AirFrance NTE IST JPG.webp",
+      "/images/Vol/AirFrance NTE IST KG.webp",
+      "/images/Vol/AirFrance NTE IST EMMA.webp",
+      "/images/Vol/AirFrance NTE IST THOMAS.webp",
+      "/images/Vol/AirFrance NTE IST JULIE.webp",
       "/images/Vol/Avion aller JPG.webp",
       "/images/Vol/Avion aller KG.webp",
       "/images/Vol/Avion aller Thomas.webp",
@@ -78,7 +84,8 @@ export const DOCUMENTS: TravelDocument[] = [
       "Vol **AF1390** de Paris Charles de Gaulle (CDG) à Istanbul (IST).\n" +
       "Départ à **22h55** pour une arrivée à **03h30**.\n" +
       "Départ depuis Charles de Gaulle terminal **2E**.\n" +
-      "**Réservation** : ZT59SQ",
+      "**Réservation** : ZT59SQ\n"+
+      "**Sièges** : 14A, 14B, 14C, 14D, 14E\n",
     details: [
       "Petit sac : 40 x 30 x 15 cm",
       "Valise cabine : 55 x 25 x 35 cm",
@@ -92,6 +99,11 @@ export const DOCUMENTS: TravelDocument[] = [
       "/images/Vol/Carte-d’embarquement-16 août EMMA CDG IST.webp",
       "/images/Vol/Carte-d’embarquement-16 août THOMAS CDG IST.webp",
       "/images/Vol/Carte-d’embarquement-16 août JULIE CDG IST.webp",
+      "/images/Vol/AirFrance NTE IST JPG.webp",
+      "/images/Vol/AirFrance NTE IST KG.webp",
+      "/images/Vol/AirFrance NTE IST EMMA.webp",
+      "/images/Vol/AirFrance NTE IST THOMAS.webp",
+      "/images/Vol/AirFrance NTE IST JULIE.webp",
       "/images/Vol/Avion aller JPG.webp",
       "/images/Vol/Avion aller KG.webp",
       "/images/Vol/Avion aller Thomas.webp",
