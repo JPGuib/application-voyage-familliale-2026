@@ -68,17 +68,53 @@ const SCOPED_CSS = `
 .cw-action-danger { color: var(--cw-red); }
 .cw-action:disabled { opacity: .45; cursor: not-allowed; }
 .cw-layout { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
-.cw-board-scroll { max-width: 100%; overflow-x: auto; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
+.cw-board-scroll {
+  --cw-fit-height: calc(100dvh - 300px);
+  --cw-fit-width: calc(100cqw - 56px);
+  --cw-cell-size: min(
+    32px,
+    calc(var(--cw-fit-height) / var(--cw-rows, 10)),
+    calc(var(--cw-fit-width) / var(--cw-cols, 10))
+  );
+  max-width: 100%;
+  overflow: hidden;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+}
 .cw-board { display: grid; width: max-content; border-top: 1px solid var(--foreground); border-left: 1px solid var(--foreground); }
 .cw-cell, .cw-block { width: var(--cw-cell-size); height: var(--cw-cell-size); }
 .cw-block { visibility: hidden; }
 .cw-cell { position: relative; border: 0; border-right: 1px solid var(--foreground); border-bottom: 1px solid var(--foreground); background: var(--card); color: var(--foreground); padding: 0; }
-.cw-cell input { width: 100%; height: 100%; border: 0; outline: 0; padding: 5px 1px 1px; background: transparent; color: inherit; text-align: center; text-transform: uppercase; font-size: 15px; font-weight: 800; }
+.cw-cell input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  padding: max(2px, calc(var(--cw-cell-size) * 0.16)) 1px 1px;
+  background: transparent;
+  color: inherit;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: clamp(10px, calc(var(--cw-cell-size) * 0.5), 15px);
+  font-weight: 800;
+}
 .cw-cell input:focus { box-shadow: inset 0 0 0 3px var(--cw-accent); }
 .cw-cell.cw-highlight { background: #f7e6b7; color: #2a1c14; }
 .cw-cell.cw-correct { background: #d8efe3; color: #145a3d; }
 .cw-cell.cw-wrong { background: #f7d7d7; color: #7e1a29; }
-.cw-number { position: absolute; top: 1px; left: 2px; z-index: 1; font-size: 8px; line-height: 1; color: var(--cw-accent-strong); font-weight: 800; pointer-events: none; }
+.cw-number {
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  z-index: 1;
+  font-size: clamp(6px, calc(var(--cw-cell-size) * 0.25), 8px);
+  line-height: 1;
+  color: var(--cw-accent-strong);
+  font-weight: 800;
+  pointer-events: none;
+}
 .cw-clues { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .cw-clue-group h2 { margin: 0 0 8px; color: var(--cw-red); font-size: 13px; text-transform: uppercase; }
 .cw-clue-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
@@ -96,7 +132,6 @@ const SCOPED_CSS = `
   .cw-clues { grid-template-columns: 1fr 1fr; }
 }
 @container (max-width: 560px) {
-  .cw-root { --cw-cell-size: 28px; }
   .cw-main { padding: 12px; }
   .cw-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .cw-action { padding: 8px 5px; font-size: 12px; }
@@ -346,7 +381,13 @@ export function CrosswordScreen({
         </div>
 
         <div className="cw-layout">
-          <div className="cw-board-scroll">
+          <div
+            className="cw-board-scroll"
+            style={{
+              ["--cw-rows" as "--cw-rows"]: puzzle.rows,
+              ["--cw-cols" as "--cw-cols"]: puzzle.cols,
+            }}
+          >
             <div
               className="cw-board"
               role="grid"
