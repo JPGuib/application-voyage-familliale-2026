@@ -1112,6 +1112,16 @@ export async function pushTripStartDate(
   });
 }
 
+export async function pushGameScoring(
+  database: Database,
+  familyId: string,
+  scoring: GameScoringConfig
+): Promise<void> {
+  await update(ref(database, familyPath(familyId)), {
+    gameScoring: scoring,
+  });
+}
+
 export async function claimProfileRole(
   database: Database,
   familyId: string,

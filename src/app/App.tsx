@@ -7761,7 +7761,7 @@ function SettingsScreen({
   tripStartDate: string | null;
   onSaveTripStartDate: (date: string) => Promise<{ ok: boolean; message: string }>;
   gameScoring: GameScoringConfig;
-  onSaveGameScoring: (scoring: GameScoringConfig) => { ok: boolean; message: string };
+  onSaveGameScoring: (scoring: GameScoringConfig) => Promise<{ ok: boolean; message: string }>;
   currentDay: number;
   lastDefinedDay: number | null;
   gameDayOverride: "open" | "closed" | null;
@@ -8118,7 +8118,10 @@ function SettingsScreen({
             </div>
             <button
               type="button"
-              onClick={() => setGameScoringFeedback(onSaveGameScoring(gameScoringInput).message)}
+              onClick={async () => {
+                const result = await onSaveGameScoring(gameScoringInput);
+                setGameScoringFeedback(result.message);
+              }}
               disabled={settingsWriteActionsDisabled}
               className={`mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black ${settingsDisabledButtonClass}`}
             >
@@ -9381,6 +9384,7 @@ export default function App() {
     setGameDayOverride,
     setPlaceDayOverride,
     setTripStartDate: setTripStartDateInCloud,
+    setGameScoring: setGameScoringInCloud,
     resetGameResults,
     resetGameProgress,
     registerAsOwnerDevice,
@@ -12567,14 +12571,14 @@ const resetForProfileSwitch = () => {
     return { ok: true, message: "Date de début du voyage mise à jour." };
   };
 
-  const saveGameScoring = (scoring: GameScoringConfig) => {
+  const saveGameScoring = async (scoring: GameScoringConfig) => {
     if (!canUpdateOwnerCode(familyState, profile.id)) {
       return { ok: false, message: "Seul le profil propriétaire peut modifier la bonification." };
     }
 
     const normalizePoints = (value: number) =>
       Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
-    setGameScoring({
+    const normalizedScoring: GameScoringConfig = {
       questionPoints: normalizePoints(scoring.questionPoints),
       riddlePoints: normalizePoints(scoring.riddlePoints),
       challengePoints: normalizePoints(scoring.challengePoints),
@@ -12582,7 +12586,19 @@ const resetForProfileSwitch = () => {
         basePoints: normalizePoints(entry.basePoints),
         bonusPoints: normalizePoints(entry.bonusPoints),
       })) as GameScoringConfig["destinationProposalScoring"],
-    });
+    };
+    setGameScoring(normalizedScoring);
+
+    if (cloudEnabled) {
+      const pushed = await setGameScoringInCloud(normalizedScoring);
+      if (!pushed) {
+        return {
+          ok: false,
+          message: "Enregistrement Firebase impossible. Vérifiez les règles et le projet utilisé.",
+        };
+      }
+    }
+
     return { ok: true, message: "Bonification des jeux mise à jour." };
   };
 

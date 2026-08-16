@@ -11,6 +11,7 @@ import {
   pushCloudSnapshot,
   pushFamilyPhaseChange,
   pushGameDayOverride,
+  pushGameScoring,
   pushPlaceDayOverride,
   pushTripStartDate,
   resetGameProgressInCloud,
@@ -803,6 +804,31 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  const setGameScoring = useCallback(
+    async (scoring: GameScoringConfig): Promise<boolean> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        setCloudAuthError("auth-required");
+        return false;
+      }
+
+      try {
+        await ensureFamilyMembership(database, familyId, cloudUserUid);
+        await ensureOwnerMembership(database, familyId, cloudUserUid);
+        await pushGameScoring(database, familyId, scoring);
+        setCloudAuthError(null);
+        return true;
+      } catch (error) {
+        console.error("[cloud-sync] game scoring write failed", {
+          familyId,
+          actorUid: cloudUserUid,
+          error,
+        });
+        return false;
+      }
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   const resetGameResults = useCallback(
     async (day?: number): Promise<void> => {
       if (!isEnabled || !database || !cloudUserUid || !cloudSnapshot) {
@@ -868,6 +894,7 @@ export function useCloudSync() {
     setGameDayOverride,
     setPlaceDayOverride,
     setTripStartDate,
+    setGameScoring,
     resetGameResults,
     resetGameProgress,
     registerAsOwnerDevice,
