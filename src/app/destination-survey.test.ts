@@ -39,6 +39,11 @@ describe("destination-survey", () => {
         o1: { profileId: "o1", proposals: ["Istanbul"], updatedAt: 900 },
         v1: { profileId: "v1", proposals: ["Istanbul"], updatedAt: 800 },
       },
+      scoring: [
+        { basePoints: 30, bonusPoints: 10 },
+        { basePoints: 30, bonusPoints: 5 },
+        { basePoints: 20, bonusPoints: 0 },
+      ],
     });
 
     const byId = Object.fromEntries(results.rows.map((row) => [row.profileId, row]));

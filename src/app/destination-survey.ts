@@ -1,4 +1,5 @@
 import type { Role } from "./owner-policy";
+import { DEFAULT_GAME_SCORING, type DestinationProposalScoring } from "../content/game";
 
 export const MAX_DESTINATION_PROPOSALS = 3;
 
@@ -32,12 +33,6 @@ export type DestinationSurveyResultRow = {
 export type DestinationSurveyResults = {
   rows: DestinationSurveyResultRow[];
 };
-
-const DESTINATION_PROPOSAL_SCORING = [
-  { basePoints: 0, bonusPoints: 0 },
-  { basePoints: 0, bonusPoints: 0 },
-  { basePoints: 0, bonusPoints: 0 },
-] as const;
 
 export function normalizeDestinationText(value: string): string {
   return value.trim().normalize("NFC");
@@ -97,8 +92,10 @@ export function computeDestinationSurveyResults(input: {
   destination: string;
   participants: DestinationSurveyParticipant[];
   votesByProfile: Record<string, DestinationSurveyVote>;
+  scoring?: readonly DestinationProposalScoring[];
 }): DestinationSurveyResults {
   const destination = normalizeDestinationText(input.destination);
+  const scoring = input.scoring ?? DEFAULT_GAME_SCORING.destinationProposalScoring;
 
   const rows: DestinationSurveyResultRow[] = input.participants.map((participant) => {
     const vote = input.votesByProfile[participant.profileId];
@@ -130,15 +127,15 @@ export function computeDestinationSurveyResults(input: {
       destinationEquals(proposal, destination)
     );
 
-    if (matchingProposalIndex < 0 || matchingProposalIndex >= DESTINATION_PROPOSAL_SCORING.length) {
+    if (matchingProposalIndex < 0 || matchingProposalIndex >= scoring.length) {
       continue;
     }
 
-    const scoring = DESTINATION_PROPOSAL_SCORING[matchingProposalIndex];
+    const proposalScoring = scoring[matchingProposalIndex];
     row.rank = matchingProposalIndex + 1;
-    row.basePoints = scoring.basePoints;
-    row.bonusPoints = scoring.bonusPoints;
-    row.points = scoring.basePoints + scoring.bonusPoints;
+    row.basePoints = proposalScoring.basePoints;
+    row.bonusPoints = proposalScoring.bonusPoints;
+    row.points = proposalScoring.basePoints + proposalScoring.bonusPoints;
   }
 
   return {

@@ -51,14 +51,13 @@ import { HISTOIRE_TOPICS } from "../content/histoire";
 import { GEOGRAPHIE_ECONOMIE_TOPICS } from "../content/geographie-economie";
 import { CULTURE_TRADITION_TOPICS } from "../content/culture-tradition";
 import {
-  CHALLENGE_POINTS,
+  DEFAULT_GAME_SCORING,
   getChallengeForDay,
   getQuestionsForDay,
   getRiddleForDay,
-  QUESTION_POINTS,
-  RIDDLE_POINTS,
   type DailyChallenge,
   type DailyRiddle,
+  type GameScoringConfig,
   type QuizQuestion,
 } from "../content/game";
 import { TIPS } from "../content/tips";
@@ -6400,6 +6399,7 @@ function GameScreen({
   questions,
   riddle,
   challenge,
+  scoring,
   canPlayArcade,
   onOpenArcade,
 }: {
@@ -6431,6 +6431,7 @@ function GameScreen({
   questions: QuizQuestion[];
   riddle: DailyRiddle;
   challenge: DailyChallenge;
+  scoring: GameScoringConfig;
   canPlayArcade?: boolean;
   onOpenArcade?: () => void;
 }) {
@@ -6496,7 +6497,7 @@ function GameScreen({
             </p>
             <p className="text-sm text-muted-foreground mb-6">
               Chaque bonne réponse rapporte{" "}
-              <strong className="text-primary">{QUESTION_POINTS} points</strong> à l&apos;équipe !
+              <strong className="text-primary">{scoring.questionPoints} points</strong> à l&apos;équipe !
             </p>
             <p className="text-xs font-bold text-[#C62828] bg-[#FFEBEE] rounded-xl px-4 py-3 mb-8 text-left">
               ⚠️ Une fois lancé, impossible de quitter le jeu avant de l&apos;avoir terminé (quiz,
@@ -6590,7 +6591,7 @@ function GameScreen({
           <MemphisDecor />
           <h1 className="relative z-10 text-2xl font-black">Énigme du jour 🧩</h1>
           <p className="relative z-10 text-sm opacity-90 mt-1">
-            Bonus de {RIDDLE_POINTS} points si la réponse est correcte
+            Bonus de {scoring.riddlePoints} points si la réponse est correcte
           </p>
         </div>
         <div className="flex-1 px-4 py-5">
@@ -6649,7 +6650,7 @@ function GameScreen({
           <MemphisDecor />
           <h1 className="relative z-10 text-2xl font-black">Défi du jour 💪</h1>
           <p className="relative z-10 text-sm opacity-90 mt-1">
-            {CHALLENGE_POINTS} points si le défi est accompli
+            {scoring.challengePoints} points si le défi est accompli
           </p>
         </div>
         <div className="flex-1 px-4 py-5">
@@ -6698,7 +6699,7 @@ function GameScreen({
             Question {currentQ + 1} / {questions.length}
           </p>
           <p className="text-sm font-black bg-white/20 px-3 py-1 rounded-full">
-            {answers.filter((a, i) => a === questions[i]?.correct).length * QUESTION_POINTS} pts
+            {answers.filter((a, i) => a === questions[i]?.correct).length * scoring.questionPoints} pts
           </p>
         </div>
         <div className="relative z-10 bg-white/20 rounded-full h-2">
@@ -6775,6 +6776,7 @@ function ResultsScreen({
   currentProfileRole,
   destinationSurveyDestination,
   destinationSurveyResults,
+  scoring,
   challengeReactionsByDay,
   onReactToChallengeResponse,
 }: {
@@ -6788,6 +6790,7 @@ function ResultsScreen({
   currentProfileRole: Role | null;
   destinationSurveyDestination: string;
   destinationSurveyResults: ReturnType<typeof computeDestinationSurveyResults>["rows"];
+  scoring: GameScoringConfig;
   challengeReactionsByDay: ChallengeReactionsByDay;
   onReactToChallengeResponse: (
     day: number,
@@ -6972,13 +6975,13 @@ function ResultsScreen({
               <div className="rounded-xl bg-[#E8F5E9] p-3">
                 <p className="text-xs text-muted-foreground">Énigme</p>
                 <p className="font-black text-foreground">
-                  {latestEntry.riddleSolved ? `+${RIDDLE_POINTS} pts` : "0 pt"}
+                  {latestEntry.riddleSolved ? `+${scoring.riddlePoints} pts` : "0 pt"}
                 </p>
               </div>
               <div className="rounded-xl bg-[#E3F2FD] p-3">
                 <p className="text-xs text-muted-foreground">Défi</p>
                 <p className="font-black text-foreground">
-                  {latestEntry.challengeDone ? `+${CHALLENGE_POINTS} pts` : "0 pt"}
+                  {latestEntry.challengeDone ? `+${scoring.challengePoints} pts` : "0 pt"}
                 </p>
               </div>
               <div className="rounded-xl bg-[#F3E5F5] p-3">
@@ -7707,6 +7710,8 @@ function SettingsScreen({
   onDeleteOwnProfile,
   tripStartDate,
   onSaveTripStartDate,
+  gameScoring,
+  onSaveGameScoring,
   currentDay,
   lastDefinedDay,
   gameDayOverride,
@@ -7758,6 +7763,8 @@ function SettingsScreen({
   ) => Promise<{ ok: boolean; message: string }>;
   tripStartDate: string | null;
   onSaveTripStartDate: (date: string) => Promise<{ ok: boolean; message: string }>;
+  gameScoring: GameScoringConfig;
+  onSaveGameScoring: (scoring: GameScoringConfig) => { ok: boolean; message: string };
   currentDay: number;
   lastDefinedDay: number | null;
   gameDayOverride: "open" | "closed" | null;
@@ -7787,9 +7794,14 @@ function SettingsScreen({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [tripStartDateInput, setTripStartDateInput] = useState(tripStartDate ?? "");
   const [tripStartDateFeedback, setTripStartDateFeedback] = useState<string | null>(null);
+  const [gameScoringInput, setGameScoringInput] = useState(gameScoring);
+  const [gameScoringFeedback, setGameScoringFeedback] = useState<string | null>(null);
   useEffect(() => {
     setTripStartDateInput(tripStartDate ?? "");
   }, [tripStartDate]);
+  useEffect(() => {
+    setGameScoringInput(gameScoring);
+  }, [gameScoring]);
   const [selectedGender, setSelectedGender] = useState<Gender>(profile.gender);
   const [selectedHouseholdRole, setSelectedHouseholdRole] = useState<HouseholdRole>(profile.householdRole);
   const [metadataFeedback, setMetadataFeedback] = useState<string | null>(null);
@@ -7909,6 +7921,11 @@ function SettingsScreen({
         ? "Visiteur"
         : "Voyageur";
   const ownerLockActionsEnabled = ownerCodeConfigured;
+  const proposalLabels = ["1er choix", "2e choix", "3e choix"] as const;
+  const updateScoringInput = (update: (current: GameScoringConfig) => GameScoringConfig) => {
+    setGameScoringInput((current) => update(current));
+    if (gameScoringFeedback) setGameScoringFeedback(null);
+  };
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -8041,6 +8058,80 @@ function SettingsScreen({
             Le rôle est défini à la création du profil pour ce MVP.
           </p>
         </div>
+
+        {profile.role === "proprietaire" && (
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
+              Bonification des jeux
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Seul le propriétaire peut modifier ces points. Les changements s&apos;appliquent aux prochaines parties.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+              {[
+                ["Bonne réponse au quiz", gameScoringInput.questionPoints, "questionPoints"],
+                ["Énigme réussie", gameScoringInput.riddlePoints, "riddlePoints"],
+                ["Défi accompli", gameScoringInput.challengePoints, "challengePoints"],
+              ].map(([label, value, key]) => (
+                <label key={key} className="text-xs font-bold text-muted-foreground">
+                  {label}
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={value}
+                    onChange={(event) => {
+                      const nextValue = Math.max(0, Math.floor(Number(event.target.value) || 0));
+                      updateScoringInput((current) => ({ ...current, [key]: nextValue }));
+                    }}
+                    disabled={settingsWriteActionsDisabled}
+                    className={`mt-1 w-full rounded-xl bg-input-background px-3 py-2 text-sm font-semibold text-foreground ${settingsDisabledButtonClass}`}
+                  />
+                </label>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+              {gameScoringInput.destinationProposalScoring.map((entry, index) => (
+                <div key={proposalLabels[index]} className="rounded-xl border border-border p-3">
+                  <p className="text-xs font-black text-foreground">{proposalLabels[index]}</p>
+                  {["basePoints", "bonusPoints"].map((key) => (
+                    <label key={key} className="block text-xs font-bold text-muted-foreground mt-2">
+                      {key === "basePoints" ? "Points de base" : "Bonus"}
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={entry[key as keyof typeof entry]}
+                        onChange={(event) => {
+                          const nextValue = Math.max(0, Math.floor(Number(event.target.value) || 0));
+                          updateScoringInput((current) => ({
+                            ...current,
+                            destinationProposalScoring: current.destinationProposalScoring.map((item, itemIndex) =>
+                              itemIndex === index ? { ...item, [key]: nextValue } : item
+                            ) as GameScoringConfig["destinationProposalScoring"],
+                          }));
+                        }}
+                        disabled={settingsWriteActionsDisabled}
+                        className={`mt-1 w-full rounded-xl bg-input-background px-3 py-2 text-sm font-semibold text-foreground ${settingsDisabledButtonClass}`}
+                      />
+                    </label>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setGameScoringFeedback(onSaveGameScoring(gameScoringInput).message)}
+              disabled={settingsWriteActionsDisabled}
+              className={`mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black ${settingsDisabledButtonClass}`}
+            >
+              Enregistrer la bonification
+            </button>
+            {gameScoringFeedback && (
+              <p className="mt-2 text-xs font-bold text-muted-foreground">{gameScoringFeedback}</p>
+            )}
+          </div>
+        )}
 
         <div className="bg-card rounded-2xl border border-border p-4">
           <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
@@ -9630,6 +9721,17 @@ export default function App() {
       return "";
     }
   });
+  const [gameScoring, setGameScoring] = useState<GameScoringConfig>(() => {
+    if (cloudEnabled) {
+      return DEFAULT_GAME_SCORING;
+    }
+    try {
+      const stored = JSON.parse(localStorage.getItem("jp-game-scoring") || "null");
+      return stored && typeof stored === "object" ? stored as GameScoringConfig : DEFAULT_GAME_SCORING;
+    } catch {
+      return DEFAULT_GAME_SCORING;
+    }
+  });
   const [travelerCodeHash, setTravelerCodeHash] = useState<string>(() => {
     if (cloudEnabled) {
       return "";
@@ -10145,6 +10247,7 @@ export default function App() {
         try {
           localStorage.setItem("jp-owner-code-hash", ownerCodeHash);
           localStorage.setItem("jp-owner-code-plain", ownerCodePlain);
+          localStorage.setItem("jp-game-scoring", JSON.stringify(gameScoring));
           localStorage.setItem("jp-traveler-code-hash", travelerCodeHash);
           localStorage.setItem("jp-traveler-code-plain", travelerCodePlain);
           localStorage.setItem("jp-owner-recovery-hash", ownerRecoveryHash);
@@ -10255,6 +10358,7 @@ export default function App() {
     familyState,
     ownerCodeHash,
     ownerCodePlain,
+    gameScoring,
     travelerCodeHash,
     travelerCodePlain,
     ownerRecoveryHash,
@@ -10390,6 +10494,11 @@ export default function App() {
     );
     setOwnerCodePlain((previous) =>
       previous === (cloudSnapshot.ownerCodePlain || "") ? previous : (cloudSnapshot.ownerCodePlain || "")
+    );
+    setGameScoring((previous) =>
+      JSON.stringify(previous) === JSON.stringify(cloudSnapshot.gameScoring ?? DEFAULT_GAME_SCORING)
+        ? previous
+        : (cloudSnapshot.gameScoring ?? DEFAULT_GAME_SCORING)
     );
     setTravelerCodeHash((previous) =>
       previous === (cloudSnapshot.travelerCodeHash || "") ? previous : (cloudSnapshot.travelerCodeHash || "")
@@ -10682,7 +10791,7 @@ export default function App() {
       if (cloudProgress.riddleValidated) {
         setRiddleFeedback(
           cloudProgress.riddleSolved
-            ? `Bonne réponse ! Vous gagnez ${RIDDLE_POINTS} points.`
+            ? `Bonne réponse ! Vous gagnez ${gameScoring.riddlePoints} points.`
             : `Pas tout à fait. La bonne réponse était "${getRiddleForDay(currentDay).answer}".`
         );
       }
@@ -10914,6 +11023,7 @@ export default function App() {
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       phase,
       tripStartDate,
+      gameScoring,
       gameHistory,
       currentGameProgress,
     });
@@ -10962,6 +11072,7 @@ export default function App() {
       gameProgress: currentGameProgress,
       phase,
       tripStartDate,
+      gameScoring,
     });
   }, [
     checked,
@@ -10983,6 +11094,7 @@ export default function App() {
     isAuthBootstrapPending,
     ownerCodeHash,
     ownerCodePlain,
+    gameScoring,
     travelerCodeHash,
     travelerCodePlain,
     ownerRecoveryHash,
@@ -12458,6 +12570,25 @@ const resetForProfileSwitch = () => {
     return { ok: true, message: "Date de début du voyage mise à jour." };
   };
 
+  const saveGameScoring = (scoring: GameScoringConfig) => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return { ok: false, message: "Seul le profil propriétaire peut modifier la bonification." };
+    }
+
+    const normalizePoints = (value: number) =>
+      Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+    setGameScoring({
+      questionPoints: normalizePoints(scoring.questionPoints),
+      riddlePoints: normalizePoints(scoring.riddlePoints),
+      challengePoints: normalizePoints(scoring.challengePoints),
+      destinationProposalScoring: scoring.destinationProposalScoring.map((entry) => ({
+        basePoints: normalizePoints(entry.basePoints),
+        bonusPoints: normalizePoints(entry.bonusPoints),
+      })) as GameScoringConfig["destinationProposalScoring"],
+    });
+    return { ok: true, message: "Bonification des jeux mise à jour." };
+  };
+
   const todaysQuestions = getQuestionsForDay(currentDay);
   const todaysRiddle = getRiddleForDay(currentDay);
   const todaysChallenge = getChallengeForDay(currentDay);
@@ -12488,7 +12619,7 @@ const resetForProfileSwitch = () => {
     if (progress.riddleValidated) {
       setRiddleFeedback(
         progress.riddleSolved
-          ? `Bonne réponse ! Vous gagnez ${RIDDLE_POINTS} points.`
+          ? `Bonne réponse ! Vous gagnez ${gameScoring.riddlePoints} points.`
           : `Pas tout à fait. La bonne réponse était "${todaysRiddle.answer}".`
       );
     }
@@ -12517,8 +12648,8 @@ const resetForProfileSwitch = () => {
   const correctCount = answers.filter(
     (a, i) => a === todaysQuestions[i]?.correct
   ).length;
-  const gameScore = correctCount * QUESTION_POINTS;
-  const riddleScore = riddleSolved ? RIDDLE_POINTS : 0;
+  const gameScore = correctCount * gameScoring.questionPoints;
+  const riddleScore = riddleSolved ? gameScoring.riddlePoints : 0;
 
   const validateRiddle = () => {
     const normalizedInput = normalizeAnswer(riddleAnswer);
@@ -12533,7 +12664,7 @@ const resetForProfileSwitch = () => {
     setRiddleSolved(solved);
     setRiddleFeedback(
       solved
-        ? `Bonne réponse ! Vous gagnez ${RIDDLE_POINTS} points.`
+        ? `Bonne réponse ! Vous gagnez ${gameScoring.riddlePoints} points.`
         : `Pas tout à fait. La bonne réponse était "${todaysRiddle.answer}".`
     );
   };
@@ -12558,7 +12689,7 @@ const resetForProfileSwitch = () => {
       challengeDone: true,
       challengeResponse: trimmedChallengeResponse,
       durationSec: quizDurationSec,
-      totalScore: gameScore + riddleScore + CHALLENGE_POINTS,
+      totalScore: gameScore + riddleScore + gameScoring.challengePoints,
       completedAt: new Date().toISOString(),
     };
 
@@ -12931,6 +13062,7 @@ const resetForProfileSwitch = () => {
     destination: TRIP.surveyDestination ?? todayDestination,
     participants: destinationSurveyParticipants,
     votesByProfile: destinationSurveyVotes,
+    scoring: gameScoring.destinationProposalScoring,
   });
   const destinationSurveyPointsByProfile = new Map(
     destinationSurveyResults.rows.map((row) => [row.profileId, row.points] as const)
@@ -13826,6 +13958,8 @@ const resetForProfileSwitch = () => {
             onDeleteOwnProfile={deleteOwnProfile}
             tripStartDate={tripStartDate}
             onSaveTripStartDate={saveTripStartDate}
+            gameScoring={gameScoring}
+            onSaveGameScoring={saveGameScoring}
             currentDay={currentDay}
             lastDefinedDay={lastDefinedDay}
             gameDayOverride={gameDayOverride}
@@ -14053,6 +14187,7 @@ const resetForProfileSwitch = () => {
             questions={todaysQuestions}
             riddle={todaysRiddle}
             challenge={todaysChallenge}
+            scoring={gameScoring}
             onStart={() => {
               setGameState("playing");
               setCurrentQ(0);
@@ -14095,6 +14230,7 @@ const resetForProfileSwitch = () => {
             currentProfileRole={profile.role}
             destinationSurveyDestination={todayDestination}
             destinationSurveyResults={destinationSurveyResults.rows}
+            scoring={gameScoring}
             challengeReactionsByDay={challengeReactionsByDay}
             onReactToChallengeResponse={reactToChallengeResponse}
           />
@@ -14432,6 +14568,7 @@ const resetForProfileSwitch = () => {
             questions={todaysQuestions}
             riddle={todaysRiddle}
             challenge={todaysChallenge}
+            scoring={gameScoring}
             onStart={() => {
               setGameState("playing");
               setCurrentQ(0);
@@ -14495,6 +14632,7 @@ const resetForProfileSwitch = () => {
             tripStartDate={tripStartDate}
             destinationSurveyDestination={todayDestination}
             destinationSurveyResults={destinationSurveyResults.rows}
+            scoring={gameScoring}
             currentProfileId={profile.id}
             currentProfileRole={profile.role}
             challengeReactionsByDay={challengeReactionsByDay}
@@ -14650,6 +14788,8 @@ const resetForProfileSwitch = () => {
             onDeleteOwnProfile={deleteOwnProfile}
             tripStartDate={tripStartDate}
             onSaveTripStartDate={saveTripStartDate}
+            gameScoring={gameScoring}
+            onSaveGameScoring={saveGameScoring}
             currentDay={currentDay}
             lastDefinedDay={lastDefinedDay}
             gameDayOverride={gameDayOverride}

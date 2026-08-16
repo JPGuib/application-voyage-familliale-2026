@@ -233,6 +233,10 @@
           ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)"
         },
+        "gameScoring": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          ".validate": "newData.hasChildren(['questionPoints','riddlePoints','challengePoints','destinationProposalScoring']) && newData.child('questionPoints').isNumber() && newData.child('questionPoints').val() >= 0 && newData.child('riddlePoints').isNumber() && newData.child('riddlePoints').val() >= 0 && newData.child('challengePoints').isNumber() && newData.child('challengePoints').val() >= 0 && newData.child('destinationProposalScoring/0/basePoints').isNumber() && newData.child('destinationProposalScoring/0/basePoints').val() >= 0 && newData.child('destinationProposalScoring/0/bonusPoints').isNumber() && newData.child('destinationProposalScoring/0/bonusPoints').val() >= 0 && newData.child('destinationProposalScoring/1/basePoints').isNumber() && newData.child('destinationProposalScoring/1/basePoints').val() >= 0 && newData.child('destinationProposalScoring/1/bonusPoints').isNumber() && newData.child('destinationProposalScoring/1/bonusPoints').val() >= 0 && newData.child('destinationProposalScoring/2/basePoints').isNumber() && newData.child('destinationProposalScoring/2/basePoints').val() >= 0 && newData.child('destinationProposalScoring/2/bonusPoints').isNumber() && newData.child('destinationProposalScoring/2/bonusPoints').val() >= 0 && !newData.child('destinationProposalScoring/3').exists()"
+        },
         "$other": {
           ".validate": false
         }

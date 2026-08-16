@@ -1,4 +1,5 @@
 import type { Role, SharedFamilyState } from "../app/owner-policy";
+import type { GameScoringConfig } from "../content/game";
 
 export type TravelPhase = "before" | "during";
 
@@ -142,6 +143,7 @@ export type CloudSyncSnapshot = {
   ownerRecoveryConfiguredAt?: number;
   phase: TravelPhase;
   tripStartDate: string | null;
+  gameScoring: GameScoringConfig;
   ownerGlobalChecklistAdditions: ChecklistCustomItem[];
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
@@ -196,6 +198,7 @@ export type CloudSyncWritePayload = {
   gameProgress: CloudGameProgress;
   phase: TravelPhase;
   tripStartDate?: string | null;
+  gameScoring: GameScoringConfig;
 };
 
 export type ClaimRoleResult = {

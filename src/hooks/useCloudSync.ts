@@ -43,6 +43,7 @@ import type {
   ProfileHouseholdRole,
   TravelPhase,
 } from "../types/cloud";
+import type { GameScoringConfig } from "../content/game";
 
 type ClaimRoleResult = {
   assignedRole: Role;
@@ -87,6 +88,7 @@ type PushSnapshotInput = {
   gameProgress: CloudGameProgress;
   phase: TravelPhase;
   tripStartDate?: string | null;
+  gameScoring: GameScoringConfig;
 };
 
 const PENDING_QUEUE_KEY_PREFIX = "jp-cloud-pending";
@@ -467,6 +469,7 @@ export function useCloudSync() {
         gameProgress: snapshot.gameProgress,
         phase: snapshot.phase,
         tripStartDate: snapshot.tripStartDate,
+        gameScoring: snapshot.gameScoring,
       };
 
       if (typeof navigator !== "undefined" && !navigator.onLine) {

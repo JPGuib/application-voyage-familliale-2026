@@ -2,6 +2,33 @@ export const QUESTION_POINTS = 0;
 export const RIDDLE_POINTS = 0;
 export const CHALLENGE_POINTS = 0;
 
+export type DestinationProposalScoring = {
+  basePoints: number;
+  bonusPoints: number;
+};
+
+export type GameScoringConfig = {
+  questionPoints: number;
+  riddlePoints: number;
+  challengePoints: number;
+  destinationProposalScoring: [
+    DestinationProposalScoring,
+    DestinationProposalScoring,
+    DestinationProposalScoring,
+  ];
+};
+
+export const DEFAULT_GAME_SCORING: GameScoringConfig = {
+  questionPoints: QUESTION_POINTS,
+  riddlePoints: RIDDLE_POINTS,
+  challengePoints: CHALLENGE_POINTS,
+  destinationProposalScoring: [
+    { basePoints: 0, bonusPoints: 0 },
+    { basePoints: 0, bonusPoints: 0 },
+    { basePoints: 0, bonusPoints: 0 },
+  ],
+};
+
 export type QuizQuestion = {
   q: string;
   options: string[];

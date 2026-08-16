@@ -39,6 +39,7 @@ import type {
   ProfileHouseholdRole,
   TravelPhase,
 } from "../types/cloud";
+import { DEFAULT_GAME_SCORING, type GameScoringConfig } from "../content/game";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -54,6 +55,28 @@ function toNonNegativeInteger(value: unknown, fallback = 0): number {
   }
   const normalized = Math.floor(value);
   return normalized >= 0 ? normalized : fallback;
+}
+
+function parseGameScoring(value: unknown): GameScoringConfig {
+  const raw = asRecord(value);
+  const destination = Array.isArray(raw.destinationProposalScoring)
+    ? raw.destinationProposalScoring
+    : [];
+  const points = (candidate: unknown, fallback: number) =>
+    toNonNegativeInteger(candidate, fallback);
+
+  return {
+    questionPoints: points(raw.questionPoints, DEFAULT_GAME_SCORING.questionPoints),
+    riddlePoints: points(raw.riddlePoints, DEFAULT_GAME_SCORING.riddlePoints),
+    challengePoints: points(raw.challengePoints, DEFAULT_GAME_SCORING.challengePoints),
+    destinationProposalScoring: [0, 1, 2].map((index) => {
+      const entry = asRecord(destination[index]);
+      return {
+        basePoints: points(entry.basePoints, DEFAULT_GAME_SCORING.destinationProposalScoring[index].basePoints),
+        bonusPoints: points(entry.bonusPoints, DEFAULT_GAME_SCORING.destinationProposalScoring[index].bonusPoints),
+      };
+    }) as GameScoringConfig["destinationProposalScoring"],
+  };
 }
 
 function toTravelPhase(value: unknown): TravelPhase {
@@ -647,6 +670,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     travelerCodePlain: toOptionalNonEmptyString(root.travelerCodePlain),
     phase: sharedPhase,
     tripStartDate: typeof root.tripStartDate === "string" ? root.tripStartDate : null,
+    gameScoring: parseGameScoring(root.gameScoring),
     ownerGlobalChecklistAdditions: parseChecklistCustomItems(ownerGlobalAdditionRecords),
     ownerGlobalChecklistRemovals: parseChecklistRemovals(ownerGlobalRemovalRecords),
     placeComments: parsePlaceComments(placeCommentRecords),
@@ -945,6 +969,7 @@ export async function pushCloudSnapshot(
     if (payload.tripStartDate) {
       updates.tripStartDate = payload.tripStartDate;
     }
+    updates.gameScoring = payload.gameScoring;
     updates.checklistCatalogAdditions = payload.ownerGlobalChecklistAdditions.reduce<Record<string, ChecklistCustomItem>>((acc, item) => {
       acc[item.id] = item;
       return acc;
