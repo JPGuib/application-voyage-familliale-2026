@@ -13680,7 +13680,7 @@ const resetForProfileSwitch = () => {
       );
     }
 
-    if (phase === "before") {
+    if (phase === "before" && (profile.role !== "proprietaire" || screen === "settings")) {
       if (screen === "settings") {
         return (
           <SettingsScreen

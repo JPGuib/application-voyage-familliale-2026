@@ -121,7 +121,7 @@ describe("App access-control integration", () => {
     expect(screen.getByRole("button", { name: "Séjour" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Documents" })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
+    fireEvent.click(within(screen.getByRole("navigation")).getByRole("button", { name: "Accueil" }));
     await waitFor(() => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
@@ -130,6 +130,17 @@ describe("App access-control integration", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
     });
+
+    fireEvent.click(within(screen.getByRole("navigation")).getByRole("button", { name: "Accueil" }));
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Espace ludique/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Jeux/i })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("heading", { name: /Préparation des bagages/i })).not.toBeInTheDocument();
 
     fireEvent.click(within(screen.getByRole("navigation")).getByRole("button", { name: "Accueil" }));
     await waitFor(() => {
