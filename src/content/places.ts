@@ -1469,12 +1469,13 @@
     audioTitle: "Ephèse, cité de la déesse Artémis",
     audioDuration: "4 min 15 sec",
     audioSrc: "/audio/places/Ephese.mp3",
-    gps: "37.9390,27.3410",
+    gps: "37.9390,7.3410",
     history: "Ephèse est le site archéologique le plus célèbre de Turquie. Fondée par les Grecs puis prospérant sous l'Empire romain, elle abritait le temple d'Artémis, l'une des Sept Merveilles du monde antique. La bibliothèque de Celsius, le grand théâtre et la rue des Courètes témoignent encore aujourd'hui de la splendeur de cette cité qui comptait jusqu'à 250 000 habitants.",
     anecdotes: [
       "La bibliothèque de Celsius abritait jusqu'à 12 000 rouleaux de parchemin.",
       "Le théâtre d'Ephèse pouvait accueillir 24 000 spectateurs, plus que beaucoup d'arènes modernes.",
-      "La rue des Courètes était pavée de marbre et éclairée la nuit par des lampes à huile."
+      "La rue des Courètes était pavée de marbre et éclairée la nuit par des lampes à huile.",
+      "Selon la croyance la Vierge Marie a été amenée à Éphèse par Saint Jean l’évangéliste, après la crucifixion du Christ. Ils se sont échappés des persécutions à Jérusalem. Elle y sera cachée et protégée des romains. Elle demeurera à la Maison De La Vierge à Éphèse jusqu’à son assomption (le 15 août)."
     ]
   },
   {
