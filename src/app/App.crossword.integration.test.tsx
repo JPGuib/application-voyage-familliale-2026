@@ -70,9 +70,9 @@ describe("App crossword navigation", () => {
     fireEvent.click(screen.getByRole("button", { name: /Espace ludique/i }));
     await waitFor(() => expect(screen.getByRole("heading", { name: /Jeux/i })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole("button", { name: /Mots croisés Turquie/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Mots fléchés Turquie/i }));
     await waitFor(() =>
-      expect(screen.getByRole("heading", { name: "Mots croisés Turquie" })).toBeInTheDocument()
+      expect(screen.getByRole("heading", { name: "Mots fléchés Turquie" })).toBeInTheDocument()
     );
     expect(screen.getByRole("grid", { name: /Panorama de la Turquie/ })).toBeInTheDocument();
 
@@ -88,9 +88,9 @@ describe("App crossword navigation", () => {
     fireEvent.click(screen.getByRole("button", { name: /Espace ludique/i }));
     await waitFor(() => expect(screen.getByRole("heading", { name: /Jeux/i })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole("button", { name: /Mots croisés Turquie/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Mots fléchés Turquie/i }));
     await waitFor(() =>
-      expect(screen.getByRole("heading", { name: "Mots croisés Turquie" })).toBeInTheDocument()
+      expect(screen.getByRole("heading", { name: "Mots fléchés Turquie" })).toBeInTheDocument()
     );
   });
 });

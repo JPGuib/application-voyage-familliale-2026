@@ -63,7 +63,7 @@ export function ArcadeHubScreen({
         >
           <div className="text-3xl">🧩</div>
           <div className="flex-1">
-            <div className="font-black text-foreground text-sm">Mots croisés Turquie</div>
+            <div className="font-black text-foreground text-sm">Mots fléchés Turquie</div>
             <div className="text-xs text-muted-foreground">
               Solo, 21 grilles thématiques pour explorer la Turquie
             </div>

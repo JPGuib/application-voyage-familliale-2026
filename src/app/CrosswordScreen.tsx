@@ -307,7 +307,7 @@ export function CrosswordScreen({
           <ArrowLeft size={20} aria-hidden="true" />
         </button>
         <div className="cw-heading">
-          <h1>Mots croisés Turquie</h1>
+          <h1>Mots fléchés Turquie</h1>
           <p>21 grilles pour explorer le pays en famille</p>
         </div>
       </header>

@@ -122,7 +122,7 @@ describe("access-control policy", () => {
   describe.each([
     ["trivial", "Trivial Turquie"],
     ["candy-crush", "Candy Crush"],
-    ["crossword", "Mots croisés Turquie"],
+    ["crossword", "Mots fléchés Turquie"],
     ["jeux", "hub Jeux"],
     ["ordalie", "Ordalie des 5 Sens"],
     ["imposteur", "Imposteur Turque"],
