@@ -2811,8 +2811,7 @@ function DashboardScreen({
               </p>
             </div>
             <div className="text-right pt-1">
-              <p className="text-sm font-bold opacity-80">{todayFormatted}</p>
-              <p className="mt-2 text-sm font-bold">Bonjour {profileSurname} !</p>
+              <p className="text-sm font-bold">Bonjour {profileSurname} !</p>
             </div>
           </div>
           {daysUntilStart === null && (
