@@ -92,12 +92,15 @@ const SCOPED_CSS = `
   height: 100%;
   border: 0;
   outline: 0;
-  padding: max(2px, calc(var(--cw-cell-size) * 0.16)) 1px 1px;
+  padding: max(1px, calc(var(--cw-cell-size) * 0.14)) 1px 1px;
   background: transparent;
-  color: inherit;
+  color: var(--foreground);
+  -webkit-text-fill-color: var(--foreground);
+  opacity: 1;
   text-align: center;
   text-transform: uppercase;
-  font-size: clamp(10px, calc(var(--cw-cell-size) * 0.5), 15px);
+  font-size: min(calc(var(--cw-cell-size) * 0.56), 15px);
+  line-height: 1;
   font-weight: 800;
 }
 .cw-cell input:focus { box-shadow: inset 0 0 0 3px var(--cw-accent); }
@@ -133,6 +136,10 @@ const SCOPED_CSS = `
 }
 @container (max-width: 560px) {
   .cw-main { padding: 12px; }
+  .cw-board-scroll {
+    --cw-fit-height: calc(100dvh - 270px);
+    --cw-fit-width: calc(100cqw - 40px);
+  }
   .cw-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .cw-action { padding: 8px 5px; font-size: 12px; }
   .cw-clues { grid-template-columns: 1fr; }
