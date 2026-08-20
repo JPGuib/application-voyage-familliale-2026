@@ -1155,8 +1155,10 @@
   {
     id: "derviche-tourneurs-spec",
     name: "Les derviches tourneurs",
+    jour: [6],
     shortDesc: "La danse mystique soufie, poésie en mouvement vers l'infini",
     tag: "Activité",
+    ville: "Cappadoce",
     image:
       "/images/Culture/derviche_tourneur.webp",
     photos: [
