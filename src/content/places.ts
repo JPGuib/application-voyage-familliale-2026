@@ -426,7 +426,7 @@
       "Le Windsor Hotel & Convention Center est un établissement 5★ moderne situé dans le quartier de Bayrampaşa, à Istanbul. Il se distingue par son vaste centre de convention, ses chambres élégantes et ses installations haut de gamme : spa complet, piscines intérieure et extérieure, sauna, hammam, ainsi qu’un salon panoramique au 17ᵉ étage offrant une vue superbe sur la ville et la Corne d’Or.",
     anecdotesLabel: "Informations pratiques",
     anecdotes: [
-      "1 chambre double et 1 chambre triple normalement réservés",
+      "1 chambre double et 1 chambre triple normalement réservées",
     ],
     links: [
       {
@@ -661,7 +661,7 @@
       "Le Windsor Hotel & Convention Center est un établissement 5★ moderne situé dans le quartier de Bayrampaşa, à Istanbul. Il se distingue par son vaste centre de convention, ses chambres élégantes et ses installations haut de gamme : spa complet, piscines intérieure et extérieure, sauna, hammam, ainsi qu’un salon panoramique au 17ᵉ étage offrant une vue superbe sur la ville et la Corne d’Or.",
     anecdotesLabel: "Informations pratiques",
     anecdotes: [
-      "1 chambre double et 1 chambre triple normalement réservés",
+      "1 chambre double et 1 chambre triple normalement réservées",
     ],
     links: [
       {
@@ -791,7 +791,7 @@
       "Le HiltonSA Ankara est un hôtel 5★ emblématique situé dans le quartier diplomatique de Çankaya, l’un des plus prestigieux d’Ankara. Installé dans une tour moderne, il propose des chambres élégantes, un restaurant avec terrasse, un piano‑bar, ainsi qu’un centre de bien‑être complet comprenant piscine intérieure, sauna et salle de sport.",
     anecdotesLabel: "Informations pratiques",
     anecdotes: [
-      "1 chambre double et 1 chambre triple normalement réservés",
+      "1 chambre double et 1 chambre triple normalement réservées",
       "Restaurant réservé pour le dîner du soir à l'hôtel",
     ],
     links: [
@@ -1024,7 +1024,7 @@
       "L’hôtel propose des chambres creusées dans la roche, une piscine extérieure, un restaurant panoramique, ainsi qu’une atmosphère authentique idéale pour un séjour romantique ou une découverte culturelle.",
     anecdotesLabel: "Informations pratiques",
     anecdotes: [
-      "1 chambre double et 1 chambre triple normalement réservés",
+      "1 chambre double et 1 chambre triple normalement réservées",
       "Restaurant réservé pour le dîner du soir à l'hôtel si nécessaire",
     ],
     links: [
@@ -1151,6 +1151,27 @@
       "Certaines cheminées de fées ressemblent étrangement à des silhouettes humaines ou animales.",
       "Les pigeonniers étaient peints de couleurs vives pour attirer les oiseaux."
     ]
+  },
+  {
+    id: "derviche-tourneurs-spec",
+    name: "Les derviches tourneurs",
+    shortDesc: "La danse mystique soufie, poésie en mouvement vers l'infini",
+    tag: "Activité",
+    image:
+      "/images/Culture/derviche_tourneur.webp",
+    photos: [
+      "/images/Culture/derviche_tourneur.webp",
+    ],
+    audioTitle: "La roue vers l'Absolu",
+    audioDuration: "2 min 50 sec",
+    audioSrc: "/audio/Culture/Les_derviches_tourneurs.mp3",
+    historyLabel:"présentation"
+    history:
+      "La cérémonie des derviches tourneurs, ou Sema, est une pratique soufie née au XIIIe siècle sous l'impulsion de Jalal ad-Din Rumi, fondateur de l'ordre mevlevi à Konya. La danse n'est pas un spectacle mais une méditation active : le derviche, vêtu d'une longue jupe blanche symbolisant le linceul, tourne sur lui-même la tête inclinée et les bras ouverts — la main droite vers le ciel pour recevoir la grâce divine, la gauche vers la terre pour la transmettre. La rotation, toujours dans le sens inverse des aiguilles d'une montre, symbolise les planètes en orbite autour du soleil et l'âme tournant vers Dieu. Bien que l'ordre mevlevi ait été interdit en 1925 par Atatürk, la Sema a été réhabilitée comme patrimoine culturel immatériel de l'UNESCO en 2008 et se pratique aujourd'hui dans des cadres touristiques et spirituels, notamment à Konya et à Istanbul.",
+    anecdotes: [
+      "À Konya, lors du festival annuel de Mevlana en décembre, des milliers de derviches tournent simultanément dans la grande salle de la Mevlana Museum, créant un murmure de tissus blancs si hypnotique que certains spectateurs oublient de cligner des yeux pendant des minutes entières.",
+      "Avant chaque cérémonie, les derviches retirent leurs manteaux noirs symbolisant le tombeau terrestre pour révéler leurs robes blanches — un passage de la mort à la résurrection spirituelle qui dure exactement le temps d'un soupir collectif dans la salle.",
+    ],
   },
 {
   id: "restaurant-nana-cappadocia",
@@ -1794,7 +1815,7 @@
       "Le Windsor Hotel & Convention Center est un établissement 5★ moderne situé dans le quartier de Bayrampaşa, à Istanbul. Il se distingue par son vaste centre de convention, ses chambres élégantes et ses installations haut de gamme : spa complet, piscines intérieure et extérieure, sauna, hammam, ainsi qu’un salon panoramique au 17ᵉ étage offrant une vue superbe sur la ville et la Corne d’Or.",
     anecdotesLabel: "Informations pratiques",
     anecdotes: [
-      "1 chambre double et 1 chambre triple normalement réservés",
+      "1 chambre double et 1 chambre triple normalement réservées",
     ],
     links: [
       {
