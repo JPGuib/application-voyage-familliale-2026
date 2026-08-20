@@ -896,7 +896,7 @@
   },
   {
     id: "ville-souterraine",
-    jour: [5],
+    jour: [6],
     name: "Ville souterraine byzantine",
     shortDesc: "Refuge souterrain creusé dans la roche volcanique",
     tag: "Visite",
@@ -1097,7 +1097,7 @@
   },
   {
     id: "goreme",
-    jour: [6],
+    jour: [5],
     name: "Musée en plein air de Göreme",
     shortDesc: "Églises rupestres et fresques byzantines — UNESCO",
     tag: "Visite",

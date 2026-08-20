@@ -192,17 +192,17 @@ export const QUESTIONS_BY_DAY: Record<number, QuizQuestion[]> = {
       correct: 2,
       expl: "Le lac Tuz fournit près de 70 % du sel consommé en Turquie.",
     },
-    {
-      q: "Combien de personnes pouvaient se réfugier dans une ville souterraine comme Derinkuyu ?",
-      options: ["5 000", "10 000", "20 000", "50 000"],
-      correct: 2,
-      expl: "Derinkuyu et Kaymaklı pouvaient abriter jusqu'à 20 000 personnes sur plusieurs niveaux.",
-    },
-    {
+      {
       q: "Quelle est la hauteur du mât du drapeau turc à Anıtkabir ?",
       options: ["20 m", "25 m", "33,53 m", "40 m"],
       correct: 2,
       expl: "Le mât mesure 33,53 m, le plus haut mât d'un seul tenant d'Europe.",
+    },
+  {
+      q: "En quelle année le musée en plein air de Göreme a-t-il été classé à l'UNESCO ?",
+      options: ["1975", "1985", "1995", "2005"],
+      correct: 1,
+      expl: "Göreme est classé au patrimoine mondial de l'UNESCO depuis 1985.",
     },
     {
       q: "Combien pèse le sarcophage d'Atatürk à Anıtkabir ?",
@@ -219,10 +219,10 @@ export const QUESTIONS_BY_DAY: Record<number, QuizQuestion[]> = {
       expl: "« Cappadoce » viendrait du vieux perse et signifierait « le pays des beaux chevaux ».",
     },
     {
-      q: "En quelle année le musée en plein air de Göreme a-t-il été classé à l'UNESCO ?",
-      options: ["1975", "1985", "1995", "2005"],
-      correct: 1,
-      expl: "Göreme est classé au patrimoine mondial de l'UNESCO depuis 1985.",
+      q: "Combien de personnes pouvaient se réfugier dans une ville souterraine comme Derinkuyu ?",
+      options: ["5 000", "10 000", "20 000", "50 000"],
+      correct: 2,
+      expl: "Derinkuyu et Kaymaklı pouvaient abriter jusqu'à 20 000 personnes sur plusieurs niveaux.",
     },
     {
       q: "Pourquoi les vols en montgolfière ont-ils lieu tôt le matin ?",
