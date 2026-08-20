@@ -1165,7 +1165,7 @@
     audioTitle: "La roue vers l'Absolu",
     audioDuration: "2 min 50 sec",
     audioSrc: "/audio/Culture/Les_derviches_tourneurs.mp3",
-    historyLabel:"présentation"
+    historyLabel:"présentation",
     history:
       "La cérémonie des derviches tourneurs, ou Sema, est une pratique soufie née au XIIIe siècle sous l'impulsion de Jalal ad-Din Rumi, fondateur de l'ordre mevlevi à Konya. La danse n'est pas un spectacle mais une méditation active : le derviche, vêtu d'une longue jupe blanche symbolisant le linceul, tourne sur lui-même la tête inclinée et les bras ouverts — la main droite vers le ciel pour recevoir la grâce divine, la gauche vers la terre pour la transmettre. La rotation, toujours dans le sens inverse des aiguilles d'une montre, symbolise les planètes en orbite autour du soleil et l'âme tournant vers Dieu. Bien que l'ordre mevlevi ait été interdit en 1925 par Atatürk, la Sema a été réhabilitée comme patrimoine culturel immatériel de l'UNESCO en 2008 et se pratique aujourd'hui dans des cadres touristiques et spirituels, notamment à Konya et à Istanbul.",
     anecdotes: [
