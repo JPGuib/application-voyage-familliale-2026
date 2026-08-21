@@ -7202,12 +7202,25 @@ function ResultsScreen({
                           <span
                             key={`reaction-count-${entry.profileId}-${reaction.value}`}
                             className="rounded-full bg-white px-2.5 py-1 text-xs font-black text-foreground shadow-sm"
-                            title={reaction.reactors.join(", ")}
                           >
-                            {reaction.emoji} {reaction.reactors.length} · {reaction.reactors.join(", ")}
+                            {reaction.emoji} {reaction.reactors.length}
                           </span>
                         ))}
                     </div>
+                    {entry.reactionCounts.some((reaction) => reaction.reactors.length > 0) && (
+                      <div className="mt-2 space-y-1">
+                        {entry.reactionCounts
+                          .filter((reaction) => reaction.reactors.length > 0)
+                          .map((reaction) => (
+                            <p
+                              key={`reaction-reactors-${entry.profileId}-${reaction.value}`}
+                              className="text-xs font-semibold text-muted-foreground"
+                            >
+                              {reaction.emoji} {reaction.reactors.join(", ")}
+                            </p>
+                          ))}
+                      </div>
+                    )}
                     {entry.profileId !== currentProfileId && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {CHALLENGE_REACTION_OPTIONS.map((reaction) => {

@@ -872,8 +872,7 @@ export async function pushCloudSnapshot(
           for (const [reactorProfileId, reaction] of Object.entries(reactionsByProfile ?? {})) {
             if (
               reaction.reactorProfileId === payload.profileId &&
-              reactorProfileId === payload.profileId &&
-              reaction.authorUid === payload.actorUid
+              reactorProfileId === payload.profileId
             ) {
               const reactionPath =
                 `challengeReactions/${Math.trunc(day)}/${targetProfileId}/${reactorProfileId}`;
