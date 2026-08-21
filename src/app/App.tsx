@@ -13111,9 +13111,16 @@ const resetForProfileSwitch = () => {
   const destinationSurveyPointsByProfile = new Map(
     destinationSurveyResults.rows.map((row) => [row.profileId, row.points] as const)
   );
-  const sharedChallengeDays: number[] = tripFinished
-    ? [currentDay].filter((d) => d >= 1)
-    : [currentDay - 1, currentDay].filter((d) => d >= 1);
+  const sharedChallengeDays = Array.from(
+    new Set(
+      (cloudSnapshot
+        ? Object.values(cloudSnapshot.profiles).flatMap((item) => item.gameResults)
+        : gameHistory
+      )
+        .map((entry) => entry.day)
+        .filter((day) => day >= 1 && day <= currentDay)
+    )
+  ).sort((left, right) => right - left);
   const familyMembersForPodium: ResultsFamilyMember[] = cloudSnapshot
     ? Object.values(cloudSnapshot.profiles).map((item) => ({
         profileId: item.profileId,
