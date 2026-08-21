@@ -2,8 +2,12 @@ Backlog
 -----------
 Evolutions : 
 - préparer l'application pour un autre voyage ! 
-
-CONTENU : 
-* revoir les textes et mettre en gras
+* Pouvoir rajouter ses excursions non prévues dans places.ts
+* Voir qui a mis quel imoticone dans les defits
+* jeu : accepter plusieurs réponses possibles comme galeta et tour de galata
+* le audios : pour le son, pouvoir avancer ou mettre en arrière
+* places que l'admin puisse modifier le contenu
+* jeu : pouvoir revoir les questions pour qu'elle ne se basent que sur ce qui a été
+réellement fait, pas prevu => associer une question à un jour / un id de places
 
 

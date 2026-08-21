@@ -6846,9 +6846,13 @@ function ResultsScreen({
         const reactionsForEntry = challengeReactionsByDay[day]?.[member.profileId] ?? {};
         const reactionCounts = CHALLENGE_REACTION_OPTIONS.map((option) => ({
           ...option,
-          count: Object.values(reactionsForEntry).filter(
-            (reaction) => reaction.emoji === option.value
-          ).length,
+          reactors: Object.values(reactionsForEntry)
+            .filter((reaction) => reaction.emoji === option.value)
+            .map((reaction) =>
+              familyMembers.find((familyMember) => familyMember.profileId === reaction.reactorProfileId)?.surname
+              ?? "Profil supprimé"
+            )
+            .sort((left, right) => left.localeCompare(right, "fr")),
         }));
         return {
           profileId: member.profileId,
@@ -7198,8 +7202,9 @@ function ResultsScreen({
                           <span
                             key={`reaction-count-${entry.profileId}-${reaction.value}`}
                             className="rounded-full bg-white px-2.5 py-1 text-xs font-black text-foreground shadow-sm"
+                            title={reaction.reactors.join(", ")}
                           >
-                            {reaction.emoji} {reaction.count}
+                            {reaction.emoji} {reaction.reactors.length} · {reaction.reactors.join(", ")}
                           </span>
                         ))}
                     </div>
