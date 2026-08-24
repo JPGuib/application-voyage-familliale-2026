@@ -143,6 +143,11 @@ export const DOCUMENTS: TravelDocument[] = [
       },
     ],
     scans: [
+      "/images/Vol/Vol IST NTE JPG.webp",
+      "/images/Vol/Vol IST NTE KG.webp",
+      "/images/Vol/Vol IST NTE THOMAS.webp",
+      "/images/Vol/Vol IST NTE EMMA.webp",
+      "/images/Vol/Vol IST NTE JULIE.webp",
       "/images/Vol/Vol retour JPG.webp",
       "/images/Vol/Vol retour KG.webp",
       "/images/Vol/Vol retour Thomas.webp",
