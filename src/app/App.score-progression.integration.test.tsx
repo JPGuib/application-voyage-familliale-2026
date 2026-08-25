@@ -208,4 +208,43 @@ describe("App results chart integration (story 22.2)", () => {
     expect(screen.getByText(/Par journée/i)).toBeInTheDocument();
     expect(screen.getByText(/Badges obtenus/i)).toBeInTheDocument();
   });
+
+  it("shows completed challenges from past days without waiting for every profile", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+    const snapshot = makeSnapshot({
+      p1: makeProfile("p1", "Maman", "proprietaire"),
+      p2: makeProfile("p2", "Leo", "utilisateur", [{ day: 1, totalScore: 30 }]),
+      p3: makeProfile("p3", "Nina", "utilisateur", [{ day: 1, totalScore: 45 }]),
+    });
+    snapshot.tripStartDate = "2026-08-23";
+    snapshot.profiles.p2.gameResults[0] = {
+      day: 1,
+      location: "Istanbul",
+      quizScore: 20,
+      correctCount: 2,
+      riddleSolved: true,
+      challengeDone: true,
+      challengeResponse: "Le bazar est magnifique.",
+      durationSec: 90,
+      totalScore: 30,
+      completedAt: "2026-08-20T10:00:00.000Z",
+    };
+    setupCloud(snapshot);
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Résultats" })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Résultats" }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Tableau des scores/i })).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Le bazar est magnifique.")).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/Les réponses du défi seront visibles/i)).toBeNull();
+    expect(screen.getAllByText("Leo").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Nina").length).toBeGreaterThan(0);
+  });
 });

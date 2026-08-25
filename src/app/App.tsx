@@ -6839,7 +6839,7 @@ function ResultsScreen({
     (member) => member.role !== "proprietaire" && member.role !== "visiteur"
   );
   const perDayChallengeData = sharedChallengeDays.map((day) => {
-    const entries = sharedChallengeParticipants
+    const allEntries = sharedChallengeParticipants
       .map((member) => {
         const gameEntry = member.gameResults.find((entry) => entry.day === day) ?? null;
         const challengeResponse = gameEntry?.challengeResponse?.trim() ?? "";
@@ -6872,7 +6872,13 @@ function ResultsScreen({
         if (leftValid !== rightValid) return leftValid ? -1 : 1;
         return left.surname.localeCompare(right.surname, "fr");
       });
-    const ready = entries.length > 0 && entries.every((entry) => entry.response.length > 0);
+    const isPastDay = day < currentDay;
+    const entries = isPastDay
+      ? allEntries.filter((entry) => entry.response.length > 0)
+      : allEntries;
+    const ready = isPastDay
+      ? entries.length > 0
+      : entries.length > 0 && entries.every((entry) => entry.response.length > 0);
     return { day, entries, ready };
   });
 
