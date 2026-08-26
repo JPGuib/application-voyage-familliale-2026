@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
+﻿import { useState, useEffect, useMemo, useRef, type ChangeEvent, type ReactNode } from "react";
 import {
   type LucideIcon,
   Check,
@@ -5583,6 +5583,7 @@ function ContentDetailScreen({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [canSeekAudio, setCanSeekAudio] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [realDuration, setRealDuration] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -5604,6 +5605,7 @@ function ContentDetailScreen({
     audioRef.current = audio;
     setIsPlaying(false);
     setProgress(0);
+    setCanSeekAudio(false);
     setAudioError(null);
     setRealDuration(null);
 
@@ -5612,6 +5614,7 @@ function ContentDetailScreen({
       if (formatted) {
         setRealDuration(formatted);
       }
+      setCanSeekAudio(Number.isFinite(audio.duration) && audio.duration > 0);
     };
 
     const handleTimeUpdate = () => {
@@ -5675,6 +5678,18 @@ function ContentDetailScreen({
       }
       return next;
     });
+  };
+
+  const handleSeek = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextProgress = Number(event.currentTarget.value);
+    setProgress(nextProgress);
+
+    const audio = audioRef.current;
+    if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) {
+      return;
+    }
+
+    audio.currentTime = (nextProgress / 100) * audio.duration;
   };
 
   const openPlaceLocation = () => {
@@ -5742,12 +5757,17 @@ function ContentDetailScreen({
               <p className="text-xs text-muted-foreground">
                 Durée : {realDuration ?? item.audioDuration}
               </p>
-              <div className="mt-2 bg-border rounded-full h-1.5">
-                <div
-                  className="bg-primary h-1.5 rounded-full transition-all duration-1000"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="0.1"
+                value={progress}
+                onChange={handleSeek}
+                disabled={!canSeekAudio}
+                aria-label="Avancer ou reculer dans l'audio"
+                className="mt-2 h-6 w-full cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50"
+              />
               {!canPlayAudio && (
                 <p className="text-xs text-muted-foreground mt-2">
                   Aucun fichier audio lié à ce contenu pour le moment.
