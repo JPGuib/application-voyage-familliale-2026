@@ -9,8 +9,6 @@ Evolutions :
 * places que l'admin puisse modifier le contenu
 * jeu : pouvoir revoir les questions pour qu'elle ne se basent que sur ce qui a été
 réellement fait, pas prevu => associer une question à un jour / un id de places
-* 
-* 
 * pouvoir dire ce qui a été visité ou non à la fin pour le rapport final 
 * retour l'UI ? S'inspire de wechat
 * rajouter facilement les scans des billets retour, possibilité d'intégrer les codes pythons qui découpent, transformé en webp et mettent dans l'appli ? sinon utiliser un lien drive?

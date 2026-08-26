@@ -91,7 +91,7 @@ type HostedRoomEntry = {
   createdAt: number;
 };
 
-type TPackInfo = { id: string; label: string };
+type TPackInfo = { id: string; label: string; category_labels?: string[] };
 
 const PACK_QUESTION_COUNT_BY_ID: Record<string, number> = {
   turquie: 506,
@@ -151,10 +151,26 @@ function getPackQuestionCount(pack: TPackInfo): number | null {
 
 // Utilisée si l'appel réseau à /packs échoue (serveur en train de démarrer,
 // pas encore de connexion...) — évite un écran de création vide.
-const FALLBACK_PACKS: TPackInfo[] = [{ id: "turquie", label: "Trivial Turquie 🇹🇷" }];
+const FALLBACK_PACKS: TPackInfo[] = [{
+  id: "turquie",
+  label: "Trivial Turquie 🇹🇷",
+  category_labels: [
+    "Histoire & Empire ottoman",
+    "Gastronomie",
+    "Langue & expressions",
+    "Geographie",
+    "Culture & traditions",
+    "Istanbul",
+  ],
+}];
 
 // Garde une trace locale des salons créés depuis cet appareil, pour pouvoir
 // les retrouver après avoir quitté l'écran — le serveur ne connaît que les
+                    {pack.category_labels && pack.category_labels.length > 0 && (
+                      <div className="text-xs font-medium opacity-80 mt-1 leading-relaxed">
+                        {pack.category_labels.join(" • ")}
+                      </div>
+                    )}
 // salons actifs, cette liste vit uniquement dans le navigateur.
 const HOSTED_ROOMS_KEY = "trivial_turquie_hosted_rooms";
 const MAX_HOSTED_ROOMS = 5;

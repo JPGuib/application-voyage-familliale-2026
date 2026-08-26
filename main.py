@@ -279,7 +279,14 @@ async def list_packs():
     # Le front interroge cet endpoint pour afficher les rubriques
     # disponibles au moment de créer une partie — ajouter un pack ici (et
     # dans PACKS) suffit, aucune modification du frontend n'est necessaire.
-    return [{"id": pid, "label": pdef["label"]} for pid, pdef in PACKS.items()]
+    return [
+        {
+            "id": pid,
+            "label": pdef["label"],
+            "category_labels": [pdef["category_labels"][category] for category in pdef["categories"]],
+        }
+        for pid, pdef in PACKS.items()
+    ]
 
 
 def build_board(categories: list[str]):
