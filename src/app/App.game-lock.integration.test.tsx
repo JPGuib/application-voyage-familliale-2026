@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import App from "./App";
 
 const cloudSyncMock = vi.fn();
@@ -20,6 +20,8 @@ type Snapshot = ReturnType<typeof buildSnapshot>;
 function buildSnapshot(options: {
   leoGameResults?: Array<{ day: number; totalScore: number }>;
   gameDayOverrides?: Record<number, "open" | "closed">;
+  includeVisitor?: boolean;
+  tripStartDate?: string | null;
 }) {
   const leoGameResults = (options.leoGameResults ?? []).map((entry) => ({
     day: entry.day,
@@ -33,6 +35,83 @@ function buildSnapshot(options: {
     completedAt: "2026-07-15T10:00:00.000Z",
   }));
 
+  const profiles: {
+    p1: {
+      profileId: string;
+      surname: string;
+      role: "proprietaire";
+      createdAt: number;
+      lastSyncAt: number;
+      checklist: Record<string, never>;
+      gameResults: never[];
+      phase: "during";
+    };
+    p2: {
+      profileId: string;
+      surname: string;
+      role: "utilisateur";
+      createdAt: number;
+      lastSyncAt: number;
+      checklist: Record<string, never>;
+      gameResults: {
+        day: number;
+        location: string;
+        quizScore: number;
+        correctCount: number;
+        riddleSolved: boolean;
+        challengeDone: boolean;
+        durationSec: number;
+        totalScore: number;
+        completedAt: string;
+      }[];
+      phase: "during";
+    };
+    p3?: {
+      profileId: string;
+      surname: string;
+      role: "visiteur";
+      createdAt: number;
+      lastSyncAt: number;
+      checklist: Record<string, never>;
+      gameResults: never[];
+      phase: "during";
+    };
+  } = {
+    p1: {
+      profileId: "p1",
+      surname: "Maman",
+      role: "proprietaire" as const,
+      createdAt: 1,
+      lastSyncAt: 1,
+      checklist: {},
+      gameResults: [],
+      phase: "during" as const,
+    },
+    p2: {
+      profileId: "p2",
+      surname: "Léo",
+      role: "utilisateur" as const,
+      createdAt: 1,
+      lastSyncAt: 1,
+      checklist: {},
+      gameResults: leoGameResults,
+      phase: "during" as const,
+    },
+  };
+
+  if (options.includeVisitor) {
+    profiles.p3 = {
+      profileId: "p3",
+      surname: "Nina",
+      role: "visiteur" as const,
+      createdAt: 1,
+      lastSyncAt: 1,
+      checklist: {},
+      gameResults: [],
+      phase: "during" as const,
+    };
+  }
+
   return {
     familyState: {
       version: 1,
@@ -40,38 +119,20 @@ function buildSnapshot(options: {
       profiles: [
         { id: "p1", role: "proprietaire" as const },
         { id: "p2", role: "utilisateur" as const },
+        ...(options.includeVisitor ? [{ id: "p3", role: "visiteur" as const }] : []),
       ],
     },
     ownerCodeHash: "",
     phase: "during" as const,
+    tripStartDate: options.tripStartDate ?? null,
     launchGateCycle: 1,
     launchGateCompletedCycleByProfile: {
       p1: 1,
       p2: 1,
+      ...(options.includeVisitor ? { p3: 1 } : {}),
     },
     gameDayOverrides: options.gameDayOverrides ?? {},
-    profiles: {
-      p1: {
-        profileId: "p1",
-        surname: "Maman",
-        role: "proprietaire" as const,
-        createdAt: 1,
-        lastSyncAt: 1,
-        checklist: {},
-        gameResults: [],
-        phase: "during" as const,
-      },
-      p2: {
-        profileId: "p2",
-        surname: "Léo",
-        role: "utilisateur" as const,
-        createdAt: 1,
-        lastSyncAt: 1,
-        checklist: {},
-        gameResults: leoGameResults,
-        phase: "during" as const,
-      },
-    },
+    profiles,
     updatedAt: 1,
   };
 }
@@ -182,5 +243,35 @@ describe("Story 19.1 — verrouillage du défi du jour + override propriétaire"
       expect(screen.getByText("Jeu fermé pour le moment")).toBeInTheDocument();
     });
     expect(screen.queryByRole("button", { name: /C'est parti/i })).not.toBeInTheDocument();
+  });
+
+  it("allows visitors to replay post-trip with day picker and without score locking", async () => {
+    mockCloudSync(
+      buildSnapshot({
+        includeVisitor: true,
+        tripStartDate: "2026-07-01",
+      })
+    );
+    render(<App />);
+
+    await loginAs(/Nina/i);
+    goToGameScreen();
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /C'est parti/i })).toBeInTheDocument();
+    });
+    expect(screen.getByText(/Mode rejeu post-voyage/i)).toBeInTheDocument();
+    expect(screen.getByText(/Jour à rejouer/i)).toBeInTheDocument();
+    expect(screen.queryByText("Défi du jour déjà relevé !")).not.toBeInTheDocument();
+
+    fireEvent.click(within(screen.getByRole("navigation")).getByRole("button", { name: "Accueil" }));
+    await waitFor(() => {
+      expect(screen.getByText(/Voyage terminé/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Espace ludique/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Jeux/i })).toBeInTheDocument();
+    });
   });
 });

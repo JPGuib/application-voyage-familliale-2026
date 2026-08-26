@@ -2722,6 +2722,9 @@ function DashboardScreen({
   canAccessOfflineMedia,
   canPlayArcade,
   showVisitorLockedActions,
+  allowVisitorGamePostTripReplay,
+  allowVisitorArcadePostTripReplay,
+  postTripReplayEnabled,
   isOnline,
   onNavigate,
   onNavigateToTodayGuide,
@@ -2741,6 +2744,9 @@ function DashboardScreen({
   canAccessOfflineMedia: boolean;
   canPlayArcade?: boolean;
   showVisitorLockedActions: boolean;
+  allowVisitorGamePostTripReplay: boolean;
+  allowVisitorArcadePostTripReplay: boolean;
+  postTripReplayEnabled: boolean;
   isOnline: boolean;
   onNavigate: (s: Screen) => void;
   onNavigateToTodayGuide: () => void;
@@ -2877,6 +2883,19 @@ function DashboardScreen({
         </button>
       </div>
 
+      {postTripReplayEnabled && (
+        <div className="px-4 mt-4">
+          <div className="rounded-2xl border border-[#90CAF9] bg-[#E3F2FD] px-4 py-3">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-[#1565C0]">
+              Mode rejeu post-voyage
+            </p>
+            <p className="text-xs font-semibold text-[#0D47A1] mt-1">
+              Quiz, énigmes et espace ludique sont ouverts à tous. Les résultats officiels restent figés.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Quick actions */}
       <div className="px-4 mt-5">
         <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-3">
@@ -2885,7 +2904,11 @@ function DashboardScreen({
         <div className="grid grid-cols-2 gap-3">
           {quickActions.map((item) => {
             const isGameOfflineLocked = item.id === "game" && !isOnline;
-            const isVisitorLocked = showVisitorLockedActions && !canAccessScreen("visiteur", "during", item.id);
+            const allowVisitorAction = item.id === "game" && allowVisitorGamePostTripReplay;
+            const isVisitorLocked =
+              showVisitorLockedActions &&
+              !allowVisitorAction &&
+              !canAccessScreen("visiteur", "during", item.id);
             const isLocked = isGameOfflineLocked || isVisitorLocked;
 
             return (
@@ -2917,15 +2940,15 @@ function DashboardScreen({
               emoji="🕹️"
               title="Espace ludique"
               subtitle={
-                showVisitorLockedActions
+                showVisitorLockedActions && !allowVisitorArcadePostTripReplay
                     ? "Non disponible pour un visiteur"
                     : "Petits jeux en solo ou en équipe"
               }
               colorBg="bg-[#FFF3E0]"
               colorText="text-[#E65100]"
               onClick={() => onNavigate("jeux")}
-              disabled={showVisitorLockedActions}
-              disabledReason={showVisitorLockedActions ? "Non disponible" : undefined}
+              disabled={showVisitorLockedActions && !allowVisitorArcadePostTripReplay}
+              disabledReason={showVisitorLockedActions && !allowVisitorArcadePostTripReplay ? "Non disponible" : undefined}
             />
           )}
           <ActionCard
@@ -3257,6 +3280,19 @@ const PLACES_WITH_AUTO_GPS = PLACES.map((place) => {
 
   return { ...place, gps: fallbackGps };
 });
+
+const GAME_REPLAY_DAYS_FROM_PLACES = Array.from(
+  new Set(
+    PLACES.flatMap((place) =>
+      Array.isArray((place as { jour?: number[] }).jour)
+        ? (place as { jour?: number[] }).jour ?? []
+        : []
+    )
+  )
+)
+  .map((day) => Math.trunc(day))
+  .filter((day) => Number.isFinite(day) && day > 0)
+  .sort((a, b) => a - b);
 
 // ─── OFFLINE CONTENT AVAILABILITY BADGE (story 27.4) ────────────────────────
 // Shared, read-only indicator reused by every content screen (Guide de
@@ -6380,6 +6416,11 @@ function GameScreen({
   riddleSolved,
   challengeResponse,
   challengeDone,
+  gameDay,
+  canPickReplayDay,
+  replayDayChoices,
+  onReplayDayChange,
+  scorePersistenceDisabled,
   onStart,
   onAnswer,
   onBack,
@@ -6412,6 +6453,11 @@ function GameScreen({
   riddleSolved: boolean;
   challengeResponse: string;
   challengeDone: boolean;
+  gameDay: number;
+  canPickReplayDay: boolean;
+  replayDayChoices: number[];
+  onReplayDayChange: (day: number) => void;
+  scorePersistenceDisabled: boolean;
   onStart: () => void;
   onAnswer: (idx: number) => void;
   onBack: () => void;
@@ -6440,7 +6486,8 @@ function GameScreen({
 
   if (gameState === "intro") {
     const isClosedByOwner = gameDayOverride === "closed";
-    const isLockedByCompletion = gameDayOverride !== "open" && alreadyPlayedToday !== null;
+    const isLockedByCompletion =
+      !scorePersistenceDisabled && gameDayOverride !== "open" && alreadyPlayedToday !== null;
 
     return (
       <div className="flex flex-col h-full overflow-y-auto">
@@ -6457,7 +6504,7 @@ function GameScreen({
             Jeu du jour 🎮
           </h1>
           <p className="relative z-10 text-sm opacity-90 mt-1">
-            Quiz Turquie — {formatTripDayLabel(currentDay, tripStartDate)}
+            Quiz Turquie — {formatTripDayLabel(gameDay, tripStartDate)}
           </p>
         </div>
         {isClosedByOwner ? (
@@ -6492,6 +6539,30 @@ function GameScreen({
             <p className="text-sm text-muted-foreground mb-2">
               {questions.length} questions sur les lieux visités aujourd&apos;hui en Turquie.
             </p>
+            {scorePersistenceDisabled && (
+              <p className="text-xs font-bold text-[#1565C0] bg-[#E3F2FD] rounded-xl px-4 py-3 mb-3 text-left">
+                Mode rejeu post-voyage: vous pouvez rejouer librement, sur le jour de votre choix. Les
+                points affichés sont informatifs et ne modifient plus les résultats officiels.
+              </p>
+            )}
+            {canPickReplayDay && replayDayChoices.length > 0 && (
+              <div className="w-full mb-4 text-left">
+                <label className="block text-xs font-extrabold uppercase tracking-widest text-muted-foreground mb-1">
+                  Jour à rejouer
+                </label>
+                <select
+                  value={gameDay}
+                  onChange={(event) => onReplayDayChange(Number(event.target.value))}
+                  className="w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+                >
+                  {replayDayChoices.map((day) => (
+                    <option key={day} value={day}>
+                      {formatTripDayLabel(day, tripStartDate)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <p className="text-sm text-muted-foreground mb-6">
               Chaque bonne réponse rapporte{" "}
               <strong className="text-primary">{scoring.questionPoints} points</strong> à l&apos;équipe !
@@ -9973,6 +10044,7 @@ export default function App() {
       return [];
     }
   });
+  const [postTripReplayDay, setPostTripReplayDay] = useState<number | null>(null);
 
   // Calculé tôt (avant l'effet d'hydratation cloud plus bas) car la
   // progression de jeu en cours (gameProgress) doit être comparée au jour
@@ -9984,6 +10056,45 @@ export default function App() {
   const rawCurrentDay = computeCurrentDay(tripStartDate);
   const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
   const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
+  const postTripReplayEnabled = tripFinished && phase === "during";
+  const replayDayChoices =
+    GAME_REPLAY_DAYS_FROM_PLACES.length > 0
+      ? GAME_REPLAY_DAYS_FROM_PLACES
+      : Array.from({ length: Math.max(lastDefinedDay ?? 1, 1) }, (_, i) => i + 1);
+  const gameDay = postTripReplayEnabled
+    ? postTripReplayDay ?? replayDayChoices[replayDayChoices.length - 1] ?? currentDay
+    : currentDay;
+  const isPostTripReplayOpenScreen = (target: Screen): boolean =>
+    postTripReplayEnabled &&
+    (target === "game" ||
+      target === "jeux" ||
+      target === "trivial" ||
+      target === "candy-crush" ||
+      target === "crossword" ||
+      target === "ordalie" ||
+      target === "imposteur");
+  const canAccessCurrentScreen =
+    canAccessScreen(profile.role, phase, screen) ||
+    isPostTripReplayOpenScreen(screen);
+
+  useEffect(() => {
+    if (!postTripReplayEnabled) {
+      setPostTripReplayDay(null);
+      return;
+    }
+
+    setPostTripReplayDay((previous) => {
+      if (previous !== null && replayDayChoices.includes(previous)) {
+        return previous;
+      }
+
+      if (replayDayChoices.includes(currentDay)) {
+        return currentDay;
+      }
+
+      return replayDayChoices[replayDayChoices.length - 1] ?? 1;
+    });
+  }, [postTripReplayEnabled, replayDayChoices, currentDay]);
 
   // Progression en cours du jeu du jour (null si "intro" : rien à reprendre
   // avant d'avoir commencé). Persistée dès "playing" (survit à un
@@ -9996,7 +10107,8 @@ export default function App() {
   // Calculé une fois ici et réutilisé pour la sauvegarde locale et tous les
   // envois cloud, pour ne jamais désynchroniser les deux.
   const currentGameProgress: GameProgress | null =
-    gameState === "playing" || gameState === "done" || gameState === "riddle" || gameState === "challenge"
+    !postTripReplayEnabled &&
+    (gameState === "playing" || gameState === "done" || gameState === "riddle" || gameState === "challenge")
       ? {
           day: currentDay,
           phase: gameState === "done" ? "riddle" : gameState,
@@ -10056,7 +10168,7 @@ export default function App() {
       // Stay on checklist (or any accessible screen) — only navigate to dashboard
       // if the current screen is not accessible in the new phase.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      if (!canAccessScreen(profile.role, phase, screen)) {
+      if (!canAccessCurrentScreen) {
         setScreen("dashboard");
       }
       return;
@@ -10780,6 +10892,10 @@ export default function App() {
     // bloque aussi la reprise (pas seulement un nouveau départ depuis
     // "intro") : sans ce check, une session déjà en cours se reprenait
     // quand même après un F5, même la journée fermée entre-temps.
+    if (postTripReplayEnabled) {
+      return;
+    }
+
     const cloudProgress = cloudProfile.gameProgress ?? null;
     const dayOverrideForCurrentDay = cloudSnapshot.gameDayOverrides?.[currentDay] ?? null;
     const hasMatchingCloudProgress =
@@ -10861,7 +10977,7 @@ export default function App() {
     // de gameState lue ci-dessus reste néanmoins toujours à jour (fermeture
     // React normale), seul le déclenchement de l'effet ignore ses changements.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id, currentDay]);
+  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id, currentDay, postTripReplayEnabled]);
 
   const lastCloudPushRef = useRef<string | null>(null);
   const pendingCloudPhaseRef = useRef<TravelPhase | null>(null);
@@ -11224,7 +11340,7 @@ export default function App() {
       (cloudEnabled && (!cloudReady || isAuthBootstrapPending || isProfileHydrationPending || !isAuthenticated));
     if (isBootstrapping) return;
 
-    if (!canAccessScreen(profile.role, phase, screen)) {
+    if (!canAccessCurrentScreen) {
       setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, screen));
       const safeScreen = getSafeScreen(profile.role, phase);
       if (safeScreen !== screen) {
@@ -11241,6 +11357,7 @@ export default function App() {
     isProfileHydrationPending,
     isAuthenticated,
     isInitializing,
+    canAccessCurrentScreen,
   ]);
 
   useEffect(() => {
@@ -11598,7 +11715,7 @@ export default function App() {
       return;
     }
 
-    if (!canAccessScreen(profile.role, phase, s)) {
+    if (!isPostTripReplayOpenScreen(s) && !canAccessScreen(profile.role, phase, s)) {
       setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, s));
       setScreen(getSafeScreen(profile.role, phase));
       return;
@@ -12639,13 +12756,26 @@ const resetForProfileSwitch = () => {
     return { ok: true, message: "Bonification des jeux mise à jour." };
   };
 
-  const todaysQuestions = getQuestionsForDay(currentDay);
-  const todaysRiddle = getRiddleForDay(currentDay);
-  const todaysChallenge = getChallengeForDay(currentDay);
+  const todaysQuestions = getQuestionsForDay(gameDay);
+  const todaysRiddle = getRiddleForDay(gameDay);
+  const todaysChallenge = getChallengeForDay(gameDay);
 
   const localGameProgressCheckedRef = useRef(false);
   useEffect(() => {
     if (cloudEnabled) return; // Mode cloud : géré par l'effet d'hydratation cloud.
+    if (postTripReplayEnabled) {
+      if (gameState !== "intro") {
+        setGameState("intro");
+        setCurrentQ(0);
+        setAnswers([]);
+        setQuizStartedAt(null);
+        setQuizDurationSec(0);
+        setRiddleValidated(false);
+        setRiddleSolved(false);
+      }
+      setChallengeResponse("");
+      return;
+    }
     if (localGameProgressCheckedRef.current) return;
     localGameProgressCheckedRef.current = true;
 
@@ -12674,7 +12804,7 @@ const resetForProfileSwitch = () => {
       );
     }
     setChallengeResponse(progress.challengeDraft ?? "");
-  }, [cloudEnabled, currentDay, gameState, todaysRiddle.answer]);
+  }, [cloudEnabled, currentDay, gameState, todaysRiddle.answer, postTripReplayEnabled]);
 
   const answerQ = (idx: number) => {
     if (selectedAns !== null) return;
@@ -12730,20 +12860,22 @@ const resetForProfileSwitch = () => {
       return;
     }
 
-    const entry: GameHistoryEntry = {
-      day: currentDay,
-      location: todayDestination,
-      quizScore: gameScore,
-      correctCount,
-      riddleSolved,
-      challengeDone: true,
-      challengeResponse: trimmedChallengeResponse,
-      durationSec: quizDurationSec,
-      totalScore: gameScore + riddleScore + gameScoring.challengePoints,
-      completedAt: new Date().toISOString(),
-    };
+    if (!postTripReplayEnabled) {
+      const entry: GameHistoryEntry = {
+        day: currentDay,
+        location: todayDestination,
+        quizScore: gameScore,
+        correctCount,
+        riddleSolved,
+        challengeDone: true,
+        challengeResponse: trimmedChallengeResponse,
+        durationSec: quizDurationSec,
+        totalScore: gameScore + riddleScore + gameScoring.challengePoints,
+        completedAt: new Date().toISOString(),
+      };
 
-    setGameHistory((previous) => upsertGameHistory(previous, entry));
+      setGameHistory((previous) => upsertGameHistory(previous, entry));
+    }
     setGameState("intro");
     setAnswers([]);
     setCurrentQ(0);
@@ -12970,8 +13102,10 @@ const resetForProfileSwitch = () => {
   const visibleQuickActions = profile.role === "visiteur"
     ? QUICK_ACTIONS
     : QUICK_ACTIONS.filter((item) => canAccessScreen(profile.role, phase, item.id));
-  const visibleBottomNavItems = BOTTOM_NAV_ITEMS.filter((item) =>
-    canAccessScreen(profile.role, phase, item.id)
+  const visibleBottomNavItems = BOTTOM_NAV_ITEMS.filter(
+    (item) =>
+      canAccessScreen(profile.role, phase, item.id) ||
+      (postTripReplayEnabled && profile.role === "visiteur" && (item.id === "game" || item.id === "jeux"))
   );
   const daysUntilStart = computeDaysUntilStart(tripStartDate);
   const todayFormatted = new Intl.DateTimeFormat("fr-FR", {
@@ -13157,7 +13291,7 @@ const resetForProfileSwitch = () => {
     selectedPlaceId && placeCommentsByPlace[selectedPlaceId]
       ? placeCommentsByPlace[selectedPlaceId]
       : {};
-  const effectiveScreen = canAccessScreen(profile.role, phase, screen)
+  const effectiveScreen = canAccessCurrentScreen
     ? screen
     : getSafeScreen(profile.role, phase);
 
@@ -14042,8 +14176,14 @@ const resetForProfileSwitch = () => {
             quickActions={visibleQuickActions}
             canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
-            canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
+            canPlayArcade={
+              canAccessScreen(profile.role, phase, "jeux") ||
+              (postTripReplayEnabled && profile.role === "visiteur")
+            }
             showVisitorLockedActions={profile.role === "visiteur"}
+            allowVisitorGamePostTripReplay={postTripReplayEnabled}
+            allowVisitorArcadePostTripReplay={postTripReplayEnabled}
+            postTripReplayEnabled={postTripReplayEnabled}
           isOnline={isOnline}
             onNavigate={goToScreen}
             onNavigateToTodayGuide={() => {
@@ -14237,6 +14377,11 @@ const resetForProfileSwitch = () => {
             riddleSolved={riddleSolved}
             challengeResponse={challengeResponse}
             challengeDone={challengeDone}
+            gameDay={gameDay}
+            canPickReplayDay={postTripReplayEnabled}
+            replayDayChoices={replayDayChoices}
+            onReplayDayChange={setPostTripReplayDay}
+            scorePersistenceDisabled={postTripReplayEnabled}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
             alreadyPlayedToday={alreadyPlayedToday}
@@ -14447,8 +14592,14 @@ const resetForProfileSwitch = () => {
             quickActions={visibleQuickActions}
             canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
-            canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
+            canPlayArcade={
+              canAccessScreen(profile.role, phase, "jeux") ||
+              (postTripReplayEnabled && profile.role === "visiteur")
+            }
             showVisitorLockedActions={profile.role === "visiteur"}
+            allowVisitorGamePostTripReplay={postTripReplayEnabled}
+            allowVisitorArcadePostTripReplay={postTripReplayEnabled}
+            postTripReplayEnabled={postTripReplayEnabled}
           isOnline={isOnline}
             onNavigate={goToScreen}
             onNavigateToTodayGuide={() => {
@@ -14618,6 +14769,11 @@ const resetForProfileSwitch = () => {
             riddleSolved={riddleSolved}
             challengeResponse={challengeResponse}
             challengeDone={challengeDone}
+            gameDay={gameDay}
+            canPickReplayDay={postTripReplayEnabled}
+            replayDayChoices={replayDayChoices}
+            onReplayDayChange={setPostTripReplayDay}
+            scorePersistenceDisabled={postTripReplayEnabled}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
             alreadyPlayedToday={alreadyPlayedToday}
@@ -14876,8 +15032,14 @@ const resetForProfileSwitch = () => {
             quickActions={visibleQuickActions}
           canAccessChecklist={canAccessScreen(profile.role, phase, "checklist")}
             canAccessOfflineMedia={canAccessScreen(profile.role, phase, "offline-media")}
-            canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
+            canPlayArcade={
+              canAccessScreen(profile.role, phase, "jeux") ||
+              (postTripReplayEnabled && profile.role === "visiteur")
+            }
             showVisitorLockedActions={profile.role === "visiteur"}
+            allowVisitorGamePostTripReplay={postTripReplayEnabled}
+            allowVisitorArcadePostTripReplay={postTripReplayEnabled}
+            postTripReplayEnabled={postTripReplayEnabled}
             isOnline={isOnline}
             onNavigate={goToScreen}
           onStartTutorial={startAccueilTutorial}
