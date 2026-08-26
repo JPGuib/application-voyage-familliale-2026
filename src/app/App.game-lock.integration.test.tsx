@@ -266,6 +266,8 @@ describe("Story 19.1 — verrouillage du défi du jour + override propriétaire"
 
     fireEvent.click(screen.getByRole("button", { name: /C'est parti/i }));
 
+    // Reset the global setup.ts Date-only mock before enabling full fake timers here.
+    vi.useRealTimers();
     vi.useFakeTimers();
     try {
       let safety = 0;

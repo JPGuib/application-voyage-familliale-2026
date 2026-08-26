@@ -23,9 +23,9 @@ export const DEFAULT_GAME_SCORING: GameScoringConfig = {
   riddlePoints: RIDDLE_POINTS,
   challengePoints: CHALLENGE_POINTS,
   destinationProposalScoring: [
-    { basePoints: 0, bonusPoints: 0 },
-    { basePoints: 0, bonusPoints: 0 },
-    { basePoints: 0, bonusPoints: 0 },
+    { basePoints: 30, bonusPoints: 10 },
+    { basePoints: 30, bonusPoints: 5 },
+    { basePoints: 20, bonusPoints: 0 },
   ],
 };
 

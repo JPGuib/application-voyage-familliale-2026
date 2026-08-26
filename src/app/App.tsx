@@ -6886,8 +6886,10 @@ function ResultsScreen({
   ) => void;
 }) {
   const chartMembers = familyMembers.filter((member) => member.role === "utilisateur");
+  // Story 25.2 AC7 : le proprietaire n'apparait jamais dans les resultats, mais
+  // les visiteurs peuvent apparaitre dans l'affichage du sondage (sans points).
   const visibleDestinationSurveyResults = destinationSurveyResults.filter(
-    (row) => row.role === "utilisateur"
+    (row) => row.role !== "proprietaire"
   );
   const [chartProfileId, setChartProfileId] = useState(
     () => chartMembers.some((m) => m.profileId === currentProfileId)

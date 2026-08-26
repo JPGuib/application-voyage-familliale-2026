@@ -1,4 +1,21 @@
 import "@testing-library/jest-dom/vitest";
+import { afterEach, beforeEach, vi } from "vitest";
+
+// Several integration tests hardcode a trip start date (2026-08-16) and rely on
+// "now" falling within the trip window to assert the "during" trip UI. Without
+// freezing the clock, these tests become flaky/fail once the real date moves
+// past the hardcoded trip window. Freeze "now" to a fixed in-trip date for all
+// tests; individual tests can still override it with their own vi.setSystemTime
+// / vi.useFakeTimers calls when they need a different point in time.
+const FIXED_TEST_NOW = new Date("2026-08-24T09:00:00");
+
+beforeEach(() => {
+  vi.setSystemTime(FIXED_TEST_NOW);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 // Node 22+ exposes its own global `localStorage` (Web Storage API, gated behind
 // --localstorage-file). In a vitest jsdom environment this built-in accessor can

@@ -9,5 +9,32 @@ Evolutions :
 * places que l'admin puisse modifier le contenu
 * jeu : pouvoir revoir les questions pour qu'elle ne se basent que sur ce qui a été
 réellement fait, pas prevu => associer une question à un jour / un id de places
-
-
+* 
+* 
+* pouvoir dire ce qui a été visité ou non à la fin pour le rapport final 
+* retour l'UI ? S'inspire de wechat
+* rajouter facilement les scans des billets retour, possibilité d'intégrer les codes pythons qui découpent, transformé en webp et mettent dans l'appli ? sinon utiliser un lien drive?
+* le tag scan n'est pas tjs bien compris
+* voir ses réponses au questions / jeu en fin de séjour ?
+* pouvoir enregistrer des audio/ guide
+* mettre tout sorte / rajouter du contenu après une visite
+* rajouter les dernières visites ou compléments de la guide
+* récupérer polarstep ?
+* créer un album souvenir
+* Pouvoir rajouter ses excursions non prévues dans places.ts
+* jeu : accepter plusieurs réponses possibles comme galeta et tour de galata
+* son pouvoir avancer
+* places que l'admin puisse modifier le contenu
+* jeu que.les questions se basent sur ce qui a été réellement fait, pas prevu
+* faire défiler les photos en même temps que l'audio
+* notification quiz du jour
+* mots croisés plus pratiques à visionner
+* pouvori voter pour le meileur commentaire du jour avec par exemple un emoticone trophee
+* candy crush mettre un chrono et un système de record à battre
+* défi photos
+* pouvoir stocker des photos
+* rajouter des musiques dans l'audio (genre les mouettes ...)
+* messagerie / chat en ligne
+* agenda interactif pour que chacun puisse mettre les hotraires sur l'agenda pour peremttre de dire heure de reveil ...
+* sondage quotidien 
+* Rajoter les thèmes devant les quiz
