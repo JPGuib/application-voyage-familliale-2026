@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import App from "./App";
 
 const cloudSyncMock = vi.fn();
@@ -264,10 +264,51 @@ describe("Story 19.1 — verrouillage du défi du jour + override propriétaire"
     expect(screen.getByText(/Jour à rejouer/i)).toBeInTheDocument();
     expect(screen.queryByText("Défi du jour déjà relevé !")).not.toBeInTheDocument();
 
+    fireEvent.click(screen.getByRole("button", { name: /C'est parti/i }));
+
+    vi.useFakeTimers();
+    try {
+      let safety = 0;
+      while (!screen.queryByRole("button", { name: /Continuer vers l'énigme/i }) && safety < 30) {
+        const option = document.querySelector<HTMLButtonElement>(".space-y-3 button:not([disabled])");
+        if (!option) {
+          break;
+        }
+        fireEvent.click(option);
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(1500);
+        });
+        safety += 1;
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+
+    fireEvent.click(screen.getByRole("button", { name: /Continuer vers l'énigme/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Énigme du jour/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByPlaceholderText("Votre réponse"), {
+      target: { value: "test" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Valider la réponse/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Terminer le rejeu/i })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("button", { name: /Continuer vers le défi/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Terminer le rejeu/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /C'est parti/i })).toBeInTheDocument();
+    });
+
     fireEvent.click(within(screen.getByRole("navigation")).getByRole("button", { name: "Accueil" }));
     await waitFor(() => {
       expect(screen.getByText(/Voyage terminé/i)).toBeInTheDocument();
     });
+    expect(screen.queryByText(/Mode rejeu post-voyage/i)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Espace ludique/i }));
     await waitFor(() => {

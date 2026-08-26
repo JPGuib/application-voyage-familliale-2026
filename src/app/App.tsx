@@ -2724,7 +2724,6 @@ function DashboardScreen({
   showVisitorLockedActions,
   allowVisitorGamePostTripReplay,
   allowVisitorArcadePostTripReplay,
-  postTripReplayEnabled,
   isOnline,
   onNavigate,
   onNavigateToTodayGuide,
@@ -2746,7 +2745,6 @@ function DashboardScreen({
   showVisitorLockedActions: boolean;
   allowVisitorGamePostTripReplay: boolean;
   allowVisitorArcadePostTripReplay: boolean;
-  postTripReplayEnabled: boolean;
   isOnline: boolean;
   onNavigate: (s: Screen) => void;
   onNavigateToTodayGuide: () => void;
@@ -2882,19 +2880,6 @@ function DashboardScreen({
           <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
         </button>
       </div>
-
-      {postTripReplayEnabled && (
-        <div className="px-4 mt-4">
-          <div className="rounded-2xl border border-[#90CAF9] bg-[#E3F2FD] px-4 py-3">
-            <p className="text-xs font-extrabold uppercase tracking-widest text-[#1565C0]">
-              Mode rejeu post-voyage
-            </p>
-            <p className="text-xs font-semibold text-[#0D47A1] mt-1">
-              Quiz, énigmes et espace ludique sont ouverts à tous. Les résultats officiels restent figés.
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Quick actions */}
       <div className="px-4 mt-5">
@@ -6421,6 +6406,8 @@ function GameScreen({
   replayDayChoices,
   onReplayDayChange,
   scorePersistenceDisabled,
+  challengeEnabled,
+  onFinishAfterRiddle,
   onStart,
   onAnswer,
   onBack,
@@ -6458,6 +6445,8 @@ function GameScreen({
   replayDayChoices: number[];
   onReplayDayChange: (day: number) => void;
   scorePersistenceDisabled: boolean;
+  challengeEnabled: boolean;
+  onFinishAfterRiddle: () => void;
   onStart: () => void;
   onAnswer: (idx: number) => void;
   onBack: () => void;
@@ -6568,9 +6557,9 @@ function GameScreen({
               <strong className="text-primary">{scoring.questionPoints} points</strong> à l&apos;équipe !
             </p>
             <p className="text-xs font-bold text-[#C62828] bg-[#FFEBEE] rounded-xl px-4 py-3 mb-8 text-left">
-              ⚠️ Une fois lancé, impossible de quitter le jeu avant de l&apos;avoir terminé (quiz,
-              énigme puis défi final). Mieux vaut y jouer en fin de journée, une fois toutes les
-              visites terminées.
+              {challengeEnabled
+                ? "⚠️ Une fois lancé, impossible de quitter le jeu avant de l&apos;avoir terminé (quiz, énigme puis défi final). Mieux vaut y jouer en fin de journée, une fois toutes les visites terminées."
+                : "⚠️ Une fois lancé, terminez le quiz puis l&apos;énigme. Le défi final n&apos;est pas rejouable en mode post-voyage."}
             </p>
             <button
               onClick={onStart}
@@ -6697,7 +6686,7 @@ function GameScreen({
             )}
           </div>
 
-          {riddleValidated && (
+          {riddleValidated && challengeEnabled && (
             <button
               onClick={onContinueToChallenge}
               className="mt-4 w-full bg-primary text-primary-foreground rounded-2xl py-4 text-sm font-black"
@@ -6705,6 +6694,36 @@ function GameScreen({
               Continuer vers le défi 💪
             </button>
           )}
+          {riddleValidated && !challengeEnabled && (
+            <button
+              onClick={onFinishAfterRiddle}
+              className="mt-4 w-full bg-primary text-primary-foreground rounded-2xl py-4 text-sm font-black"
+            >
+              Terminer le rejeu ✅
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (gameState === "challenge" && !challengeEnabled) {
+    return (
+      <div className="flex flex-col h-full overflow-y-auto">
+        <div className="relative bg-[#FF6B3D] text-white px-6 pt-12 pb-6 flex-shrink-0">
+          <MemphisDecor />
+          <h1 className="relative z-10 text-2xl font-black">Jeu du jour 🎮</h1>
+        </div>
+        <div className="flex-1 px-4 py-6 flex flex-col items-center justify-center text-center">
+          <p className="text-sm font-semibold text-muted-foreground mb-4">
+            Le défi final n&apos;est pas disponible en mode post-voyage.
+          </p>
+          <button
+            onClick={onFinishAfterRiddle}
+            className="bg-primary text-primary-foreground rounded-2xl py-4 px-8 text-sm font-black"
+          >
+            Retour au jeu du jour
+          </button>
         </div>
       </div>
     );
@@ -14183,7 +14202,6 @@ const resetForProfileSwitch = () => {
             showVisitorLockedActions={profile.role === "visiteur"}
             allowVisitorGamePostTripReplay={postTripReplayEnabled}
             allowVisitorArcadePostTripReplay={postTripReplayEnabled}
-            postTripReplayEnabled={postTripReplayEnabled}
           isOnline={isOnline}
             onNavigate={goToScreen}
             onNavigateToTodayGuide={() => {
@@ -14382,6 +14400,21 @@ const resetForProfileSwitch = () => {
             replayDayChoices={replayDayChoices}
             onReplayDayChange={setPostTripReplayDay}
             scorePersistenceDisabled={postTripReplayEnabled}
+            challengeEnabled={!postTripReplayEnabled}
+            onFinishAfterRiddle={() => {
+              setGameState("intro");
+              setAnswers([]);
+              setCurrentQ(0);
+              setSelectedAns(null);
+              setQuizStartedAt(null);
+              setQuizDurationSec(0);
+              setRiddleAnswer("");
+              setRiddleFeedback(null);
+              setRiddleValidated(false);
+              setRiddleSolved(false);
+              setChallengeResponse("");
+              setChallengeDone(false);
+            }}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
             alreadyPlayedToday={alreadyPlayedToday}
@@ -14412,7 +14445,12 @@ const resetForProfileSwitch = () => {
               if (riddleFeedback) setRiddleFeedback(null);
             }}
             onValidateRiddle={validateRiddle}
-            onContinueToChallenge={() => setGameState("challenge")}
+            onContinueToChallenge={() => {
+              if (postTripReplayEnabled) {
+                return;
+              }
+              setGameState("challenge");
+            }}
             onChallengeResponseChange={setChallengeResponse}
             onCompleteChallenge={completeChallengeAndFinishSession}
           />
@@ -14599,7 +14637,6 @@ const resetForProfileSwitch = () => {
             showVisitorLockedActions={profile.role === "visiteur"}
             allowVisitorGamePostTripReplay={postTripReplayEnabled}
             allowVisitorArcadePostTripReplay={postTripReplayEnabled}
-            postTripReplayEnabled={postTripReplayEnabled}
           isOnline={isOnline}
             onNavigate={goToScreen}
             onNavigateToTodayGuide={() => {
@@ -14774,6 +14811,21 @@ const resetForProfileSwitch = () => {
             replayDayChoices={replayDayChoices}
             onReplayDayChange={setPostTripReplayDay}
             scorePersistenceDisabled={postTripReplayEnabled}
+            challengeEnabled={!postTripReplayEnabled}
+            onFinishAfterRiddle={() => {
+              setGameState("intro");
+              setAnswers([]);
+              setCurrentQ(0);
+              setSelectedAns(null);
+              setQuizStartedAt(null);
+              setQuizDurationSec(0);
+              setRiddleAnswer("");
+              setRiddleFeedback(null);
+              setRiddleValidated(false);
+              setRiddleSolved(false);
+              setChallengeResponse("");
+              setChallengeDone(false);
+            }}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
             alreadyPlayedToday={alreadyPlayedToday}
@@ -14804,7 +14856,12 @@ const resetForProfileSwitch = () => {
               if (riddleFeedback) setRiddleFeedback(null);
             }}
             onValidateRiddle={validateRiddle}
-            onContinueToChallenge={() => setGameState("challenge")}
+            onContinueToChallenge={() => {
+              if (postTripReplayEnabled) {
+                return;
+              }
+              setGameState("challenge");
+            }}
             onChallengeResponseChange={setChallengeResponse}
             onCompleteChallenge={completeChallengeAndFinishSession}
             canPlayArcade={canAccessScreen(profile.role, phase, "jeux")}
@@ -15039,7 +15096,6 @@ const resetForProfileSwitch = () => {
             showVisitorLockedActions={profile.role === "visiteur"}
             allowVisitorGamePostTripReplay={postTripReplayEnabled}
             allowVisitorArcadePostTripReplay={postTripReplayEnabled}
-            postTripReplayEnabled={postTripReplayEnabled}
             isOnline={isOnline}
             onNavigate={goToScreen}
           onStartTutorial={startAccueilTutorial}
