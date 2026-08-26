@@ -149,20 +149,65 @@ function getPackQuestionCount(pack: TPackInfo): number | null {
   return null;
 }
 
-// Utilisée si l'appel réseau à /packs échoue (serveur en train de démarrer,
-// pas encore de connexion...) — évite un écran de création vide.
-const FALLBACK_PACKS: TPackInfo[] = [{
-  id: "turquie",
-  label: "Trivial Turquie 🇹🇷",
-  category_labels: [
-    "Histoire & Empire ottoman",
-    "Gastronomie",
-    "Langue & expressions",
-    "Geographie",
-    "Culture & traditions",
-    "Istanbul",
-  ],
-}];
+// Utilisée pendant le réveil du serveur et si l'appel réseau à /packs échoue.
+// La sélection des thèmes reste ainsi disponible sans attendre Render.
+const FALLBACK_PACKS: TPackInfo[] = [
+  {
+    id: "turquie",
+    label: "Trivial Turquie 🇹🇷",
+    category_labels: ["Histoire & Empire ottoman", "Gastronomie", "Langue & expressions", "Geographie", "Culture & traditions", "Istanbul"],
+  },
+  {
+    id: "culture-generale",
+    label: "Culture Générale 🧠",
+    category_labels: ["Histoire", "Géographie", "Sciences & Nature", "Divertissement", "Sports & Loisirs", "Littérature"],
+  },
+  {
+    id: "disney",
+    label: "Quiz Disney ✨",
+    category_labels: ["Films Classiques", "Univers Pixar", "Princesses Disney", "Parcs Disney", "Personnages & Vilains", "Musique & Chansons"],
+  },
+  {
+    id: "musique",
+    label: "Quiz Musique 🎤",
+    category_labels: ["Années 80", "Années 90", "Années 2000", "Années 2010", "Années 2020", "Scène Francophone"],
+  },
+  {
+    id: "cinema",
+    label: "Quiz Cinéma 🎬",
+    category_labels: ["Films Français", "Films Étrangers", "Acteurs & Actrices", "Dessins Animés", "Super Héros", "Personnages de Dessins Animés"],
+  },
+  {
+    id: "Grand classique familial",
+    label: "Grand classique familial 🏰",
+    category_labels: ["Cinéma & séries", "Musique", "Géographie et voyages", "Animaux", "Cuisine et gastronomie", "Culture Générale"],
+  },
+  {
+    id: "Tour du monde",
+    label: "Tour du monde 🌍",
+    category_labels: ["France", "Pays du monde", "Monuments", "Cuisine du monde", "Langues & expressions", "Voyages insolites"],
+  },
+  {
+    id: "Pop Culture",
+    label: "Pop Culture 🎬",
+    category_labels: ["Films", "Séries", "Musique", "Jeux vidéo", "Super-héros", "Personnages fictifs"],
+  },
+  {
+    id: "Neurones en famille",
+    label: "Neurones en famille 🧠",
+    category_labels: ["Logiques et chiffres", "Culture générale", "Trouver l'intrus", "Enigmes", "Plus ou moins", "Questions rapides"],
+  },
+  {
+    id: "Générations",
+    label: "Générations 🎬",
+    category_labels: ["Années 60-70", "Années 80", "Années 90", "Années 2000", "Aujourd'hui", "Toutes générations"],
+  },
+  {
+    id: "Sport",
+    label: "Sport 🏅",
+    category_labels: ["Les sports populaires", "JO et champions", "Vitesse et moteurs", "Stades et compétitions", "Règles et connaissances", "Insolite et records"],
+  },
+];
 
 // Garde une trace locale des salons créés depuis cet appareil, pour pouvoir
 // les retrouver après avoir quitté l'écran — le serveur ne connaît que les
@@ -231,6 +276,7 @@ export function TrivialGameScreen({
   const [hostedRooms, setHostedRooms] = useState<HostedRoomEntry[]>([]);
   const [showRules, setShowRules] = useState(false);
   const [availablePacks, setAvailablePacks] = useState<TPackInfo[]>(FALLBACK_PACKS);
+  const [isLoadingPacks, setIsLoadingPacks] = useState(true);
   const [selectedPack, setSelectedPack] = useState<string>("turquie");
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -244,14 +290,15 @@ export function TrivialGameScreen({
       .then((packs: TPackInfo[]) => {
         if (Array.isArray(packs) && packs.length > 0) {
           setAvailablePacks(packs);
-          setSelectedPack(packs[0].id);
+          setSelectedPack((currentPack) =>
+            packs.some((pack) => pack.id === currentPack) ? currentPack : packs[0].id
+          );
         }
       })
       .catch(() => {
-        // Le serveur n'est pas joignable pour l'instant : on garde la liste
-        // de secours (pack Turquie), l'erreur réelle apparaîtra de toute
-        // façon à la tentative de connexion.
-      });
+        // Le serveur n'est pas joignable : la liste complète de secours reste affichée.
+      })
+      .finally(() => setIsLoadingPacks(false));
   }, []);
 
   useEffect(() => {
@@ -486,6 +533,9 @@ export function TrivialGameScreen({
               <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
                 Rubrique
               </div>
+              {isLoadingPacks && (
+                <div className="text-xs text-muted-foreground mb-2">Chargement des thèmes...</div>
+              )}
               <div className="flex flex-col gap-2">
                 {availablePacks.map((pack) => {
                   const questionCount = getPackQuestionCount(pack);
