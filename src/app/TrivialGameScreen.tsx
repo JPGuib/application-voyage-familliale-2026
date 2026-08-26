@@ -166,11 +166,6 @@ const FALLBACK_PACKS: TPackInfo[] = [{
 
 // Garde une trace locale des salons créés depuis cet appareil, pour pouvoir
 // les retrouver après avoir quitté l'écran — le serveur ne connaît que les
-                    {pack.category_labels && pack.category_labels.length > 0 && (
-                      <div className="text-xs font-medium opacity-80 mt-1 leading-relaxed">
-                        {pack.category_labels.join(" • ")}
-                      </div>
-                    )}
 // salons actifs, cette liste vit uniquement dans le navigateur.
 const HOSTED_ROOMS_KEY = "trivial_turquie_hosted_rooms";
 const MAX_HOSTED_ROOMS = 5;
@@ -505,6 +500,11 @@ export function TrivialGameScreen({
                     }`}
                   >
                     <div>{pack.label}</div>
+                    {pack.category_labels && pack.category_labels.length > 0 && (
+                      <div className="text-xs font-medium opacity-80 mt-1 leading-relaxed">
+                        {pack.category_labels.join(" • ")}
+                      </div>
+                    )}
                     {questionCount !== null && (
                       <div className="text-xs font-medium opacity-80 mt-0.5">{questionCount} questions</div>
                     )}
