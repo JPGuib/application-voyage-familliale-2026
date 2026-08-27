@@ -170,6 +170,7 @@ function isCloudGameEntry(value: unknown): value is CloudGameHistoryEntry {
     typeof entry.quizScore === "number" &&
     typeof entry.correctCount === "number" &&
     typeof entry.riddleSolved === "boolean" &&
+    (entry.riddleAnswer === undefined || typeof entry.riddleAnswer === "string") &&
     typeof entry.challengeDone === "boolean" &&
     (entry.challengeResponse === undefined || typeof entry.challengeResponse === "string") &&
     typeof entry.durationSec === "number" &&
@@ -187,6 +188,7 @@ function parseGameResults(value: unknown): CloudGameHistoryEntry[] {
     .filter(isCloudGameEntry)
     .map((entry) => ({
       ...entry,
+      riddleAnswer: typeof entry.riddleAnswer === "string" ? entry.riddleAnswer : "",
       challengeResponse: typeof entry.challengeResponse === "string" ? entry.challengeResponse : "",
     }))
     .sort((left, right) => left.day - right.day);

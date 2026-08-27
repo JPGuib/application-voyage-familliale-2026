@@ -23,6 +23,10 @@ export type CloudGameHistoryEntry = {
   quizScore: number;
   correctCount: number;
   riddleSolved: boolean;
+  // Réponse (texte brut) donnée par le joueur à l'énigme du jour ; facultatif
+  // pour rester compatible avec les entrées enregistrées avant l'ajout de ce
+  // champ (cf. game-results.ts, même logique côté local).
+  riddleAnswer?: string;
   challengeDone: boolean;
   challengeResponse?: string;
   durationSec: number;

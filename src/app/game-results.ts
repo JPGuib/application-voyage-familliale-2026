@@ -4,6 +4,11 @@ export type GameHistoryEntry = {
   quizScore: number;
   correctCount: number;
   riddleSolved: boolean;
+  // Réponse (texte brut) donnée par le joueur à l'énigme du jour, pour
+  // pouvoir l'afficher plus tard dans le détail des résultats aux côtés de
+  // la réponse attendue (cf. RIDDLES_BY_DAY). Facultatif pour rester
+  // compatible avec les entrées enregistrées avant l'ajout de ce champ.
+  riddleAnswer?: string;
   challengeDone: boolean;
   challengeResponse?: string;
   durationSec: number;
@@ -77,6 +82,7 @@ export function parseGameHistory(raw: string | null): GameHistoryEntry[] {
         typeof entry?.quizScore === "number" &&
         typeof entry?.correctCount === "number" &&
         typeof entry?.riddleSolved === "boolean" &&
+        (entry?.riddleAnswer === undefined || typeof entry?.riddleAnswer === "string") &&
         typeof entry?.challengeDone === "boolean" &&
         (entry?.challengeResponse === undefined || typeof entry?.challengeResponse === "string") &&
         typeof entry?.durationSec === "number" &&
@@ -89,6 +95,8 @@ export function parseGameHistory(raw: string | null): GameHistoryEntry[] {
 
       return [{
         ...(entry as GameHistoryEntry),
+        riddleAnswer:
+          typeof entry.riddleAnswer === "string" ? entry.riddleAnswer : "",
         challengeResponse:
           typeof entry.challengeResponse === "string" ? entry.challengeResponse : "",
       }];

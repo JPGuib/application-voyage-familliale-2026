@@ -11,7 +11,6 @@ Evolutions :
 * CONTENU - C6 - pouvoir stocker des photos
 * CONTENU - C7 - rajouter des musiques dans l'audio (genre les mouettes ...)
 
-* JEU - J1 - accepter plusieurs réponses possibles comme galeta et tour de galata
 * JEU - J2 - pouvoir revoir les questions (quiz / enigmes) pour qu'elle ne se basent que sur ce qui a été réellement visité (en lien avec Backlog C2), pas prevu => associer une question à un jour / un id de places
 * JEU - J3 - voir ses réponses au questions / jeu en fin de séjour ?
 * JEU - J4 - notification quiz du jour
@@ -23,7 +22,6 @@ Evolutions :
 * JEU - J10 - Un joueur qui a oublié de faire le jeu de la veille pourrait-il le passer quand même ? (paramètre possible ? Paramètre admin ? ...)
 
 * UI - UI1 - retour l'UI ? S'inspire de wechat
-* UI - UI2 - le tag scan n'est pas tjs bien compris
 * UI - UI3 - faire défiler les photos en même temps que l'audio
 
 * POST-SEJOUR - PSJ1 - récupérer polarstep ?

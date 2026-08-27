@@ -7017,6 +7017,9 @@ function ResultsScreen({
       ? currentProfileId
       : (chartMembers[0]?.profileId ?? currentProfileId)
   );
+  // Jour actuellement déplié dans le détail "Par journée" (accordéon) ; null
+  // = tout replié.
+  const [expandedHistoryDay, setExpandedHistoryDay] = useState<number | null>(null);
 
   const chartProfile = chartMembers.find((m) => m.profileId === chartProfileId)
     ?? chartMembers.find((m) => m.profileId === currentProfileId)
@@ -7233,31 +7236,110 @@ function ResultsScreen({
             </p>
           ) : (
             <div className="space-y-3">
-              {dailyScores.map((d) => (
-                <div key={d.day} className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-[#6B3DFF]/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-black text-[#6B3DFF]">
-                      J{d.day}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm font-bold text-foreground">
-                        {d.location}
-                      </span>
-                      <span className="text-sm font-black text-[#6B3DFF]">
-                        {d.score} pts
-                      </span>
-                    </div>
-                    <div className="bg-muted rounded-full h-2">
-                      <div
-                        className="bg-[#6B3DFF] h-2 rounded-full transition-all"
-                        style={{ width: `${Math.min(100, d.score)}%` }}
+              {dailyScores.map((d) => {
+                const isExpanded = expandedHistoryDay === d.day;
+                const detailEntry = history.find((entry) => entry.day === d.day) ?? null;
+                const totalQuestions = getQuestionsForDay(d.day).length;
+                const expectedRiddleAnswer = getRiddleForDay(d.day).answer;
+                return (
+                  <div key={d.day}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedHistoryDay((current) => (current === d.day ? null : d.day))
+                      }
+                      aria-expanded={isExpanded}
+                      className="w-full flex items-center gap-3 text-left"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-[#6B3DFF]/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-black text-[#6B3DFF]">
+                          J{d.day}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-bold text-foreground">
+                            {d.location}
+                          </span>
+                          <span className="text-sm font-black text-[#6B3DFF]">
+                            {d.score} pts
+                          </span>
+                        </div>
+                        <div className="bg-muted rounded-full h-2">
+                          <div
+                            className="bg-[#6B3DFF] h-2 rounded-full transition-all"
+                            style={{ width: `${Math.min(100, d.score)}%` }}
+                          />
+                        </div>
+                      </div>
+                      <ChevronDown
+                        size={16}
+                        className={`flex-shrink-0 text-muted-foreground transition-transform ${
+                          isExpanded ? "rotate-180" : ""
+                        }`}
                       />
-                    </div>
+                    </button>
+                    {isExpanded && detailEntry && (
+                      <div className="mt-3 ml-12 space-y-2 rounded-xl bg-muted/30 border border-border p-3 text-sm">
+                        <div className="flex justify-between gap-3">
+                          <span className="text-muted-foreground">Quiz</span>
+                          <span className="font-bold text-foreground text-right">
+                            {detailEntry.correctCount}/{totalQuestions} bonnes réponses · {detailEntry.quizScore} pts
+                          </span>
+                        </div>
+                        <div className="flex justify-between gap-3">
+                          <span className="text-muted-foreground flex-shrink-0">Énigme</span>
+                          <span className="font-bold text-foreground text-right">
+                            {detailEntry.riddleSolved
+                              ? `Gagnée (+${scoring.riddlePoints} pts)`
+                              : "Perdue (0 pt)"}
+                          </span>
+                        </div>
+                        {detailEntry.riddleAnswer ? (
+                          <p className="text-xs text-muted-foreground">
+                            Réponse donnée : « {detailEntry.riddleAnswer} » — Réponse attendue : « {expectedRiddleAnswer} »
+                          </p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            Réponse attendue : « {expectedRiddleAnswer} »
+                          </p>
+                        )}
+                        <div className="flex justify-between gap-3">
+                          <span className="text-muted-foreground">Défi</span>
+                          <span className="font-bold text-foreground text-right">
+                            {detailEntry.challengeDone
+                              ? `Réalisé (+${scoring.challengePoints} pts)`
+                              : "Non réalisé (0 pt)"}
+                          </span>
+                        </div>
+                        {detailEntry.challengeResponse ? (
+                          <p className="text-xs text-muted-foreground">
+                            Réponse au défi : « {detailEntry.challengeResponse} »
+                          </p>
+                        ) : null}
+                        <div className="flex justify-between gap-3 pt-1 border-t border-border">
+                          <span className="text-muted-foreground">Durée</span>
+                          <span className="font-bold text-foreground">
+                            {formatDuration(detailEntry.durationSec) ?? "—"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between gap-3">
+                          <span className="text-muted-foreground">Date</span>
+                          <span className="font-bold text-foreground">
+                            {new Date(detailEntry.completedAt).toLocaleDateString("fr-FR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -13045,6 +13127,7 @@ const resetForProfileSwitch = () => {
         quizScore: gameScore,
         correctCount,
         riddleSolved,
+        riddleAnswer: riddleAnswer.trim(),
         challengeDone: true,
         challengeResponse: trimmedChallengeResponse,
         durationSec: quizDurationSec,
