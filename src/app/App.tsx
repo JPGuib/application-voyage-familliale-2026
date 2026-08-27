@@ -744,6 +744,78 @@ function normalizeAnswer(value: string) {
     .toLowerCase();
 }
 
+// Distance de Levenshtein entre deux chaînes : nombre minimal d'ajouts,
+// suppressions ou substitutions de caractères pour passer de l'une à
+// l'autre. Utilisée pour tolérer une petite faute de frappe ou une
+// orthographe légèrement différente dans les réponses de l'énigme
+// (ex: "Galatta" ou "Ghalata" au lieu de "Galata").
+function levenshteinDistance(a: string, b: string): number {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  let previousRow = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 0; i < a.length; i++) {
+    const currentRow = [i + 1];
+    for (let j = 0; j < b.length; j++) {
+      const cost = a[i] === b[j] ? 0 : 1;
+      currentRow.push(
+        Math.min(
+          previousRow[j + 1] + 1, // suppression
+          currentRow[j] + 1, // insertion
+          previousRow[j] + cost // substitution
+        )
+      );
+    }
+    previousRow = currentRow;
+  }
+  return previousRow[b.length];
+}
+
+function isCloseEnough(word: string, target: string): boolean {
+  if (!word || !target) return false;
+  if (word === target) return true;
+  // Tolérance calibrée sur la longueur du mot attendu : une petite faute de
+  // frappe ou une variante d'orthographe (1 caractère en plus/en moins/
+  // différent) est acceptée sur la plupart des noms de l'énigme, et 2
+  // seulement sur les mots très longs — pour éviter qu'une réponse
+  // simplement tronquée (ex: "Derinku" pour "Derinkuyu") ne soit acceptée à
+  // tort.
+  const maxDistance = target.length > 9 ? 2 : target.length > 3 ? 1 : 0;
+  return levenshteinDistance(word, target) <= maxDistance;
+}
+
+// Vérifie si la réponse saisie peut être acceptée automatiquement, en
+// tolérant :
+// - les accents, la casse et la ponctuation (déjà gérés par normalizeAnswer),
+// - des mots ajoutés autour de la bonne réponse (ex: "Tour de Galata" ou
+//   "Tout de Galata" pour la réponse attendue "Galata"),
+// - une petite différence d'orthographe (faute de frappe, transcription
+//   différente d'un nom turc, etc.).
+// Si aucun de ces cas ne s'applique, on ne tranche pas automatiquement :
+// c'est alors au joueur d'indiquer honnêtement si sa réponse était bonne
+// (voir le mécanisme d'auto-déclaration dans validateRiddle).
+function isRiddleAnswerAcceptable(rawInput: string, rawExpected: string): boolean {
+  const clean = (v: string) =>
+    normalizeAnswer(v)
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  const input = clean(rawInput);
+  const expected = clean(rawExpected);
+  if (!input || !expected) return false;
+
+  if (input === expected) return true;
+
+  // La bonne réponse apparaît comme un des mots de la saisie.
+  const inputWords = input.split(" ");
+  if (inputWords.some((word) => isCloseEnough(word, expected))) {
+    return true;
+  }
+
+  // Petite différence d'orthographe sur la réponse complète.
+  return isCloseEnough(input, expected);
+}
+
 function areChecklistStatesEqual(
   left: Record<string, boolean>,
   right: Record<string, boolean>
@@ -4217,7 +4289,7 @@ function DocumentsScreen({
           >
             <ChevronLeft size={18} /> Documents
           </button>
-          <h1 data-tutorial-id="documents-scans-title" className="relative z-10 text-2xl font-black">Scans · {scansDocument.title}</h1>
+          <h1 data-tutorial-id="documents-scans-title" className="relative z-10 text-2xl font-black">Docs · {scansDocument.title}</h1>
           <p className="relative z-10 text-sm opacity-90 mt-1">
             Touchez une image pour l'agrandir
           </p>
@@ -4226,7 +4298,7 @@ function DocumentsScreen({
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {scans.length === 0 ? (
             <div className="rounded-2xl bg-card border border-border p-4">
-              <p className="text-sm text-muted-foreground italic">Aucun scan disponible pour ce document</p>
+              <p className="text-sm text-muted-foreground italic">Aucun doc disponible pour cet élément</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
@@ -4513,9 +4585,9 @@ function DocumentsScreen({
                               onClick={() => openScans(item)}
                               data-tutorial-id={item.id === "vol-nantes-paris-af7507" ? "documents-open-scans" : undefined}
                               className="inline-flex items-center justify-center whitespace-nowrap rounded-full border-0 bg-[#E8F5E9] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest leading-none text-[#2E7D32] transition-transform active:scale-95"
-                              aria-label={`Ouvrir les scans de ${item.title}`}
+                              aria-label={`Ouvrir les docs de ${item.title}`}
                             >
-                              {item.scans?.length} scan(s)
+                              {item.scans?.length} doc(s)
                             </button>
                         ) : null}
                       </div>
@@ -6419,6 +6491,7 @@ function GameScreen({
   riddleFeedback,
   riddleValidated,
   riddleSolved,
+  riddleSelfCheckPending,
   challengeResponse,
   challengeDone,
   gameDay,
@@ -6434,6 +6507,7 @@ function GameScreen({
   onContinueToRiddle,
   onRiddleAnswerChange,
   onValidateRiddle,
+  onDeclareRiddleSelfCheck,
   onContinueToChallenge,
   onChallengeResponseChange,
   onCompleteChallenge,
@@ -6458,6 +6532,7 @@ function GameScreen({
   riddleFeedback: string | null;
   riddleValidated: boolean;
   riddleSolved: boolean;
+  riddleSelfCheckPending: boolean;
   challengeResponse: string;
   challengeDone: boolean;
   gameDay: number;
@@ -6473,6 +6548,7 @@ function GameScreen({
   onContinueToRiddle: () => void;
   onRiddleAnswerChange: (value: string) => void;
   onValidateRiddle: () => void;
+  onDeclareRiddleSelfCheck: (isCorrect: boolean) => void;
   onContinueToChallenge: () => void;
   onChallengeResponseChange: (value: string) => void;
   onCompleteChallenge: () => void;
@@ -6685,9 +6761,9 @@ function GameScreen({
               onChange={(e) => onRiddleAnswerChange(e.target.value)}
               placeholder="Votre réponse"
               className="mt-4 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
-              disabled={riddleValidated}
+              disabled={riddleValidated || riddleSelfCheckPending}
             />
-            {!riddleValidated && (
+            {!riddleValidated && !riddleSelfCheckPending && (
               <button
                 onClick={onValidateRiddle}
                 className="mt-3 w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-black"
@@ -6698,11 +6774,36 @@ function GameScreen({
             {riddleFeedback && (
               <p
                 className={`mt-3 text-sm font-bold ${
-                  riddleSolved ? "text-[#2E7D32]" : "text-[#C62828]"
+                  riddleSelfCheckPending
+                    ? "text-foreground"
+                    : riddleSolved
+                    ? "text-[#2E7D32]"
+                    : "text-[#C62828]"
                 }`}
               >
                 {riddleFeedback}
               </p>
+            )}
+            {riddleSelfCheckPending && (
+              <>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  On vous fait confiance : soyez honnête 🙂
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={() => onDeclareRiddleSelfCheck(true)}
+                    className="flex-1 bg-[#2E7D32] text-white rounded-xl py-3 text-sm font-black"
+                  >
+                    Oui, c'était ma réponse ✅
+                  </button>
+                  <button
+                    onClick={() => onDeclareRiddleSelfCheck(false)}
+                    className="flex-1 bg-[#C62828] text-white rounded-xl py-3 text-sm font-black"
+                  >
+                    Non, pas vraiment ❌
+                  </button>
+                </div>
+              </>
             )}
           </div>
 
@@ -10062,6 +10163,13 @@ export default function App() {
       return false;
     }
   });
+  // true pendant la phase d'auto-déclaration : la réponse saisie ne
+  // correspond pas automatiquement à la bonne réponse, on affiche donc
+  // celle-ci et on demande au joueur d'indiquer honnêtement si c'était
+  // sa réponse (formulée différemment) ou non. Volontairement non
+  // persisté (ni localStorage, ni cloud) : c'est un état transitoire,
+  // résolu avant que riddleValidated ne passe à true.
+  const [riddleSelfCheckPending, setRiddleSelfCheckPending] = useState(false);
   const [challengeResponse, setChallengeResponse] = useState(() => {
     if (cloudEnabled) {
       return "";
@@ -11004,6 +11112,7 @@ export default function App() {
       setRiddleFeedback(null);
       setRiddleValidated(false);
       setRiddleSolved(false);
+      setRiddleSelfCheckPending(false);
       setChallengeResponse("");
       setChallengeDone(false);
     }
@@ -12254,6 +12363,7 @@ const resetForProfileSwitch = () => {
     setRiddleFeedback(null);
     setRiddleValidated(false);
     setRiddleSolved(false);
+    setRiddleSelfCheckPending(false);
     setChallengeResponse("");
     setChallengeDone(false);
     setShowStartPrompt(false);
@@ -12701,6 +12811,7 @@ const resetForProfileSwitch = () => {
       setRiddleFeedback(null);
       setRiddleValidated(false);
       setRiddleSolved(false);
+      setRiddleSelfCheckPending(false);
       setChallengeResponse("");
       setChallengeDone(false);
     }
@@ -12813,6 +12924,7 @@ const resetForProfileSwitch = () => {
         setQuizDurationSec(0);
         setRiddleValidated(false);
         setRiddleSolved(false);
+        setRiddleSelfCheckPending(false);
       }
       setChallengeResponse("");
       return;
@@ -12832,6 +12944,7 @@ const resetForProfileSwitch = () => {
         setQuizDurationSec(0);
         setRiddleValidated(false);
         setRiddleSolved(false);
+        setRiddleSelfCheckPending(false);
       }
       setChallengeResponse("");
       return;
@@ -12877,16 +12990,40 @@ const resetForProfileSwitch = () => {
     if (!normalizedInput) {
       setRiddleFeedback("Entrez une réponse avant de valider.");
       setRiddleSolved(false);
+      setRiddleSelfCheckPending(false);
       return;
     }
 
-    const solved = normalizedInput === normalizeAnswer(todaysRiddle.answer);
-    setRiddleValidated(true);
-    setRiddleSolved(solved);
+    // On accepte automatiquement les réponses formulées un peu différemment
+    // (mots ajoutés comme "Tour de Galata", petite faute de frappe...).
+    if (isRiddleAnswerAcceptable(riddleAnswer, todaysRiddle.answer)) {
+      setRiddleValidated(true);
+      setRiddleSolved(true);
+      setRiddleSelfCheckPending(false);
+      setRiddleFeedback(`Bonne réponse ! Vous gagnez ${gameScoring.riddlePoints} points.`);
+      return;
+    }
+
+    // Pas de correspondance automatique : on affiche la bonne réponse et on
+    // fait confiance au joueur pour indiquer, en toute honnêteté, si sa
+    // réponse (formulée autrement) était correcte ou non.
+    setRiddleSelfCheckPending(true);
     setRiddleFeedback(
-      solved
+      `La bonne réponse était "${todaysRiddle.answer}". Était-ce le sens de votre réponse ?`
+    );
+  };
+
+  // Résout la phase d'auto-déclaration : le joueur indique lui-même si sa
+  // réponse, non reconnue automatiquement, était correcte ou non. Rien
+  // n'empêche techniquement de tricher ici : on fait confiance au joueur.
+  const declareRiddleSelfCheck = (isCorrect: boolean) => {
+    setRiddleSelfCheckPending(false);
+    setRiddleValidated(true);
+    setRiddleSolved(isCorrect);
+    setRiddleFeedback(
+      isCorrect
         ? `Bonne réponse ! Vous gagnez ${gameScoring.riddlePoints} points.`
-        : `Pas tout à fait. La bonne réponse était "${todaysRiddle.answer}".`
+        : `Pas de souci, ce sera pour la prochaine fois. La bonne réponse était "${todaysRiddle.answer}".`
     );
   };
 
@@ -12927,6 +13064,7 @@ const resetForProfileSwitch = () => {
     setRiddleFeedback(null);
     setRiddleValidated(false);
     setRiddleSolved(false);
+    setRiddleSelfCheckPending(false);
     setChallengeResponse("");
     setChallengeDone(false);
     setScreen("results");
@@ -14415,6 +14553,7 @@ const resetForProfileSwitch = () => {
             riddleFeedback={riddleFeedback}
             riddleValidated={riddleValidated}
             riddleSolved={riddleSolved}
+            riddleSelfCheckPending={riddleSelfCheckPending}
             challengeResponse={challengeResponse}
             challengeDone={challengeDone}
             gameDay={gameDay}
@@ -14434,6 +14573,7 @@ const resetForProfileSwitch = () => {
               setRiddleFeedback(null);
               setRiddleValidated(false);
               setRiddleSolved(false);
+              setRiddleSelfCheckPending(false);
               setChallengeResponse("");
               setChallengeDone(false);
             }}
@@ -14456,6 +14596,7 @@ const resetForProfileSwitch = () => {
               setRiddleFeedback(null);
               setRiddleValidated(false);
               setRiddleSolved(false);
+              setRiddleSelfCheckPending(false);
               setChallengeResponse("");
               setChallengeDone(false);
             }}
@@ -14467,6 +14608,7 @@ const resetForProfileSwitch = () => {
               if (riddleFeedback) setRiddleFeedback(null);
             }}
             onValidateRiddle={validateRiddle}
+            onDeclareRiddleSelfCheck={declareRiddleSelfCheck}
             onContinueToChallenge={() => {
               if (postTripReplayEnabled) {
                 return;
@@ -14826,6 +14968,7 @@ const resetForProfileSwitch = () => {
             riddleFeedback={riddleFeedback}
             riddleValidated={riddleValidated}
             riddleSolved={riddleSolved}
+            riddleSelfCheckPending={riddleSelfCheckPending}
             challengeResponse={challengeResponse}
             challengeDone={challengeDone}
             gameDay={gameDay}
@@ -14845,6 +14988,7 @@ const resetForProfileSwitch = () => {
               setRiddleFeedback(null);
               setRiddleValidated(false);
               setRiddleSolved(false);
+              setRiddleSelfCheckPending(false);
               setChallengeResponse("");
               setChallengeDone(false);
             }}
@@ -14867,6 +15011,7 @@ const resetForProfileSwitch = () => {
               setRiddleFeedback(null);
               setRiddleValidated(false);
               setRiddleSolved(false);
+              setRiddleSelfCheckPending(false);
               setChallengeResponse("");
               setChallengeDone(false);
             }}
@@ -14878,6 +15023,7 @@ const resetForProfileSwitch = () => {
               if (riddleFeedback) setRiddleFeedback(null);
             }}
             onValidateRiddle={validateRiddle}
+            onDeclareRiddleSelfCheck={declareRiddleSelfCheck}
             onContinueToChallenge={() => {
               if (postTripReplayEnabled) {
                 return;
