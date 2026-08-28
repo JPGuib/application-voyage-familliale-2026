@@ -693,9 +693,9 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
 
     function startGame() {
       level = selectedLevel;
-      rows = Math.min(12, Math.max(5, parseInt(($("cc-setRows") as HTMLInputElement)?.value) || 8));
-      cols = Math.min(12, Math.max(5, parseInt(($("cc-setCols") as HTMLInputElement)?.value) || 8));
-      types = Math.min(7, Math.max(3, parseInt(($("cc-setTypes") as HTMLInputElement)?.value) || 5));
+      rows = Math.min(12, Math.max(5, parseInt(($("cc-setRows") as HTMLInputElement)?.value) || 9));
+      cols = Math.min(12, Math.max(5, parseInt(($("cc-setCols") as HTMLInputElement)?.value) || 9));
+      types = Math.min(7, Math.max(3, parseInt(($("cc-setTypes") as HTMLInputElement)?.value) || 6));
       score = 0;
       selected = null;
       busy = false;
