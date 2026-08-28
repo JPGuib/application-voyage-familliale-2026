@@ -14,8 +14,8 @@ Evolutions :
 * JEU - J2 - pouvoir revoir les questions (quiz / enigmes) pour qu'elle ne se basent que sur ce qui a été réellement visité (en lien avec Backlog C2), pas prevu => associer une question à un jour / un id de places
 * JEU - J4 - notification quiz du jour
 * JEU - J5 - mots croisés plus pratiques à visionner
-* JEU - J6 - pouvoir voter pour le meileur commentaire du défit avec par exemple un emoticone trophee
-* JEU - J7 - candy crush mettre un chrono et un système de record à battre
+* JEU - J7 - candy crush mettre un chrono
+* JEU - J12 - candy rush : voir un système de record à battre (mais dans ce cas sur une grille stadard et nb de pions convenus d'avance)
 * JEU - J8 - défi photos
 * JEU - J9 - vérifier le fonctionnement de la remise à 0 pour un utilisateur de son jeu du jour (uniquement les points ? Peut-il le repasser ?)
 * JEU - J10 - Un joueur qui a oublié de faire le jeu de la veille pourrait-il le passer quand même ? (paramètre possible ? Paramètre admin ? ...)

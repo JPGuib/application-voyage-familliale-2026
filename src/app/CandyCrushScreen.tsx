@@ -171,6 +171,10 @@ const MARKUP = `
         <div class="cc-hud-score-label">score</div>
       </div>
       <div class="cc-hud-level">
+        <div class="cc-hud-level-val" id="cc-timerVal">30</div>
+        <div class="cc-hud-score-label">temps</div>
+      </div>
+      <div class="cc-hud-level">
         <div class="cc-hud-level-val" id="cc-levelVal">1</div>
         <div class="cc-hud-score-label">niv.</div>
       </div>
@@ -179,7 +183,7 @@ const MARKUP = `
     <div class="cc-board-wrap" id="cc-boardWrap">
       <div class="cc-board" id="cc-board"></div>
       <div class="cc-overlay" id="cc-gameOver">
-        <h2>Partie terminée !</h2>
+        <h2 id="cc-gameOverTitle">Partie terminée !</h2>
         <div class="cc-final-score" id="cc-finalScore">0</div>
         <p>points</p>
         <button class="cc-btn cc-primary" data-action="restart-game">Rejouer</button>
@@ -207,7 +211,34 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       grid: number[][] = [],
       score = 0,
       selected: [number, number] | null = null,
-      busy = false;
+      busy = false,
+      timeLeft = 30,
+      timerId: ReturnType<typeof setInterval> | null = null;
+
+    const GAME_DURATION = 30;
+
+    function stopTimer() {
+      if (timerId !== null) {
+        clearInterval(timerId);
+        timerId = null;
+      }
+    }
+
+    function startTimer() {
+      stopTimer();
+      timeLeft = GAME_DURATION;
+      const timerEl = $("cc-timerVal");
+      if (timerEl) timerEl.textContent = String(timeLeft);
+      timerId = setInterval(() => {
+        timeLeft -= 1;
+        const el = $("cc-timerVal");
+        if (el) el.textContent = String(Math.max(0, timeLeft));
+        if (timeLeft <= 0) {
+          stopTimer();
+          showTimeUp();
+        }
+      }, 1000);
+    }
 
     const colorClasses = ["cc-c0", "cc-c1", "cc-c2", "cc-c3", "cc-c4", "cc-c5", "cc-c6"];
     const candyEmojis = ["🇹🇷", "🕌", "👳", "🏛️", "🍯", "🍬", "☕"];
@@ -637,6 +668,18 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
     }
 
     function showGameOver() {
+      stopTimer();
+      const title = $("cc-gameOverTitle");
+      if (title) title.textContent = "Partie terminée !";
+      const fs = $("cc-finalScore");
+      if (fs) fs.textContent = String(score);
+      $("cc-gameOver")?.classList.add("cc-show");
+    }
+
+    function showTimeUp() {
+      busy = true;
+      const title = $("cc-gameOverTitle");
+      if (title) title.textContent = "Temps écoulé !";
       const fs = $("cc-finalScore");
       if (fs) fs.textContent = String(score);
       $("cc-gameOver")?.classList.add("cc-show");
@@ -666,6 +709,7 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       createGrid();
       renderBoard();
       show("cc-scrGame");
+      startTimer();
     }
 
     function restartGame() {
@@ -677,10 +721,12 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       if (scoreEl) scoreEl.textContent = "0";
       createGrid();
       renderBoard();
+      startTimer();
     }
 
     function stopGame() {
       busy = true;
+      stopTimer();
     }
 
     function onRootClick(e: MouseEvent) {
@@ -709,6 +755,7 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
     root.addEventListener("touchmove", onTouchMove, { passive: false });
 
     return () => {
+      stopTimer();
       root.removeEventListener("click", onRootClick);
       root.removeEventListener("touchmove", onTouchMove);
       root.innerHTML = "";
