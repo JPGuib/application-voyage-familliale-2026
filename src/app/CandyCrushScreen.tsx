@@ -125,9 +125,9 @@ const MARKUP = `
   <div class="cc-screen" id="cc-scrSettings">
     <div class="cc-settings-title">Paramètres</div>
     <div class="cc-settings-sub">Personnalise ta partie</div>
-    <div class="cc-setting-row"><label>Lignes</label><input type="number" id="cc-setRows" value="8" min="5" max="12"></div>
-    <div class="cc-setting-row"><label>Colonnes</label><input type="number" id="cc-setCols" value="8" min="5" max="12"></div>
-    <div class="cc-setting-row"><label>Types de pions turcs<br><span class="cc-setting-hint">Moins = plus facile</span></label><input type="number" id="cc-setTypes" value="5" min="3" max="7"></div>
+    <div class="cc-setting-row"><label>Lignes</label><input type="number" id="cc-setRows" value="9" min="5" max="12"></div>
+    <div class="cc-setting-row"><label>Colonnes</label><input type="number" id="cc-setCols" value="9" min="5" max="12"></div>
+    <div class="cc-setting-row"><label>Types de pions turcs<br><span class="cc-setting-hint">Moins = plus facile</span></label><input type="number" id="cc-setTypes" value="6" min="3" max="7"></div>
     <div class="cc-settings-sub" style="margin-top:8px;margin-bottom:4px;">Choisis ton niveau</div>
     <div class="cc-level-grid">
       <div class="cc-level-card cc-selected" data-lvl="1" data-action="select-level"><div class="cc-level-num">1</div><div class="cc-level-label">3 alignés</div></div>
