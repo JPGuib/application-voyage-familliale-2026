@@ -171,7 +171,7 @@ const MARKUP = `
         <div class="cc-hud-score-label">score</div>
       </div>
       <div class="cc-hud-level">
-        <div class="cc-hud-level-val" id="cc-timerVal">30</div>
+        <div class="cc-hud-level-val" id="cc-timerVal">120</div>
         <div class="cc-hud-score-label">temps</div>
       </div>
       <div class="cc-hud-level">
@@ -215,7 +215,7 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       timeLeft = 30,
       timerId: ReturnType<typeof setInterval> | null = null;
 
-    const GAME_DURATION = 30;
+    const GAME_DURATION = 120;
 
     function stopTimer() {
       if (timerId !== null) {
