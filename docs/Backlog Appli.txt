@@ -12,7 +12,6 @@ Evolutions :
 * CONTENU - C7 - rajouter des musiques dans l'audio (genre les mouettes ...)
 
 * JEU - J2 - pouvoir revoir les questions (quiz / enigmes) pour qu'elle ne se basent que sur ce qui a été réellement visité (en lien avec Backlog C2), pas prevu => associer une question à un jour / un id de places
-* JEU - J3 - voir ses réponses au questions / jeu en fin de séjour ?
 * JEU - J4 - notification quiz du jour
 * JEU - J5 - mots croisés plus pratiques à visionner
 * JEU - J6 - pouvoir voter pour le meileur commentaire du défit avec par exemple un emoticone trophee

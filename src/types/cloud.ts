@@ -66,6 +66,23 @@ export type CloudChallengeReactionsByDay = Record<
   Record<string, Record<string, CloudChallengeReaction>>
 >;
 
+// Vote "meilleur défi/commentaire du jour" (trophée). Un voyageur ne peut
+// voter que pour UNE seule réponse par jour (contrairement aux réactions
+// emoji ci-dessus, où il peut réagir à plusieurs réponses) ; cette règle
+// est appliquée côté client au moment du vote, pas dans la forme du type.
+export type CloudChallengeBestVote = {
+  day: number;
+  targetProfileId: string;
+  voterProfileId: string;
+  updatedAt: number;
+  authorUid?: string;
+};
+
+export type CloudChallengeBestVotesByDay = Record<
+  number,
+  Record<string, Record<string, CloudChallengeBestVote>>
+>;
+
 export type PlaceCommentReaction = "like" | "dislike";
 
 export type PlaceVisibilityState = "visible" | "hiddenByOwner";
@@ -157,6 +174,7 @@ export type CloudSyncSnapshot = {
   documentVisibilityMap: Record<string, DocumentVisibilityState>;
   destinationSurvey: CloudDestinationSurveyByProfile;
   challengeReactions?: CloudChallengeReactionsByDay;
+  challengeBestVotes?: CloudChallengeBestVotesByDay;
   gameDayOverrides: Record<number, GameDayOverride>;
   launchGateCycle: number;
   launchGateCompletedCycleByProfile: Record<string, number>;
@@ -195,6 +213,7 @@ export type CloudSyncWritePayload = {
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   challengeReactions?: CloudChallengeReactionsByDay;
+  challengeBestVotes?: CloudChallengeBestVotesByDay;
   launchGateCycle?: number;
   launchGateCompletedCycleForProfile?: number | null;
   resetDestinationSurvey?: boolean;

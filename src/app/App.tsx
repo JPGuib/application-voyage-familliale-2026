@@ -520,6 +520,20 @@ type ChallengeReaction = {
   authorUid?: string;
 };
 type ChallengeReactionsByDay = Record<number, Record<string, Record<string, ChallengeReaction>>>;
+// Vote "meilleur défi/commentaire du jour" (trophée) : contrairement aux
+// réactions emoji ci-dessus (un voyageur peut réagir à plusieurs réponses
+// avec des emojis différents), un voyageur ne peut voter trophée que pour
+// UNE seule réponse par jour — voir voteBestChallengeResponse, qui retire
+// tout autre vote du même votant sur le même jour avant d'en poser un
+// nouveau.
+type ChallengeBestVote = {
+  day: number;
+  targetProfileId: string;
+  voterProfileId: string;
+  updatedAt: number;
+  authorUid?: string;
+};
+type ChallengeBestVotesByDay = Record<number, Record<string, Record<string, ChallengeBestVote>>>;
 type PlaceVisibilityState = "visible" | "hiddenByOwner";
 type PlaceVisibilityMap = Record<string, PlaceVisibilityState>;
 type PlaceDayOverrideMap = Record<string, number[]>;
@@ -968,6 +982,13 @@ function areGameHistoriesEqual(
 function areChallengeReactionsEqual(
   left: ChallengeReactionsByDay,
   right: ChallengeReactionsByDay
+): boolean {
+  return stableSerializeForCloudPush(left) === stableSerializeForCloudPush(right);
+}
+
+function areChallengeBestVotesEqual(
+  left: ChallengeBestVotesByDay,
+  right: ChallengeBestVotesByDay
 ): boolean {
   return stableSerializeForCloudPush(left) === stableSerializeForCloudPush(right);
 }
@@ -6987,6 +7008,8 @@ function ResultsScreen({
   scoring,
   challengeReactionsByDay,
   onReactToChallengeResponse,
+  challengeBestVotesByDay,
+  onVoteBestChallengeResponse,
 }: {
   onBack: () => void;
   history: GameHistoryEntry[];
@@ -7005,6 +7028,8 @@ function ResultsScreen({
     targetProfileId: string,
     emoji: ChallengeReactionEmoji
   ) => void;
+  challengeBestVotesByDay: ChallengeBestVotesByDay;
+  onVoteBestChallengeResponse: (day: number, targetProfileId: string) => void;
 }) {
   const chartMembers = familyMembers.filter((member) => member.role === "utilisateur");
   // Story 25.2 AC7 : le proprietaire n'apparait jamais dans les resultats, mais
@@ -7070,6 +7095,13 @@ function ResultsScreen({
             )
             .sort((left, right) => left.localeCompare(right, "fr")),
         }));
+        const bestVotesForEntry = challengeBestVotesByDay[day]?.[member.profileId] ?? {};
+        const bestVoters = Object.values(bestVotesForEntry)
+          .map((vote) =>
+            familyMembers.find((familyMember) => familyMember.profileId === vote.voterProfileId)?.surname
+            ?? "Profil supprimé"
+          )
+          .sort((left, right) => left.localeCompare(right, "fr"));
         return {
           profileId: member.profileId,
           surname: member.surname,
@@ -7077,6 +7109,9 @@ function ResultsScreen({
           completedAt: gameEntry?.completedAt ?? "",
           currentUserReaction: reactionsForEntry[currentProfileId]?.emoji ?? null,
           reactionCounts,
+          bestVoteCount: bestVoters.length,
+          bestVoters,
+          currentUserVotedBest: Boolean(bestVotesForEntry[currentProfileId]),
         };
       })
       .sort((left, right) => {
@@ -7095,7 +7130,17 @@ function ResultsScreen({
     const ready = isPastDay
       ? entries.length > 0
       : entries.length > 0 && entries.every((entry) => entry.response.length > 0);
-    return { day, entries, ready };
+    // Le(s) défi(s) en tête du vote trophée pour ce jour (0 vote = personne
+    // en tête, pas de mise en avant).
+    const topBestVoteCount = entries.reduce(
+      (max, entry) => Math.max(max, entry.bestVoteCount),
+      0
+    );
+    const entriesWithHighlight = entries.map((entry) => ({
+      ...entry,
+      isTopVoted: topBestVoteCount > 0 && entry.bestVoteCount === topBestVoteCount,
+    }));
+    return { day, entries: entriesWithHighlight, ready };
   });
 
   return (
@@ -7480,7 +7525,11 @@ function ResultsScreen({
                 {entries.map((entry) => (
                   <div
                     key={`shared-challenge-${day}-${entry.profileId}`}
-                    className="rounded-xl border border-border bg-muted/30 px-3 py-3"
+                    className={`rounded-xl border px-3 py-3 transition-colors ${
+                      entry.isTopVoted
+                        ? "border-[#2E7D32] bg-[#E8F5E9]"
+                        : "border-border bg-muted/30"
+                    }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <p className="text-sm font-black text-foreground">{entry.surname}</p>
@@ -7507,8 +7556,14 @@ function ResultsScreen({
                             {reaction.emoji} {reaction.reactors.length}
                           </span>
                         ))}
+                      {entry.bestVoteCount > 0 && (
+                        <span className="rounded-full bg-[#FFF3CD] px-2.5 py-1 text-xs font-black text-[#F9A825] shadow-sm">
+                          🏆 {entry.bestVoteCount}
+                        </span>
+                      )}
                     </div>
-                    {entry.reactionCounts.some((reaction) => reaction.reactors.length > 0) && (
+                    {(entry.reactionCounts.some((reaction) => reaction.reactors.length > 0) ||
+                      entry.bestVoters.length > 0) && (
                       <div className="mt-2 space-y-1">
                         {entry.reactionCounts
                           .filter((reaction) => reaction.reactors.length > 0)
@@ -7520,10 +7575,15 @@ function ResultsScreen({
                               {reaction.emoji} {reaction.reactors.join(", ")}
                             </p>
                           ))}
+                        {entry.bestVoters.length > 0 && (
+                          <p className="text-xs font-semibold text-muted-foreground">
+                            🏆 {entry.bestVoters.join(", ")}
+                          </p>
+                        )}
                       </div>
                     )}
                     {entry.profileId !== currentProfileId && (
-                      <div className="mt-3 flex flex-wrap gap-2">
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
                         {CHALLENGE_REACTION_OPTIONS.map((reaction) => {
                           const isSelected = entry.currentUserReaction === reaction.value;
                           return (
@@ -7544,11 +7604,28 @@ function ResultsScreen({
                             </button>
                           );
                         })}
+                        <button
+                          onClick={() => onVoteBestChallengeResponse(day, entry.profileId)}
+                          className={`ml-auto rounded-full border-2 px-3.5 py-2 text-lg font-black transition-colors ${
+                            entry.currentUserVotedBest
+                              ? "border-[#F9A825] bg-[#FFF8E1] text-[#F9A825]"
+                              : "border-border bg-white text-foreground"
+                          }`}
+                          aria-label="Voter pour le meilleur défi du jour"
+                          title="Voter pour le meilleur défi du jour"
+                        >
+                          🏆
+                        </button>
                       </div>
                     )}
                     {entry.profileId !== currentProfileId && entry.currentUserReaction && (
                       <p className="mt-2 text-[11px] font-semibold text-muted-foreground">
                         Re-cliquez sur votre emoji pour retirer votre réaction.
+                      </p>
+                    )}
+                    {entry.profileId !== currentProfileId && entry.currentUserVotedBest && (
+                      <p className="mt-1 text-[11px] font-semibold text-muted-foreground">
+                        Re-cliquez sur le trophée pour retirer votre vote.
                       </p>
                     )}
                   </div>
@@ -10264,6 +10341,7 @@ export default function App() {
   });
   const [challengeDone, setChallengeDone] = useState(false);
   const [challengeReactionsByDay, setChallengeReactionsByDay] = useState<ChallengeReactionsByDay>({});
+  const [challengeBestVotesByDay, setChallengeBestVotesByDay] = useState<ChallengeBestVotesByDay>({});
   const [gameHistory, setGameHistory] = useState<GameHistoryEntry[]>(() => {
     if (cloudEnabled) {
       return [];
@@ -11095,6 +11173,20 @@ export default function App() {
         ? previous
         : nextFromCloud;
     });
+    setChallengeBestVotesByDay((previous) => {
+      const nextFromCloud = cloudSnapshot.challengeBestVotes ?? {};
+      const pendingVotes = pendingChallengeBestVotesRef.current;
+      if (pendingVotes !== "none") {
+        if (stableSerializeForCloudPush(nextFromCloud) !== pendingVotes) {
+          return previous;
+        }
+        pendingChallengeBestVotesRef.current = "none";
+      }
+
+      return areChallengeBestVotesEqual(previous, nextFromCloud)
+        ? previous
+        : nextFromCloud;
+    });
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
@@ -11276,6 +11368,7 @@ export default function App() {
   // des documents importants.
   const pendingDocumentVisibilityMapRef = useRef<string | "none">("none");
   const pendingChallengeReactionsRef = useRef<string | "none">("none");
+  const pendingChallengeBestVotesRef = useRef<string | "none">("none");
   const previousCommentsSnapshotRef = useRef<PlaceCommentsByPlace | null>(null);
   const pendingLaunchGateCompletionRef = useRef<{ profileId: string; cycle: number } | null>(null);
   const lastChecklistReminderKeyRef = useRef<string | null>(null);
@@ -11393,6 +11486,7 @@ export default function App() {
       documentVisibilityMap,
       destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       challengeReactions: challengeReactionsByDay,
+      challengeBestVotes: challengeBestVotesByDay,
       launchGateCycle,
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       phase,
@@ -11440,6 +11534,7 @@ export default function App() {
       documentVisibilityMap,
       profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       challengeReactions: challengeReactionsByDay,
+      challengeBestVotes: challengeBestVotesByDay,
       launchGateCycle,
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       gameResults: gameHistory,
@@ -12814,6 +12909,15 @@ const resetForProfileSwitch = () => {
       delete next[day];
       return next;
     });
+    setChallengeBestVotesByDay((previous) => {
+      if (day === undefined) {
+        return {};
+      }
+
+      const next = { ...previous };
+      delete next[day];
+      return next;
+    });
 
     setUnlockFailedAttempts(0);
     setUnlockLockedUntil(0);
@@ -13219,6 +13323,72 @@ const resetForProfileSwitch = () => {
       };
 
       pendingChallengeReactionsRef.current = stableSerializeForCloudPush(next);
+      return next;
+    });
+  };
+
+  // Vote "meilleur défi/commentaire du jour" (trophée). Contrairement aux
+  // emojis ci-dessus, un voyageur ne peut voter que pour UNE seule réponse
+  // par jour : poser un nouveau vote retire automatiquement l'ancien
+  // (même journée), et revoter pour la même cible retire le vote (toggle).
+  const voteBestChallengeResponse = (day: number, targetProfileId: string) => {
+    if (
+      day < 1 ||
+      profile.role !== "utilisateur" ||
+      targetProfileId === profile.id
+    ) {
+      return;
+    }
+
+    const targetRole =
+      cloudSnapshot?.profiles?.[targetProfileId]?.role
+      ?? (targetProfileId === profile.id ? profile.role : null);
+    if (targetRole !== "utilisateur") {
+      return;
+    }
+
+    setChallengeBestVotesByDay((previous) => {
+      const dayBucket = previous[day] ?? {};
+      const alreadyVotedForTarget = Boolean(dayBucket[targetProfileId]?.[profile.id]);
+
+      // On retire d'abord tout vote existant de ce votant pour ce jour,
+      // quelle que soit la cible (règle : un seul vote par jour).
+      const nextDayBucket: Record<string, Record<string, ChallengeBestVote>> = {};
+      for (const [otherTargetProfileId, votersMap] of Object.entries(dayBucket)) {
+        if (!votersMap[profile.id]) {
+          nextDayBucket[otherTargetProfileId] = votersMap;
+          continue;
+        }
+        const nextVotersMap = { ...votersMap };
+        delete nextVotersMap[profile.id];
+        if (Object.keys(nextVotersMap).length > 0) {
+          nextDayBucket[otherTargetProfileId] = nextVotersMap;
+        }
+      }
+
+      // Si le joueur revote pour la même cible, c'est un retrait (toggle) :
+      // on s'arrête là, sans reposer de vote.
+      if (!alreadyVotedForTarget) {
+        nextDayBucket[targetProfileId] = {
+          ...(nextDayBucket[targetProfileId] ?? {}),
+          [profile.id]: {
+            day,
+            targetProfileId,
+            voterProfileId: profile.id,
+            updatedAt: Date.now(),
+            authorUid: cloudActorUid ?? undefined,
+          },
+        };
+      }
+
+      const next: ChallengeBestVotesByDay = { ...previous };
+      if (Object.keys(nextDayBucket).length === 0) {
+        delete next[day];
+      } else {
+        next[day] = nextDayBucket;
+      }
+
+      pendingChallengeBestVotesRef.current = stableSerializeForCloudPush(next);
       return next;
     });
   };
@@ -14720,6 +14890,8 @@ const resetForProfileSwitch = () => {
             scoring={gameScoring}
             challengeReactionsByDay={challengeReactionsByDay}
             onReactToChallengeResponse={reactToChallengeResponse}
+            challengeBestVotesByDay={challengeBestVotesByDay}
+            onVoteBestChallengeResponse={voteBestChallengeResponse}
           />
         );
       }
@@ -15161,6 +15333,8 @@ const resetForProfileSwitch = () => {
             currentProfileRole={profile.role}
             challengeReactionsByDay={challengeReactionsByDay}
             onReactToChallengeResponse={reactToChallengeResponse}
+            challengeBestVotesByDay={challengeBestVotesByDay}
+            onVoteBestChallengeResponse={voteBestChallengeResponse}
           />
         );
       case "tips":

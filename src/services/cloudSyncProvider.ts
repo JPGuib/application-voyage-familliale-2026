@@ -18,6 +18,8 @@ import type {
   ChecklistRemovalState,
   ChecklistState,
   ClaimRoleResult,
+  CloudChallengeBestVote,
+  CloudChallengeBestVotesByDay,
   CloudChallengeReaction,
   CloudChallengeReactionsByDay,
   CloudGameHistoryEntry,
@@ -291,6 +293,82 @@ function parseChallengeReactions(value: unknown): CloudChallengeReactionsByDay {
         const dayBucket = next[Math.trunc(day)] ?? {};
         const targetBucket = dayBucket[targetProfileId] ?? {};
         targetBucket[reactorProfileId] = parsedReaction;
+        dayBucket[targetProfileId] = targetBucket;
+        next[Math.trunc(day)] = dayBucket;
+      }
+    }
+  }
+
+  return next;
+}
+
+// Vote "meilleur défi/commentaire du jour" (trophée). Même forme de stockage
+// que les réactions emoji ci-dessus (day -> targetProfileId -> votantId),
+// mais sans champ emoji : la contrainte "un seul vote par jour et par
+// votant" est appliquée côté client (App.tsx, voteBestChallengeResponse) au
+// moment où le vote est posé, pas ici — cette fonction se contente de lire
+// fidèlement ce qui est en base.
+function parseChallengeBestVote(
+  day: number,
+  targetProfileId: string,
+  voterProfileId: string,
+  value: unknown
+): CloudChallengeBestVote | null {
+  const entry = asRecord(value);
+  const updatedAt = toFiniteNumber(entry.updatedAt, 0);
+  const normalizedTargetProfileId =
+    typeof entry.targetProfileId === "string" && entry.targetProfileId.trim().length > 0
+      ? entry.targetProfileId
+      : targetProfileId;
+  const normalizedVoterProfileId =
+    typeof entry.voterProfileId === "string" && entry.voterProfileId.trim().length > 0
+      ? entry.voterProfileId
+      : voterProfileId;
+  const authorUid =
+    typeof entry.authorUid === "string" && entry.authorUid.trim().length > 0
+      ? entry.authorUid
+      : undefined;
+
+  if (updatedAt <= 0 || !normalizedTargetProfileId || !normalizedVoterProfileId) {
+    return null;
+  }
+
+  return {
+    day,
+    targetProfileId: normalizedTargetProfileId,
+    voterProfileId: normalizedVoterProfileId,
+    updatedAt,
+    authorUid,
+  };
+}
+
+function parseChallengeBestVotes(value: unknown): CloudChallengeBestVotesByDay {
+  const raw = asRecord(value);
+  const next: CloudChallengeBestVotesByDay = {};
+
+  for (const [dayKey, targetMapValue] of Object.entries(raw)) {
+    const day = Number(dayKey);
+    if (!Number.isFinite(day) || day <= 0) {
+      continue;
+    }
+
+    const targetMap = asRecord(targetMapValue);
+    for (const [targetProfileId, voterMapValue] of Object.entries(targetMap)) {
+      const voterMap = asRecord(voterMapValue);
+      for (const [voterProfileId, voteValue] of Object.entries(voterMap)) {
+        const parsedVote = parseChallengeBestVote(
+          Math.trunc(day),
+          targetProfileId,
+          voterProfileId,
+          voteValue
+        );
+        if (!parsedVote) {
+          continue;
+        }
+
+        const dayBucket = next[Math.trunc(day)] ?? {};
+        const targetBucket = dayBucket[targetProfileId] ?? {};
+        targetBucket[voterProfileId] = parsedVote;
         dayBucket[targetProfileId] = targetBucket;
         next[Math.trunc(day)] = dayBucket;
       }
@@ -609,6 +687,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const placeCommentRecords = asRecord(root.placeComments);
   const destinationSurveyRecords = parseDestinationSurvey(root.destinationSurvey);
   const challengeReactionRecords = parseChallengeReactions(root.challengeReactions);
+  const challengeBestVoteRecords = parseChallengeBestVotes(root.challengeBestVotes);
   const gameResultRecords = asRecord(root.gameResults);
   const gameProgressRecords = asRecord(root.gameProgress);
   const phaseRecords = asRecord(root.phase);
@@ -678,7 +757,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     placeComments: parsePlaceComments(placeCommentRecords),
     placeVisibilityMap: parsePlaceVisibilityMap(root.placeVisibilityMap),
     challengeReactions: challengeReactionRecords,
-    placeDayOverrides: parsePlaceDayOverrides(root.placeDayOverrides),
+    challengeBestVotes: challengeBestVoteRecords,
     placeDayOrderOverrides: parsePlaceDayOrderOverrides(root.placeDayOverrides),
     documentVisibilityMap: parseDocumentVisibilityMap(root.documentVisibilityMap),
     destinationSurvey: destinationSurveyRecords,
@@ -880,6 +959,75 @@ export async function pushCloudSnapshot(
                 `challengeReactions/${Math.trunc(day)}/${targetProfileId}/${reactorProfileId}`;
               if (!desiredReactionPaths.has(reactionPath)) {
                 updates[reactionPath] = null;
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // L'absence de lecture cloud ne doit pas bloquer le push global.
+    }
+  }
+
+  // Vote "meilleur défi/commentaire du jour" (trophée) : même logique de
+  // synchro que challengeReactions ci-dessus — chaque appareil ne pousse et
+  // ne peut effacer que les votes dont IL est l'auteur (voterProfileId ===
+  // payload.profileId, avec le bon actorUid), jamais ceux des autres.
+  if (payload.challengeBestVotes !== undefined) {
+    const desiredBestVotePaths = new Set<string>();
+
+    for (const [dayKey, targetMap] of Object.entries(payload.challengeBestVotes)) {
+      const day = Number(dayKey);
+      if (!Number.isFinite(day) || day <= 0) {
+        continue;
+      }
+
+      for (const [targetProfileId, votesByProfile] of Object.entries(targetMap ?? {})) {
+        for (const [voterProfileId, vote] of Object.entries(votesByProfile ?? {})) {
+          const normalizedAuthorUid =
+            typeof vote.authorUid === "string" && vote.authorUid.trim().length > 0
+              ? vote.authorUid
+              : payload.actorUid;
+
+          if (
+            vote.voterProfileId === payload.profileId &&
+            voterProfileId === payload.profileId &&
+            normalizedAuthorUid === payload.actorUid
+          ) {
+            const bestVotePath =
+              `challengeBestVotes/${Math.trunc(day)}/${targetProfileId}/${voterProfileId}`;
+            desiredBestVotePaths.add(bestVotePath);
+            updates[bestVotePath] = {
+              ...vote,
+              authorUid: normalizedAuthorUid,
+            };
+          }
+        }
+      }
+    }
+
+    try {
+      const existingBestVotesSnapshot = await get(
+        ref(database, `families/${familyId}/challengeBestVotes`)
+      );
+      const existingBestVotes = parseChallengeBestVotes(existingBestVotesSnapshot.val());
+
+      for (const [dayKey, targetMap] of Object.entries(existingBestVotes)) {
+        const day = Number(dayKey);
+        if (!Number.isFinite(day) || day <= 0) {
+          continue;
+        }
+
+        for (const [targetProfileId, votesByProfile] of Object.entries(targetMap ?? {})) {
+          for (const [voterProfileId, vote] of Object.entries(votesByProfile ?? {})) {
+            if (
+              vote.voterProfileId === payload.profileId &&
+              voterProfileId === payload.profileId
+            ) {
+              const bestVotePath =
+                `challengeBestVotes/${Math.trunc(day)}/${targetProfileId}/${voterProfileId}`;
+              if (!desiredBestVotePaths.has(bestVotePath)) {
+                updates[bestVotePath] = null;
               }
             }
           }
@@ -1247,6 +1395,7 @@ export async function resetGameResultsInCloud(
   currentResultsByProfile: Record<string, CloudGameHistoryEntry[]>,
   currentProgressByProfile: Record<string, CloudGameProgress>,
   currentChallengeReactionsByDay: CloudChallengeReactionsByDay,
+  currentChallengeBestVotesByDay: CloudChallengeBestVotesByDay,
   day?: number
 ): Promise<void> {
   const updates: Record<string, unknown> = {
@@ -1276,6 +1425,12 @@ export async function resetGameResultsInCloud(
     updates[`families/${familyId}/challengeReactions`] = null;
   } else if (currentChallengeReactionsByDay[day]) {
     updates[`families/${familyId}/challengeReactions/${day}`] = null;
+  }
+
+  if (day === undefined) {
+    updates[`families/${familyId}/challengeBestVotes`] = null;
+  } else if (currentChallengeBestVotesByDay[day]) {
+    updates[`families/${familyId}/challengeBestVotes/${day}`] = null;
   }
 
   await update(ref(database), updates);
