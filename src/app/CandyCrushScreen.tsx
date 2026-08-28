@@ -203,16 +203,16 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
     if (!rootEl) return;
     const root: HTMLDivElement = rootEl;
 
-    let rows = 8,
-      cols = 8,
-      types = 5,
+    let rows = 9,
+      cols = 9,
+      types = 6,
       level = 1,
       selectedLevel = 1,
       grid: number[][] = [],
       score = 0,
       selected: [number, number] | null = null,
       busy = false,
-      timeLeft = 30,
+      timeLeft = 120,
       timerId: ReturnType<typeof setInterval> | null = null;
 
     const GAME_DURATION = 120;
