@@ -7583,7 +7583,7 @@ function ResultsScreen({
                       </div>
                     )}
                     {entry.profileId !== currentProfileId && (
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <div className="mt-3 flex flex-nowrap items-center gap-1.5 overflow-x-auto">
                         {CHALLENGE_REACTION_OPTIONS.map((reaction) => {
                           const isSelected = entry.currentUserReaction === reaction.value;
                           return (
@@ -7592,7 +7592,7 @@ function ResultsScreen({
                               onClick={() =>
                                 onReactToChallengeResponse(day, entry.profileId, reaction.value)
                               }
-                              className={`rounded-full border px-3 py-1.5 text-sm font-black transition-colors ${
+                              className={`flex-shrink-0 rounded-full border px-2.5 py-1 text-sm font-black transition-colors ${
                                 isSelected
                                   ? "border-[#6B3DFF] bg-[#F3E5F5] text-[#6B3DFF]"
                                   : "border-border bg-white text-foreground"
@@ -7606,7 +7606,7 @@ function ResultsScreen({
                         })}
                         <button
                           onClick={() => onVoteBestChallengeResponse(day, entry.profileId)}
-                          className={`ml-auto rounded-full border-2 px-3.5 py-2 text-lg font-black transition-colors ${
+                          className={`flex-shrink-0 ml-1 rounded-full border-2 px-3 py-1.5 text-base font-black transition-colors ${
                             entry.currentUserVotedBest
                               ? "border-[#F9A825] bg-[#FFF8E1] text-[#F9A825]"
                               : "border-border bg-white text-foreground"
