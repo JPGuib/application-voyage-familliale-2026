@@ -166,6 +166,36 @@
             ".validate": "newData.val() === 'visible' || newData.val() === 'hiddenByOwner'"
           }
         },
+        "contentOverrides": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          "$source": {
+            "$itemId": {
+              "name": {
+                ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 200)"
+              },
+              "shortDesc": {
+                ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 300)"
+              },
+              "historyLabel": {
+                ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 200)"
+              },
+              "history": {
+                ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 6000)"
+              },
+              "anecdotesLabel": {
+                ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 200)"
+              },
+              "anecdotes": {
+                "$index": {
+                  ".validate": "$index.matches(/^[0-9]+$/) && newData.isString() && newData.val().length <= 600"
+                }
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        },
         "destinationSurvey": {
           "$profileId": {
             ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",

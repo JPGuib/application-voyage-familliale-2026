@@ -31,6 +31,7 @@ import {
   Scroll,
   Globe,
   Download,
+  Pencil,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
 import { OfflineMediaScreen } from "./OfflineMediaScreen";
@@ -380,6 +381,7 @@ const PLACE_VISIBILITY_STORAGE_KEY = "jp-place-visibility-map";
 const PLACE_DAY_OVERRIDES_STORAGE_KEY = "jp-place-day-overrides";
 const PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY = "jp-place-day-order-overrides";
 const DOCUMENT_VISIBILITY_STORAGE_KEY = "jp-document-visibility-map";
+const CONTENT_OVERRIDES_STORAGE_KEY = "jp-content-overrides";
 const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
 const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
 const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-by-profile";
@@ -546,6 +548,21 @@ type PlaceDayOverrideMap = Record<string, number[]>;
 type PlaceDayOrderOverrideMap = Record<string, Record<number, number>>;
 type DocumentVisibilityState = "visible" | "hiddenByOwner";
 type DocumentVisibilityMap = Record<string, DocumentVisibilityState>;
+
+// Correction/enrichissement par le propriétaire des textes de places.ts,
+// histoire.ts, geographie-economie.ts et culture-tradition.ts (mêmes champs
+// que ContentTopic, cf. plus bas). Chaque override ne contient que les
+// champs effectivement modifiés ; les champs absents restent ceux du .ts.
+type ContentSource = "places" | "histoire" | "geographie-economie" | "culture-tradition";
+type ContentOverridePatch = Partial<{
+  name: string;
+  shortDesc: string;
+  historyLabel: string;
+  history: string;
+  anecdotesLabel: string;
+  anecdotes: string[];
+}>;
+type ContentOverrideMap = Partial<Record<ContentSource, Record<string, ContentOverridePatch>>>;
 
 type LoginCandidate = {
   id: string;
@@ -1171,6 +1188,96 @@ function parsePlaceVisibilityMap(raw: unknown): PlaceVisibilityMap {
   }
 
   return next;
+}
+
+const CONTENT_SOURCES: readonly ContentSource[] = [
+  "places",
+  "histoire",
+  "geographie-economie",
+  "culture-tradition",
+];
+
+function parseContentOverridePatch(raw: unknown): ContentOverridePatch | null {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+  const record = raw as Record<string, unknown>;
+  const patch: ContentOverridePatch = {};
+
+  if (typeof record.name === "string" && record.name.trim().length > 0) {
+    patch.name = record.name;
+  }
+  if (typeof record.shortDesc === "string" && record.shortDesc.trim().length > 0) {
+    patch.shortDesc = record.shortDesc;
+  }
+  if (typeof record.historyLabel === "string" && record.historyLabel.trim().length > 0) {
+    patch.historyLabel = record.historyLabel;
+  }
+  if (typeof record.history === "string" && record.history.trim().length > 0) {
+    patch.history = record.history;
+  }
+  if (typeof record.anecdotesLabel === "string" && record.anecdotesLabel.trim().length > 0) {
+    patch.anecdotesLabel = record.anecdotesLabel;
+  }
+  if (Array.isArray(record.anecdotes)) {
+    const anecdotes = record.anecdotes.filter(
+      (entry): entry is string => typeof entry === "string" && entry.trim().length > 0
+    );
+    if (anecdotes.length > 0) {
+      patch.anecdotes = anecdotes;
+    }
+  }
+
+  return Object.keys(patch).length > 0 ? patch : null;
+}
+
+function parseContentOverrideMap(raw: unknown): ContentOverrideMap {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+  const record = raw as Record<string, unknown>;
+  const next: ContentOverrideMap = {};
+
+  for (const source of CONTENT_SOURCES) {
+    const itemsRaw = record[source];
+    if (!itemsRaw || typeof itemsRaw !== "object") {
+      continue;
+    }
+    const items: Record<string, ContentOverridePatch> = {};
+    for (const [itemId, candidate] of Object.entries(itemsRaw as Record<string, unknown>)) {
+      const patch = parseContentOverridePatch(candidate);
+      if (patch) {
+        items[itemId] = patch;
+      }
+    }
+    if (Object.keys(items).length > 0) {
+      next[source] = items;
+    }
+  }
+
+  return next;
+}
+
+function applyContentOverride<T extends { name: string; shortDesc: string; history: string; historyLabel?: string; anecdotes: string[]; anecdotesLabel?: string }>(
+  item: T,
+  override: ContentOverridePatch | undefined
+): T {
+  if (!override) {
+    return item;
+  }
+  return {
+    ...item,
+    ...(override.name !== undefined ? { name: override.name } : {}),
+    ...(override.shortDesc !== undefined ? { shortDesc: override.shortDesc } : {}),
+    ...(override.historyLabel !== undefined ? { historyLabel: override.historyLabel } : {}),
+    ...(override.history !== undefined ? { history: override.history } : {}),
+    ...(override.anecdotesLabel !== undefined ? { anecdotesLabel: override.anecdotesLabel } : {}),
+    ...(override.anecdotes !== undefined ? { anecdotes: override.anecdotes } : {}),
+  };
+}
+
+function areContentOverrideMapsEqual(left: ContentOverrideMap, right: ContentOverrideMap): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function normalizePlaceDays(raw: unknown): number[] {
@@ -4714,6 +4821,7 @@ function DocumentsScreen({
 // ─── GUIDE SCREEN ────────────────────────────────────────────────────────────
 
 function GuideScreen({
+  places,
   onBack,
   onPlaceSelect,
   currentDay,
@@ -4730,6 +4838,7 @@ function GuideScreen({
   canManagePlaceVisibility,
   isOnline,
 }: {
+  places: typeof PLACES_WITH_AUTO_GPS;
   onBack: () => void;
   onPlaceSelect: (id: string) => void;
   currentDay: number;
@@ -4765,8 +4874,8 @@ function GuideScreen({
   const [draftPlaceDayOrderByDay, setDraftPlaceDayOrderByDay] = useState<Record<number, number>>({});
   const [savingPlaceDaysForId, setSavingPlaceDaysForId] = useState<string | null>(null);
   const fallbackPlaceIndexMap = useMemo(
-    () => Object.fromEntries(PLACES_WITH_AUTO_GPS.map((place, index) => [place.id, index])),
-    []
+    () => Object.fromEntries(places.map((place, index) => [place.id, index])),
+    [places]
   );
 
   // Reset filters when navigation sets a specific day context
@@ -4849,7 +4958,7 @@ function GuideScreen({
       .map((entry) => ({
         entry,
         places: sortPlacesForDay(
-          PLACES_WITH_AUTO_GPS.filter((p) =>
+          places.filter((p) =>
             getEffectivePlaceDays(p, placeDayOverrideMap).includes(entry.jour)
           )
             .filter((p) => isPlaceVisibleForRole(role, p.id, placeVisibilityMap))
@@ -4874,6 +4983,7 @@ function GuideScreen({
       }))
       .filter((g) => g.places.length > 0);
   }, [
+    places,
     filterDays,
     filterTags,
     filterVilles,
@@ -5487,20 +5597,22 @@ function GuideScreen({
 // ─── HISTOIRE SCREEN ─────────────────────────────────────────────────────────
 
 function HistoireScreen({
+  topics,
   onBack,
   onTopicSelect,
   isOnline,
 }: {
+  topics: typeof HISTOIRE_TOPICS;
   onBack: () => void;
   onTopicSelect: (id: string) => void;
   isOnline: boolean;
 }) {
   return (
     <ContentListScreen
-      items={HISTOIRE_TOPICS}
+      items={topics}
       headerEmoji="🏛️"
       headerTitle="Histoire de Turquie"
-      headerSubtitle={`${HISTOIRE_TOPICS.length} rubriques à explorer`}
+      headerSubtitle={`${topics.length} rubriques à explorer`}
       offlineSection="history"
       isOnline={isOnline}
       onBack={onBack}
@@ -5512,20 +5624,22 @@ function HistoireScreen({
 // ─── GÉOGRAPHIE ET ÉCONOMIE SCREEN ──────────────────────────────────────────
 
 function GeographieScreen({
+  topics,
   onBack,
   onTopicSelect,
   isOnline,
 }: {
+  topics: typeof GEOGRAPHIE_ECONOMIE_TOPICS;
   onBack: () => void;
   onTopicSelect: (id: string) => void;
   isOnline: boolean;
 }) {
   return (
     <ContentListScreen
-      items={GEOGRAPHIE_ECONOMIE_TOPICS}
+      items={topics}
       headerEmoji="🗺️"
       headerTitle="Géographie et Économie"
-      headerSubtitle={`${GEOGRAPHIE_ECONOMIE_TOPICS.length} rubriques à explorer`}
+      headerSubtitle={`${topics.length} rubriques à explorer`}
       offlineSection="geography-economy"
       isOnline={isOnline}
       onBack={onBack}
@@ -5537,20 +5651,22 @@ function GeographieScreen({
 // ─── CULTURE ET TRADITION SCREEN ────────────────────────────────────────────
 
 function CultureScreen({
+  topics,
   onBack,
   onTopicSelect,
   isOnline,
 }: {
+  topics: typeof CULTURE_TRADITION_TOPICS;
   onBack: () => void;
   onTopicSelect: (id: string) => void;
   isOnline: boolean;
 }) {
   return (
     <ContentListScreen
-      items={CULTURE_TRADITION_TOPICS}
+      items={topics}
       headerEmoji="🎭"
       headerTitle="Culture et Tradition"
-      headerSubtitle={`${CULTURE_TRADITION_TOPICS.length} rubriques à explorer`}
+      headerSubtitle={`${topics.length} rubriques à explorer`}
       offlineSection="culture-tradition"
       isOnline={isOnline}
       onBack={onBack}
@@ -5645,6 +5761,8 @@ function ContentDetailScreen({
   heroReactionCounts,
   offlineSection,
   isOnline,
+  isOwner = false,
+  onSaveOverride,
 }: {
   item: ContentTopic;
   onBack: () => void;
@@ -5656,7 +5774,52 @@ function ContentDetailScreen({
   heroReactionCounts?: { likes: number; dislikes: number };
   offlineSection: OfflineSectionKey;
   isOnline: boolean;
+  // Correction/enrichissement de ce contenu par le propriétaire (name,
+  // shortDesc, historyLabel/history, anecdotesLabel/anecdotes). Absent =
+  // pas d'édition possible sur cet écran (ex: guide de visite détaillé).
+  isOwner?: boolean;
+  onSaveOverride?: (patch: ContentOverridePatch | null) => void;
 }) {
+  const [isEditingContent, setIsEditingContent] = useState(false);
+  const [draftName, setDraftName] = useState(item.name);
+  const [draftShortDesc, setDraftShortDesc] = useState(item.shortDesc);
+  const [draftHistoryLabel, setDraftHistoryLabel] = useState(item.historyLabel ?? "");
+  const [draftHistory, setDraftHistory] = useState(item.history);
+  const [draftAnecdotesLabel, setDraftAnecdotesLabel] = useState(item.anecdotesLabel ?? "");
+  const [draftAnecdotes, setDraftAnecdotes] = useState(item.anecdotes.join("\n"));
+
+  const openContentEditor = () => {
+    setDraftName(item.name);
+    setDraftShortDesc(item.shortDesc);
+    setDraftHistoryLabel(item.historyLabel ?? "");
+    setDraftHistory(item.history);
+    setDraftAnecdotesLabel(item.anecdotesLabel ?? "");
+    setDraftAnecdotes(item.anecdotes.join("\n"));
+    setIsEditingContent(true);
+  };
+
+  const saveContentEditor = () => {
+    const anecdotes = draftAnecdotes
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    const trimmedHistoryLabel = draftHistoryLabel.trim();
+    const trimmedAnecdotesLabel = draftAnecdotesLabel.trim();
+    onSaveOverride?.({
+      name: draftName.trim() || item.name,
+      shortDesc: draftShortDesc.trim() || item.shortDesc,
+      ...(trimmedHistoryLabel ? { historyLabel: trimmedHistoryLabel } : {}),
+      history: draftHistory.trim() || item.history,
+      ...(trimmedAnecdotesLabel ? { anecdotesLabel: trimmedAnecdotesLabel } : {}),
+      anecdotes: anecdotes.length > 0 ? anecdotes : item.anecdotes,
+    });
+    setIsEditingContent(false);
+  };
+
+  const resetContentEditor = () => {
+    onSaveOverride?.(null);
+    setIsEditingContent(false);
+  };
   const visiteGuidee = VISITES_GUIDEES[item.id];
   const autoReservationLinks = useMemo(() => getAutoReservationLinksForPlace(item.id), [item.id]);
   const usefulLinks = useMemo(() => {
@@ -5836,6 +5999,98 @@ function ContentDetailScreen({
       </div>
 
       <div className="flex-1 overflow-y-auto">
+        {isOwner && onSaveOverride && (
+          <div className="px-4 mt-4">
+            {isEditingContent ? (
+              <div className="rounded-2xl border border-[#BFDBFE] bg-[#EFF6FF] p-4 space-y-3">
+                <input
+                  type="text"
+                  value={draftName}
+                  onChange={(event) => setDraftName(event.target.value)}
+                  placeholder="Titre"
+                  aria-label="Titre du contenu"
+                  className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+                />
+                <input
+                  type="text"
+                  value={draftShortDesc}
+                  onChange={(event) => setDraftShortDesc(event.target.value)}
+                  placeholder="Description courte"
+                  aria-label="Description courte du contenu"
+                  className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+                />
+                <input
+                  type="text"
+                  value={draftHistoryLabel}
+                  onChange={(event) => setDraftHistoryLabel(event.target.value)}
+                  placeholder="Libellé de la section Histoire (ex: Histoire)"
+                  aria-label="Libellé de la section Histoire"
+                  className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+                />
+                <textarea
+                  value={draftHistory}
+                  onChange={(event) => setDraftHistory(event.target.value)}
+                  placeholder="Texte de la section Histoire (gras avec **texte**)"
+                  aria-label="Texte de la section Histoire"
+                  rows={6}
+                  className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
+                />
+                <input
+                  type="text"
+                  value={draftAnecdotesLabel}
+                  onChange={(event) => setDraftAnecdotesLabel(event.target.value)}
+                  placeholder="Libellé de la section Anecdotes (ex: Le savais-tu ?)"
+                  aria-label="Libellé de la section Anecdotes"
+                  className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+                />
+                <textarea
+                  value={draftAnecdotes}
+                  onChange={(event) => setDraftAnecdotes(event.target.value)}
+                  placeholder="Anecdotes, une par ligne"
+                  aria-label="Anecdotes"
+                  rows={4}
+                  className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
+                />
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Astuce : gras avec **comme ceci** dans le texte d'histoire. Une anecdote par ligne. Ces
+                  modifications sont visibles par toute la famille.
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={saveContentEditor}
+                    className="inline-flex items-center gap-1 rounded-xl bg-[#1565C0] px-3 py-2 text-xs font-black uppercase tracking-widest text-white"
+                  >
+                    <Check size={14} />
+                    Enregistrer
+                  </button>
+                  <button
+                    onClick={() => setIsEditingContent(false)}
+                    className="inline-flex items-center gap-1 rounded-xl bg-muted px-3 py-2 text-xs font-black uppercase tracking-widest text-muted-foreground"
+                  >
+                    <X size={14} />
+                    Annuler
+                  </button>
+                  <button
+                    onClick={resetContentEditor}
+                    className="inline-flex items-center gap-1 rounded-xl bg-[#FDECEA] px-3 py-2 text-xs font-black uppercase tracking-widest text-[#B71C1C]"
+                  >
+                    Réinitialiser
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={openContentEditor}
+                className="inline-flex items-center gap-1 rounded-full bg-[#E3F2FD] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#1565C0]"
+              >
+                <Pencil size={12} />
+                Modifier ce contenu
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Audio player — n'apparaît que si audioTitle ET audioDuration sont renseignés */}
         {item.audioTitle && item.audioDuration && (
           <div
@@ -6312,6 +6567,7 @@ function PlaceScreen({
   onOpenVisiteGuidee,
   onOpenInternalLink,
   isOnline,
+  onSaveContentOverride,
 }: {
   place: (typeof PLACES)[0];
   profile: Profile;
@@ -6322,6 +6578,7 @@ function PlaceScreen({
   onOpenVisiteGuidee: (item: ContentTopic) => void;
   onOpenInternalLink: (url: string) => boolean;
   isOnline: boolean;
+  onSaveContentOverride: (source: ContentSource, itemId: string, patch: ContentOverridePatch | null) => void;
 }) {
   const reactionCounts = getPlaceReactionCounts(comments);
 
@@ -6334,6 +6591,8 @@ function PlaceScreen({
       heroReactionCounts={reactionCounts}
       offlineSection="stay-guide"
       isOnline={isOnline}
+      isOwner={profile.role === "proprietaire"}
+      onSaveOverride={(patch) => onSaveContentOverride("places", place.id, patch)}
       extraSection={
         <PlaceCommentsSection
           placeId={place.id}
@@ -6351,14 +6610,18 @@ function PlaceScreen({
 
 function HistoireTopicScreen({
   topic,
+  profile,
   onBack,
   onOpenVisiteGuidee,
   isOnline,
+  onSaveContentOverride,
 }: {
   topic: (typeof HISTOIRE_TOPICS)[0];
+  profile: Profile;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
   isOnline: boolean;
+  onSaveContentOverride: (source: ContentSource, itemId: string, patch: ContentOverridePatch | null) => void;
 }) {
   return (
     <ContentDetailScreen
@@ -6369,20 +6632,26 @@ function HistoireTopicScreen({
       visiteGuideeCtaSubtext=""
       offlineSection="history"
       isOnline={isOnline}
+      isOwner={profile.role === "proprietaire"}
+      onSaveOverride={(patch) => onSaveContentOverride("histoire", topic.id, patch)}
     />
   );
 }
 
 function GeographieTopicScreen({
   topic,
+  profile,
   onBack,
   onOpenVisiteGuidee,
   isOnline,
+  onSaveContentOverride,
 }: {
   topic: (typeof GEOGRAPHIE_ECONOMIE_TOPICS)[0];
+  profile: Profile;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
   isOnline: boolean;
+  onSaveContentOverride: (source: ContentSource, itemId: string, patch: ContentOverridePatch | null) => void;
 }) {
   return (
     <ContentDetailScreen
@@ -6393,20 +6662,26 @@ function GeographieTopicScreen({
       visiteGuideeCtaSubtext=""
       offlineSection="geography-economy"
       isOnline={isOnline}
+      isOwner={profile.role === "proprietaire"}
+      onSaveOverride={(patch) => onSaveContentOverride("geographie-economie", topic.id, patch)}
     />
   );
 }
 
 function CultureTopicScreen({
   topic,
+  profile,
   onBack,
   onOpenVisiteGuidee,
   isOnline,
+  onSaveContentOverride,
 }: {
   topic: (typeof CULTURE_TRADITION_TOPICS)[0];
+  profile: Profile;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
   isOnline: boolean;
+  onSaveContentOverride: (source: ContentSource, itemId: string, patch: ContentOverridePatch | null) => void;
 }) {
   return (
     <ContentDetailScreen
@@ -6417,6 +6692,8 @@ function CultureTopicScreen({
       visiteGuideeCtaSubtext=""
       offlineSection="culture-tradition"
       isOnline={isOnline}
+      isOwner={profile.role === "proprietaire"}
+      onSaveOverride={(patch) => onSaveContentOverride("culture-tradition", topic.id, patch)}
     />
   );
 }
@@ -9786,6 +10063,7 @@ export default function App() {
     setGameDayOverride,
     setPlaceDayOverride,
     setPlaceVisibility: setPlaceVisibilityInCloud,
+    setContentOverride: setContentOverrideInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
     resetGameResults,
@@ -10069,6 +10347,18 @@ export default function App() {
     try {
       const parsed = JSON.parse(localStorage.getItem(DOCUMENT_VISIBILITY_STORAGE_KEY) || "{}");
       return parseDocumentVisibilityMap(parsed);
+    } catch {
+      return {};
+    }
+  });
+  const [contentOverrides, setContentOverrides] = useState<ContentOverrideMap>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(CONTENT_OVERRIDES_STORAGE_KEY) || "{}");
+      return parseContentOverrideMap(parsed);
     } catch {
       return {};
     }
@@ -10702,6 +10992,7 @@ export default function App() {
         localStorage.removeItem(PLACE_DAY_OVERRIDES_STORAGE_KEY);
         localStorage.removeItem(PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY);
         localStorage.removeItem(DOCUMENT_VISIBILITY_STORAGE_KEY);
+        localStorage.removeItem(CONTENT_OVERRIDES_STORAGE_KEY);
         localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY);
@@ -10787,6 +11078,10 @@ export default function App() {
             JSON.stringify(documentVisibilityMap)
           );
           localStorage.setItem(
+            CONTENT_OVERRIDES_STORAGE_KEY,
+            JSON.stringify(contentOverrides)
+          );
+          localStorage.setItem(
             DESTINATION_SURVEY_STORAGE_KEY,
             JSON.stringify(destinationSurveyVotes)
           );
@@ -10851,6 +11146,7 @@ export default function App() {
     placeDayOverrideMap,
     placeDayOrderOverrideMap,
     documentVisibilityMap,
+    contentOverrides,
     destinationSurveyVotes,
     launchGateCycle,
     launchGateCompletedCycleByProfile,
@@ -11170,6 +11466,18 @@ export default function App() {
       }
       return areDocumentVisibilityMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
     });
+    setContentOverrides((previous) => {
+      const nextFromCloud = cloudSnapshot.contentOverrides ?? {};
+      const pending = pendingContentOverridesRef.current;
+      if (pending !== "none") {
+        const serializedCloud = JSON.stringify(nextFromCloud);
+        if (serializedCloud !== pending) {
+          return previous;
+        }
+        pendingContentOverridesRef.current = "none";
+      }
+      return areContentOverrideMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
+    });
     setDestinationSurveyVotes((previous) => {
       const nextFromCloud = cloudSnapshot.destinationSurvey ?? {};
       const pendingVote = pendingDestinationSurveyVoteRef.current;
@@ -11403,6 +11711,9 @@ export default function App() {
   // Même principe que pendingPlaceVisibilityMapRef, appliqué à la visibilité
   // des documents importants.
   const pendingDocumentVisibilityMapRef = useRef<string | "none">("none");
+  // Même principe, appliqué aux corrections de contenu (places/histoire/
+  // géographie-économie/culture-tradition) faites par le propriétaire.
+  const pendingContentOverridesRef = useRef<string | "none">("none");
   const pendingChallengeReactionsRef = useRef<string | "none">("none");
   const pendingChallengeBestVotesRef = useRef<string | "none">("none");
   const previousCommentsSnapshotRef = useRef<PlaceCommentsByPlace | null>(null);
@@ -11520,6 +11831,7 @@ export default function App() {
       placeDayOverrides: placeDayOverrideMap,
       placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
+      contentOverrides,
       destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       challengeReactions: challengeReactionsByDay,
       challengeBestVotes: challengeBestVotesByDay,
@@ -11569,6 +11881,7 @@ export default function App() {
       placeDayOverrides: placeDayOverrideMap,
       placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
+      contentOverrides,
       profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       challengeReactions: challengeReactionsByDay,
       challengeBestVotes: challengeBestVotesByDay,
@@ -11618,6 +11931,7 @@ export default function App() {
     placeDayOverrideMap,
     placeDayOrderOverrideMap,
     documentVisibilityMap,
+    contentOverrides,
     destinationSurveyVotes,
     challengeReactionsByDay,
     launchGateCycle,
@@ -12167,6 +12481,45 @@ export default function App() {
     }
   };
 
+  const setContentOverrideForOwner = (
+    source: ContentSource,
+    itemId: string,
+    patch: ContentOverridePatch | null
+  ) => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return;
+    }
+
+    setContentOverrides((previous) => {
+      const next: ContentOverrideMap = { ...previous };
+      const itemsForSource = { ...(next[source] ?? {}) };
+      if (patch) {
+        itemsForSource[itemId] = patch;
+      } else {
+        delete itemsForSource[itemId];
+      }
+      if (Object.keys(itemsForSource).length > 0) {
+        next[source] = itemsForSource;
+      } else {
+        delete next[source];
+      }
+      if (cloudEnabled) {
+        pendingContentOverridesRef.current = JSON.stringify(next);
+      }
+      return next;
+    });
+
+    if (cloudEnabled) {
+      void setContentOverrideInCloud(source, itemId, patch).catch((error) => {
+        console.error("[content-override] cloud write failed", {
+          source,
+          itemId,
+          error,
+        });
+      });
+    }
+  };
+
   const setPlaceDaysForOwner = async (
     placeId: string,
     nextDays: number[],
@@ -12307,7 +12660,33 @@ export default function App() {
     }
   }, [screen, selectedPlaceId, profile.role, placeVisibilityMap]);
 
-  const place = PLACES_WITH_AUTO_GPS.find((p) => p.id === selectedPlaceId);
+  // Contenu des 4 rubriques après application des corrections/ajouts du
+  // propriétaire (contentOverrides). Les champs non modifiés restent ceux
+  // des fichiers .ts sources (voir applyContentOverride).
+  const placesWithOverrides = useMemo(
+    () => PLACES_WITH_AUTO_GPS.map((p) => applyContentOverride(p, contentOverrides.places?.[p.id])),
+    [contentOverrides.places]
+  );
+  const histoireTopicsWithOverrides = useMemo(
+    () => HISTOIRE_TOPICS.map((t) => applyContentOverride(t, contentOverrides.histoire?.[t.id])),
+    [contentOverrides.histoire]
+  );
+  const geographieTopicsWithOverrides = useMemo(
+    () =>
+      GEOGRAPHIE_ECONOMIE_TOPICS.map((t) =>
+        applyContentOverride(t, contentOverrides["geographie-economie"]?.[t.id])
+      ),
+    [contentOverrides]
+  );
+  const cultureTopicsWithOverrides = useMemo(
+    () =>
+      CULTURE_TRADITION_TOPICS.map((t) =>
+        applyContentOverride(t, contentOverrides["culture-tradition"]?.[t.id])
+      ),
+    [contentOverrides]
+  );
+
+  const place = placesWithOverrides.find((p) => p.id === selectedPlaceId);
 
   useEffect(() => {
     const existingVote = destinationSurveyVotes[profile.id];
@@ -12468,7 +12847,7 @@ export default function App() {
     return true;
   };
 
-  const histoireTopic = HISTOIRE_TOPICS.find((t) => t.id === selectedTopicId);
+  const histoireTopic = histoireTopicsWithOverrides.find((t) => t.id === selectedTopicId);
 
   const openGeographieTopic = (id: string) => {
     if (!canAccessScreen(profile.role, phase, "geographie-topic")) {
@@ -12482,7 +12861,7 @@ export default function App() {
     setScreen("geographie-topic");
   };
 
-  const geographieTopic = GEOGRAPHIE_ECONOMIE_TOPICS.find((t) => t.id === selectedGeographieTopicId);
+  const geographieTopic = geographieTopicsWithOverrides.find((t) => t.id === selectedGeographieTopicId);
 
   const openCultureTopic = (id: string) => {
     if (!canAccessScreen(profile.role, phase, "culture-topic")) {
@@ -12496,7 +12875,7 @@ export default function App() {
     setScreen("culture-topic");
   };
 
-  const cultureTopic = CULTURE_TRADITION_TOPICS.find((t) => t.id === selectedCultureTopicId);
+  const cultureTopic = cultureTopicsWithOverrides.find((t) => t.id === selectedCultureTopicId);
 
   const handleLoginSubmit = async (profileId: string, password: string) => {
     if (!cloudSnapshot) {
@@ -14705,6 +15084,7 @@ const resetForProfileSwitch = () => {
       if (effectiveScreen === "guide") {
         return (
           <GuideScreen
+            places={placesWithOverrides}
             onBack={() => goToScreen("dashboard")}
             onPlaceSelect={openPlace}
             currentDay={currentDay}
@@ -14784,6 +15164,7 @@ const resetForProfileSwitch = () => {
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
             onOpenInternalLink={openInternalLink}
             isOnline={isOnline}
+            onSaveContentOverride={setContentOverrideForOwner}
           />
         ) : null;
       }
@@ -14801,6 +15182,7 @@ const resetForProfileSwitch = () => {
       if (effectiveScreen === "histoire") {
         return (
           <HistoireScreen
+            topics={histoireTopicsWithOverrides}
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openHistoireTopic}
             isOnline={isOnline}
@@ -14812,9 +15194,11 @@ const resetForProfileSwitch = () => {
         return histoireTopic ? (
           <HistoireTopicScreen
             topic={histoireTopic}
+            profile={profile}
             onBack={() => goToScreen("histoire")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "histoire-topic")}
             isOnline={isOnline}
+            onSaveContentOverride={setContentOverrideForOwner}
           />
         ) : null;
       }
@@ -14822,6 +15206,7 @@ const resetForProfileSwitch = () => {
       if (effectiveScreen === "geographie") {
         return (
           <GeographieScreen
+            topics={geographieTopicsWithOverrides}
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openGeographieTopic}
             isOnline={isOnline}
@@ -14833,9 +15218,11 @@ const resetForProfileSwitch = () => {
         return geographieTopic ? (
           <GeographieTopicScreen
             topic={geographieTopic}
+            profile={profile}
             onBack={() => goToScreen("geographie")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "geographie-topic")}
             isOnline={isOnline}
+            onSaveContentOverride={setContentOverrideForOwner}
           />
         ) : null;
       }
@@ -14843,6 +15230,7 @@ const resetForProfileSwitch = () => {
       if (effectiveScreen === "culture") {
         return (
           <CultureScreen
+            topics={cultureTopicsWithOverrides}
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openCultureTopic}
             isOnline={isOnline}
@@ -14854,9 +15242,11 @@ const resetForProfileSwitch = () => {
         return cultureTopic ? (
           <CultureTopicScreen
             topic={cultureTopic}
+            profile={profile}
             onBack={() => goToScreen("culture")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
             isOnline={isOnline}
+            onSaveContentOverride={setContentOverrideForOwner}
           />
         ) : null;
       }
@@ -15144,6 +15534,7 @@ const resetForProfileSwitch = () => {
       case "guide":
         return (
           <GuideScreen
+            places={placesWithOverrides}
             onBack={() => goToScreen("dashboard")}
             onPlaceSelect={openPlace}
             currentDay={currentDay}
@@ -15217,6 +15608,7 @@ const resetForProfileSwitch = () => {
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
             onOpenInternalLink={openInternalLink}
             isOnline={isOnline}
+            onSaveContentOverride={setContentOverrideForOwner}
           />
         ) : null;
       case "visite-guidee":
@@ -15230,6 +15622,7 @@ const resetForProfileSwitch = () => {
       case "histoire":
         return (
           <HistoireScreen
+            topics={histoireTopicsWithOverrides}
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openHistoireTopic}
             isOnline={isOnline}
@@ -15239,14 +15632,17 @@ const resetForProfileSwitch = () => {
         return histoireTopic ? (
           <HistoireTopicScreen
             topic={histoireTopic}
+            profile={profile}
             onBack={() => goToScreen("histoire")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "histoire-topic")}
             isOnline={isOnline}
+            onSaveContentOverride={setContentOverrideForOwner}
           />
         ) : null;
       case "geographie":
         return (
           <GeographieScreen
+            topics={geographieTopicsWithOverrides}
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openGeographieTopic}
             isOnline={isOnline}
@@ -15256,14 +15652,17 @@ const resetForProfileSwitch = () => {
         return geographieTopic ? (
           <GeographieTopicScreen
             topic={geographieTopic}
+            profile={profile}
             onBack={() => goToScreen("geographie")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "geographie-topic")}
             isOnline={isOnline}
+            onSaveContentOverride={setContentOverrideForOwner}
           />
         ) : null;
       case "culture":
         return (
           <CultureScreen
+            topics={cultureTopicsWithOverrides}
             onBack={() => goToScreen("dashboard")}
             onTopicSelect={openCultureTopic}
             isOnline={isOnline}
@@ -15273,9 +15672,11 @@ const resetForProfileSwitch = () => {
         return cultureTopic ? (
           <CultureTopicScreen
             topic={cultureTopic}
+            profile={profile}
             onBack={() => goToScreen("culture")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
             isOnline={isOnline}
+            onSaveContentOverride={setContentOverrideForOwner}
           />
         ) : null;
       case "game":

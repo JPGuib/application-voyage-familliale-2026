@@ -90,6 +90,22 @@ export type PlaceDayOverrideMap = Record<string, number[]>;
 export type PlaceDayOrderOverrideMap = Record<string, Record<number, number>>;
 export type DocumentVisibilityState = "visible" | "hiddenByOwner";
 
+// Correction/enrichissement par le propriétaire des textes des rubriques de
+// contenu (places, histoire, géographie-économie, culture-tradition). Chaque
+// entrée de contentOverrides[$source][$itemId] ne contient que les champs
+// effectivement modifiés ; les champs absents restent ceux du .ts source
+// (voir applyContentOverride dans App.tsx). null = pas d'override.
+export type ContentSource = "places" | "histoire" | "geographie-economie" | "culture-tradition";
+export type ContentOverridePatch = Partial<{
+  name: string;
+  shortDesc: string;
+  historyLabel: string;
+  history: string;
+  anecdotesLabel: string;
+  anecdotes: string[];
+}>;
+export type ContentOverrideMap = Partial<Record<ContentSource, Record<string, ContentOverridePatch>>>;
+
 export type CloudPlaceComment = {
   commentId: string;
   placeId: string;
@@ -178,6 +194,7 @@ export type CloudSyncSnapshot = {
   placeDayOverrides?: PlaceDayOverrideMap;
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap: Record<string, DocumentVisibilityState>;
+  contentOverrides?: ContentOverrideMap;
   destinationSurvey: CloudDestinationSurveyByProfile;
   challengeReactions?: CloudChallengeReactionsByDay;
   challengeBestVotes?: CloudChallengeBestVotesByDay;
@@ -217,6 +234,7 @@ export type CloudSyncWritePayload = {
   placeDayOverrides?: PlaceDayOverrideMap;
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
+  contentOverrides?: ContentOverrideMap;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   challengeReactions?: CloudChallengeReactionsByDay;
   challengeBestVotes?: CloudChallengeBestVotesByDay;

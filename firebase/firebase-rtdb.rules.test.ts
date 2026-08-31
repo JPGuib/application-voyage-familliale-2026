@@ -179,6 +179,47 @@ suite("firebase rtdb rules owner phase guard", () => {
     );
   });
 
+  it("allows owner to set a content override for a place", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb.ref(`families/${FAMILY_ID}/contentOverrides/places/sainte-sophie`).set({
+        history: "Texte corrigé par le propriétaire.",
+        anecdotes: ["Une anecdote corrigée."],
+      })
+    );
+  });
+
+  it("denies non-owner from writing a content override", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/contentOverrides/places/sainte-sophie`).set({
+        history: "Tentative non autorisée.",
+      })
+    );
+  });
+
+  it("denies a content override with a history text that is too long", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb
+        .ref(`families/${FAMILY_ID}/contentOverrides/places/sainte-sophie/history`)
+        .set("x".repeat(6001))
+    );
+  });
+
+  it("denies an unknown field inside a content override", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb.ref(`families/${FAMILY_ID}/contentOverrides/places/sainte-sophie`).set({
+        unknownField: "not allowed",
+      })
+    );
+  });
+
   it("allows non-owner to write profile-scoped checklist", async () => {
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
 

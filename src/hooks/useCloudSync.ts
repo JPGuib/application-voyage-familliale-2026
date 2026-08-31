@@ -10,6 +10,7 @@ import {
   pushDestinationSurveyVoteOnly,
   pushCloudSnapshot,
   pushFamilyPhaseChange,
+  pushContentOverride,
   pushGameDayOverride,
   pushGameScoring,
   pushPlaceVisibility,
@@ -37,6 +38,9 @@ import type {
   CloudPlaceCommentsByPlace,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
+  ContentOverrideMap,
+  ContentOverridePatch,
+  ContentSource,
   DocumentVisibilityState,
   GameDayOverride,
   PlaceDayOverrideMap,
@@ -82,6 +86,7 @@ type PushSnapshotInput = {
   placeDayOverrides?: PlaceDayOverrideMap;
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
+  contentOverrides?: ContentOverrideMap;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   challengeReactions?: CloudChallengeReactionsByDay;
   challengeBestVotes?: CloudChallengeBestVotesByDay;
@@ -465,6 +470,7 @@ export function useCloudSync() {
         placeDayOverrides: snapshot.placeDayOverrides,
         placeDayOrderOverrides: snapshot.placeDayOrderOverrides,
         documentVisibilityMap: snapshot.documentVisibilityMap,
+        contentOverrides: snapshot.contentOverrides,
         profileDestinationSurveyVote: snapshot.profileDestinationSurveyVote,
         challengeReactions: snapshot.challengeReactions,
         challengeBestVotes: snapshot.challengeBestVotes,
@@ -723,6 +729,23 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  const setContentOverride = useCallback(
+    async (
+      source: ContentSource,
+      itemId: string,
+      patch: ContentOverridePatch | null
+    ): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await ensureOwnerMembership(database, familyId, cloudUserUid);
+      await pushContentOverride(database, familyId, source, itemId, patch);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   const setPlaceDayOverride = useCallback(
     async (
       placeId: string,
@@ -913,6 +936,7 @@ export function useCloudSync() {
     setGameDayOverride,
     setPlaceVisibility,
     setPlaceDayOverride,
+    setContentOverride,
     setTripStartDate,
     setGameScoring,
     resetGameResults,

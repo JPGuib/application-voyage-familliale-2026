@@ -29,6 +29,9 @@ import type {
   CloudPlaceCommentsByPlace,
   CloudDestinationSurveyByProfile,
   CloudDestinationSurveyVote,
+  ContentOverrideMap,
+  ContentOverridePatch,
+  ContentSource,
   DocumentVisibilityState,
   CloudProfileRecord,
   CloudSyncSnapshot,
@@ -509,6 +512,65 @@ function parsePlaceVisibilityMap(value: unknown): Record<string, PlaceVisibility
   return next;
 }
 
+const CONTENT_SOURCES: readonly ContentSource[] = [
+  "places",
+  "histoire",
+  "geographie-economie",
+  "culture-tradition",
+];
+
+function parseContentOverridePatch(value: unknown): ContentOverridePatch | null {
+  const raw = asRecord(value);
+  const patch: ContentOverridePatch = {};
+
+  if (typeof raw.name === "string" && raw.name.trim().length > 0) {
+    patch.name = raw.name;
+  }
+  if (typeof raw.shortDesc === "string" && raw.shortDesc.trim().length > 0) {
+    patch.shortDesc = raw.shortDesc;
+  }
+  if (typeof raw.historyLabel === "string" && raw.historyLabel.trim().length > 0) {
+    patch.historyLabel = raw.historyLabel;
+  }
+  if (typeof raw.history === "string" && raw.history.trim().length > 0) {
+    patch.history = raw.history;
+  }
+  if (typeof raw.anecdotesLabel === "string" && raw.anecdotesLabel.trim().length > 0) {
+    patch.anecdotesLabel = raw.anecdotesLabel;
+  }
+  if (Array.isArray(raw.anecdotes)) {
+    const anecdotes = raw.anecdotes.filter(
+      (entry): entry is string => typeof entry === "string" && entry.trim().length > 0
+    );
+    if (anecdotes.length > 0) {
+      patch.anecdotes = anecdotes;
+    }
+  }
+
+  return Object.keys(patch).length > 0 ? patch : null;
+}
+
+function parseContentOverrideMap(value: unknown): ContentOverrideMap {
+  const raw = asRecord(value);
+  const next: ContentOverrideMap = {};
+
+  for (const source of CONTENT_SOURCES) {
+    const itemsRaw = asRecord(raw[source]);
+    const items: Record<string, ContentOverridePatch> = {};
+    for (const [itemId, candidate] of Object.entries(itemsRaw)) {
+      const patch = parseContentOverridePatch(candidate);
+      if (patch) {
+        items[itemId] = patch;
+      }
+    }
+    if (Object.keys(items).length > 0) {
+      next[source] = items;
+    }
+  }
+
+  return next;
+}
+
 function normalizePlaceDays(value: unknown): number[] {
   const rawValues = Array.isArray(value)
     ? value
@@ -777,6 +839,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     challengeBestVotes: challengeBestVoteRecords,
     placeDayOrderOverrides: parsePlaceDayOrderOverrides(root.placeDayOverrides),
     documentVisibilityMap: parseDocumentVisibilityMap(root.documentVisibilityMap),
+    contentOverrides: parseContentOverrideMap(root.contentOverrides),
     destinationSurvey: destinationSurveyRecords,
     gameDayOverrides: parseGameDayOverrides(root.gameDayOverrides),
     launchGateCycle: toNonNegativeInteger(root.launchGateCycle),
@@ -1156,6 +1219,9 @@ export async function pushCloudSnapshot(
     if (payload.documentVisibilityMap) {
       updates.documentVisibilityMap = payload.documentVisibilityMap;
     }
+    if (payload.contentOverrides) {
+      updates.contentOverrides = payload.contentOverrides;
+    }
     updates.updatedAt = timestamp;
 
     for (const profile of normalizedFamilyState.profiles) {
@@ -1199,6 +1265,18 @@ export async function pushPlaceVisibility(
 ): Promise<void> {
   await update(ref(database, familyPath(familyId)), {
     [`placeVisibilityMap/${placeId}`]: visibility,
+  });
+}
+
+export async function pushContentOverride(
+  database: Database,
+  familyId: string,
+  source: ContentSource,
+  itemId: string,
+  patch: ContentOverridePatch | null
+): Promise<void> {
+  await update(ref(database, familyPath(familyId)), {
+    [`contentOverrides/${source}/${itemId}`]: patch,
   });
 }
 
