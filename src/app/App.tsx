@@ -86,6 +86,12 @@ import {
   upsertGameHistory,
 } from "./game-results";
 import { computePodium } from "./podium";
+import {
+  computeCandyCrushPodium,
+  mergeCandyCrushChallengeRecord,
+  parseCandyCrushChallengeRecord,
+  type CandyCrushChallengeRecord,
+} from "./candy-crush-challenge";
 import { buildScoreChartPoints } from "./score-progression";
 import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
@@ -10353,6 +10359,20 @@ export default function App() {
       return [];
     }
   });
+  // Record personnel du mode "Défi" de Bazar Crush (Candy Crush) — cf.
+  // candy-crush-challenge.ts. Même pattern que gameHistory ci-dessus : lu
+  // depuis le localStorage tant que le cloud n'a pas encore hydraté.
+  const [candyCrushBest, setCandyCrushBest] = useState<CandyCrushChallengeRecord | null>(() => {
+    if (cloudEnabled) {
+      return null;
+    }
+
+    try {
+      return parseCandyCrushChallengeRecord(localStorage.getItem("jp-candy-crush-challenge-best"));
+    } catch {
+      return null;
+    }
+  });
   const [postTripReplayDay, setPostTripReplayDay] = useState<number | null>(null);
 
   // Calculé tôt (avant l'effet d'hydratation cloud plus bas) car la
@@ -10677,6 +10697,7 @@ export default function App() {
         localStorage.removeItem("jp-checklist");
         localStorage.removeItem("jp-game-history");
         localStorage.removeItem("jp-game-progress");
+        localStorage.removeItem("jp-candy-crush-challenge-best");
         localStorage.removeItem(PLACE_VISIBILITY_STORAGE_KEY);
         localStorage.removeItem(PLACE_DAY_OVERRIDES_STORAGE_KEY);
         localStorage.removeItem(PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY);
@@ -10727,6 +10748,11 @@ export default function App() {
             localStorage.setItem("jp-game-progress", JSON.stringify(currentGameProgress));
           } else {
             localStorage.removeItem("jp-game-progress");
+          }
+          if (candyCrushBest) {
+            localStorage.setItem("jp-candy-crush-challenge-best", JSON.stringify(candyCrushBest));
+          } else {
+            localStorage.removeItem("jp-candy-crush-challenge-best");
           }
           localStorage.setItem(
             CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY,
@@ -10831,6 +10857,7 @@ export default function App() {
     unlockFailedAttempts,
     unlockLockedUntil,
     gameHistory,
+    candyCrushBest,
     gameState,
     currentDay,
     answers,
@@ -11190,6 +11217,15 @@ export default function App() {
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
+    // Ne régresse jamais un record déjà connu localement (cf.
+    // mergeCandyCrushChallengeRecord) : une hydratation cloud partielle/à la
+    // traîne ne doit jamais effacer un record fraîchement battu en local.
+    setCandyCrushBest((previous) => {
+      const merged = mergeCandyCrushChallengeRecord(previous, cloudProfile.candyCrushChallenge);
+      return previous?.bestScore === merged?.bestScore && previous?.updatedAt === merged?.updatedAt
+        ? previous
+        : merged;
+    });
 
     // Reprise de la progression en cours (quiz déjà soumis, énigme ou défi
     // photo) : seulement si elle correspond au jour courant, sinon elle est
@@ -11494,6 +11530,7 @@ export default function App() {
       gameScoring,
       gameHistory,
       currentGameProgress,
+      candyCrushBest,
     });
     if (lastCloudPushRef.current === payload) {
       return;
@@ -11539,6 +11576,7 @@ export default function App() {
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       gameResults: gameHistory,
       gameProgress: currentGameProgress,
+      candyCrushChallenge: candyCrushBest,
       phase,
       tripStartDate,
       gameScoring,
@@ -11551,6 +11589,7 @@ export default function App() {
     cloudActorUid,
     familyState,
     gameHistory,
+    candyCrushBest,
     gameState,
     currentDay,
     answers,
@@ -13710,6 +13749,35 @@ const resetForProfileSwitch = () => {
           destinationSurveyPoints: destinationSurveyPointsByProfile.get(profile.id) ?? 0,
         },
       ];
+  // Podium du mode "Défi" de Bazar Crush (Candy Crush) — tout le monde
+  // compte, y compris propriétaire/visiteurs (cf. computeCandyCrushPodium).
+  // Pour le profil courant on utilise `candyCrushBest` (déjà fusionné via
+  // mergeCandyCrushChallengeRecord) plutôt que le cloudSnapshot brut, pour ne
+  // jamais afficher un record périmé pendant la brève fenêtre avant que le
+  // push cloud n'ait fait l'aller-retour.
+  const candyCrushPodium = computeCandyCrushPodium(
+    cloudSnapshot
+      ? Object.values(cloudSnapshot.profiles).map((item) => ({
+          profileId: item.profileId,
+          surname: item.surname,
+          bestScore:
+            item.profileId === profile.id
+              ? candyCrushBest?.bestScore ?? 0
+              : item.candyCrushChallenge?.bestScore ?? 0,
+        }))
+      : [
+          {
+            profileId: profile.id,
+            surname: profile.surname,
+            bestScore: candyCrushBest?.bestScore ?? 0,
+          },
+        ]
+  );
+  function handleCandyCrushChallengeResult(score: number) {
+    setCandyCrushBest((previous) =>
+      previous && previous.bestScore >= score ? previous : { bestScore: score, updatedAt: Date.now() }
+    );
+  }
   const familyProfilesForComments = cloudSnapshot
     ? Object.values(cloudSnapshot.profiles).map((item) => ({
         id: item.profileId,
@@ -15310,7 +15378,15 @@ const resetForProfileSwitch = () => {
           />
         );
       case "candy-crush":
-        return <CandyCrushScreen onBack={() => goToScreen("jeux")} />;
+        return (
+          <CandyCrushScreen
+            onBack={() => goToScreen("jeux")}
+            personalBest={candyCrushBest?.bestScore ?? 0}
+            podium={candyCrushPodium}
+            currentProfileId={profile.id}
+            onChallengeResult={handleCandyCrushChallengeResult}
+          />
+        );
       case "crossword":
         return <CrosswordScreen onBack={() => goToScreen("jeux")} />;
       case "ordalie":

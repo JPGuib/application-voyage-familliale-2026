@@ -18,7 +18,6 @@ BACKLOG / EVOLUTIONS
 * JEU - J5 - Jeu du jour - Un joueur qui a oublié de faire le jeu de la veille pourrait-il le passer quand même ? (paramètre possible ? Paramètre admin ? ...)
 * JEU - J6 - Jeu du jour - revoir l'affichage avec les émoticones, qui prennent trop de place
 * JEU - J7 - Espace - mots croisés plus pratiques à visionner
-* JEU - J8 - Espace - candy crush mettre un chrono
 * JEU - J9 - Espace - candy rush : voir un système de record à battre (mais dans ce cas sur une grille stadard et nb de pions convenus d'avance)
 
 * UI - UI1 - retour l'UI ? S'inspire de wechat

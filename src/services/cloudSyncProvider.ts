@@ -22,6 +22,7 @@ import type {
   CloudChallengeBestVotesByDay,
   CloudChallengeReaction,
   CloudChallengeReactionsByDay,
+  CloudCandyCrushChallenge,
   CloudGameHistoryEntry,
   CloudGameProgress,
   CloudPlaceComment,
@@ -194,6 +195,20 @@ function parseGameResults(value: unknown): CloudGameHistoryEntry[] {
       challengeResponse: typeof entry.challengeResponse === "string" ? entry.challengeResponse : "",
     }))
     .sort((left, right) => left.day - right.day);
+}
+
+function parseCandyCrushChallenge(value: unknown): CloudCandyCrushChallenge {
+  const entry = asRecord(value);
+  if (
+    typeof entry.bestScore === "number" &&
+    Number.isFinite(entry.bestScore) &&
+    entry.bestScore >= 0 &&
+    typeof entry.updatedAt === "number" &&
+    Number.isFinite(entry.updatedAt)
+  ) {
+    return { bestScore: entry.bestScore, updatedAt: entry.updatedAt };
+  }
+  return null;
 }
 
 function parseGameProgress(value: unknown): CloudGameProgress {
@@ -690,6 +705,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const challengeBestVoteRecords = parseChallengeBestVotes(root.challengeBestVotes);
   const gameResultRecords = asRecord(root.gameResults);
   const gameProgressRecords = asRecord(root.gameProgress);
+  const candyCrushChallengeRecords = asRecord(root.candyCrushChallenge);
   const phaseRecords = asRecord(root.phase);
 
   const hasFamilyWidePhase = root.phase === "before" || root.phase === "during";
@@ -730,6 +746,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
       customChecklistItems: parseChecklistCustomItems(asRecord(value).customChecklistItems),
       gameResults: parseGameResults(gameResultRecords[profileId]),
       gameProgress: parseGameProgress(gameProgressRecords[profileId]),
+      candyCrushChallenge: parseCandyCrushChallenge(candyCrushChallengeRecords[profileId]),
       destinationSurveyVote: destinationSurveyRecords[profileId] ?? null,
       launchGateCompletedCycle: toNonNegativeInteger(asRecord(value).launchGateCompletedCycle),
       phase: toTravelPhase(phaseRecords[profileId]),
@@ -871,6 +888,7 @@ export async function pushCloudSnapshot(
     [`checklists/${payload.profileId}`]: payload.checklist,
     [`gameResults/${payload.profileId}`]: payload.gameResults,
     [`gameProgress/${payload.profileId}`]: payload.gameProgress,
+    [`candyCrushChallenge/${payload.profileId}`]: payload.candyCrushChallenge,
   };
 
   if (payload.launchGateCompletedCycleForProfile === null) {
@@ -1354,6 +1372,7 @@ export async function deleteProfileFromCloud(
     [`families/${familyId}/checklists/${profileIdToDelete}`]: null,
     [`families/${familyId}/gameResults/${profileIdToDelete}`]: null,
     [`families/${familyId}/gameProgress/${profileIdToDelete}`]: null,
+    [`families/${familyId}/candyCrushChallenge/${profileIdToDelete}`]: null,
     [`families/${familyId}/updatedAt`]: Date.now(),
   };
 

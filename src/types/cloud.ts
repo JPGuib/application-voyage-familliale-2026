@@ -116,6 +116,11 @@ export type CloudDestinationSurveyByProfile = Record<string, CloudDestinationSur
 export type ProfileGender = "unspecified" | "male" | "female";
 export type ProfileHouseholdRole = "member" | "parent" | "child";
 
+// Record personnel au mode "Défi" de Bazar Crush (Candy Crush) : grille 9x9,
+// 6 types de pions, niveau 1, timer 120s figés (cf. candy-crush-challenge.ts).
+// null = jamais joué en mode Défi.
+export type CloudCandyCrushChallenge = { bestScore: number; updatedAt: number } | null;
+
 export type CloudProfileRecord = {
   surname: string;
   role: Role;
@@ -147,6 +152,7 @@ export type CloudProfileState = {
   customChecklistItems: ChecklistCustomItem[];
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
+  candyCrushChallenge: CloudCandyCrushChallenge;
   destinationSurveyVote: CloudDestinationSurveyVote | null;
   launchGateCompletedCycle?: number;
   phase: TravelPhase;
@@ -219,6 +225,7 @@ export type CloudSyncWritePayload = {
   resetDestinationSurvey?: boolean;
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
+  candyCrushChallenge: CloudCandyCrushChallenge;
   phase: TravelPhase;
   tripStartDate?: string | null;
   gameScoring: GameScoringConfig;

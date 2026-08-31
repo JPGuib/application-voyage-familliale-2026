@@ -107,6 +107,19 @@ const SCOPED_CSS = `
 .cc-combo-text { position: absolute; font-size: 22px; font-weight: 700; color: var(--cc-warning); pointer-events: none; animation: ccComboUp 0.8s ease-out forwards; text-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 15; }
 @keyframes ccComboUp { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 20% { transform: translateY(-10px) scale(1.2); opacity: 1; } 100% { transform: translateY(-60px) scale(1); opacity: 0; } }
 .cc-quit-row { width: 100%; max-width: 300px; display: flex; justify-content: flex-start; margin-bottom: 8px; }
+.cc-challenge-rules { width: 100%; max-width: 300px; background: var(--cc-surface-raised); border-radius: 16px; border: 1px solid var(--cc-border); padding: 16px; margin-bottom: 14px; text-align: center; font-size: 13px; color: var(--cc-text-secondary); font-weight: 600; }
+.cc-challenge-best { width: 100%; max-width: 300px; text-align: center; margin-bottom: 18px; }
+.cc-challenge-best-label { font-size: 12px; color: var(--cc-text-tertiary); text-transform: uppercase; letter-spacing: 1px; }
+.cc-challenge-best-val { font-size: 40px; font-weight: 700; color: var(--cc-accent); line-height: 1.2; }
+.cc-podium-title { width: 100%; max-width: 300px; font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.cc-podium-list { width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.cc-podium-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--cc-border); background: var(--cc-surface-raised); font-size: 14px; }
+.cc-podium-row.cc-podium-me { border-color: var(--cc-accent); box-shadow: 0 0 0 1px var(--cc-accent); }
+.cc-podium-rank { width: 26px; text-align: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+.cc-podium-name { flex: 1; font-weight: 600; color: var(--cc-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cc-podium-score { font-weight: 700; color: var(--cc-text-secondary); font-variant-numeric: tabular-nums; }
+.cc-podium-empty { width: 100%; max-width: 300px; text-align: center; font-size: 13px; color: var(--cc-text-tertiary); margin-bottom: 20px; }
+.cc-record-badge { font-size: 15px; font-weight: 700; color: var(--cc-positive); margin: 0; }
 `;
 
 const MARKUP = `
@@ -118,8 +131,26 @@ const MARKUP = `
     <div class="cc-menu-logo">BAZAR CRUSH</div>
     <div class="cc-menu-sub">🇹🇷 Édition spéciale Turquie</div>
     <button class="cc-btn cc-primary" data-action="go-settings">Jouer</button>
+    <button class="cc-btn cc-secondary" data-action="go-challenge">🏆 Mode Défi</button>
     <button class="cc-btn cc-secondary" data-action="go-howto">Comment jouer</button>
     <div class="cc-copyright">©Julie@INSA</div>
+  </div>
+
+  <div class="cc-screen" id="cc-scrChallenge">
+    <div class="cc-quit-row">
+      <button class="cc-hud-back" data-action="go-menu">&#x2190;</button>
+    </div>
+    <div class="cc-settings-title">Mode Défi 🏆</div>
+    <div class="cc-settings-sub">Bats ton record !</div>
+    <div class="cc-challenge-rules">Grille 9×9 · 6 pions · Niveau 1 · 120 s</div>
+    <div class="cc-challenge-best">
+      <div class="cc-challenge-best-label">Ton record</div>
+      <div class="cc-challenge-best-val" id="cc-challengeBestVal">0</div>
+    </div>
+    <div class="cc-podium-title">Podium familial</div>
+    <div class="cc-podium-list" id="cc-podiumList"></div>
+    <button class="cc-btn cc-primary" data-action="start-challenge">Lancer le défi</button>
+    <button class="cc-btn cc-secondary" data-action="go-menu">Retour</button>
   </div>
 
   <div class="cc-screen" id="cc-scrSettings">
@@ -165,7 +196,7 @@ const MARKUP = `
 
   <div class="cc-screen" id="cc-scrGame">
     <div class="cc-game-hud">
-      <button class="cc-hud-back" data-action="go-menu">&#x2190;</button>
+      <button class="cc-hud-back" data-action="game-exit">&#x2190;</button>
       <div class="cc-hud-score">
         <div class="cc-hud-score-val" id="cc-scoreVal">0</div>
         <div class="cc-hud-score-label">score</div>
@@ -186,8 +217,9 @@ const MARKUP = `
         <h2 id="cc-gameOverTitle">Partie terminée !</h2>
         <div class="cc-final-score" id="cc-finalScore">0</div>
         <p>points</p>
+        <p class="cc-record-badge" id="cc-recordBadge" style="display:none;">🎉 Nouveau record !</p>
         <button class="cc-btn cc-primary" data-action="restart-game">Rejouer</button>
-        <button class="cc-btn cc-secondary" data-action="go-menu">Menu</button>
+        <button class="cc-btn cc-secondary" data-action="game-exit">Menu</button>
       </div>
     </div>
     <div class="cc-settings-sub" style="margin-top:8px;font-size:12px;">Tape (ou déplace) un pion puis (avec) un voisin pour échanger</div>
@@ -195,8 +227,31 @@ const MARKUP = `
 </div>
 `;
 
-export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
+export type CandyCrushPodiumRow = {
+  profileId: string;
+  surname: string;
+  bestScore: number;
+  rank: number;
+};
+
+export function CandyCrushScreen({
+  onBack,
+  personalBest,
+  podium,
+  currentProfileId,
+  onChallengeResult,
+}: {
+  onBack: () => void;
+  personalBest: number;
+  podium: CandyCrushPodiumRow[];
+  currentProfileId: string;
+  onChallengeResult: (score: number) => void;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
+  // Toujours à jour dans la closure ci-dessous (montée une seule fois, cf.
+  // deps [] tout en bas) sans avoir à la redéclencher à chaque partie.
+  const onChallengeResultRef = useRef(onChallengeResult);
+  onChallengeResultRef.current = onChallengeResult;
 
   useEffect(() => {
     const rootEl = rootRef.current;
@@ -208,6 +263,16 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       types = 6,
       level = 1,
       selectedLevel = 1,
+      // "classic" = mode librement paramétrable existant (réglages +
+      // niveaux 1/2/3, jamais de score sauvegardé). "challenge" = grille
+      // 9x9/6 pions/niveau 1/120s figés, avec record perso + podium
+      // familial (cf. candy-crush-challenge.ts).
+      mode: "classic" | "challenge" = "classic",
+      // Meilleur score connu pour le profil courant, mis à jour en mémoire
+      // dès qu'un nouveau record est battu (sans attendre l'aller-retour
+      // React/cloud), pour que l'écran "Mode Défi" reflète immédiatement le
+      // record si on y revient sans quitter le composant.
+      challengeBestScore = Math.max(0, Math.floor(personalBest)),
       grid: number[][] = [],
       score = 0,
       selected: [number, number] | null = null,
@@ -667,12 +732,27 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       }
     }
 
+    // Fin de partie du mode Défi : signale le score au parent (React/cloud,
+    // qui ne garde jamais un record inférieur, cf. handleCandyCrushChallengeResult)
+    // et met à jour l'affichage local (badge "Nouveau record", écran Mode
+    // Défi) sans attendre l'aller-retour, pour un retour visuel immédiat.
+    function handleChallengeGameEnd() {
+      if (mode !== "challenge") return;
+      onChallengeResultRef.current(score);
+      if (score > challengeBestScore) {
+        challengeBestScore = score;
+        $("cc-recordBadge")?.setAttribute("style", "display:block;");
+        renderChallengeScreen();
+      }
+    }
+
     function showGameOver() {
       stopTimer();
       const title = $("cc-gameOverTitle");
       if (title) title.textContent = "Partie terminée !";
       const fs = $("cc-finalScore");
       if (fs) fs.textContent = String(score);
+      handleChallengeGameEnd();
       $("cc-gameOver")?.classList.add("cc-show");
     }
 
@@ -682,7 +762,40 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       if (title) title.textContent = "Temps écoulé !";
       const fs = $("cc-finalScore");
       if (fs) fs.textContent = String(score);
+      handleChallengeGameEnd();
       $("cc-gameOver")?.classList.add("cc-show");
+    }
+
+    function escapeHtml(text: string) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    const MEDALS: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+
+    function renderChallengeScreen() {
+      const bestEl = $("cc-challengeBestVal");
+      if (bestEl) bestEl.textContent = String(challengeBestScore);
+
+      const listEl = $("cc-podiumList");
+      if (!listEl) return;
+      if (podium.length === 0) {
+        listEl.innerHTML = `<div class="cc-podium-empty">Personne n'a encore joué en mode Défi. À toi de lancer le premier record !</div>`;
+        return;
+      }
+      listEl.innerHTML = podium
+        .map((entry) => {
+          const isMe = entry.profileId === currentProfileId;
+          const rankLabel = MEDALS[entry.rank] ?? String(entry.rank);
+          return `<div class="cc-podium-row${isMe ? " cc-podium-me" : ""}">
+            <div class="cc-podium-rank">${rankLabel}</div>
+            <div class="cc-podium-name">${escapeHtml(entry.surname)}${isMe ? " (toi)" : ""}</div>
+            <div class="cc-podium-score">${entry.bestScore}</div>
+          </div>`;
+        })
+        .join("");
     }
 
     function selectLevel(lvl: number) {
@@ -692,10 +805,19 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
     }
 
     function startGame() {
-      level = selectedLevel;
-      rows = Math.min(12, Math.max(5, parseInt(($("cc-setRows") as HTMLInputElement)?.value) || 9));
-      cols = Math.min(12, Math.max(5, parseInt(($("cc-setCols") as HTMLInputElement)?.value) || 9));
-      types = Math.min(7, Math.max(3, parseInt(($("cc-setTypes") as HTMLInputElement)?.value) || 6));
+      if (mode === "challenge") {
+        // Configuration figée du mode Défi (cf. candy-crush-challenge.ts) :
+        // pas d'écran de réglages, toujours la même grille/niveau.
+        level = 1;
+        rows = 9;
+        cols = 9;
+        types = 6;
+      } else {
+        level = selectedLevel;
+        rows = Math.min(12, Math.max(5, parseInt(($("cc-setRows") as HTMLInputElement)?.value) || 9));
+        cols = Math.min(12, Math.max(5, parseInt(($("cc-setCols") as HTMLInputElement)?.value) || 9));
+        types = Math.min(7, Math.max(3, parseInt(($("cc-setTypes") as HTMLInputElement)?.value) || 6));
+      }
       score = 0;
       selected = null;
       busy = false;
@@ -704,6 +826,7 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       const levelEl = $("cc-levelVal");
       if (levelEl) levelEl.textContent = String(level);
       $("cc-gameOver")?.classList.remove("cc-show");
+      $("cc-recordBadge")?.setAttribute("style", "display:none;");
       const msg = $("cc-gameMsg");
       if (msg) msg.textContent = "";
       createGrid();
@@ -714,6 +837,7 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
 
     function restartGame() {
       $("cc-gameOver")?.classList.remove("cc-show");
+      $("cc-recordBadge")?.setAttribute("style", "display:none;");
       score = 0;
       selected = null;
       busy = false;
@@ -733,14 +857,27 @@ export function CandyCrushScreen({ onBack }: { onBack: () => void }) {
       const target = (e.target as HTMLElement).closest<HTMLElement>("[data-action]");
       if (!target) return;
       const action = target.dataset.action;
-      if (action === "go-settings") show("cc-scrSettings");
-      else if (action === "go-howto") show("cc-scrHowTo");
-      else if (action === "go-menu") {
+      if (action === "go-settings") {
+        mode = "classic";
+        show("cc-scrSettings");
+      } else if (action === "go-howto") show("cc-scrHowTo");
+      else if (action === "go-challenge") {
+        mode = "challenge";
+        renderChallengeScreen();
+        show("cc-scrChallenge");
+      } else if (action === "go-menu") {
         show("cc-scrMenu");
         stopGame();
+      } else if (action === "game-exit") {
+        show(mode === "challenge" ? "cc-scrChallenge" : "cc-scrMenu");
+        stopGame();
+        if (mode === "challenge") renderChallengeScreen();
       } else if (action === "select-level") selectLevel(parseInt(target.dataset.lvl || "1"));
       else if (action === "start-game") startGame();
-      else if (action === "restart-game") restartGame();
+      else if (action === "start-challenge") {
+        mode = "challenge";
+        startGame();
+      } else if (action === "restart-game") restartGame();
       else if (action === "quit") onBack();
     }
 

@@ -328,6 +328,7 @@ describe("place comments parsing and sync (story 21.2)", () => {
       },
       gameResults: [],
       gameProgress: null,
+      candyCrushChallenge: null,
       phase: "before",
     });
 
@@ -401,6 +402,7 @@ describe("document visibility parsing and sync (story 26.3)", () => {
       },
       gameResults: [],
       gameProgress: null,
+      candyCrushChallenge: null,
       phase: "during",
     });
 
@@ -514,6 +516,7 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
       ownerGlobalChecklistRemovals: {},
       placeComments: {},
       gameResults: [],
+      candyCrushChallenge: null,
       phase: "before" as const,
     };
 
@@ -697,6 +700,7 @@ describe("visiteur role round-trip (story 24.1/24.3)", () => {
     placeComments: {},
     gameResults: [],
     gameProgress: null,
+    candyCrushChallenge: null,
     phase: "before" as const,
   };
 
@@ -798,6 +802,7 @@ describe("pushCloudSnapshot write path (story 10.6)", () => {
     placeComments: {},
     gameResults: [],
     gameProgress: null,
+    candyCrushChallenge: null,
     phase: "before" as const,
   };
 
@@ -1003,7 +1008,7 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     const nulledPaths = Object.entries(updates)
-      .filter(([key, val]) => val === null && key !== "families/famille-test/profiles/profile-y" && key !== "families/famille-test/checklists/profile-y" && key !== "families/famille-test/gameResults/profile-y" && key !== "families/famille-test/gameProgress/profile-y")
+      .filter(([key, val]) => val === null && key !== "families/famille-test/profiles/profile-y" && key !== "families/famille-test/checklists/profile-y" && key !== "families/famille-test/gameResults/profile-y" && key !== "families/famille-test/gameProgress/profile-y" && key !== "families/famille-test/candyCrushChallenge/profile-y")
       .map(([key]) => key);
     expect(nulledPaths).toHaveLength(0);
   });
@@ -1107,6 +1112,7 @@ describe("place visibility parsing and sync (story 26.2)", () => {
       },
       gameResults: [],
       gameProgress: null,
+      candyCrushChallenge: null,
       phase: "during",
     });
 
@@ -1182,6 +1188,7 @@ describe("place visibility parsing and sync (story 26.2)", () => {
       },
       gameResults: [],
       gameProgress: null,
+      candyCrushChallenge: null,
       phase: "during",
     });
 
@@ -1222,6 +1229,7 @@ describe("place visibility parsing and sync (story 26.2)", () => {
       },
       gameResults: [],
       gameProgress: null,
+      candyCrushChallenge: null,
       phase: "during",
     });
 

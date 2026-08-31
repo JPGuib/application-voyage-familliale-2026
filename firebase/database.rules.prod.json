@@ -215,6 +215,12 @@
             ".validate": "newData.val() === null || (newData.hasChildren(['day','phase','quizDurationSec','riddleValidated','riddleSolved']) && (newData.child('phase').val() === 'playing' || newData.child('phase').val() === 'riddle' || newData.child('phase').val() === 'challenge') && (!newData.child('quizStartedAt').exists() || newData.child('quizStartedAt').isNumber()))"
           }
         },
+        "candyCrushChallenge": {
+          "$profileId": {
+            ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
+            ".validate": "newData.val() === null || (newData.hasChildren(['bestScore','updatedAt']) && newData.child('bestScore').isNumber() && newData.child('bestScore').val() >= 0 && newData.child('updatedAt').isNumber())"
+          }
+        },
         "phase": {
           ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
           ".validate": "newData.val() === 'before' || newData.val() === 'during'"
