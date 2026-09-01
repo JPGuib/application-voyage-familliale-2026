@@ -1198,7 +1198,7 @@ describe("place visibility parsing and sync (story 26.2)", () => {
     });
   });
 
-  it("writes owner place day order overrides during owner-scoped push", async () => {
+  it("merges owner place day order overrides into the same placeDayOverrides key (no ancestor/descendant path conflict)", async () => {
     mockUpdate.mockClear();
     const db = {} as import("firebase/database").Database;
 
@@ -1221,6 +1221,7 @@ describe("place visibility parsing and sync (story 26.2)", () => {
       placeComments: {},
       placeDayOverrides: {
         "sainte-sophie": [2, 3],
+        "Découverte de la Turquie": [1],
       },
       placeDayOrderOverrides: {
         "sainte-sophie": {
@@ -1233,8 +1234,102 @@ describe("place visibility parsing and sync (story 26.2)", () => {
       phase: "during",
     });
 
+    // Un seul update() a bien lieu, avec un seul chemin `placeDayOverrides` :
+    // écrire à la fois `placeDayOverrides` et `placeDayOverrides/{id}/orderByDay`
+    // dans le même update() faisait échouer TOUT l'appel côté Firebase
+    // ("values argument contains a path ... that is ancestor of another path").
+    expect(mockUpdate).toHaveBeenCalledOnce();
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
-    expect(updates["placeDayOverrides/sainte-sophie/orderByDay"]).toEqual({ 2: 5 });
+    expect(Object.keys(updates).some((key) => key.startsWith("placeDayOverrides/"))).toBe(false);
+    expect(updates.placeDayOverrides).toEqual({
+      "sainte-sophie": { days: [2, 3], orderByDay: { 2: 5 } },
+      "Découverte de la Turquie": [1],
+    });
+  });
+});
+
+describe("document catalog parsing and sync (édition des documents par le propriétaire)", () => {
+  const db = {} as import("firebase/database").Database;
+
+  it("strips undefined optional fields from documentCatalogAdditions/Edits before writing (Firebase rejects undefined)", async () => {
+    mockUpdate.mockClear();
+
+    await pushCloudSnapshot(db, "famille-test", {
+      actorUid: "owner-uid",
+      canWriteFamilyState: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-1",
+        profiles: [{ id: "profile-1", role: "proprietaire" }],
+      },
+      ownerCodeHash: "sha256:" + "d".repeat(64),
+      profileId: "profile-1",
+      surname: "Owner",
+      role: "proprietaire",
+      checklist: {},
+      profileCustomChecklistItems: [],
+      ownerGlobalChecklistAdditions: [],
+      ownerGlobalChecklistRemovals: {},
+      placeComments: {},
+      ownerGlobalDocumentAdditions: [
+        {
+          id: "doc-custom-1",
+          category: "PAPIERS",
+          title: "Copie passeport",
+          content: "Scan ajouté par le propriétaire.",
+          tag: undefined,
+          day: undefined,
+          details: undefined,
+          scans: undefined,
+          links: undefined,
+          gps: undefined,
+        },
+      ],
+      ownerGlobalDocumentEdits: {
+        "vol-nantes-paris-af7507": {
+          id: "vol-nantes-paris-af7507",
+          category: "VOLS",
+          title: "Nantes → Paris (corrigé)",
+          content: "Texte corrigé par le propriétaire.",
+          tag: undefined,
+          day: undefined,
+          details: undefined,
+          scans: undefined,
+          links: undefined,
+          gps: undefined,
+        },
+      },
+      gameResults: [],
+      gameProgress: null,
+      candyCrushChallenge: null,
+      phase: "during",
+    });
+
+    expect(mockUpdate).toHaveBeenCalledOnce();
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+
+    // JSON.stringify tolère les valeurs `undefined` (elles sont simplement
+    // omises) : c'est cette propriété qu'on exploite pour nettoyer les
+    // documents avant de les passer à update()/set(), qui lèvent une
+    // exception dès qu'une valeur `undefined` apparaît à n'importe quelle
+    // profondeur de l'objet.
+    const additions = updates.documentCatalogAdditions as Record<string, unknown>;
+    expect(additions["doc-custom-1"]).toEqual({
+      id: "doc-custom-1",
+      category: "PAPIERS",
+      title: "Copie passeport",
+      content: "Scan ajouté par le propriétaire.",
+    });
+    expect("gps" in (additions["doc-custom-1"] as object)).toBe(false);
+
+    const edits = updates.documentCatalogEdits as Record<string, unknown>;
+    expect(edits["vol-nantes-paris-af7507"]).toEqual({
+      id: "vol-nantes-paris-af7507",
+      category: "VOLS",
+      title: "Nantes → Paris (corrigé)",
+      content: "Texte corrigé par le propriétaire.",
+    });
+    expect("gps" in (edits["vol-nantes-paris-af7507"] as object)).toBe(false);
   });
 });
 

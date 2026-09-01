@@ -253,6 +253,16 @@ function parseOwnerGlobalDocumentEdits(value: unknown): Record<string, TravelDoc
   return next;
 }
 
+// Les champs optionnels de TravelDocument (tag, day, details, scans, links,
+// gps) sont couramment mis à `undefined` (pas juste omis) côté client. C'est
+// inoffensif pour React/JSON.stringify, mais Firebase RTDB refuse d'écrire un
+// objet contenant une valeur `undefined` à n'importe quelle profondeur ("update
+// failed: values argument contains undefined in property ..."). On retire donc
+// ces clés avant tout envoi vers update()/set().
+function sanitizeTravelDocumentForFirebase(document: TravelDocument): TravelDocument {
+  return JSON.parse(JSON.stringify(document)) as TravelDocument;
+}
+
 function isCloudGameEntry(value: unknown): value is CloudGameHistoryEntry {
   const entry = asRecord(value);
   return (
@@ -1300,12 +1310,19 @@ export async function pushCloudSnapshot(
       updates.placeVisibilityMap = payload.placeVisibilityMap;
     }
     if (payload.placeDayOverrides) {
-      updates.placeDayOverrides = payload.placeDayOverrides;
-    }
-    if (payload.placeDayOrderOverrides) {
-      for (const [placeId, dayOrder] of Object.entries(payload.placeDayOrderOverrides)) {
-        updates[`placeDayOverrides/${placeId}/orderByDay`] = dayOrder;
+      // Un seul chemin `placeDayOverrides` doit être écrit par update() : le
+      // combiner avec un sous-chemin `placeDayOverrides/{id}/orderByDay` fait
+      // échouer TOUT l'update (Firebase refuse qu'un chemin soit l'ancêtre
+      // d'un autre chemin dans le même appel). On fusionne donc l'ordre dans
+      // le même objet que les jours avant d'écrire une clé unique.
+      const orderOverrides = payload.placeDayOrderOverrides ?? {};
+      const mergedDayOverrides: Record<string, unknown> = {};
+      for (const [placeId, days] of Object.entries(payload.placeDayOverrides)) {
+        const orderByDay = orderOverrides[placeId];
+        mergedDayOverrides[placeId] =
+          orderByDay && Object.keys(orderByDay).length > 0 ? { days, orderByDay } : days;
       }
+      updates.placeDayOverrides = mergedDayOverrides;
     }
     if (payload.documentVisibilityMap) {
       updates.documentVisibilityMap = payload.documentVisibilityMap;
@@ -1315,12 +1332,17 @@ export async function pushCloudSnapshot(
     }
     if (payload.ownerGlobalDocumentAdditions) {
       updates.documentCatalogAdditions = payload.ownerGlobalDocumentAdditions.reduce<Record<string, TravelDocument>>((acc, document) => {
-        acc[document.id] = document;
+        acc[document.id] = sanitizeTravelDocumentForFirebase(document);
         return acc;
       }, {});
     }
     if (payload.ownerGlobalDocumentEdits) {
-      updates.documentCatalogEdits = payload.ownerGlobalDocumentEdits;
+      updates.documentCatalogEdits = Object.fromEntries(
+        Object.entries(payload.ownerGlobalDocumentEdits).map(([documentId, document]) => [
+          documentId,
+          sanitizeTravelDocumentForFirebase(document),
+        ])
+      );
     }
     if (payload.ownerGlobalDocumentRemovals) {
       updates.documentCatalogRemovals = payload.ownerGlobalDocumentRemovals;
