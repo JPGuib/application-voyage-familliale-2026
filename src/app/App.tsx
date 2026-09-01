@@ -13934,6 +13934,7 @@ const resetForProfileSwitch = () => {
         challengeReactions: cloudSnapshot.challengeReactions ?? {},
         gameResults: selected.gameResults,
         gameProgress: selected.gameProgress,
+        candyCrushChallenge: selected.candyCrushChallenge,
         phase: selected.phase || cloudSnapshot.phase,
         tripStartDate: cloudSnapshot.tripStartDate,
       });
@@ -14476,6 +14477,7 @@ const resetForProfileSwitch = () => {
                 challengeReactions: cloudSnapshot.challengeReactions ?? {},
                 gameResults: selected.gameResults,
                 gameProgress: selected.gameProgress,
+                candyCrushChallenge: selected.candyCrushChallenge,
                 phase: selected.phase || cloudSnapshot.phase,
                 tripStartDate: cloudSnapshot.tripStartDate,
               });

@@ -30,6 +30,7 @@ import type {
   ChecklistCustomItem,
   ChecklistRemovalState,
   ChecklistState,
+  CloudCandyCrushChallenge,
   CloudChallengeBestVotesByDay,
   CloudChallengeReactionsByDay,
   CloudDestinationSurveyVote,
@@ -95,6 +96,7 @@ type PushSnapshotInput = {
   resetDestinationSurvey?: boolean;
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
+  candyCrushChallenge: CloudCandyCrushChallenge;
   phase: TravelPhase;
   tripStartDate?: string | null;
   gameScoring: GameScoringConfig;
@@ -478,6 +480,7 @@ export function useCloudSync() {
         launchGateCompletedCycleForProfile: snapshot.launchGateCompletedCycleForProfile,
         gameResults: snapshot.gameResults,
         gameProgress: snapshot.gameProgress,
+        candyCrushChallenge: snapshot.candyCrushChallenge,
         phase: snapshot.phase,
         tripStartDate: snapshot.tripStartDate,
         gameScoring: snapshot.gameScoring,

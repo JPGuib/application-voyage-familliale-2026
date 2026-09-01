@@ -75,6 +75,7 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
       launchGateCompletedCycleForProfile: 2,
       gameResults: [],
       gameProgress: null,
+      candyCrushChallenge: { bestScore: 42, updatedAt: 1700000000000 },
       phase: "before",
     });
 
@@ -86,6 +87,7 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
       placeDayOrderOverrides?: Record<string, Record<number, number>>;
       launchGateCycle?: number;
       launchGateCompletedCycleForProfile?: number | null;
+      candyCrushChallenge?: { bestScore: number; updatedAt: number } | null;
     };
     expect(mutation.travelerCodeHash).toBe(`sha256:${"b".repeat(64)}`);
     expect(mutation.travelerCodePlain).toBe("1234");
@@ -100,5 +102,11 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
     });
     expect(mutation.launchGateCycle).toBe(3);
     expect(mutation.launchGateCompletedCycleForProfile).toBe(2);
+    // Regression guard for the exact bug fixed 2026-09-01: candyCrushChallenge
+    // was accepted by pushSnapshot's input type but never copied into the
+    // rebuilt mutation object, silently becoming `undefined` and making the
+    // real Firebase `update()` call throw ("values argument contains
+    // undefined") for every user on every push.
+    expect(mutation.candyCrushChallenge).toEqual({ bestScore: 42, updatedAt: 1700000000000 });
   });
 });
