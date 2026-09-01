@@ -11937,7 +11937,19 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       placeCommentsByPlace,
       placeVisibilityMap,
-      placeSeenMap,
+      // placeSeenMap intentionally NOT included in the bulk periodic sync
+      // payload: it goes through the app-root multi-path update() alongside
+      // every other field, and Firebase RTDB rejects that ENTIRE multi-path
+      // write atomically if any single path fails permission/validation
+      // (see project_firebase_rules_field_allowlist memory / story: same
+      // failure mode already hit once with ownerCodePlain). Until
+      // firebase/database.rules.*.json's placeSeenMap rule is actually
+      // deployed to the live project, keep this field out of the bulk
+      // payload so an undeployed rule can't silently break ALL cloud sync.
+      // It's still written via the dedicated single-path setPlaceSeenForOwner
+      // → pushPlaceSeen call below, which fails in isolation if rules are
+      // stale (caught + logged, no cascade). Re-add here once confirmed
+      // deployed.
       placeDayOverrides: placeDayOverrideMap,
       placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
@@ -11991,7 +12003,7 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       placeComments: placeCommentsByPlace,
       placeVisibilityMap,
-      placeSeenMap,
+      // placeSeenMap intentionally omitted here too — see comment above.
       placeDayOverrides: placeDayOverrideMap,
       placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
@@ -12048,7 +12060,6 @@ export default function App() {
     ownerGlobalDocumentRemovals,
     placeCommentsByPlace,
     placeVisibilityMap,
-    placeSeenMap,
     placeDayOverrideMap,
     placeDayOrderOverrideMap,
     documentVisibilityMap,
