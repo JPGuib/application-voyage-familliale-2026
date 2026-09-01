@@ -12948,6 +12948,7 @@ const resetForProfileSwitch = () => {
     setOpenCategories(new Set([CHECKLIST_CATEGORIES[0]?.id ?? "vetements-hommes"]));
     setChecked({});
     setGameHistory([]);
+    setCandyCrushBest(null);
     setGameState("intro");
     setAnswers([]);
     setCurrentQ(0);

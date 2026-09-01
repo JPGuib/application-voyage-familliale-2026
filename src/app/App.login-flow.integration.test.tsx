@@ -2514,6 +2514,123 @@ describe("App profile metadata hydration (story 10.4)", () => {
   });
 });
 
+describe("Candy Crush challenge record does not leak across profile switch (bug fixed 2026-09-01)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    cloudSyncMock.mockReset();
+  });
+
+  it("shows 0 (not the previous profile's record) after switching to a profile that never played", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const snapshotWithChallenge = {
+      ...baseSnapshot,
+      phase: "during" as const,
+      profiles: {
+        ...baseSnapshot.profiles,
+        p1: {
+          ...baseSnapshot.profiles.p1,
+          phase: "during" as const,
+          candyCrushChallenge: { bestScore: 84, updatedAt: 1 },
+        },
+        p2: {
+          ...baseSnapshot.profiles.p2,
+          phase: "during" as const,
+          candyCrushChallenge: null,
+        },
+      },
+    };
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshotWithChallenge,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: claimRoleForProfileMock,
+      familyId: "famille-voyage-2026",
+    }));
+
+    const { container } = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    // As p1 (Maman), the challenge screen shows her real record.
+    fireEvent.click(screen.getByText("Espace ludique"));
+    await waitFor(() => {
+      expect(screen.getByText(/Bazar Crush/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText(/Bazar Crush/i));
+    await waitFor(() => {
+      expect(screen.getByText("🏆 Mode Défi")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText("🏆 Mode Défi"));
+    await waitFor(() => {
+      expect(screen.getByText("Ton record")).toBeInTheDocument();
+    });
+    expect(container.querySelector("#cc-challengeBestVal")?.textContent).toBe("84");
+
+    // Leave Candy Crush (its own hidden "Paramètres" settings screen title
+    // would otherwise collide with the app's bottom-nav "Paramètres" query
+    // below) and return to the dashboard before switching profile.
+    fireEvent.click(container.querySelector('[data-action="quit"]')!);
+    await waitFor(() => {
+      expect(container.querySelector('[data-tutorial-id="bottom-nav-dashboard"]')).toBeInTheDocument();
+    });
+    fireEvent.click(container.querySelector('[data-tutorial-id="bottom-nav-dashboard"]')!);
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    // Switch profile (déconnexion) then log back in as p2 (Léo), who never
+    // played Candy Crush at all.
+    fireEvent.click(screen.getByText(/Paramètres/i));
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Se déconnecter \/ Changer de profil/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Oui, se déconnecter" })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Oui, se déconnecter" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Se connecter/i })).toBeInTheDocument();
+    });
+
+    loginWithProfileLabel(/Léo/);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Espace ludique"));
+    await waitFor(() => {
+      expect(screen.getByText(/Bazar Crush/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText(/Bazar Crush/i));
+    await waitFor(() => {
+      expect(screen.getByText("🏆 Mode Défi")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText("🏆 Mode Défi"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Ton record")).toBeInTheDocument();
+    });
+    // Bug fixed 2026-09-01: candyCrushBest local state was never reset on
+    // profile switch (resetForProfileSwitch), so the freshly logged-in
+    // profile inherited the previous profile's record via
+    // mergeCandyCrushChallengeRecord (which never regresses a "known"
+    // record — correct within one profile, wrong across a switch). p1's 84
+    // legitimately still appears in the family podium row below, but Léo's
+    // own record must read 0.
+    expect(container.querySelector("#cc-challengeBestVal")?.textContent).toBe("0");
+  });
+});
+
 describe("App profile recovery question settings (story 10.6)", () => {
   beforeEach(() => {
     localStorage.clear();
