@@ -41,6 +41,7 @@ import type {
   PlaceDayOverrideMap,
   PlaceDayOrderOverrideMap,
   PlaceVisibilityState,
+  PlaceSeenState,
   PlaceCommentReaction,
   ProfileGender,
   ProfileHouseholdRole,
@@ -607,6 +608,19 @@ function parsePlaceVisibilityMap(value: unknown): Record<string, PlaceVisibility
   return next;
 }
 
+function parsePlaceSeenMap(value: unknown): Record<string, PlaceSeenState> {
+  const raw = asRecord(value);
+  const next: Record<string, PlaceSeenState> = {};
+
+  for (const [placeId, candidate] of Object.entries(raw)) {
+    if (candidate === "unseen" || candidate === "seen") {
+      next[placeId] = candidate;
+    }
+  }
+
+  return next;
+}
+
 const CONTENT_SOURCES: readonly ContentSource[] = [
   "places",
   "histoire",
@@ -936,6 +950,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     ownerGlobalDocumentRemovals: parseChecklistRemovals(documentCatalogRemovalRecords),
     placeComments: parsePlaceComments(placeCommentRecords),
     placeVisibilityMap: parsePlaceVisibilityMap(root.placeVisibilityMap),
+    placeSeenMap: parsePlaceSeenMap(root.placeSeenMap),
     challengeReactions: challengeReactionRecords,
     challengeBestVotes: challengeBestVoteRecords,
     placeDayOverrides: parsePlaceDayOverrides(root.placeDayOverrides),
@@ -1310,6 +1325,9 @@ export async function pushCloudSnapshot(
     if (payload.placeVisibilityMap) {
       updates.placeVisibilityMap = payload.placeVisibilityMap;
     }
+    if (payload.placeSeenMap) {
+      updates.placeSeenMap = payload.placeSeenMap;
+    }
     if (payload.placeDayOverrides) {
       // Un seul chemin `placeDayOverrides` doit être écrit par update() : le
       // combiner avec un sous-chemin `placeDayOverrides/{id}/orderByDay` fait
@@ -1391,6 +1409,20 @@ export async function pushPlaceVisibility(
 ): Promise<void> {
   await update(ref(database, familyPath(familyId)), {
     [`placeVisibilityMap/${placeId}`]: visibility,
+  });
+}
+
+// Statut "vu / pas vu" posé par le propriétaire sur un lieu (cf. PlaceSeenState).
+// null = retour à "unseen" (valeur par défaut, jamais persistée explicitement),
+// même logique que pushPlaceVisibility ci-dessus.
+export async function pushPlaceSeen(
+  database: Database,
+  familyId: string,
+  placeId: string,
+  seen: PlaceSeenState | null
+): Promise<void> {
+  await update(ref(database, familyPath(familyId)), {
+    [`placeSeenMap/${placeId}`]: seen,
   });
 }
 

@@ -1122,6 +1122,73 @@ describe("place visibility parsing and sync (story 26.2)", () => {
     });
   });
 
+  it("parses valid seen/unseen place-seen entries", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {},
+      placeSeenMap: {
+        "sainte-sophie": "seen",
+        "tour-galata": "unseen",
+      },
+    });
+
+    expect(snapshot.placeSeenMap).toEqual({
+      "sainte-sophie": "seen",
+      "tour-galata": "unseen",
+    });
+  });
+
+  it("drops invalid place-seen entries", () => {
+    const snapshot = parseCloudSnapshot({
+      phase: "during",
+      profiles: {},
+      placeSeenMap: {
+        "sainte-sophie": "seen",
+        "tour-galata": "maybe",
+      },
+    });
+
+    expect(snapshot.placeSeenMap).toEqual({
+      "sainte-sophie": "seen",
+    });
+  });
+
+  it("writes owner place-seen map during owner-scoped push", async () => {
+    mockUpdate.mockClear();
+    const db = {} as import("firebase/database").Database;
+
+    await pushCloudSnapshot(db, "famille-test", {
+      actorUid: "owner-uid",
+      canWriteFamilyState: true,
+      familyState: {
+        version: 1,
+        ownerProfileId: "profile-1",
+        profiles: [{ id: "profile-1", role: "proprietaire" }],
+      },
+      ownerCodeHash: "sha256:" + "d".repeat(64),
+      profileId: "profile-1",
+      surname: "Owner",
+      role: "proprietaire",
+      checklist: {},
+      profileCustomChecklistItems: [],
+      ownerGlobalChecklistAdditions: [],
+      ownerGlobalChecklistRemovals: {},
+      placeComments: {},
+      placeSeenMap: {
+        "sainte-sophie": "seen",
+      },
+      gameResults: [],
+      gameProgress: null,
+      candyCrushChallenge: null,
+      phase: "during",
+    });
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates.placeSeenMap).toEqual({
+      "sainte-sophie": "seen",
+    });
+  });
+
   it("parses place day overrides when RTDB returns an indexed object", () => {
     const snapshot = parseCloudSnapshot({
       phase: "during",

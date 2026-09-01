@@ -199,6 +199,30 @@ suite("firebase rtdb rules owner phase guard", () => {
     );
   });
 
+  it("allows owner to mark a place as seen", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb.ref(`families/${FAMILY_ID}/placeSeenMap/sainte-sophie`).set("seen")
+    );
+  });
+
+  it("denies non-owner from writing the place-seen map", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/placeSeenMap/sainte-sophie`).set("seen")
+    );
+  });
+
+  it("denies invalid place-seen value", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb.ref(`families/${FAMILY_ID}/placeSeenMap/sainte-sophie`).set("maybe")
+    );
+  });
+
   it("allows owner to move a place to another day", async () => {
     const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
 

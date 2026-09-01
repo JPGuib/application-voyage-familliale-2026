@@ -378,6 +378,7 @@ const PROFILE_RECOVERY_QUESTION_STORAGE_KEY = "jp-profile-recovery-questions";
 const PROFILE_RECOVERY_ANSWER_STORAGE_KEY = "jp-profile-recovery-answers";
 const PLACE_COMMENTS_STORAGE_KEY = "jp-place-comments";
 const PLACE_VISIBILITY_STORAGE_KEY = "jp-place-visibility-map";
+const PLACE_SEEN_STORAGE_KEY = "jp-place-seen-map";
 const PLACE_DAY_OVERRIDES_STORAGE_KEY = "jp-place-day-overrides";
 const PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY = "jp-place-day-order-overrides";
 const DOCUMENT_VISIBILITY_STORAGE_KEY = "jp-document-visibility-map";
@@ -547,6 +548,11 @@ type ChallengeBestVote = {
 type ChallengeBestVotesByDay = Record<number, Record<string, Record<string, ChallengeBestVote>>>;
 type PlaceVisibilityState = "visible" | "hiddenByOwner";
 type PlaceVisibilityMap = Record<string, PlaceVisibilityState>;
+// Statut "vu / pas vu" posé par le propriétaire une fois la visite/l'activité
+// faite (ou non) pendant le séjour. Contrairement à PlaceVisibilityState, ce
+// tag est visible par tous les utilisateurs (aucun effet sur l'accès au lieu).
+type PlaceSeenState = "unseen" | "seen";
+type PlaceSeenMap = Record<string, PlaceSeenState>;
 type PlaceDayOverrideMap = Record<string, number[]>;
 type PlaceDayOrderOverrideMap = Record<string, Record<number, number>>;
 type DocumentVisibilityState = "visible" | "hiddenByOwner";
@@ -1193,6 +1199,21 @@ function parsePlaceVisibilityMap(raw: unknown): PlaceVisibilityMap {
   return next;
 }
 
+function parsePlaceSeenMap(raw: unknown): PlaceSeenMap {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  const next: PlaceSeenMap = {};
+  for (const [placeId, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (value === "unseen" || value === "seen") {
+      next[placeId] = value;
+    }
+  }
+
+  return next;
+}
+
 const CONTENT_SOURCES: readonly ContentSource[] = [
   "places",
   "histoire",
@@ -1595,6 +1616,10 @@ function isPlaceVisibleForRole(
 }
 
 function arePlaceVisibilityMapsEqual(left: PlaceVisibilityMap, right: PlaceVisibilityMap): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function arePlaceSeenMapsEqual(left: PlaceSeenMap, right: PlaceSeenMap): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
@@ -4788,9 +4813,11 @@ function GuideScreen({
   commentsByPlace,
   role,
   placeVisibilityMap,
+  placeSeenMap,
   placeDayOverrideMap,
   placeDayOrderOverrideMap,
   onTogglePlaceVisibility,
+  onTogglePlaceSeen,
   onSetPlaceDays,
   canManagePlaceVisibility,
   isOnline,
@@ -4805,9 +4832,11 @@ function GuideScreen({
   commentsByPlace: PlaceCommentsByPlace;
   role: Role | null;
   placeVisibilityMap: PlaceVisibilityMap;
+  placeSeenMap: PlaceSeenMap;
   placeDayOverrideMap: PlaceDayOverrideMap;
   placeDayOrderOverrideMap: PlaceDayOrderOverrideMap;
   onTogglePlaceVisibility: (placeId: string, nextState: PlaceVisibilityState) => void;
+  onTogglePlaceSeen: (placeId: string, nextState: PlaceSeenState) => void;
   onSetPlaceDays: (
     placeId: string,
     nextDays: number[],
@@ -5014,6 +5043,8 @@ function GuideScreen({
     const visibilityState = placeVisibilityMap[item.id] ?? "visible";
     const isHiddenByOwner = visibilityState === "hiddenByOwner";
     const canToggleVisibility = canManagePlaceVisibility;
+    const seenState = placeSeenMap[item.id] ?? "unseen";
+    const isSeen = seenState === "seen";
     const effectiveDays = getEffectivePlaceDays(item, placeDayOverrideMap);
     const hasOrderOverride = getPlaceOrderPositionForDay(item.id, dayForCard, placeDayOrderOverrideMap);
     const effectiveOrder =
@@ -5046,9 +5077,16 @@ function GuideScreen({
           <div className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <span className="text-xs font-extrabold text-accent uppercase tracking-widest">
-                  {item.tag}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-extrabold text-accent uppercase tracking-widest">
+                    {item.tag}
+                  </span>
+                  {isSeen && (
+                    <span className="rounded-full bg-[#E8F5E9] px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-[#1B5E20]">
+                      ✓ Vu
+                    </span>
+                  )}
+                </div>
                 <h3 className="font-black text-foreground mt-0.5">
                   {item.name}
                 </h3>
@@ -5122,6 +5160,18 @@ function GuideScreen({
               aria-label={`Basculer visibilité de ${item.name}`}
             >
               {isHiddenByOwner ? "Rendre visible" : "Masquer pour non-propriétaires"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onTogglePlaceSeen(item.id, isSeen ? "unseen" : "seen");
+              }}
+              className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${
+                isSeen ? "bg-[#E8F5E9] text-[#1B5E20]" : "bg-muted text-muted-foreground"
+              }`}
+              aria-label={`Marquer ${item.name} comme ${isSeen ? "non vu" : "vu"}`}
+            >
+              {isSeen ? "✓ Vu" : "Marquer comme vu"}
             </button>
             <button
               type="button"
@@ -10020,6 +10070,7 @@ export default function App() {
     setGameDayOverride,
     setPlaceDayOverride,
     setPlaceVisibility: setPlaceVisibilityInCloud,
+    setPlaceSeen: setPlaceSeenInCloud,
     setContentOverride: setContentOverrideInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
@@ -10304,6 +10355,18 @@ export default function App() {
     try {
       const parsed = JSON.parse(localStorage.getItem(PLACE_VISIBILITY_STORAGE_KEY) || "{}");
       return parsePlaceVisibilityMap(parsed);
+    } catch {
+      return {};
+    }
+  });
+  const [placeSeenMap, setPlaceSeenMap] = useState<PlaceSeenMap>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(localStorage.getItem(PLACE_SEEN_STORAGE_KEY) || "{}");
+      return parsePlaceSeenMap(parsed);
     } catch {
       return {};
     }
@@ -10982,6 +11045,7 @@ export default function App() {
         localStorage.removeItem("jp-game-progress");
         localStorage.removeItem("jp-candy-crush-challenge-best");
         localStorage.removeItem(PLACE_VISIBILITY_STORAGE_KEY);
+        localStorage.removeItem(PLACE_SEEN_STORAGE_KEY);
         localStorage.removeItem(PLACE_DAY_OVERRIDES_STORAGE_KEY);
         localStorage.removeItem(PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY);
         localStorage.removeItem(DOCUMENT_VISIBILITY_STORAGE_KEY);
@@ -11074,6 +11138,10 @@ export default function App() {
             JSON.stringify(placeVisibilityMap)
           );
           localStorage.setItem(
+            PLACE_SEEN_STORAGE_KEY,
+            JSON.stringify(placeSeenMap)
+          );
+          localStorage.setItem(
             PLACE_DAY_OVERRIDES_STORAGE_KEY,
             JSON.stringify(placeDayOverrideMap)
           );
@@ -11154,6 +11222,7 @@ export default function App() {
     ownerGlobalDocumentRemovals,
     placeCommentsByPlace,
     placeVisibilityMap,
+    placeSeenMap,
     placeDayOverrideMap,
     placeDayOrderOverrideMap,
     documentVisibilityMap,
@@ -11454,6 +11523,18 @@ export default function App() {
       }
       return arePlaceVisibilityMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
     });
+    setPlaceSeenMap((previous) => {
+      const nextFromCloud = cloudSnapshot.placeSeenMap ?? {};
+      const pending = pendingPlaceSeenMapRef.current;
+      if (pending !== "none") {
+        const serializedCloud = JSON.stringify(nextFromCloud);
+        if (serializedCloud !== pending) {
+          return previous;
+        }
+        pendingPlaceSeenMapRef.current = "none";
+      }
+      return arePlaceSeenMapsEqual(previous, nextFromCloud) ? previous : nextFromCloud;
+    });
     setPlaceDayOverrideMap((previous) => {
       const nextFromCloud = cloudSnapshot.placeDayOverrides ?? {};
       const pending = pendingPlaceDayOverrideMapRef.current;
@@ -11732,6 +11813,8 @@ export default function App() {
   // lieux: évite le clignotement quand un snapshot cloud ancien revient juste
   // après un toggle local propriétaire.
   const pendingPlaceVisibilityMapRef = useRef<string | "none">("none");
+  // Même principe, appliqué au statut "vu / pas vu" posé par le propriétaire.
+  const pendingPlaceSeenMapRef = useRef<string | "none">("none");
   const pendingPlaceDayOverrideMapRef = useRef<string | "none">("none");
   const pendingPlaceDayOrderOverrideMapRef = useRef<string | "none">("none");
   // Même principe que pendingPlaceVisibilityMapRef, appliqué à la visibilité
@@ -11854,6 +11937,7 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       placeCommentsByPlace,
       placeVisibilityMap,
+      placeSeenMap,
       placeDayOverrides: placeDayOverrideMap,
       placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
@@ -11907,6 +11991,7 @@ export default function App() {
       ownerGlobalChecklistRemovals,
       placeComments: placeCommentsByPlace,
       placeVisibilityMap,
+      placeSeenMap,
       placeDayOverrides: placeDayOverrideMap,
       placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
@@ -11963,6 +12048,7 @@ export default function App() {
     ownerGlobalDocumentRemovals,
     placeCommentsByPlace,
     placeVisibilityMap,
+    placeSeenMap,
     placeDayOverrideMap,
     placeDayOrderOverrideMap,
     documentVisibilityMap,
@@ -12554,6 +12640,37 @@ export default function App() {
       void setPlaceVisibilityInCloud(placeId, nextState === "visible" ? null : nextState).catch(
         (error) => {
           console.error("[place-visibility] cloud write failed", {
+            placeId,
+            nextState,
+            error,
+          });
+        }
+      );
+    }
+  };
+
+  const setPlaceSeenForOwner = (placeId: string, nextState: PlaceSeenState) => {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return;
+    }
+
+    setPlaceSeenMap((previous) => {
+      const next = { ...previous };
+      if (nextState === "unseen") {
+        delete next[placeId];
+      } else {
+        next[placeId] = nextState;
+      }
+      if (cloudEnabled) {
+        pendingPlaceSeenMapRef.current = JSON.stringify(next);
+      }
+      return next;
+    });
+
+    if (cloudEnabled) {
+      void setPlaceSeenInCloud(placeId, nextState === "unseen" ? null : nextState).catch(
+        (error) => {
+          console.error("[place-seen] cloud write failed", {
             placeId,
             nextState,
             error,
@@ -15179,9 +15296,11 @@ const resetForProfileSwitch = () => {
             commentsByPlace={placeCommentsByPlace}
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
+            placeSeenMap={placeSeenMap}
             placeDayOverrideMap={placeDayOverrideMap}
             placeDayOrderOverrideMap={placeDayOrderOverrideMap}
             onTogglePlaceVisibility={setPlaceVisibilityForOwner}
+            onTogglePlaceSeen={setPlaceSeenForOwner}
             onSetPlaceDays={setPlaceDaysForOwner}
             canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
             isOnline={isOnline}
@@ -15634,9 +15753,11 @@ const resetForProfileSwitch = () => {
             commentsByPlace={placeCommentsByPlace}
             role={profile.role}
             placeVisibilityMap={placeVisibilityMap}
+            placeSeenMap={placeSeenMap}
             placeDayOverrideMap={placeDayOverrideMap}
             placeDayOrderOverrideMap={placeDayOrderOverrideMap}
             onTogglePlaceVisibility={setPlaceVisibilityForOwner}
+            onTogglePlaceSeen={setPlaceSeenForOwner}
             onSetPlaceDays={setPlaceDaysForOwner}
             canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
             isOnline={isOnline}

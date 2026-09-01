@@ -14,6 +14,7 @@ import {
   pushGameDayOverride,
   pushGameScoring,
   pushPlaceVisibility,
+  pushPlaceSeen,
   pushPlaceDayOverride,
   pushTripStartDate,
   resetGameProgressInCloud,
@@ -48,6 +49,7 @@ import type {
   PlaceDayOverrideMap,
   PlaceDayOrderOverrideMap,
   PlaceVisibilityState,
+  PlaceSeenState,
   ProfileGender,
   ProfileHouseholdRole,
   TravelPhase,
@@ -86,6 +88,7 @@ type PushSnapshotInput = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
   placeVisibilityMap?: Record<string, PlaceVisibilityState>;
+  placeSeenMap?: Record<string, PlaceSeenState>;
   placeDayOverrides?: PlaceDayOverrideMap;
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
@@ -474,6 +477,7 @@ export function useCloudSync() {
         ownerGlobalChecklistRemovals: snapshot.ownerGlobalChecklistRemovals,
         placeComments: snapshot.placeComments,
         placeVisibilityMap: snapshot.placeVisibilityMap,
+        placeSeenMap: snapshot.placeSeenMap,
         placeDayOverrides: snapshot.placeDayOverrides,
         placeDayOrderOverrides: snapshot.placeDayOrderOverrides,
         documentVisibilityMap: snapshot.documentVisibilityMap,
@@ -740,6 +744,19 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  const setPlaceSeen = useCallback(
+    async (placeId: string, seen: PlaceSeenState | null): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await ensureOwnerMembership(database, familyId, cloudUserUid);
+      await pushPlaceSeen(database, familyId, placeId, seen);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   const setContentOverride = useCallback(
     async (
       source: ContentSource,
@@ -946,6 +963,7 @@ export function useCloudSync() {
     deleteProfile,
     setGameDayOverride,
     setPlaceVisibility,
+    setPlaceSeen,
     setPlaceDayOverride,
     setContentOverride,
     setTripStartDate,

@@ -87,6 +87,13 @@ export type CloudChallengeBestVotesByDay = Record<
 export type PlaceCommentReaction = "like" | "dislike";
 
 export type PlaceVisibilityState = "visible" | "hiddenByOwner";
+// Statut "vu / pas vu" posé par le propriétaire sur un lieu du guide une fois
+// la visite/l'activité faite (ou non) pendant le séjour. Visible par tous les
+// utilisateurs (contrairement à placeVisibilityMap qui masque un lieu pour
+// les non-propriétaires). "unseen" = valeur par défaut, jamais persistée
+// explicitement (même logique que "visible" pour PlaceVisibilityState).
+export type PlaceSeenState = "unseen" | "seen";
+export type PlaceSeenMap = Record<string, PlaceSeenState>;
 export type PlaceDayOverrideMap = Record<string, number[]>;
 export type PlaceDayOrderOverrideMap = Record<string, Record<number, number>>;
 export type DocumentVisibilityState = "visible" | "hiddenByOwner";
@@ -199,6 +206,7 @@ export type CloudSyncSnapshot = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
   placeVisibilityMap: Record<string, PlaceVisibilityState>;
+  placeSeenMap: Record<string, PlaceSeenState>;
   placeDayOverrides?: PlaceDayOverrideMap;
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap: Record<string, DocumentVisibilityState>;
@@ -242,6 +250,7 @@ export type CloudSyncWritePayload = {
   ownerGlobalChecklistRemovals: ChecklistRemovalState;
   placeComments: CloudPlaceCommentsByPlace;
   placeVisibilityMap?: Record<string, PlaceVisibilityState>;
+  placeSeenMap?: Record<string, PlaceSeenState>;
   placeDayOverrides?: PlaceDayOverrideMap;
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
