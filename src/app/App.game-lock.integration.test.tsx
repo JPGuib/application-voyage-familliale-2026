@@ -296,6 +296,12 @@ describe("Story 19.1 — verrouillage du défi du jour + override propriétaire"
     });
     fireEvent.click(screen.getByRole("button", { name: /Valider la réponse/i }));
 
+    // Réponse non reconnue automatiquement : le joueur auto-déclare le résultat.
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Non, pas vraiment/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Non, pas vraiment/i }));
+
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /Terminer le rejeu/i })).toBeInTheDocument();
     });

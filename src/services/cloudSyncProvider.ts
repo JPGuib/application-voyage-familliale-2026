@@ -938,6 +938,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     placeVisibilityMap: parsePlaceVisibilityMap(root.placeVisibilityMap),
     challengeReactions: challengeReactionRecords,
     challengeBestVotes: challengeBestVoteRecords,
+    placeDayOverrides: parsePlaceDayOverrides(root.placeDayOverrides),
     placeDayOrderOverrides: parsePlaceDayOrderOverrides(root.placeDayOverrides),
     documentVisibilityMap: parseDocumentVisibilityMap(root.documentVisibilityMap),
     contentOverrides: parseContentOverrideMap(root.contentOverrides),

@@ -1431,6 +1431,8 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
         "profile-a": [entryFor(1, 10), entryFor(2, 20)],
         "profile-b": [entryFor(1, 5)],
       },
+      {},
+      {},
       {}
     );
 
@@ -1448,6 +1450,7 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
       { "profile-a": [entryFor(1, 10), entryFor(2, 20)] },
       {},
       {},
+      {},
       2
     );
 
@@ -1458,7 +1461,7 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
   it("writes null for a per-day reset when it empties the profile's history", async () => {
     mockUpdate.mockClear();
 
-    await resetGameResultsInCloud(db, familyId, { "profile-a": [entryFor(1, 10)] }, {}, {}, 1);
+    await resetGameResultsInCloud(db, familyId, { "profile-a": [entryFor(1, 10)] }, {}, {}, {}, 1);
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     expect(updates["families/famille-test/gameResults/profile-a"]).toBeNull();
@@ -1482,7 +1485,9 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
           riddleSolved: false,
         },
         "profile-b": null,
-      }
+      },
+      {},
+      {}
     );
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
@@ -1517,6 +1522,7 @@ describe("resetGameResultsInCloud (owner score reset)", () => {
           riddleSolved: false,
         },
       },
+      {},
       {},
       2
     );
