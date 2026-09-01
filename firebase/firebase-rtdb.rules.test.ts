@@ -220,6 +220,99 @@ suite("firebase rtdb rules owner phase guard", () => {
     );
   });
 
+  it("allows owner to add a custom document", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb.ref(`families/${FAMILY_ID}/documentCatalogAdditions/doc-custom-1`).set({
+        id: "doc-custom-1",
+        category: "PAPIERS",
+        title: "Copie passeport",
+        content: "Scan ajouté par le propriétaire.",
+      })
+    );
+  });
+
+  it("denies non-owner from adding a custom document", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/documentCatalogAdditions/doc-custom-1`).set({
+        id: "doc-custom-1",
+        category: "PAPIERS",
+        title: "Copie passeport",
+        content: "Tentative non autorisée.",
+      })
+    );
+  });
+
+  it("denies a custom document with an invalid category", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb.ref(`families/${FAMILY_ID}/documentCatalogAdditions/doc-custom-1`).set({
+        id: "doc-custom-1",
+        category: "INVALIDE",
+        title: "Copie passeport",
+        content: "Contenu",
+      })
+    );
+  });
+
+  it("denies a custom document missing a required field", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertFails(
+      ownerDb.ref(`families/${FAMILY_ID}/documentCatalogAdditions/doc-custom-1`).set({
+        id: "doc-custom-1",
+        category: "PAPIERS",
+        title: "Copie passeport",
+      })
+    );
+  });
+
+  it("allows owner to edit an existing default document", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb.ref(`families/${FAMILY_ID}/documentCatalogEdits/vol-nantes-paris-af7507`).set({
+        id: "vol-nantes-paris-af7507",
+        category: "VOLS",
+        title: "Nantes → Paris (corrigé)",
+        content: "Texte corrigé par le propriétaire.",
+      })
+    );
+  });
+
+  it("denies non-owner from editing an existing default document", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/documentCatalogEdits/vol-nantes-paris-af7507`).set({
+        id: "vol-nantes-paris-af7507",
+        category: "VOLS",
+        title: "Tentative non autorisée",
+        content: "Contenu",
+      })
+    );
+  });
+
+  it("allows owner to permanently remove a default document", async () => {
+    const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+    await assertSucceeds(
+      ownerDb.ref(`families/${FAMILY_ID}/documentCatalogRemovals/vol-nantes-paris-af7507`).set(true)
+    );
+  });
+
+  it("denies non-owner from removing a default document", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(
+      nonOwnerDb.ref(`families/${FAMILY_ID}/documentCatalogRemovals/vol-nantes-paris-af7507`).set(true)
+    );
+  });
+
   it("allows non-owner to write profile-scoped checklist", async () => {
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
 

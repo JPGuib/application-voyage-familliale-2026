@@ -42,6 +42,7 @@ import type {
   ContentOverrideMap,
   ContentOverridePatch,
   ContentSource,
+  DocumentCatalogRemovalState,
   DocumentVisibilityState,
   GameDayOverride,
   PlaceDayOverrideMap,
@@ -52,6 +53,7 @@ import type {
   TravelPhase,
 } from "../types/cloud";
 import type { GameScoringConfig } from "../content/game";
+import type { TravelDocument } from "../content/documents";
 
 type ClaimRoleResult = {
   assignedRole: Role;
@@ -88,6 +90,9 @@ type PushSnapshotInput = {
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
   contentOverrides?: ContentOverrideMap;
+  ownerGlobalDocumentAdditions?: TravelDocument[];
+  ownerGlobalDocumentEdits?: Record<string, TravelDocument>;
+  ownerGlobalDocumentRemovals?: DocumentCatalogRemovalState;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   challengeReactions?: CloudChallengeReactionsByDay;
   challengeBestVotes?: CloudChallengeBestVotesByDay;
@@ -473,6 +478,9 @@ export function useCloudSync() {
         placeDayOrderOverrides: snapshot.placeDayOrderOverrides,
         documentVisibilityMap: snapshot.documentVisibilityMap,
         contentOverrides: snapshot.contentOverrides,
+        ownerGlobalDocumentAdditions: snapshot.ownerGlobalDocumentAdditions,
+        ownerGlobalDocumentEdits: snapshot.ownerGlobalDocumentEdits,
+        ownerGlobalDocumentRemovals: snapshot.ownerGlobalDocumentRemovals,
         profileDestinationSurveyVote: snapshot.profileDestinationSurveyVote,
         challengeReactions: snapshot.challengeReactions,
         challengeBestVotes: snapshot.challengeBestVotes,

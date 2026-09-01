@@ -19,7 +19,6 @@ BACKLOG / EVOLUTIONS
 * JEU - J6 - Jeu du jour - revoir l'affichage avec les émoticones, qui prennent trop de place
 * JEU - J10 - Jeu du jour - limite en carractère du défi à augmenter
 * JEU - J7 - Espace - mots croisés plus pratiques à visionner
-* JEU - J9 - Espace - candy rush : voir un système de record à battre (mais dans ce cas sur une grille stadard et nb de pions convenus d'avance)
 
 * UI - UI1 - retour l'UI ? S'inspire de wechat
 

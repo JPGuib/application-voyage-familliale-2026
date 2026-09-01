@@ -382,6 +382,9 @@ const PLACE_DAY_OVERRIDES_STORAGE_KEY = "jp-place-day-overrides";
 const PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY = "jp-place-day-order-overrides";
 const DOCUMENT_VISIBILITY_STORAGE_KEY = "jp-document-visibility-map";
 const CONTENT_OVERRIDES_STORAGE_KEY = "jp-content-overrides";
+const OWNER_GLOBAL_DOCUMENT_ADDITIONS_KEY = "jp-owner-global-document-additions";
+const OWNER_GLOBAL_DOCUMENT_EDITS_KEY = "jp-owner-global-document-edits";
+const OWNER_GLOBAL_DOCUMENT_REMOVALS_KEY = "jp-owner-global-document-removals";
 const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
 const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
 const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-by-profile";
@@ -1277,6 +1280,121 @@ function applyContentOverride<T extends { name: string; shortDesc: string; histo
 }
 
 function areContentOverrideMapsEqual(left: ContentOverrideMap, right: ContentOverrideMap): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+// Correction/enrichissement des documents/informations importantes par le
+// propriétaire, synchronisé cloud (même esprit que ownerGlobalChecklist*
+// pour le catalogue de checklist) :
+// - ownerGlobalDocumentAdditions : documents personnalisés ajoutés
+// - ownerGlobalDocumentEdits : remplacement intégral d'un document DOCUMENTS édité (clé = id)
+// - ownerGlobalDocumentRemovals : suppression permanente d'un document DOCUMENTS (clé = id)
+function parseTravelDocumentEntry(fallbackId: string, raw: unknown): TravelDocument | null {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+  const entry = raw as Record<string, unknown>;
+  const id = typeof entry.id === "string" && entry.id.trim().length > 0 ? entry.id : fallbackId;
+  const category = entry.category;
+  if (
+    typeof entry.title !== "string" ||
+    entry.title.trim().length === 0 ||
+    typeof entry.content !== "string" ||
+    entry.content.trim().length === 0 ||
+    typeof category !== "string" ||
+    !DOCUMENT_CATEGORIES.includes(category as DocumentCategory)
+  ) {
+    return null;
+  }
+
+  const details = Array.isArray(entry.details)
+    ? entry.details.filter((line): line is string => typeof line === "string")
+    : undefined;
+  const scans = Array.isArray(entry.scans)
+    ? entry.scans.filter((line): line is string => typeof line === "string")
+    : undefined;
+  const links = Array.isArray(entry.links)
+    ? entry.links
+        .map((link) => {
+          if (!link || typeof link !== "object") return null;
+          const candidate = link as Record<string, unknown>;
+          if (typeof candidate.label !== "string" || typeof candidate.url !== "string") return null;
+          const label = candidate.label.trim();
+          const url = candidate.url.trim();
+          return label && url ? { label, url } : null;
+        })
+        .filter((link): link is { label: string; url: string } => Boolean(link))
+    : undefined;
+  const days = normalizeDocumentDays(
+    typeof entry.day === "number" || Array.isArray(entry.day) ? (entry.day as number | number[]) : undefined
+  );
+  const gpsRaw = typeof entry.gps === "string" ? entry.gps.trim() : "";
+
+  return {
+    id,
+    category: category as DocumentCategory,
+    title: entry.title,
+    content: entry.content,
+    tag: typeof entry.tag === "string" && entry.tag.trim() ? entry.tag : undefined,
+    day: days.length > 0 ? days : undefined,
+    details: details && details.length > 0 ? details : undefined,
+    scans: scans && scans.length > 0 ? scans : undefined,
+    links: links && links.length > 0 ? links : undefined,
+    gps: gpsRaw || undefined,
+  };
+}
+
+// Accepte soit un tableau (forme utilisée pour le stockage local jp-owner-
+// global-document-additions), soit un objet { [id]: document } (forme
+// utilisée côté cloud, cf. cloudSyncProvider.ts).
+function parseOwnerGlobalDocumentAdditions(raw: unknown): TravelDocument[] {
+  const entries: Array<[string, unknown]> = Array.isArray(raw)
+    ? raw.map((candidate, index) => [`doc-${index}`, candidate])
+    : raw && typeof raw === "object"
+      ? Object.entries(raw as Record<string, unknown>)
+      : [];
+
+  const documents: TravelDocument[] = [];
+  for (const [fallbackId, candidate] of entries) {
+    const document = parseTravelDocumentEntry(fallbackId, candidate);
+    if (document) {
+      documents.push(document);
+    }
+  }
+  return documents;
+}
+
+function parseOwnerGlobalDocumentEdits(raw: unknown): Record<string, TravelDocument> {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+  const next: Record<string, TravelDocument> = {};
+  for (const [documentId, candidate] of Object.entries(raw as Record<string, unknown>)) {
+    const document = parseTravelDocumentEntry(documentId, candidate);
+    if (document) {
+      next[documentId] = document;
+    }
+  }
+  return next;
+}
+
+function parseOwnerGlobalDocumentRemovals(raw: unknown): Record<string, boolean> {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(raw as Record<string, unknown>).filter(([, value]) => typeof value === "boolean")
+  ) as Record<string, boolean>;
+}
+
+function areTravelDocumentListsEqual(left: TravelDocument[], right: TravelDocument[]): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function areTravelDocumentMapsEqual(
+  left: Record<string, TravelDocument>,
+  right: Record<string, TravelDocument>
+): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
@@ -3750,35 +3868,35 @@ function PlanningScreen({
 }
 
 function DocumentsScreen({
+  documents,
   onBack,
   tripStartDate,
   role,
   documentVisibilityMap,
   onToggleDocumentVisibility,
   canManageDocumentVisibility,
+  onSaveDocument,
+  onDeleteDocument,
   deepLinkTarget,
   onDeepLinkHandled,
   isOnline,
 }: {
+  // Documents par défaut + ajouts/corrections/suppressions du propriétaire,
+  // déjà fusionnés par le composant parent (voir documentsWithOwnerOverrides
+  // dans App.tsx) et synchronisés cloud.
+  documents: TravelDocument[];
   onBack: () => void;
   tripStartDate: string | null;
   role: Role | null;
   documentVisibilityMap: DocumentVisibilityMap;
   onToggleDocumentVisibility: (documentId: string, nextState: DocumentVisibilityState) => void;
   canManageDocumentVisibility: boolean;
+  onSaveDocument: (document: TravelDocument) => void;
+  onDeleteDocument: (documentId: string) => void;
   deepLinkTarget: DocumentsDeepLinkTarget | null;
   onDeepLinkHandled: () => void;
   isOnline: boolean;
 }) {
-  const DOCUMENTS_STORAGE_KEY = "jp-documents-v4";
-  const LEGACY_DOCUMENTS_STORAGE_KEY = "jp-documents-v2";
-  const LEGACY_DOCUMENTS_STORAGE_KEY_V3 = "jp-documents-v3";
-  const DOCUMENTS_STORAGE_VERSION = 1;
-  type PersistedDocumentsState = {
-    version: number;
-    hasManualEdits: boolean;
-    documents: TravelDocument[];
-  };
   const isOwner = role === "proprietaire";
   const canConsultScans = role !== "visiteur";
   const { coords: deviceCoords } = useDeviceLocation();
@@ -3786,8 +3904,6 @@ function DocumentsScreen({
   const [activeCategory, setActiveCategory] = useState<DocumentCategory>(
     DOCUMENT_CATEGORIES[0]
   );
-  const [allDocuments, setAllDocuments] = useState<TravelDocument[]>(DOCUMENTS);
-  const [hasManualDocumentEdits, setHasManualDocumentEdits] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [scansDocumentId, setScansDocumentId] = useState<string | null>(null);
@@ -3836,161 +3952,6 @@ function DocumentsScreen({
     setDraftDays((previous) => previous.filter((value) => value !== day));
   }
 
-  function mergeDocumentsWithDefaults(persistedDocs: TravelDocument[]): TravelDocument[] {
-    const defaultDocsById = new Map(DOCUMENTS.map((doc) => [doc.id, doc]));
-
-    // Keep current catalog order, but allow persisted versions to override items
-    // with same ID (owner edits) and append custom documents at the end.
-    const mergedDefaults = DOCUMENTS.map(
-      (defaultDoc) => persistedDocs.find((doc) => doc.id === defaultDoc.id) ?? defaultDoc
-    );
-    const customDocs = persistedDocs.filter((doc) => !defaultDocsById.has(doc.id));
-
-    return [...mergedDefaults, ...customDocs];
-  }
-
-  useEffect(() => {
-    try {
-      const raw =
-        localStorage.getItem(DOCUMENTS_STORAGE_KEY) ??
-        localStorage.getItem(LEGACY_DOCUMENTS_STORAGE_KEY_V3) ??
-        localStorage.getItem(LEGACY_DOCUMENTS_STORAGE_KEY);
-      if (!raw) {
-        setHasManualDocumentEdits(false);
-        setAllDocuments(DOCUMENTS);
-        return;
-      }
-      const parsed = JSON.parse(raw);
-
-      const serializedDocuments = Array.isArray(parsed)
-        ? parsed
-        : Array.isArray((parsed as PersistedDocumentsState).documents)
-          ? (parsed as PersistedDocumentsState).documents
-          : null;
-
-      if (!serializedDocuments) {
-        setHasManualDocumentEdits(false);
-        setAllDocuments(DOCUMENTS);
-        return;
-      }
-
-      const defaultDocumentsById = new Map(DOCUMENTS.map((doc) => [doc.id, doc]));
-
-      const sanitized: TravelDocument[] = [];
-      for (const item of serializedDocuments) {
-        if (!item || typeof item !== "object") continue;
-        const candidate = item as Record<string, unknown>;
-        const category = candidate.category;
-        if (
-          typeof candidate.id !== "string" ||
-          typeof candidate.title !== "string" ||
-          typeof candidate.content !== "string" ||
-          typeof category !== "string" ||
-          !DOCUMENT_CATEGORIES.includes(category as DocumentCategory)
-        ) {
-          continue;
-        }
-
-        const details = Array.isArray(candidate.details)
-          ? candidate.details.filter((line): line is string => typeof line === "string")
-          : undefined;
-        const scans = Array.isArray(candidate.scans)
-          ? candidate.scans.filter((line): line is string => typeof line === "string")
-          : undefined;
-        const links = Array.isArray(candidate.links)
-          ? candidate.links
-              .map((entry) => {
-                if (!entry || typeof entry !== "object") return null;
-                const link = entry as Record<string, unknown>;
-                if (typeof link.label !== "string" || typeof link.url !== "string") return null;
-                const label = link.label.trim();
-                const url = link.url.trim();
-                if (!label || !url) return null;
-                return { label, url };
-              })
-              .filter((entry): entry is { label: string; url: string } => Boolean(entry))
-          : undefined;
-        const gpsRaw = typeof candidate.gps === "string" ? candidate.gps.trim() : "";
-        const defaultLinks = defaultDocumentsById.get(candidate.id)?.links;
-        const resolvedLinks = links && links.length > 0
-          ? links
-          : defaultLinks && defaultLinks.length > 0
-            ? defaultLinks
-            : undefined;
-        const defaultGps = defaultDocumentsById.get(candidate.id)?.gps;
-        const gps = gpsRaw && parseGpsString(gpsRaw)
-          ? gpsRaw
-          : defaultGps && parseGpsString(defaultGps)
-            ? defaultGps
-            : undefined;
-        const defaultScans = defaultDocumentsById.get(candidate.id)?.scans;
-        const resolvedScans = scans && scans.length > 0
-          ? scans
-          : defaultScans && defaultScans.length > 0
-            ? defaultScans
-            : undefined;
-
-        sanitized.push({
-          id: candidate.id,
-          title: candidate.title,
-          content: candidate.content,
-          category: category as DocumentCategory,
-          tag: typeof candidate.tag === "string" ? candidate.tag : undefined,
-          day: (() => {
-            const normalizedDays = normalizeDocumentDays(
-              typeof candidate.day === "number" || Array.isArray(candidate.day)
-                ? (candidate.day as number | number[])
-                : undefined
-            );
-            return normalizedDays.length > 0 ? normalizedDays : undefined;
-          })(),
-          details,
-          scans: resolvedScans,
-          links: resolvedLinks,
-          gps,
-        });
-      }
-
-      // Migration behavior: for legacy array storage, treat source documents as
-      // authoritative while preserving local edits and custom documents.
-      if (Array.isArray(parsed)) {
-        const migratedDocuments = mergeDocumentsWithDefaults(sanitized);
-        setAllDocuments(migratedDocuments);
-        setHasManualDocumentEdits(sanitized.length > 0);
-        return;
-      }
-
-      const persistedState = parsed as PersistedDocumentsState;
-      const persistedHasManualEdits =
-        persistedState.version === DOCUMENTS_STORAGE_VERSION &&
-        persistedState.hasManualEdits === true;
-
-      setHasManualDocumentEdits(persistedHasManualEdits);
-      setAllDocuments(
-        persistedHasManualEdits && sanitized.length > 0
-          ? mergeDocumentsWithDefaults(sanitized)
-          : DOCUMENTS
-      );
-    } catch {
-      setHasManualDocumentEdits(false);
-      setAllDocuments(DOCUMENTS);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!hasManualDocumentEdits) {
-      localStorage.removeItem(DOCUMENTS_STORAGE_KEY);
-      return;
-    }
-
-    const payload: PersistedDocumentsState = {
-      version: DOCUMENTS_STORAGE_VERSION,
-      hasManualEdits: true,
-      documents: allDocuments,
-    };
-    localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(payload));
-  }, [allDocuments, hasManualDocumentEdits]);
-
   useEffect(() => {
     if (!isOwner) {
       setEditingId(null);
@@ -4009,7 +3970,7 @@ function DocumentsScreen({
     }
   }, [documentVisibilityMap, role, scansDocumentId]);
 
-  const visibleDocuments = allDocuments.filter((document) =>
+  const visibleDocuments = documents.filter((document) =>
     isDocumentVisibleForRole(role, document.id, documentVisibilityMap)
   );
   const grouped = groupDocumentsByCategory(visibleDocuments);
@@ -4043,7 +4004,7 @@ function DocumentsScreen({
     }
 
     const visibleTarget = visibleDocuments.find((document) => document.id === deepLinkTarget.documentId);
-    const fallbackTarget = allDocuments.find((document) => document.id === deepLinkTarget.documentId);
+    const fallbackTarget = documents.find((document) => document.id === deepLinkTarget.documentId);
     const target = visibleTarget ?? fallbackTarget;
 
     if (!target) {
@@ -4064,7 +4025,7 @@ function DocumentsScreen({
     });
 
     onDeepLinkHandled();
-  }, [allDocuments, deepLinkTarget, onDeepLinkHandled, visibleDocuments]);
+  }, [documents, deepLinkTarget, onDeepLinkHandled, visibleDocuments]);
 
   useEffect(() => {
     if (!highlightedDocumentId) {
@@ -4181,13 +4142,10 @@ function DocumentsScreen({
       gps,
     };
 
+    onSaveDocument(payload);
     if (targetId) {
-      setHasManualDocumentEdits(true);
-      setAllDocuments((prev) => prev.map((doc) => (doc.id === targetId ? payload : doc)));
       setEditingId(null);
     } else {
-      setHasManualDocumentEdits(true);
-      setAllDocuments((prev) => [...prev, payload]);
       setIsAdding(false);
     }
 
@@ -4200,8 +4158,7 @@ function DocumentsScreen({
     if (!window.confirm("Confirmer la suppression de ce document ?")) {
       return;
     }
-    setHasManualDocumentEdits(true);
-    setAllDocuments((prev) => prev.filter((doc) => doc.id !== id));
+    onDeleteDocument(id);
     if (editingId === id) {
       setEditingId(null);
       clearDraft();
@@ -10291,6 +10248,42 @@ export default function App() {
       return {};
     }
   });
+  const [ownerGlobalDocumentAdditions, setOwnerGlobalDocumentAdditions] = useState<TravelDocument[]>(() => {
+    if (cloudEnabled) {
+      return [];
+    }
+    try {
+      return parseOwnerGlobalDocumentAdditions(
+        JSON.parse(localStorage.getItem(OWNER_GLOBAL_DOCUMENT_ADDITIONS_KEY) || "[]")
+      );
+    } catch {
+      return [];
+    }
+  });
+  const [ownerGlobalDocumentEdits, setOwnerGlobalDocumentEdits] = useState<Record<string, TravelDocument>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+    try {
+      return parseOwnerGlobalDocumentEdits(
+        JSON.parse(localStorage.getItem(OWNER_GLOBAL_DOCUMENT_EDITS_KEY) || "{}")
+      );
+    } catch {
+      return {};
+    }
+  });
+  const [ownerGlobalDocumentRemovals, setOwnerGlobalDocumentRemovals] = useState<Record<string, boolean>>(() => {
+    if (cloudEnabled) {
+      return {};
+    }
+    try {
+      return parseOwnerGlobalDocumentRemovals(
+        JSON.parse(localStorage.getItem(OWNER_GLOBAL_DOCUMENT_REMOVALS_KEY) || "{}")
+      );
+    } catch {
+      return {};
+    }
+  });
   const [placeCommentsByPlace, setPlaceCommentsByPlace] = useState<PlaceCommentsByPlace>(() => {
     if (cloudEnabled) {
       return {};
@@ -10996,6 +10989,9 @@ export default function App() {
         localStorage.removeItem(CUSTOM_PROFILE_CHECKLIST_STORAGE_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_ADDITIONS_KEY);
         localStorage.removeItem(OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY);
+        localStorage.removeItem(OWNER_GLOBAL_DOCUMENT_ADDITIONS_KEY);
+        localStorage.removeItem(OWNER_GLOBAL_DOCUMENT_EDITS_KEY);
+        localStorage.removeItem(OWNER_GLOBAL_DOCUMENT_REMOVALS_KEY);
         localStorage.removeItem(DESTINATION_SURVEY_STORAGE_KEY);
       } else {
         localStorage.setItem("jp-profile", JSON.stringify(profile));
@@ -11056,6 +11052,18 @@ export default function App() {
           localStorage.setItem(
             OWNER_GLOBAL_CHECKLIST_REMOVALS_KEY,
             JSON.stringify(ownerGlobalChecklistRemovals)
+          );
+          localStorage.setItem(
+            OWNER_GLOBAL_DOCUMENT_ADDITIONS_KEY,
+            JSON.stringify(ownerGlobalDocumentAdditions)
+          );
+          localStorage.setItem(
+            OWNER_GLOBAL_DOCUMENT_EDITS_KEY,
+            JSON.stringify(ownerGlobalDocumentEdits)
+          );
+          localStorage.setItem(
+            OWNER_GLOBAL_DOCUMENT_REMOVALS_KEY,
+            JSON.stringify(ownerGlobalDocumentRemovals)
           );
           localStorage.setItem(
             PLACE_COMMENTS_STORAGE_KEY,
@@ -11141,6 +11149,9 @@ export default function App() {
     customChecklistItemsByProfile,
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
+    ownerGlobalDocumentAdditions,
+    ownerGlobalDocumentEdits,
+    ownerGlobalDocumentRemovals,
     placeCommentsByPlace,
     placeVisibilityMap,
     placeDayOverrideMap,
@@ -11399,6 +11410,21 @@ export default function App() {
       areRemovalMapsEqual(previous, cloudSnapshot.ownerGlobalChecklistRemovals ?? {})
         ? previous
         : cloudSnapshot.ownerGlobalChecklistRemovals ?? {}
+    );
+    setOwnerGlobalDocumentAdditions((previous) =>
+      areTravelDocumentListsEqual(previous, cloudSnapshot.ownerGlobalDocumentAdditions ?? [])
+        ? previous
+        : cloudSnapshot.ownerGlobalDocumentAdditions ?? []
+    );
+    setOwnerGlobalDocumentEdits((previous) =>
+      areTravelDocumentMapsEqual(previous, cloudSnapshot.ownerGlobalDocumentEdits ?? {})
+        ? previous
+        : cloudSnapshot.ownerGlobalDocumentEdits ?? {}
+    );
+    setOwnerGlobalDocumentRemovals((previous) =>
+      areRemovalMapsEqual(previous, cloudSnapshot.ownerGlobalDocumentRemovals ?? {})
+        ? previous
+        : cloudSnapshot.ownerGlobalDocumentRemovals ?? {}
     );
     setPlaceCommentsByPlace((previous) => {
       const nextFromCloud = cloudSnapshot.placeComments ?? {};
@@ -11832,6 +11858,9 @@ export default function App() {
       placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
       contentOverrides,
+      ownerGlobalDocumentAdditions,
+      ownerGlobalDocumentEdits,
+      ownerGlobalDocumentRemovals,
       destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       challengeReactions: challengeReactionsByDay,
       challengeBestVotes: challengeBestVotesByDay,
@@ -11882,6 +11911,9 @@ export default function App() {
       placeDayOrderOverrides: placeDayOrderOverrideMap,
       documentVisibilityMap,
       contentOverrides,
+      ownerGlobalDocumentAdditions,
+      ownerGlobalDocumentEdits,
+      ownerGlobalDocumentRemovals,
       profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       challengeReactions: challengeReactionsByDay,
       challengeBestVotes: challengeBestVotesByDay,
@@ -11926,6 +11958,9 @@ export default function App() {
     customChecklistItemsByProfile,
     ownerGlobalChecklistAdditions,
     ownerGlobalChecklistRemovals,
+    ownerGlobalDocumentAdditions,
+    ownerGlobalDocumentEdits,
+    ownerGlobalDocumentRemovals,
     placeCommentsByPlace,
     placeVisibilityMap,
     placeDayOverrideMap,
@@ -12076,6 +12111,53 @@ export default function App() {
     ownerGlobalChecklistRemovals,
     currentProfileCustomItems
   );
+
+  // Documents/informations importantes après application des corrections,
+  // ajouts et suppressions du propriétaire (voir contentOverrides plus haut
+  // pour le même principe appliqué aux rubriques places/histoire/etc.).
+  const documentsWithOwnerOverrides: TravelDocument[] = [
+    ...DOCUMENTS.filter((doc) => !ownerGlobalDocumentRemovals[doc.id]).map(
+      (doc) => ownerGlobalDocumentEdits[doc.id] ?? doc
+    ),
+    ...ownerGlobalDocumentAdditions,
+  ];
+
+  function saveDocumentForOwner(document: TravelDocument): void {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return;
+    }
+    const isDefaultDocument = DOCUMENTS.some((doc) => doc.id === document.id);
+    if (isDefaultDocument) {
+      setOwnerGlobalDocumentEdits((previous) => ({ ...previous, [document.id]: document }));
+    } else {
+      setOwnerGlobalDocumentAdditions((previous) => {
+        const exists = previous.some((doc) => doc.id === document.id);
+        return exists
+          ? previous.map((doc) => (doc.id === document.id ? document : doc))
+          : [...previous, document];
+      });
+    }
+  }
+
+  function deleteDocumentForOwner(documentId: string): void {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return;
+    }
+    const isDefaultDocument = DOCUMENTS.some((doc) => doc.id === documentId);
+    if (isDefaultDocument) {
+      setOwnerGlobalDocumentRemovals((previous) => ({ ...previous, [documentId]: true }));
+      setOwnerGlobalDocumentEdits((previous) => {
+        if (!(documentId in previous)) {
+          return previous;
+        }
+        const next = { ...previous };
+        delete next[documentId];
+        return next;
+      });
+    } else {
+      setOwnerGlobalDocumentAdditions((previous) => previous.filter((doc) => doc.id !== documentId));
+    }
+  }
 
   const toggleItem = (id: string) =>
     setChecked((p) => ({ ...p, [id]: !p[id] }));
@@ -15129,12 +15211,17 @@ const resetForProfileSwitch = () => {
       if (effectiveScreen === "documents") {
         return (
           <DocumentsScreen
+            documents={documentsWithOwnerOverrides}
             onBack={() => goToScreen("dashboard")}
             tripStartDate={tripStartDate}
             role={profile.role}
             documentVisibilityMap={documentVisibilityMap}
             onToggleDocumentVisibility={setDocumentVisibilityForOwner}
             canManageDocumentVisibility={canUpdateOwnerCode(familyState, profile.id)}
+            onSaveDocument={saveDocumentForOwner}
+            onDeleteDocument={deleteDocumentForOwner}
+            deepLinkTarget={documentsDeepLinkTarget}
+            onDeepLinkHandled={() => setDocumentsDeepLinkTarget(null)}
             isOnline={isOnline}
           />
         );
@@ -15575,12 +15662,15 @@ const resetForProfileSwitch = () => {
       case "documents":
         return (
           <DocumentsScreen
+            documents={documentsWithOwnerOverrides}
             onBack={() => goToScreen("dashboard")}
             tripStartDate={tripStartDate}
             role={profile.role}
             documentVisibilityMap={documentVisibilityMap}
             onToggleDocumentVisibility={setDocumentVisibilityForOwner}
             canManageDocumentVisibility={canUpdateOwnerCode(familyState, profile.id)}
+            onSaveDocument={saveDocumentForOwner}
+            onDeleteDocument={deleteDocumentForOwner}
             deepLinkTarget={documentsDeepLinkTarget}
             onDeepLinkHandled={() => setDocumentsDeepLinkTarget(null)}
             isOnline={isOnline}

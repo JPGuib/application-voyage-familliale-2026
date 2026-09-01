@@ -119,6 +119,108 @@
             ".validate": "newData.isBoolean()"
           }
         },
+        "documentCatalogAdditions": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          "$documentId": {
+            ".validate": "newData.hasChildren(['id','category','title','content']) && newData.child('id').isString() && newData.child('title').isString() && newData.child('title').val().length <= 200 && newData.child('content').isString() && newData.child('content').val().length <= 6000 && (newData.child('category').val() === 'VOLS' || newData.child('category').val() === 'TRANSPORTS' || newData.child('category').val() === 'SEJOUR' || newData.child('category').val() === 'HEBERGEMENT' || newData.child('category').val() === 'RESTAURANT' || newData.child('category').val() === 'ACTIVITES' || newData.child('category').val() === 'PAPIERS' || newData.child('category').val() === 'ASSURANCE' || newData.child('category').val() === 'BANQUE')",
+            "id": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "category": {
+              ".validate": "newData.val() === 'VOLS' || newData.val() === 'TRANSPORTS' || newData.val() === 'SEJOUR' || newData.val() === 'HEBERGEMENT' || newData.val() === 'RESTAURANT' || newData.val() === 'ACTIVITES' || newData.val() === 'PAPIERS' || newData.val() === 'ASSURANCE' || newData.val() === 'BANQUE'"
+            },
+            "title": {
+              ".validate": "newData.isString() && newData.val().length <= 200"
+            },
+            "content": {
+              ".validate": "newData.isString() && newData.val().length <= 6000"
+            },
+            "tag": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 80)"
+            },
+            "day": {
+              ".validate": "newData.val() === null || newData.isNumber() || newData.hasChildren()",
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.isNumber() && newData.val() > 0 && newData.val() <= 31"
+              }
+            },
+            "details": {
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.isString() && newData.val().length <= 400"
+              }
+            },
+            "scans": {
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.isString() && newData.val().length <= 300"
+              }
+            },
+            "links": {
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.hasChildren(['label','url']) && newData.child('label').isString() && newData.child('label').val().length <= 120 && newData.child('url').isString() && newData.child('url').val().length <= 500"
+              }
+            },
+            "gps": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 40)"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "documentCatalogEdits": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          "$documentId": {
+            ".validate": "newData.hasChildren(['id','category','title','content']) && newData.child('id').isString() && newData.child('title').isString() && newData.child('title').val().length <= 200 && newData.child('content').isString() && newData.child('content').val().length <= 6000 && (newData.child('category').val() === 'VOLS' || newData.child('category').val() === 'TRANSPORTS' || newData.child('category').val() === 'SEJOUR' || newData.child('category').val() === 'HEBERGEMENT' || newData.child('category').val() === 'RESTAURANT' || newData.child('category').val() === 'ACTIVITES' || newData.child('category').val() === 'PAPIERS' || newData.child('category').val() === 'ASSURANCE' || newData.child('category').val() === 'BANQUE')",
+            "id": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "category": {
+              ".validate": "newData.val() === 'VOLS' || newData.val() === 'TRANSPORTS' || newData.val() === 'SEJOUR' || newData.val() === 'HEBERGEMENT' || newData.val() === 'RESTAURANT' || newData.val() === 'ACTIVITES' || newData.val() === 'PAPIERS' || newData.val() === 'ASSURANCE' || newData.val() === 'BANQUE'"
+            },
+            "title": {
+              ".validate": "newData.isString() && newData.val().length <= 200"
+            },
+            "content": {
+              ".validate": "newData.isString() && newData.val().length <= 6000"
+            },
+            "tag": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 80)"
+            },
+            "day": {
+              ".validate": "newData.val() === null || newData.isNumber() || newData.hasChildren()",
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.isNumber() && newData.val() > 0 && newData.val() <= 31"
+              }
+            },
+            "details": {
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.isString() && newData.val().length <= 400"
+              }
+            },
+            "scans": {
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.isString() && newData.val().length <= 300"
+              }
+            },
+            "links": {
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.hasChildren(['label','url']) && newData.child('label').isString() && newData.child('label').val().length <= 120 && newData.child('url').isString() && newData.child('url').val().length <= 500"
+              }
+            },
+            "gps": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 40)"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "documentCatalogRemovals": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          "$documentId": {
+            ".validate": "newData.isBoolean()"
+          }
+        },
         "checklists": {
           "$profileId": {
             ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",

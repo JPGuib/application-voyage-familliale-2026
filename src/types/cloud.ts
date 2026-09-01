@@ -1,5 +1,6 @@
 import type { Role, SharedFamilyState } from "../app/owner-policy";
 import type { GameScoringConfig } from "../content/game";
+import type { TravelDocument } from "../content/documents";
 
 export type TravelPhase = "before" | "during";
 
@@ -106,6 +107,13 @@ export type ContentOverridePatch = Partial<{
 }>;
 export type ContentOverrideMap = Partial<Record<ContentSource, Record<string, ContentOverridePatch>>>;
 
+// Édition des documents/informations importantes par le propriétaire :
+// - ownerGlobalDocumentAdditions : documents personnalisés ajoutés (id absent de DOCUMENTS)
+// - ownerGlobalDocumentEdits : remplacement intégral d'un document par défaut (clé = id DOCUMENTS)
+// - ownerGlobalDocumentRemovals : suppression d'un document par défaut (clé = id DOCUMENTS)
+// Même esprit que ownerGlobalChecklistAdditions/Removals ci-dessus.
+export type DocumentCatalogRemovalState = Record<string, boolean>;
+
 export type CloudPlaceComment = {
   commentId: string;
   placeId: string;
@@ -195,6 +203,9 @@ export type CloudSyncSnapshot = {
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap: Record<string, DocumentVisibilityState>;
   contentOverrides?: ContentOverrideMap;
+  ownerGlobalDocumentAdditions?: TravelDocument[];
+  ownerGlobalDocumentEdits?: Record<string, TravelDocument>;
+  ownerGlobalDocumentRemovals?: DocumentCatalogRemovalState;
   destinationSurvey: CloudDestinationSurveyByProfile;
   challengeReactions?: CloudChallengeReactionsByDay;
   challengeBestVotes?: CloudChallengeBestVotesByDay;
@@ -235,6 +246,9 @@ export type CloudSyncWritePayload = {
   placeDayOrderOverrides?: PlaceDayOrderOverrideMap;
   documentVisibilityMap?: Record<string, DocumentVisibilityState>;
   contentOverrides?: ContentOverrideMap;
+  ownerGlobalDocumentAdditions?: TravelDocument[];
+  ownerGlobalDocumentEdits?: Record<string, TravelDocument>;
+  ownerGlobalDocumentRemovals?: DocumentCatalogRemovalState;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   challengeReactions?: CloudChallengeReactionsByDay;
   challengeBestVotes?: CloudChallengeBestVotesByDay;

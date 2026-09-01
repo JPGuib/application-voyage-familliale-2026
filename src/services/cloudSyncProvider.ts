@@ -32,6 +32,7 @@ import type {
   ContentOverrideMap,
   ContentOverridePatch,
   ContentSource,
+  DocumentCatalogRemovalState,
   DocumentVisibilityState,
   CloudProfileRecord,
   CloudSyncSnapshot,
@@ -46,6 +47,8 @@ import type {
   TravelPhase,
 } from "../types/cloud";
 import { DEFAULT_GAME_SCORING, type GameScoringConfig } from "../content/game";
+import { DOCUMENT_CATEGORIES, type DocumentCategory, type TravelDocument } from "../content/documents";
+import { normalizeDocumentDays } from "../app/documents-screen";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -166,6 +169,88 @@ function parseChecklistCustomItems(value: unknown): ChecklistCustomItem[] {
 
   items.sort((left, right) => left.id.localeCompare(right.id));
   return items;
+}
+
+function parseTravelDocumentEntry(fallbackId: string, value: unknown): TravelDocument | null {
+  const entry = asRecord(value);
+  const id = typeof entry.id === "string" && entry.id.trim().length > 0 ? entry.id : fallbackId;
+  const category = entry.category;
+  if (
+    typeof entry.title !== "string" ||
+    entry.title.trim().length === 0 ||
+    typeof entry.content !== "string" ||
+    entry.content.trim().length === 0 ||
+    typeof category !== "string" ||
+    !DOCUMENT_CATEGORIES.includes(category as DocumentCategory)
+  ) {
+    return null;
+  }
+
+  const details = Array.isArray(entry.details)
+    ? entry.details.filter((line): line is string => typeof line === "string")
+    : undefined;
+  const scans = Array.isArray(entry.scans)
+    ? entry.scans.filter((line): line is string => typeof line === "string")
+    : undefined;
+  const links = Array.isArray(entry.links)
+    ? entry.links
+        .map((link) => {
+          const candidate = asRecord(link);
+          if (typeof candidate.label !== "string" || typeof candidate.url !== "string") {
+            return null;
+          }
+          const label = candidate.label.trim();
+          const url = candidate.url.trim();
+          return label && url ? { label, url } : null;
+        })
+        .filter((link): link is { label: string; url: string } => Boolean(link))
+    : undefined;
+  const days = normalizeDocumentDays(
+    typeof entry.day === "number" || Array.isArray(entry.day) ? (entry.day as number | number[]) : undefined
+  );
+  const gpsRaw = typeof entry.gps === "string" ? entry.gps.trim() : "";
+
+  return {
+    id,
+    category: category as DocumentCategory,
+    title: entry.title,
+    content: entry.content,
+    tag: typeof entry.tag === "string" && entry.tag.trim() ? entry.tag : undefined,
+    day: days.length > 0 ? days : undefined,
+    details: details && details.length > 0 ? details : undefined,
+    scans: scans && scans.length > 0 ? scans : undefined,
+    links: links && links.length > 0 ? links : undefined,
+    gps: gpsRaw || undefined,
+  };
+}
+
+function parseOwnerGlobalDocumentAdditions(value: unknown): TravelDocument[] {
+  const raw = asRecord(value);
+  const documents: TravelDocument[] = [];
+
+  for (const [documentId, candidate] of Object.entries(raw)) {
+    const document = parseTravelDocumentEntry(documentId, candidate);
+    if (document) {
+      documents.push(document);
+    }
+  }
+
+  documents.sort((left, right) => left.id.localeCompare(right.id));
+  return documents;
+}
+
+function parseOwnerGlobalDocumentEdits(value: unknown): Record<string, TravelDocument> {
+  const raw = asRecord(value);
+  const next: Record<string, TravelDocument> = {};
+
+  for (const [documentId, candidate] of Object.entries(raw)) {
+    const document = parseTravelDocumentEntry(documentId, candidate);
+    if (document) {
+      next[documentId] = document;
+    }
+  }
+
+  return next;
 }
 
 function isCloudGameEntry(value: unknown): value is CloudGameHistoryEntry {
@@ -761,6 +846,9 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const checklistRecords = asRecord(root.checklists);
   const ownerGlobalAdditionRecords = asRecord(root.checklistCatalogAdditions);
   const ownerGlobalRemovalRecords = asRecord(root.checklistCatalogRemovals);
+  const documentCatalogAdditionRecords = asRecord(root.documentCatalogAdditions);
+  const documentCatalogEditRecords = asRecord(root.documentCatalogEdits);
+  const documentCatalogRemovalRecords = asRecord(root.documentCatalogRemovals);
   const placeCommentRecords = asRecord(root.placeComments);
   const destinationSurveyRecords = parseDestinationSurvey(root.destinationSurvey);
   const challengeReactionRecords = parseChallengeReactions(root.challengeReactions);
@@ -833,6 +921,9 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     gameScoring: parseGameScoring(root.gameScoring),
     ownerGlobalChecklistAdditions: parseChecklistCustomItems(ownerGlobalAdditionRecords),
     ownerGlobalChecklistRemovals: parseChecklistRemovals(ownerGlobalRemovalRecords),
+    ownerGlobalDocumentAdditions: parseOwnerGlobalDocumentAdditions(documentCatalogAdditionRecords),
+    ownerGlobalDocumentEdits: parseOwnerGlobalDocumentEdits(documentCatalogEditRecords),
+    ownerGlobalDocumentRemovals: parseChecklistRemovals(documentCatalogRemovalRecords),
     placeComments: parsePlaceComments(placeCommentRecords),
     placeVisibilityMap: parsePlaceVisibilityMap(root.placeVisibilityMap),
     challengeReactions: challengeReactionRecords,
@@ -1221,6 +1312,18 @@ export async function pushCloudSnapshot(
     }
     if (payload.contentOverrides) {
       updates.contentOverrides = payload.contentOverrides;
+    }
+    if (payload.ownerGlobalDocumentAdditions) {
+      updates.documentCatalogAdditions = payload.ownerGlobalDocumentAdditions.reduce<Record<string, TravelDocument>>((acc, document) => {
+        acc[document.id] = document;
+        return acc;
+      }, {});
+    }
+    if (payload.ownerGlobalDocumentEdits) {
+      updates.documentCatalogEdits = payload.ownerGlobalDocumentEdits;
+    }
+    if (payload.ownerGlobalDocumentRemovals) {
+      updates.documentCatalogRemovals = payload.ownerGlobalDocumentRemovals;
     }
     updates.updatedAt = timestamp;
 
