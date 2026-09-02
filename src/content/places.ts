@@ -1,10 +1,13 @@
 ﻿export type PlaceLink = { label: string; url: string };
 
 // Forme d'une visite/activité du Guide du séjour. Les champs optionnels
-// (image, photos, historyLabel/history, anecdotesLabel/anecdotes, audio*,
-// gps, links, ville, reservationDocumentIds) ne sont pas tous renseignés
-// pour les visites ajoutées dynamiquement par le propriétaire (pas de photo/
-// audio possible depuis l'appli, cf. ownerGlobalPlaceAdditions dans App.tsx).
+// (photos, historyLabel/history, anecdotesLabel/anecdotes, audio*, gps,
+// links, ville, reservationDocumentIds) ne sont pas tous renseignés pour les
+// visites ajoutées dynamiquement par le propriétaire (pas d'audio possible
+// depuis l'appli, cf. ownerGlobalPlaceAdditions dans App.tsx). `image` peut
+// en revanche être défini : c'est alors un data URI JPEG compressé côté
+// client depuis une photo choisie sur l'appareil (src/app/image-upload.ts),
+// pas un chemin vers un fichier bundlé comme pour les visites du programme.
 export type Place = {
   id: string;
   jour: number[];

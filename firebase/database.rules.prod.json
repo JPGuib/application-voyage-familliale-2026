@@ -242,6 +242,9 @@
             "tag": {
               ".validate": "newData.isString() && newData.val().length <= 80"
             },
+            "image": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 400000)"
+            },
             "historyLabel": {
               ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 200)"
             },

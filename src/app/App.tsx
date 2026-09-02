@@ -71,6 +71,7 @@ import {
   useWeather,
   type Coordinates,
 } from "./weather";
+import { compressImageFileToDataUrl, PlaceImageError } from "./image-upload";
 import {
   convertEurToTry,
   convertTryToEur,
@@ -4975,6 +4976,9 @@ function GuideScreen({
   const [draftPlaceAnecdotes, setDraftPlaceAnecdotes] = useState("");
   const [draftPlaceGps, setDraftPlaceGps] = useState("");
   const [draftPlaceLinks, setDraftPlaceLinks] = useState("");
+  const [draftPlaceImage, setDraftPlaceImage] = useState("");
+  const [placeImageProcessing, setPlaceImageProcessing] = useState(false);
+  const [placeImageError, setPlaceImageError] = useState<string | null>(null);
   const fallbackPlaceIndexMap = useMemo(
     () => Object.fromEntries(places.map((place, index) => [place.id, index])),
     [places]
@@ -5198,6 +5202,8 @@ function GuideScreen({
     setDraftPlaceAnecdotes("");
     setDraftPlaceGps("");
     setDraftPlaceLinks("");
+    setDraftPlaceImage("");
+    setPlaceImageError(null);
   }
 
   function openPlaceCreateForm(): void {
@@ -5220,8 +5226,40 @@ function GuideScreen({
     setDraftPlaceAnecdotes((item.anecdotes ?? []).join("\n"));
     setDraftPlaceGps(item.gps ?? "");
     setDraftPlaceLinks((item.links ?? []).map((link) => `${link.label}|${link.url}`).join("\n"));
+    setDraftPlaceImage(item.image ?? "");
+    setPlaceImageError(null);
     setEditingPlaceFormId(item.id);
     setIsAddingPlace(false);
+  }
+
+  // Compresse/redimensionne côté client la photo choisie (disque ou galerie
+  // du smartphone) avant de la stocker en data URI dans le brouillon : voir
+  // src/app/image-upload.ts pour le pourquoi (pas de pipeline d'upload vers
+  // un service de stockage dans l'appli).
+  async function handlePlaceImageFileChange(event: ChangeEvent<HTMLInputElement>): Promise<void> {
+    const file = event.target.files?.[0];
+    // Permet de resélectionner le même fichier plus tard (sinon onChange ne
+    // se redéclenche pas si l'utilisateur choisit deux fois le même fichier).
+    event.target.value = "";
+    if (!file) return;
+
+    setPlaceImageError(null);
+    setPlaceImageProcessing(true);
+    try {
+      const dataUrl = await compressImageFileToDataUrl(file);
+      setDraftPlaceImage(dataUrl);
+    } catch (error) {
+      setPlaceImageError(
+        error instanceof PlaceImageError ? error.message : "Impossible de traiter cette photo."
+      );
+    } finally {
+      setPlaceImageProcessing(false);
+    }
+  }
+
+  function removeDraftPlaceImage(): void {
+    setDraftPlaceImage("");
+    setPlaceImageError(null);
   }
 
   function commitPlaceDraft(targetId?: string): void {
@@ -5272,6 +5310,7 @@ function GuideScreen({
       name: normalizedName,
       shortDesc: normalizedShortDesc,
       tag: normalizedTag,
+      image: draftPlaceImage || undefined,
       historyLabel: draftPlaceHistoryLabel.trim() || undefined,
       history: draftPlaceHistory.trim() || undefined,
       anecdotesLabel: draftPlaceAnecdotesLabel.trim() || undefined,
@@ -5428,6 +5467,40 @@ function GuideScreen({
           className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
         />
 
+        <div className="rounded-xl border border-border px-3 py-2 bg-background space-y-2">
+          <p className="text-[11px] font-semibold text-muted-foreground">Photo de la visite (optionnel)</p>
+          {draftPlaceImage ? (
+            <div className="relative w-full h-32 rounded-lg overflow-hidden bg-muted">
+              <img src={draftPlaceImage} alt="Aperçu de la photo" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={removeDraftPlaceImage}
+                className="absolute top-1.5 right-1.5 rounded-full bg-background/90 p-1 text-muted-foreground shadow"
+                aria-label="Retirer la photo"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ) : null}
+          <label className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-black uppercase tracking-widest cursor-pointer">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePlaceImageFileChange}
+              className="hidden"
+              aria-label="Choisir une photo depuis l'appareil"
+            />
+            {placeImageProcessing
+              ? "Traitement en cours..."
+              : draftPlaceImage
+                ? "Changer la photo"
+                : "Choisir une photo"}
+          </label>
+          {placeImageError && (
+            <p className="text-xs font-semibold text-destructive">{placeImageError}</p>
+          )}
+        </div>
+
         <input
           type="text"
           value={draftPlaceGps}
@@ -5445,13 +5518,13 @@ function GuideScreen({
         )}
 
         <p className="text-[11px] text-muted-foreground leading-relaxed">
-          Pas de photo ni d'audio possible pour une visite ajoutée manuellement. Astuce: gras avec **comme ceci**. Liens via Libellé|URL. GPS: lat,lon.
+          Pas d'audio possible pour une visite ajoutée manuellement. Astuce: gras avec **comme ceci**. Liens via Libellé|URL. GPS: lat,lon.
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => commitPlaceDraft(targetId)}
-            disabled={draftGpsInvalid}
+            disabled={draftGpsInvalid || placeImageProcessing}
             className="inline-flex items-center gap-1 rounded-xl bg-[#1565C0] px-3 py-2 text-xs font-black uppercase tracking-widest text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Check size={14} />

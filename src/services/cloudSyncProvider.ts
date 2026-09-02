@@ -268,8 +268,10 @@ function sanitizeTravelDocumentForFirebase(document: TravelDocument): TravelDocu
 
 // Visite/activité du Guide du séjour ajoutée par le propriétaire (absente de
 // PLACES). Même esprit que parseTravelDocumentEntry ci-dessus, mais sans
-// photo/audio (pas de pipeline d'upload dans l'appli) et avec `jour`
+// audio (pas de pipeline d'upload de fichiers dans l'appli) et avec `jour`
 // obligatoire (toujours un tableau, contrairement à `day` sur les documents).
+// `image` est un data URI JPEG compressé côté client (cf. src/app/image-upload.ts),
+// pas un fichier uploadé vers un service de stockage.
 function parsePlaceEntry(fallbackId: string, value: unknown): Place | null {
   const entry = asRecord(value);
   const id = typeof entry.id === "string" && entry.id.trim().length > 0 ? entry.id : fallbackId;
@@ -311,6 +313,7 @@ function parsePlaceEntry(fallbackId: string, value: unknown): Place | null {
     name: entry.name,
     shortDesc: entry.shortDesc,
     tag: entry.tag,
+    image: typeof entry.image === "string" && entry.image.trim() ? entry.image : undefined,
     historyLabel: typeof entry.historyLabel === "string" && entry.historyLabel.trim() ? entry.historyLabel : undefined,
     history: typeof entry.history === "string" && entry.history.trim() ? entry.history : undefined,
     anecdotesLabel:
