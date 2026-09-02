@@ -8,9 +8,14 @@ BACKLOG / EVOLUTIONS
 * CONTENU - C3 - rajouter facilement les scans des billets retour, possibilité d'intégrer les codes pythons qui découpent, transformé en webp et mettent dans l'appli ? sinon utiliser un lien drive?
 * CONTENU - C6 - pouvoir stocker des photos
 * CONTENU - C7 - rajouter des musiques dans l'audio (genre les mouettes ...)
+=>REMARQUE : TOUT REDEPLOIEMENT DE L'APPLICATION n'entraine pas 
+de pertes car c'est firebase qui est prioritaire et lors du 
+déploiement il y a fusion entre les données de Firebase et ce qui vient
+de place.ts (/ document.ts)
+
 
 * JEU - J1 - Jeu du jour - pouvoir revoir les questions (quiz / enigmes) pour qu'elle ne se basent que sur ce qui a été réellement visité (en lien avec Backlog C2), pas prevu => associer une question à un jour / un id de places
-* JEU - xwJ2 - Jeu du jour - notification quiz du jour
+* JEU - J2 - Jeu du jour - notification quiz du jour
 * JEU - J3 - Jeu du jour - défi photos
 * JEU - J4 - Jeu du jour - vérifier le fonctionnement de la remise à 0 pour un utilisateur de son jeu du jour (uniquement les points ? Peut-il le repasser ?)
 * JEU - J5 - Jeu du jour - Un joueur qui a oublié de faire le jeu de la veille pourrait-il le passer quand même ? (paramètre possible ? Paramètre admin ? ...)
@@ -19,6 +24,8 @@ BACKLOG / EVOLUTIONS
 * JEU - J7 - Espace - mots croisés plus pratiques à visionner
 
 * UI - UI1 - retour l'UI ? S'inspire de wechat
+* UI - UI2 - Quand on quitte l'application par exemple pour créer un nouveau contenu,
+l'application se reconnecte au cloud et on perd ce qu'on faisait. Voir si possible d'améliorer ?
 
 * POST-SEJOUR - PSJ1 - récupérer polarstep ?
 * POST-SEJOUR - PSJ2 - créer un album souvenir
@@ -28,3 +35,7 @@ BACKLOG / EVOLUTIONS
 * CHAT/NETWORKING - CN2 - agenda interactif pour que chacun puisse mettre les horaires sur l'agenda pour peremttre de dire heure de reveil ...
 * CHAT/NETWORKING - CN3 - sondage quotidien 
 * CHAT/NETWORKING - CN4 - pouvoir rajouter un contenu divers (ex ce que dit la guide)   
+
+
+Développés (penser à faire de la doc ?) !
+*  

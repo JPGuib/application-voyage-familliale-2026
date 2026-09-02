@@ -56,6 +56,7 @@ import type {
 } from "../types/cloud";
 import type { GameScoringConfig } from "../content/game";
 import type { TravelDocument } from "../content/documents";
+import type { Place } from "../content/places";
 
 type ClaimRoleResult = {
   assignedRole: Role;
@@ -96,6 +97,7 @@ type PushSnapshotInput = {
   ownerGlobalDocumentAdditions?: TravelDocument[];
   ownerGlobalDocumentEdits?: Record<string, TravelDocument>;
   ownerGlobalDocumentRemovals?: DocumentCatalogRemovalState;
+  ownerGlobalPlaceAdditions?: Place[];
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   challengeReactions?: CloudChallengeReactionsByDay;
   challengeBestVotes?: CloudChallengeBestVotesByDay;
@@ -485,6 +487,7 @@ export function useCloudSync() {
         ownerGlobalDocumentAdditions: snapshot.ownerGlobalDocumentAdditions,
         ownerGlobalDocumentEdits: snapshot.ownerGlobalDocumentEdits,
         ownerGlobalDocumentRemovals: snapshot.ownerGlobalDocumentRemovals,
+        ownerGlobalPlaceAdditions: snapshot.ownerGlobalPlaceAdditions,
         profileDestinationSurveyVote: snapshot.profileDestinationSurveyVote,
         challengeReactions: snapshot.challengeReactions,
         challengeBestVotes: snapshot.challengeBestVotes,
