@@ -2,8 +2,8 @@ BACKLOG / EVOLUTIONS
 ----------------------------------------------------------------
 
 * GENERIQUE - G1 - préparer l'application pour un autre voyage ! 
+* GENERIQUE - G2 - Un administrateur général, et un groupe de famille avec des droits d'aministrateurs pour faire une partie de ce que peut faire l'administrateur
 
-* CONTENU - C4 - rajouter des visites initialement non prévues (ex. Hierapolis) (à voir qui aurait le droit propriétaire uniquement?)
 * CONTENU - C5 - rajouter des compléments de la guide / textes / audios  / photos pendant ou après une visite sur des thématiques places mais aussi histoire, géo ... (voir doc word dans .docs/)
 * CONTENU - C3 - rajouter facilement les scans des billets retour, possibilité d'intégrer les codes pythons qui découpent, transformé en webp et mettent dans l'appli ? sinon utiliser un lien drive?
 * CONTENU - C6 - pouvoir stocker des photos

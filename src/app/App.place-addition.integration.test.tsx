@@ -199,4 +199,62 @@ describe("App place addition integration", () => {
     expect(screen.queryByRole("button", { name: /Ajouter une visite/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Modifier" })).not.toBeInTheDocument();
   });
+
+  it("restores an in-progress add-visit draft after a full app reload", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+    setupSessionToken("p1");
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-owner",
+      cloudSnapshot: makeSnapshot("proprietaire", []),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    });
+
+    const { unmount } = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Séjour" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Ajouter une visite/i }));
+
+    fireEvent.change(screen.getByPlaceholderText("Nom de la visite"), {
+      target: { value: "Café découvert au hasard" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Description courte"), {
+      target: { value: "Texte copié depuis une recherche pendant que l'appli était en arrière-plan" },
+    });
+
+    // Laisse le temps à la sauvegarde locale debouncée (400ms) de s'exécuter,
+    // comme si un rechargement complet (retour d'une autre appli, mise à
+    // jour de version...) survenait juste après la saisie.
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    // Simule le rechargement complet de la page : nouveau montage de <App />
+    // à partir de rien, sans aucun état React conservé.
+    unmount();
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Guide du séjour/i })).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Café découvert au hasard")).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue("Texte copié depuis une recherche pendant que l'appli était en arrière-plan")
+      ).toBeInTheDocument();
+    });
+  }, 15000);
 });

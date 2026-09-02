@@ -388,6 +388,62 @@ const OWNER_GLOBAL_DOCUMENT_ADDITIONS_KEY = "jp-owner-global-document-additions"
 const OWNER_GLOBAL_DOCUMENT_EDITS_KEY = "jp-owner-global-document-edits";
 const OWNER_GLOBAL_DOCUMENT_REMOVALS_KEY = "jp-owner-global-document-removals";
 const OWNER_GLOBAL_PLACE_ADDITIONS_KEY = "jp-owner-global-place-additions";
+// Brouillon en cours du formulaire "Ajouter/modifier une visite" du Guide du
+// séjour (GuideScreen). Sur mobile, revenir sur l'appli après être passé sur
+// une autre appli (copier une description trouvée ailleurs, par ex.) peut
+// déclencher un rechargement complet de la page (mise à jour du service
+// worker, ou l'OS qui recycle l'onglet en arrière-plan) : sans cette
+// persistance locale, tout le texte saisi dans le formulaire serait perdu au
+// retour, même si l'écran "guide" lui est bien restauré (cf. "jp-screen").
+// Effacé dès que le formulaire est validé ou annulé (voir l'effet de
+// sauvegarde dans GuideScreen).
+const PLACE_DRAFT_STORAGE_KEY = "jp-place-draft";
+
+type StoredPlaceDraft = {
+  isAddingPlace: boolean;
+  editingPlaceFormId: string | null;
+  name: string;
+  shortDesc: string;
+  tag: string;
+  days: number[];
+  dayInput: string;
+  historyLabel: string;
+  history: string;
+  anecdotesLabel: string;
+  anecdotes: string;
+  gps: string;
+  links: string;
+  image: string;
+};
+
+function readStoredPlaceDraft(): StoredPlaceDraft | null {
+  try {
+    const raw = localStorage.getItem(PLACE_DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<StoredPlaceDraft>;
+    if (!parsed || (!parsed.isAddingPlace && !parsed.editingPlaceFormId)) {
+      return null;
+    }
+    return {
+      isAddingPlace: Boolean(parsed.isAddingPlace),
+      editingPlaceFormId: typeof parsed.editingPlaceFormId === "string" ? parsed.editingPlaceFormId : null,
+      name: typeof parsed.name === "string" ? parsed.name : "",
+      shortDesc: typeof parsed.shortDesc === "string" ? parsed.shortDesc : "",
+      tag: typeof parsed.tag === "string" ? parsed.tag : "",
+      days: Array.isArray(parsed.days) ? parsed.days.filter((day): day is number => typeof day === "number") : [],
+      dayInput: typeof parsed.dayInput === "string" ? parsed.dayInput : "",
+      historyLabel: typeof parsed.historyLabel === "string" ? parsed.historyLabel : "",
+      history: typeof parsed.history === "string" ? parsed.history : "",
+      anecdotesLabel: typeof parsed.anecdotesLabel === "string" ? parsed.anecdotesLabel : "",
+      anecdotes: typeof parsed.anecdotes === "string" ? parsed.anecdotes : "",
+      gps: typeof parsed.gps === "string" ? parsed.gps : "",
+      links: typeof parsed.links === "string" ? parsed.links : "",
+      image: typeof parsed.image === "string" ? parsed.image : "",
+    };
+  } catch {
+    return null;
+  }
+}
 const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
 const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
 const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-by-profile";
@@ -4961,24 +5017,96 @@ function GuideScreen({
   const [draftPlaceDayOrderByDay, setDraftPlaceDayOrderByDay] = useState<Record<number, number>>({});
   const [savingPlaceDaysForId, setSavingPlaceDaysForId] = useState<string | null>(null);
   const isOwner = role === "proprietaire";
-  const [isAddingPlace, setIsAddingPlace] = useState(false);
-  const [editingPlaceFormId, setEditingPlaceFormId] = useState<string | null>(null);
-  const [draftPlaceName, setDraftPlaceName] = useState("");
-  const [draftPlaceShortDesc, setDraftPlaceShortDesc] = useState("");
-  const [draftPlaceTag, setDraftPlaceTag] = useState("");
-  const [draftNewPlaceDays, setDraftNewPlaceDays] = useState<number[]>(() =>
-    selectedDay !== null ? [selectedDay] : []
+  // Lu une seule fois au montage : permet de restaurer le formulaire
+  // d'ajout/modification de visite si l'appli a rechargé pendant qu'il était
+  // ouvert (cf. PLACE_DRAFT_STORAGE_KEY ci-dessus).
+  const storedPlaceDraftRef = useRef(readStoredPlaceDraft());
+  const [isAddingPlace, setIsAddingPlace] = useState(
+    () => storedPlaceDraftRef.current?.isAddingPlace ?? false
   );
-  const [draftNewPlaceDayInput, setDraftNewPlaceDayInput] = useState("");
-  const [draftPlaceHistoryLabel, setDraftPlaceHistoryLabel] = useState("");
-  const [draftPlaceHistory, setDraftPlaceHistory] = useState("");
-  const [draftPlaceAnecdotesLabel, setDraftPlaceAnecdotesLabel] = useState("");
-  const [draftPlaceAnecdotes, setDraftPlaceAnecdotes] = useState("");
-  const [draftPlaceGps, setDraftPlaceGps] = useState("");
-  const [draftPlaceLinks, setDraftPlaceLinks] = useState("");
-  const [draftPlaceImage, setDraftPlaceImage] = useState("");
+  const [editingPlaceFormId, setEditingPlaceFormId] = useState<string | null>(
+    () => storedPlaceDraftRef.current?.editingPlaceFormId ?? null
+  );
+  const [draftPlaceName, setDraftPlaceName] = useState(() => storedPlaceDraftRef.current?.name ?? "");
+  const [draftPlaceShortDesc, setDraftPlaceShortDesc] = useState(
+    () => storedPlaceDraftRef.current?.shortDesc ?? ""
+  );
+  const [draftPlaceTag, setDraftPlaceTag] = useState(() => storedPlaceDraftRef.current?.tag ?? "");
+  const [draftNewPlaceDays, setDraftNewPlaceDays] = useState<number[]>(() =>
+    storedPlaceDraftRef.current ? storedPlaceDraftRef.current.days : selectedDay !== null ? [selectedDay] : []
+  );
+  const [draftNewPlaceDayInput, setDraftNewPlaceDayInput] = useState(
+    () => storedPlaceDraftRef.current?.dayInput ?? ""
+  );
+  const [draftPlaceHistoryLabel, setDraftPlaceHistoryLabel] = useState(
+    () => storedPlaceDraftRef.current?.historyLabel ?? ""
+  );
+  const [draftPlaceHistory, setDraftPlaceHistory] = useState(() => storedPlaceDraftRef.current?.history ?? "");
+  const [draftPlaceAnecdotesLabel, setDraftPlaceAnecdotesLabel] = useState(
+    () => storedPlaceDraftRef.current?.anecdotesLabel ?? ""
+  );
+  const [draftPlaceAnecdotes, setDraftPlaceAnecdotes] = useState(
+    () => storedPlaceDraftRef.current?.anecdotes ?? ""
+  );
+  const [draftPlaceGps, setDraftPlaceGps] = useState(() => storedPlaceDraftRef.current?.gps ?? "");
+  const [draftPlaceLinks, setDraftPlaceLinks] = useState(() => storedPlaceDraftRef.current?.links ?? "");
+  const [draftPlaceImage, setDraftPlaceImage] = useState(() => storedPlaceDraftRef.current?.image ?? "");
   const [placeImageProcessing, setPlaceImageProcessing] = useState(false);
   const [placeImageError, setPlaceImageError] = useState<string | null>(null);
+
+  // Sauvegarde locale (debounced) du brouillon en cours, pour survivre à un
+  // rechargement complet de l'appli pendant la saisie (retour d'une autre
+  // appli après un copier-coller, mise à jour de version, etc. — voir
+  // PLACE_DRAFT_STORAGE_KEY). Effacé automatiquement une fois qu'aucun
+  // formulaire n'est ouvert (annulation ou validation, qui remettent déjà
+  // isAddingPlace/editingPlaceFormId à leur valeur initiale via
+  // clearPlaceDraft).
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      if (!isAddingPlace && !editingPlaceFormId) {
+        localStorage.removeItem(PLACE_DRAFT_STORAGE_KEY);
+        return;
+      }
+      const draft: StoredPlaceDraft = {
+        isAddingPlace,
+        editingPlaceFormId,
+        name: draftPlaceName,
+        shortDesc: draftPlaceShortDesc,
+        tag: draftPlaceTag,
+        days: draftNewPlaceDays,
+        dayInput: draftNewPlaceDayInput,
+        historyLabel: draftPlaceHistoryLabel,
+        history: draftPlaceHistory,
+        anecdotesLabel: draftPlaceAnecdotesLabel,
+        anecdotes: draftPlaceAnecdotes,
+        gps: draftPlaceGps,
+        links: draftPlaceLinks,
+        image: draftPlaceImage,
+      };
+      try {
+        localStorage.setItem(PLACE_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+      } catch {
+        // Stockage plein ou indisponible : le brouillon reste fonctionnel en
+        // mémoire pour la session en cours, seule la persistance est perdue.
+      }
+    }, 400);
+    return () => window.clearTimeout(timeout);
+  }, [
+    isAddingPlace,
+    editingPlaceFormId,
+    draftPlaceName,
+    draftPlaceShortDesc,
+    draftPlaceTag,
+    draftNewPlaceDays,
+    draftNewPlaceDayInput,
+    draftPlaceHistoryLabel,
+    draftPlaceHistory,
+    draftPlaceAnecdotesLabel,
+    draftPlaceAnecdotes,
+    draftPlaceGps,
+    draftPlaceLinks,
+    draftPlaceImage,
+  ]);
   const fallbackPlaceIndexMap = useMemo(
     () => Object.fromEntries(places.map((place, index) => [place.id, index])),
     [places]
