@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from "re
 import L from "leaflet";
 import { ChevronLeft, ChevronDown, MapPin, LocateFixed } from "lucide-react";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
-import { PLACES } from "../content/places";
+import { PLACES, type Place } from "../content/places";
 import type { PlaceDayOverrideMap } from "../types/cloud";
 import { parseGpsString, useDeviceLocation } from "./weather";
 import { formatTripDayLabel } from "./trip-day-format";
@@ -53,7 +53,11 @@ function getEffectivePlaceDays(
   return overrideDays && overrideDays.length > 0 ? overrideDays : normalizePlaceDays(place.jour ?? []);
 }
 
-export function buildMarkers(days: number[], placeDayOverrideMap: PlaceDayOverrideMap = {}): MapMarker[] {
+export function buildMarkers(
+  days: number[],
+  placeDayOverrideMap: PlaceDayOverrideMap = {},
+  places: Place[] = PLACES
+): MapMarker[] {
   const seen = new Set<string>();
   const markers: MapMarker[] = [];
 
@@ -61,7 +65,7 @@ export function buildMarkers(days: number[], placeDayOverrideMap: PlaceDayOverri
     const entry = JOURS_DESTINATIONS.find((d) => d.jour === day);
     if (!entry) continue;
 
-    const placeCount = PLACES.filter((place) =>
+    const placeCount = places.filter((place) =>
       getEffectivePlaceDays(place as { id: string; jour?: number[] }, placeDayOverrideMap).includes(day)
     ).length;
 
@@ -112,12 +116,17 @@ function MapFlyTo({ target }: { target: [number, number] | null }) {
 }
 
 export function MapScreen({
+  places = PLACES,
   onBack,
   currentDay,
   tripStartDate,
   placeDayOverrideMap,
   onNavigateToGuide,
 }: {
+  // Places par défaut + visites ajoutées par le propriétaire (voir
+  // placesWithOverrides dans App.tsx), pour que les visites imprévues soient
+  // comptées dans les marqueurs de la carte.
+  places?: Place[];
   onBack: () => void;
   currentDay: number;
   tripStartDate?: string | null;
@@ -154,7 +163,7 @@ export function MapScreen({
       ? JOURS_DESTINATIONS.map((d) => d.jour)
       : [selectedDay];
 
-  const markers = buildMarkers(daysToShow, placeDayOverrideMap);
+  const markers = buildMarkers(daysToShow, placeDayOverrideMap, places);
 
   // Compute map center: average of all markers or fallback to Turkey center
   const center: [number, number] =

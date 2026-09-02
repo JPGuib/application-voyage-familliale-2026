@@ -1,4 +1,32 @@
-﻿export const PLACES = [
+﻿export type PlaceLink = { label: string; url: string };
+
+// Forme d'une visite/activité du Guide du séjour. Les champs optionnels
+// (image, photos, historyLabel/history, anecdotesLabel/anecdotes, audio*,
+// gps, links, ville, reservationDocumentIds) ne sont pas tous renseignés
+// pour les visites ajoutées dynamiquement par le propriétaire (pas de photo/
+// audio possible depuis l'appli, cf. ownerGlobalPlaceAdditions dans App.tsx).
+export type Place = {
+  id: string;
+  jour: number[];
+  name: string;
+  shortDesc: string;
+  tag: string;
+  ville?: string;
+  image?: string;
+  photos?: string[];
+  historyLabel?: string;
+  history?: string;
+  anecdotesLabel?: string;
+  anecdotes?: string[];
+  audioTitle?: string;
+  audioDuration?: string;
+  audioSrc?: string;
+  gps?: string;
+  links?: PlaceLink[];
+  reservationDocumentIds?: string[];
+};
+
+export const PLACES: Place[] = [
 {
     id: "Découverte de la Turquie",
     jour: [1],

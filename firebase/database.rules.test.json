@@ -221,6 +221,54 @@
             ".validate": "newData.isBoolean()"
           }
         },
+        "placeCatalogAdditions": {
+          ".write": "auth != null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          "$placeId": {
+            ".validate": "newData.hasChildren(['id','jour','name','shortDesc','tag']) && newData.child('id').isString() && newData.child('id').val().length <= 120 && newData.child('name').isString() && newData.child('name').val().length <= 200 && newData.child('shortDesc').isString() && newData.child('shortDesc').val().length <= 300 && newData.child('tag').isString() && newData.child('tag').val().length <= 80 && newData.child('jour').hasChildren()",
+            "id": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "jour": {
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.isNumber() && newData.val() > 0 && newData.val() <= 31"
+              }
+            },
+            "name": {
+              ".validate": "newData.isString() && newData.val().length <= 200"
+            },
+            "shortDesc": {
+              ".validate": "newData.isString() && newData.val().length <= 300"
+            },
+            "tag": {
+              ".validate": "newData.isString() && newData.val().length <= 80"
+            },
+            "historyLabel": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 200)"
+            },
+            "history": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 6000)"
+            },
+            "anecdotesLabel": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 200)"
+            },
+            "anecdotes": {
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.isString() && newData.val().length <= 600"
+              }
+            },
+            "links": {
+              "$index": {
+                ".validate": "$index.matches(/^[0-9]+$/) && newData.hasChildren(['label','url']) && newData.child('label').isString() && newData.child('label').val().length <= 120 && newData.child('url').isString() && newData.child('url').val().length <= 500"
+              }
+            },
+            "gps": {
+              ".validate": "newData.val() === null || (newData.isString() && newData.val().length <= 40)"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
         "checklists": {
           "$profileId": {
             ".write": "auth != null",

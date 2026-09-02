@@ -34,6 +34,7 @@ import type {
   ContentSource,
   DocumentCatalogRemovalState,
   DocumentVisibilityState,
+  PlaceCatalogAdditionState,
   CloudProfileRecord,
   CloudSyncSnapshot,
   CloudSyncWritePayload,
@@ -50,6 +51,7 @@ import type {
 import { DEFAULT_GAME_SCORING, type GameScoringConfig } from "../content/game";
 import { DOCUMENT_CATEGORIES, type DocumentCategory, type TravelDocument } from "../content/documents";
 import { normalizeDocumentDays } from "../app/documents-screen";
+import type { Place } from "../content/places";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -262,6 +264,82 @@ function parseOwnerGlobalDocumentEdits(value: unknown): Record<string, TravelDoc
 // ces clés avant tout envoi vers update()/set().
 function sanitizeTravelDocumentForFirebase(document: TravelDocument): TravelDocument {
   return JSON.parse(JSON.stringify(document)) as TravelDocument;
+}
+
+// Visite/activité du Guide du séjour ajoutée par le propriétaire (absente de
+// PLACES). Même esprit que parseTravelDocumentEntry ci-dessus, mais sans
+// photo/audio (pas de pipeline d'upload dans l'appli) et avec `jour`
+// obligatoire (toujours un tableau, contrairement à `day` sur les documents).
+function parsePlaceEntry(fallbackId: string, value: unknown): Place | null {
+  const entry = asRecord(value);
+  const id = typeof entry.id === "string" && entry.id.trim().length > 0 ? entry.id : fallbackId;
+  if (
+    typeof entry.name !== "string" ||
+    entry.name.trim().length === 0 ||
+    typeof entry.shortDesc !== "string" ||
+    entry.shortDesc.trim().length === 0 ||
+    typeof entry.tag !== "string" ||
+    entry.tag.trim().length === 0
+  ) {
+    return null;
+  }
+
+  const jour = normalizeDocumentDays(
+    typeof entry.jour === "number" || Array.isArray(entry.jour) ? (entry.jour as number | number[]) : undefined
+  );
+  const anecdotes = Array.isArray(entry.anecdotes)
+    ? entry.anecdotes.filter((line): line is string => typeof line === "string")
+    : undefined;
+  const links = Array.isArray(entry.links)
+    ? entry.links
+        .map((link) => {
+          const candidate = asRecord(link);
+          if (typeof candidate.label !== "string" || typeof candidate.url !== "string") {
+            return null;
+          }
+          const label = candidate.label.trim();
+          const url = candidate.url.trim();
+          return label && url ? { label, url } : null;
+        })
+        .filter((link): link is { label: string; url: string } => Boolean(link))
+    : undefined;
+  const gpsRaw = typeof entry.gps === "string" ? entry.gps.trim() : "";
+
+  return {
+    id,
+    jour,
+    name: entry.name,
+    shortDesc: entry.shortDesc,
+    tag: entry.tag,
+    historyLabel: typeof entry.historyLabel === "string" && entry.historyLabel.trim() ? entry.historyLabel : undefined,
+    history: typeof entry.history === "string" && entry.history.trim() ? entry.history : undefined,
+    anecdotesLabel:
+      typeof entry.anecdotesLabel === "string" && entry.anecdotesLabel.trim() ? entry.anecdotesLabel : undefined,
+    anecdotes: anecdotes && anecdotes.length > 0 ? anecdotes : undefined,
+    links: links && links.length > 0 ? links : undefined,
+    gps: gpsRaw || undefined,
+  };
+}
+
+function parseOwnerGlobalPlaceAdditions(value: unknown): PlaceCatalogAdditionState {
+  const raw = asRecord(value);
+  const places: Place[] = [];
+
+  for (const [placeId, candidate] of Object.entries(raw)) {
+    const place = parsePlaceEntry(placeId, candidate);
+    if (place) {
+      places.push(place);
+    }
+  }
+
+  places.sort((left, right) => left.id.localeCompare(right.id));
+  return places;
+}
+
+// Même raison que sanitizeTravelDocumentForFirebase : Firebase RTDB refuse
+// d'écrire un objet contenant une valeur `undefined`.
+function sanitizePlaceForFirebase(place: Place): Place {
+  return JSON.parse(JSON.stringify(place)) as Place;
 }
 
 function isCloudGameEntry(value: unknown): value is CloudGameHistoryEntry {
@@ -873,6 +951,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const documentCatalogAdditionRecords = asRecord(root.documentCatalogAdditions);
   const documentCatalogEditRecords = asRecord(root.documentCatalogEdits);
   const documentCatalogRemovalRecords = asRecord(root.documentCatalogRemovals);
+  const placeCatalogAdditionRecords = asRecord(root.placeCatalogAdditions);
   const placeCommentRecords = asRecord(root.placeComments);
   const destinationSurveyRecords = parseDestinationSurvey(root.destinationSurvey);
   const challengeReactionRecords = parseChallengeReactions(root.challengeReactions);
@@ -948,6 +1027,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
     ownerGlobalDocumentAdditions: parseOwnerGlobalDocumentAdditions(documentCatalogAdditionRecords),
     ownerGlobalDocumentEdits: parseOwnerGlobalDocumentEdits(documentCatalogEditRecords),
     ownerGlobalDocumentRemovals: parseChecklistRemovals(documentCatalogRemovalRecords),
+    ownerGlobalPlaceAdditions: parseOwnerGlobalPlaceAdditions(placeCatalogAdditionRecords),
     placeComments: parsePlaceComments(placeCommentRecords),
     placeVisibilityMap: parsePlaceVisibilityMap(root.placeVisibilityMap),
     placeSeenMap: parsePlaceSeenMap(root.placeSeenMap),
@@ -1365,6 +1445,12 @@ export async function pushCloudSnapshot(
     }
     if (payload.ownerGlobalDocumentRemovals) {
       updates.documentCatalogRemovals = payload.ownerGlobalDocumentRemovals;
+    }
+    if (payload.ownerGlobalPlaceAdditions) {
+      updates.placeCatalogAdditions = payload.ownerGlobalPlaceAdditions.reduce<Record<string, Place>>((acc, place) => {
+        acc[place.id] = sanitizePlaceForFirebase(place);
+        return acc;
+      }, {});
     }
     updates.updatedAt = timestamp;
 

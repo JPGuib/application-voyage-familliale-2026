@@ -42,7 +42,7 @@ import { CrosswordScreen } from "./CrosswordScreen";
 import { OrdalieScreen } from "./OrdalieScreen";
 import { ImposteurScreen } from "./ImposteurScreen";
 import { TRIP } from "../content/trip";
-import { PLACES } from "../content/places";
+import { PLACES, type Place, type PlaceLink } from "../content/places";
 import {
   DOCUMENT_CATEGORIES,
   DOCUMENTS,
@@ -386,6 +386,7 @@ const CONTENT_OVERRIDES_STORAGE_KEY = "jp-content-overrides";
 const OWNER_GLOBAL_DOCUMENT_ADDITIONS_KEY = "jp-owner-global-document-additions";
 const OWNER_GLOBAL_DOCUMENT_EDITS_KEY = "jp-owner-global-document-edits";
 const OWNER_GLOBAL_DOCUMENT_REMOVALS_KEY = "jp-owner-global-document-removals";
+const OWNER_GLOBAL_PLACE_ADDITIONS_KEY = "jp-owner-global-place-additions";
 const DESTINATION_SURVEY_STORAGE_KEY = "jp-destination-survey";
 const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
 const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-by-profile";
@@ -1282,7 +1283,7 @@ function parseContentOverrideMap(raw: unknown): ContentOverrideMap {
   return next;
 }
 
-function applyContentOverride<T extends { name: string; shortDesc: string; history: string; historyLabel?: string; anecdotes: string[]; anecdotesLabel?: string }>(
+function applyContentOverride<T extends { name: string; shortDesc: string; history?: string; historyLabel?: string; anecdotes?: string[]; anecdotesLabel?: string }>(
   item: T,
   override: ContentOverridePatch | undefined
 ): T {
@@ -1431,6 +1432,88 @@ function normalizePlaceDays(raw: unknown): number[] {
         .filter((day) => Number.isFinite(day) && day > 0)
     )
   ).sort((left, right) => left - right);
+}
+
+// Visites/activités du Guide du séjour ajoutées par le propriétaire (absentes
+// de PLACES), synchronisées cloud. Même esprit que ownerGlobalDocumentAdditions
+// ci-dessus, mais sans photo/audio (pas de pipeline d'upload dans l'appli) et
+// sans Edits/Removals séparés : éditer/masquer une place PAR DÉFAUT existe déjà
+// via contentOverrides/placeVisibilityMap, donc ce mécanisme ne gère que les
+// places ajoutées (éditer = remplacer l'entrée par id dans le tableau,
+// supprimer = la retirer, cf. savePlaceForOwner/deletePlaceForOwner).
+function parsePlaceEntry(fallbackId: string, raw: unknown): Place | null {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+  const entry = raw as Record<string, unknown>;
+  const id = typeof entry.id === "string" && entry.id.trim().length > 0 ? entry.id : fallbackId;
+  if (
+    typeof entry.name !== "string" ||
+    entry.name.trim().length === 0 ||
+    typeof entry.shortDesc !== "string" ||
+    entry.shortDesc.trim().length === 0 ||
+    typeof entry.tag !== "string" ||
+    entry.tag.trim().length === 0
+  ) {
+    return null;
+  }
+
+  const anecdotes = Array.isArray(entry.anecdotes)
+    ? entry.anecdotes.filter((line): line is string => typeof line === "string")
+    : undefined;
+  const links = Array.isArray(entry.links)
+    ? entry.links
+        .map((link) => {
+          if (!link || typeof link !== "object") return null;
+          const candidate = link as Record<string, unknown>;
+          if (typeof candidate.label !== "string" || typeof candidate.url !== "string") return null;
+          const label = candidate.label.trim();
+          const url = candidate.url.trim();
+          return label && url ? { label, url } : null;
+        })
+        .filter((link): link is PlaceLink => Boolean(link))
+    : undefined;
+  const gpsRaw = typeof entry.gps === "string" ? entry.gps.trim() : "";
+
+  return {
+    id,
+    jour: normalizePlaceDays(entry.jour),
+    name: entry.name,
+    shortDesc: entry.shortDesc,
+    tag: entry.tag,
+    historyLabel:
+      typeof entry.historyLabel === "string" && entry.historyLabel.trim() ? entry.historyLabel : undefined,
+    history: typeof entry.history === "string" && entry.history.trim() ? entry.history : undefined,
+    anecdotesLabel:
+      typeof entry.anecdotesLabel === "string" && entry.anecdotesLabel.trim() ? entry.anecdotesLabel : undefined,
+    anecdotes: anecdotes && anecdotes.length > 0 ? anecdotes : undefined,
+    links: links && links.length > 0 ? links : undefined,
+    gps: gpsRaw || undefined,
+  };
+}
+
+// Accepte soit un tableau (forme utilisée pour le stockage local jp-owner-
+// global-place-additions), soit un objet { [id]: place } (forme utilisée
+// côté cloud, cf. cloudSyncProvider.ts).
+function parseOwnerGlobalPlaceAdditions(raw: unknown): Place[] {
+  const entries: Array<[string, unknown]> = Array.isArray(raw)
+    ? raw.map((candidate, index) => [`place-${index}`, candidate])
+    : raw && typeof raw === "object"
+      ? Object.entries(raw as Record<string, unknown>)
+      : [];
+
+  const places: Place[] = [];
+  for (const [fallbackId, candidate] of entries) {
+    const place = parsePlaceEntry(fallbackId, candidate);
+    if (place) {
+      places.push(place);
+    }
+  }
+  return places;
+}
+
+function areTravelPlaceListsEqual(left: Place[], right: Place[]): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function parsePlaceDayOverrideMap(raw: unknown): PlaceDayOverrideMap {
@@ -3527,14 +3610,17 @@ type ContentTopic = {
   name: string;
   shortDesc: string;
   tag: string;
-  image: string;
+  // Optionnels pour permettre l'affichage des visites ajoutées par le
+  // propriétaire dans le Guide du séjour (pas de photo/histoire obligatoire,
+  // cf. Place dans content/places.ts) via ce même écran de détail générique.
+  image?: string;
   photos?: string[];
   audioTitle?: string;
   audioDuration?: string;
   audioSrc?: string;
-  history: string;
+  history?: string;
   historyLabel?: string;
-  anecdotes: string[];
+  anecdotes?: string[];
   anecdotesLabel?: string;
   gps?: string;
   links?: Array<{
@@ -3761,6 +3847,7 @@ function ContentListScreen({
 // ─── PLANNING SCREEN ─────────────────────────────────────────────────────────
 
 function PlanningScreen({
+  places,
   onBack,
   onDaySelect,
   currentDay,
@@ -3771,6 +3858,10 @@ function PlanningScreen({
   placeDayOverrideMap,
   placeDayOrderOverrideMap,
 }: {
+  // Places par défaut + visites ajoutées par le propriétaire, déjà fusionnées
+  // par le composant parent (voir placesWithOverrides dans App.tsx), pour que
+  // les visites imprévues apparaissent aussi dans le planning par jour.
+  places: Place[];
   onBack: () => void;
   onDaySelect: (day: number) => void;
   currentDay: number;
@@ -3782,10 +3873,10 @@ function PlanningScreen({
   placeDayOrderOverrideMap: PlaceDayOrderOverrideMap;
 }) {
   const fallbackPlaceIndexMap = useMemo(
-    () => Object.fromEntries(PLACES.map((place, index) => [place.id, index])),
-    []
+    () => Object.fromEntries(places.map((place, index) => [place.id, index])),
+    [places]
   );
-  const dayPlaces = PLACES.reduce(
+  const dayPlaces = places.reduce(
     (acc, place) => {
       const daysForPlace = getEffectivePlaceDays(place, placeDayOverrideMap);
       daysForPlace.forEach((day) => {
@@ -3796,7 +3887,7 @@ function PlanningScreen({
       });
       return acc;
     },
-    {} as Record<number, typeof PLACES>
+    {} as Record<number, typeof places>
   );
   const visiblePlacesByDay = Object.fromEntries(
     Object.entries(dayPlaces).map(([dayKey, places]) => {
@@ -4820,9 +4911,12 @@ function GuideScreen({
   onTogglePlaceSeen,
   onSetPlaceDays,
   canManagePlaceVisibility,
+  ownerAddedPlaceIds,
+  onSavePlace,
+  onDeletePlace,
   isOnline,
 }: {
-  places: typeof PLACES_WITH_AUTO_GPS;
+  places: Place[];
   onBack: () => void;
   onPlaceSelect: (id: string) => void;
   currentDay: number;
@@ -4843,6 +4937,12 @@ function GuideScreen({
     dayOrderByDay: Record<number, number>
   ) => Promise<boolean>;
   canManagePlaceVisibility: boolean;
+  // Ids des visites ajoutées par le propriétaire (absentes de PLACES) : seules
+  // celles-ci peuvent être modifiées/supprimées ici (les places par défaut
+  // passent par contentOverrides/placeVisibilityMap, cf. App.tsx).
+  ownerAddedPlaceIds: Set<string>;
+  onSavePlace: (place: Place) => void;
+  onDeletePlace: (placeId: string) => void;
   isOnline: boolean;
 }) {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -4859,6 +4959,22 @@ function GuideScreen({
   const [draftPlaceDays, setDraftPlaceDays] = useState<number[]>([]);
   const [draftPlaceDayOrderByDay, setDraftPlaceDayOrderByDay] = useState<Record<number, number>>({});
   const [savingPlaceDaysForId, setSavingPlaceDaysForId] = useState<string | null>(null);
+  const isOwner = role === "proprietaire";
+  const [isAddingPlace, setIsAddingPlace] = useState(false);
+  const [editingPlaceFormId, setEditingPlaceFormId] = useState<string | null>(null);
+  const [draftPlaceName, setDraftPlaceName] = useState("");
+  const [draftPlaceShortDesc, setDraftPlaceShortDesc] = useState("");
+  const [draftPlaceTag, setDraftPlaceTag] = useState("");
+  const [draftNewPlaceDays, setDraftNewPlaceDays] = useState<number[]>(() =>
+    selectedDay !== null ? [selectedDay] : []
+  );
+  const [draftNewPlaceDayInput, setDraftNewPlaceDayInput] = useState("");
+  const [draftPlaceHistoryLabel, setDraftPlaceHistoryLabel] = useState("");
+  const [draftPlaceHistory, setDraftPlaceHistory] = useState("");
+  const [draftPlaceAnecdotesLabel, setDraftPlaceAnecdotesLabel] = useState("");
+  const [draftPlaceAnecdotes, setDraftPlaceAnecdotes] = useState("");
+  const [draftPlaceGps, setDraftPlaceGps] = useState("");
+  const [draftPlaceLinks, setDraftPlaceLinks] = useState("");
   const fallbackPlaceIndexMap = useMemo(
     () => Object.fromEntries(places.map((place, index) => [place.id, index])),
     [places]
@@ -4876,28 +4992,35 @@ function GuideScreen({
     setVilleDropdownOpen(false);
   }, [selectedDay]);
 
+  useEffect(() => {
+    if (!isOwner) {
+      setIsAddingPlace(false);
+      setEditingPlaceFormId(null);
+    }
+  }, [isOwner]);
+
   const availableTags = useMemo(
-    () => [...new Set(PLACES_WITH_AUTO_GPS.map((p) => p.tag))].sort(),
-    []
+    () => [...new Set(places.map((p) => p.tag))].sort(),
+    [places]
   );
   const availableVilles = useMemo(
     () =>
       [
         ...new Set(
-          PLACES_WITH_AUTO_GPS.flatMap((p) =>
+          places.flatMap((p) =>
             "ville" in p && typeof (p as { ville?: string }).ville === "string"
               ? [(p as { ville: string }).ville]
               : []
           )
         ),
       ].sort(),
-    []
+    [places]
   );
 
   // Cascading available options — each layer filtered by upstream selections
   const availableVillesForFilter = useMemo(() => {
     const seen = new Set<string>();
-    for (const p of PLACES_WITH_AUTO_GPS) {
+    for (const p of places) {
       if (!isPlaceVisibleForRole(role, p.id, placeVisibilityMap)) continue;
       if (filterDays.length > 0) {
         const days = getEffectivePlaceDays(p, placeDayOverrideMap);
@@ -4907,11 +5030,11 @@ function GuideScreen({
       if (ville) seen.add(ville);
     }
     return [...seen].sort();
-  }, [filterDays, placeDayOverrideMap, placeVisibilityMap, role]);
+  }, [filterDays, placeDayOverrideMap, placeVisibilityMap, role, places]);
 
   const availableTagsForFilter = useMemo(() => {
     const seen = new Set<string>();
-    for (const p of PLACES_WITH_AUTO_GPS) {
+    for (const p of places) {
       if (!isPlaceVisibleForRole(role, p.id, placeVisibilityMap)) continue;
       if (filterDays.length > 0) {
         const days = getEffectivePlaceDays(p, placeDayOverrideMap);
@@ -4925,7 +5048,7 @@ function GuideScreen({
       seen.add(p.tag);
     }
     return [...seen].sort();
-  }, [filterDays, filterVilles, placeDayOverrideMap, placeVisibilityMap, role]);
+  }, [filterDays, filterVilles, placeDayOverrideMap, placeVisibilityMap, role, places]);
 
   useEffect(() => {
     setFilterVilles((prev) => prev.filter((v) => availableVillesForFilter.includes(v)));
@@ -5034,8 +5157,324 @@ function GuideScreen({
     }));
   };
 
+  // Ajout/édition d'une visite imprévue par le propriétaire (voir
+  // ownerAddedPlaceIds/onSavePlace/onDeletePlace ci-dessus). Même esprit que
+  // le formulaire de DocumentsScreen, sans photo/audio.
+  function parseNewPlaceDayInput(value: string): number[] {
+    return Array.from(
+      new Set(
+        value
+          .split(/[;,\s]+/)
+          .map((token) => token.trim())
+          .filter((token) => token.length > 0)
+          .map((token) => Number.parseInt(token, 10))
+          .filter((day) => Number.isFinite(day) && day > 0)
+      )
+    ).sort((a, b) => a - b);
+  }
+
+  function addNewPlaceDaysFromInput(): void {
+    const parsed = parseNewPlaceDayInput(draftNewPlaceDayInput);
+    if (parsed.length === 0) return;
+    setDraftNewPlaceDays((previous) =>
+      Array.from(new Set([...previous, ...parsed])).sort((a, b) => a - b)
+    );
+    setDraftNewPlaceDayInput("");
+  }
+
+  function removeNewPlaceDay(day: number): void {
+    setDraftNewPlaceDays((previous) => previous.filter((value) => value !== day));
+  }
+
+  function clearPlaceDraft(): void {
+    setDraftPlaceName("");
+    setDraftPlaceShortDesc("");
+    setDraftPlaceTag("");
+    setDraftNewPlaceDays(selectedDay !== null ? [selectedDay] : []);
+    setDraftNewPlaceDayInput("");
+    setDraftPlaceHistoryLabel("");
+    setDraftPlaceHistory("");
+    setDraftPlaceAnecdotesLabel("");
+    setDraftPlaceAnecdotes("");
+    setDraftPlaceGps("");
+    setDraftPlaceLinks("");
+  }
+
+  function openPlaceCreateForm(): void {
+    if (!isOwner) return;
+    clearPlaceDraft();
+    setIsAddingPlace(true);
+    setEditingPlaceFormId(null);
+  }
+
+  function startEditPlace(item: Place): void {
+    if (!isOwner) return;
+    setDraftPlaceName(item.name);
+    setDraftPlaceShortDesc(item.shortDesc);
+    setDraftPlaceTag(item.tag);
+    setDraftNewPlaceDays(item.jour);
+    setDraftNewPlaceDayInput("");
+    setDraftPlaceHistoryLabel(item.historyLabel ?? "");
+    setDraftPlaceHistory(item.history ?? "");
+    setDraftPlaceAnecdotesLabel(item.anecdotesLabel ?? "");
+    setDraftPlaceAnecdotes((item.anecdotes ?? []).join("\n"));
+    setDraftPlaceGps(item.gps ?? "");
+    setDraftPlaceLinks((item.links ?? []).map((link) => `${link.label}|${link.url}`).join("\n"));
+    setEditingPlaceFormId(item.id);
+    setIsAddingPlace(false);
+  }
+
+  function commitPlaceDraft(targetId?: string): void {
+    if (!isOwner) return;
+    const normalizedName = draftPlaceName.trim();
+    const normalizedShortDesc = draftPlaceShortDesc.trim();
+    const normalizedTag = draftPlaceTag.trim();
+    if (!normalizedName || !normalizedShortDesc || !normalizedTag) {
+      return;
+    }
+
+    const jour = Array.from(
+      new Set([...draftNewPlaceDays, ...parseNewPlaceDayInput(draftNewPlaceDayInput)])
+    ).sort((a, b) => a - b);
+    if (jour.length === 0) {
+      return;
+    }
+    const anecdotes = draftPlaceAnecdotes
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    const links = draftPlaceLinks
+      .split("\n")
+      .map((line) => {
+        const normalizedLine = line.trim();
+        if (!normalizedLine) return null;
+        const separatorIndex = normalizedLine.indexOf("|");
+        if (separatorIndex === -1) {
+          return { label: normalizedLine, url: normalizedLine };
+        }
+        const label = normalizedLine.slice(0, separatorIndex).trim();
+        const url = normalizedLine.slice(separatorIndex + 1).trim();
+        return label && url ? { label, url } : null;
+      })
+      .filter((link): link is PlaceLink => Boolean(link));
+    const gpsRaw = draftPlaceGps.trim();
+    if (gpsRaw && !parseGpsString(gpsRaw)) {
+      return;
+    }
+
+    if (targetId && !window.confirm("Confirmer la modification de cette visite ?")) {
+      return;
+    }
+
+    const payload: Place = {
+      id: targetId ?? `place-${Date.now()}`,
+      jour,
+      name: normalizedName,
+      shortDesc: normalizedShortDesc,
+      tag: normalizedTag,
+      historyLabel: draftPlaceHistoryLabel.trim() || undefined,
+      history: draftPlaceHistory.trim() || undefined,
+      anecdotesLabel: draftPlaceAnecdotesLabel.trim() || undefined,
+      anecdotes: anecdotes.length > 0 ? anecdotes : undefined,
+      links: links.length > 0 ? links : undefined,
+      gps: gpsRaw || undefined,
+    };
+
+    onSavePlace(payload);
+    if (targetId) {
+      setEditingPlaceFormId(null);
+    } else {
+      setIsAddingPlace(false);
+    }
+    clearPlaceDraft();
+  }
+
+  function removeAddedPlace(placeId: string): void {
+    if (!isOwner) return;
+    if (!window.confirm("Confirmer la suppression de cette visite ?")) {
+      return;
+    }
+    onDeletePlace(placeId);
+    if (editingPlaceFormId === placeId) {
+      setEditingPlaceFormId(null);
+      clearPlaceDraft();
+    }
+  }
+
+  function renderPlaceFormEditor(targetId?: string) {
+    const isEditMode = Boolean(targetId);
+    const draftGpsNormalized = draftPlaceGps.trim();
+    const draftGpsInvalid = draftGpsNormalized.length > 0 && !parseGpsString(draftGpsNormalized);
+
+    return (
+      <div className="rounded-2xl border border-[#BFDBFE] bg-[#EFF6FF] p-4 space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <input
+            type="text"
+            value={draftPlaceName}
+            onChange={(event) => setDraftPlaceName(event.target.value)}
+            placeholder="Nom de la visite"
+            aria-label="Nom de la visite"
+            className="rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+          />
+          <input
+            type="text"
+            value={draftPlaceTag}
+            onChange={(event) => setDraftPlaceTag(event.target.value)}
+            placeholder="Tag (ex: Visite, Restaurant, Promenade)"
+            aria-label="Tag de la visite"
+            className="rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+          />
+        </div>
+
+        <input
+          type="text"
+          value={draftPlaceShortDesc}
+          onChange={(event) => setDraftPlaceShortDesc(event.target.value)}
+          placeholder="Description courte"
+          aria-label="Description courte de la visite"
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+        />
+
+        <div className="rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground">
+          <p className="text-[11px] font-semibold text-muted-foreground mb-2">Jour(s) de la visite</p>
+          <div className="flex flex-wrap gap-1.5 mb-2 min-h-[1.75rem]">
+            {draftNewPlaceDays.length === 0 ? (
+              <span className="text-xs text-muted-foreground">Aucun jour ajouté</span>
+            ) : (
+              draftNewPlaceDays.map((day) => (
+                <span
+                  key={`draft-new-place-day-${day}`}
+                  className="inline-flex items-center gap-1 rounded-full bg-[#E3F2FD] px-2 py-1 text-[11px] font-black text-[#1565C0]"
+                >
+                  {formatTripDayLabel(day, tripStartDate)}
+                  <button
+                    type="button"
+                    onClick={() => removeNewPlaceDay(day)}
+                    className="text-[10px] leading-none"
+                    aria-label={`Retirer le jour ${formatTripDayLabel(day, tripStartDate)}`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))
+            )}
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={draftNewPlaceDayInput}
+              onChange={(event) => setDraftNewPlaceDayInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addNewPlaceDaysFromInput();
+                }
+              }}
+              placeholder="Ajouter un jour (ex: 2 ou 2,3,9)"
+              aria-label="Ajouter des jours à la visite"
+              className="flex-1 rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+            />
+            <button
+              type="button"
+              onClick={addNewPlaceDaysFromInput}
+              className="rounded-xl border border-border px-3 py-2 text-xs font-black uppercase tracking-widest"
+            >
+              Ajouter
+            </button>
+          </div>
+        </div>
+
+        <input
+          type="text"
+          value={draftPlaceHistoryLabel}
+          onChange={(event) => setDraftPlaceHistoryLabel(event.target.value)}
+          placeholder="Titre du récit / de l'histoire (optionnel)"
+          aria-label="Titre de l'histoire de la visite"
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+        />
+        <textarea
+          value={draftPlaceHistory}
+          onChange={(event) => setDraftPlaceHistory(event.target.value)}
+          placeholder="Récit / histoire (optionnel, gras avec **texte**)"
+          aria-label="Histoire de la visite"
+          rows={4}
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
+        />
+
+        <input
+          type="text"
+          value={draftPlaceAnecdotesLabel}
+          onChange={(event) => setDraftPlaceAnecdotesLabel(event.target.value)}
+          placeholder="Titre des anecdotes (optionnel)"
+          aria-label="Titre des anecdotes de la visite"
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground"
+        />
+        <textarea
+          value={draftPlaceAnecdotes}
+          onChange={(event) => setDraftPlaceAnecdotes(event.target.value)}
+          placeholder="Anecdotes optionnelles, une ligne par élément"
+          aria-label="Anecdotes de la visite"
+          rows={3}
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
+        />
+
+        <textarea
+          value={draftPlaceLinks}
+          onChange={(event) => setDraftPlaceLinks(event.target.value)}
+          placeholder="Liens (un par ligne) format: Libellé|https://exemple.com"
+          aria-label="Liens de la visite"
+          rows={2}
+          className="w-full rounded-xl border border-border px-3 py-2 text-sm bg-background text-foreground resize-y"
+        />
+
+        <input
+          type="text"
+          value={draftPlaceGps}
+          onChange={(event) => setDraftPlaceGps(event.target.value)}
+          placeholder="Coordonnées GPS (format: 41.0086,28.9802)"
+          aria-label="Coordonnées GPS de la visite"
+          className={`w-full rounded-xl border px-3 py-2 text-sm bg-background text-foreground ${
+            draftGpsInvalid ? "border-destructive" : "border-border"
+          }`}
+        />
+        {draftGpsInvalid && (
+          <p className="text-xs font-semibold text-destructive">
+            Format GPS invalide. Utilisez le format latitude,longitude (ex: 41.0086,28.9802).
+          </p>
+        )}
+
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          Pas de photo ni d'audio possible pour une visite ajoutée manuellement. Astuce: gras avec **comme ceci**. Liens via Libellé|URL. GPS: lat,lon.
+        </p>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => commitPlaceDraft(targetId)}
+            disabled={draftGpsInvalid}
+            className="inline-flex items-center gap-1 rounded-xl bg-[#1565C0] px-3 py-2 text-xs font-black uppercase tracking-widest text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Check size={14} />
+            {isEditMode ? "Enregistrer" : "Ajouter"}
+          </button>
+          <button
+            onClick={() => {
+              clearPlaceDraft();
+              setEditingPlaceFormId(null);
+              setIsAddingPlace(false);
+            }}
+            className="inline-flex items-center gap-1 rounded-xl bg-muted px-3 py-2 text-xs font-black uppercase tracking-widest text-muted-foreground"
+          >
+            <X size={14} />
+            Annuler
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const renderPlaceCard = (
-    item: (typeof PLACES_WITH_AUTO_GPS)[number],
+    item: Place,
     dayForCard: number,
     keyPrefix = ""
   ) => {
@@ -5043,6 +5482,7 @@ function GuideScreen({
     const visibilityState = placeVisibilityMap[item.id] ?? "visible";
     const isHiddenByOwner = visibilityState === "hiddenByOwner";
     const canToggleVisibility = canManagePlaceVisibility;
+    const isOwnerAddedPlace = ownerAddedPlaceIds.has(item.id);
     const seenState = placeSeenMap[item.id] ?? "unseen";
     const isSeen = seenState === "seen";
     const effectiveDays = getEffectivePlaceDays(item, placeDayOverrideMap);
@@ -5068,11 +5508,19 @@ function GuideScreen({
           className="w-full bg-card rounded-2xl shadow-sm overflow-hidden border border-border text-left active:scale-95 transition-transform"
         >
           <div className="relative h-40 bg-muted overflow-hidden">
-            <img
-              src={item.image}
-              alt={item.name}
-              className="w-full h-full object-cover"
-            />
+            {item.image ? (
+              <img
+                src={item.image}
+                alt={item.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              // Visite ajoutée par le propriétaire : pas de photo (pas de
+              // pipeline d'upload dans l'appli), on affiche un repère à la place.
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                <MapPin size={32} strokeWidth={1.5} />
+              </div>
+            )}
           </div>
           <div className="p-4">
             <div className="flex items-start justify-between">
@@ -5203,7 +5651,28 @@ function GuideScreen({
             >
               {isEditingDays ? "Annuler" : "Changer les jours"}
             </button>
+            {isOwnerAddedPlace && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => startEditPlace(item)}
+                  className="rounded-full bg-muted px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground"
+                >
+                  Modifier
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeAddedPlace(item.id)}
+                  className="inline-flex items-center gap-1 rounded-full bg-[#FDE7E9] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#AD1457]"
+                >
+                  <Trash2 size={11} /> Supprimer
+                </button>
+              </>
+            )}
           </div>
+        )}
+        {isOwner && isOwnerAddedPlace && editingPlaceFormId === item.id && (
+          <div className="mt-1">{renderPlaceFormEditor(item.id)}</div>
         )}
         {canManagePlaceVisibility && isEditingDays && (
           <div className="rounded-2xl border border-[#BFDBFE] bg-[#EFF6FF] p-3 space-y-3">
@@ -5562,7 +6031,19 @@ function GuideScreen({
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      {isOwner && (
+        <div className="px-4 mt-3 flex flex-wrap gap-2 flex-shrink-0">
+          <button
+            onClick={() => (isAddingPlace ? setIsAddingPlace(false) : openPlaceCreateForm())}
+            className="ml-auto inline-flex items-center gap-1 rounded-xl bg-[#E3F2FD] px-3 py-2 text-xs font-black uppercase tracking-widest text-[#1565C0]"
+          >
+            <Plus size={14} /> {isAddingPlace ? "Annuler" : "Ajouter une visite"}
+          </button>
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {isAddingPlace && renderPlaceFormEditor()}
         {filteredGroups.length === 0 ? (
           <div className="px-2 py-10 text-center">
             <p className="text-sm text-muted-foreground">
@@ -5791,17 +6272,17 @@ function ContentDetailScreen({
   const [draftName, setDraftName] = useState(item.name);
   const [draftShortDesc, setDraftShortDesc] = useState(item.shortDesc);
   const [draftHistoryLabel, setDraftHistoryLabel] = useState(item.historyLabel ?? "");
-  const [draftHistory, setDraftHistory] = useState(item.history);
+  const [draftHistory, setDraftHistory] = useState(item.history ?? "");
   const [draftAnecdotesLabel, setDraftAnecdotesLabel] = useState(item.anecdotesLabel ?? "");
-  const [draftAnecdotes, setDraftAnecdotes] = useState(item.anecdotes.join("\n"));
+  const [draftAnecdotes, setDraftAnecdotes] = useState((item.anecdotes ?? []).join("\n"));
 
   const openContentEditor = () => {
     setDraftName(item.name);
     setDraftShortDesc(item.shortDesc);
     setDraftHistoryLabel(item.historyLabel ?? "");
-    setDraftHistory(item.history);
+    setDraftHistory(item.history ?? "");
     setDraftAnecdotesLabel(item.anecdotesLabel ?? "");
-    setDraftAnecdotes(item.anecdotes.join("\n"));
+    setDraftAnecdotes((item.anecdotes ?? []).join("\n"));
     setIsEditingContent(true);
   };
 
@@ -5847,8 +6328,11 @@ function ContentDetailScreen({
     () => usefulLinks.filter((link) => !link.url.startsWith(INTERNAL_DOCUMENT_LINK_PREFIX)),
     [usefulLinks]
   );
-  const photos = item.photos?.length ? item.photos : [item.image];
-  const heroPhoto = photos[0] ?? item.image;
+  // item.image/photos absents pour une visite ajoutée par le propriétaire
+  // (pas de pipeline d'upload dans l'appli) : pas de héros photo ni galerie
+  // dans ce cas plutôt que d'afficher une image cassée.
+  const photos = item.photos?.length ? item.photos : item.image ? [item.image] : [];
+  const heroPhoto = photos[0];
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -5974,11 +6458,19 @@ function ContentDetailScreen({
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="relative h-64 bg-muted flex-shrink-0">
-        <img
-          src={heroPhoto}
-          alt={item.name}
-          className="w-full h-full object-cover"
-        />
+        {heroPhoto ? (
+          <img
+            src={heroPhoto}
+            alt={item.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          // Visite ajoutée par le propriétaire : pas de photo (pas de
+          // pipeline d'upload dans l'appli), on affiche un repère à la place.
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+            <MapPin size={48} strokeWidth={1.5} />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
         <button
           onClick={onBack}
@@ -6149,23 +6641,25 @@ function ContentDetailScreen({
           </div>
         )}
 
-        {/* Gallery */}
-        <div className="px-4 mt-5">
-          <h2 data-tutorial-id="place-gallery-title" className="text-base font-black text-foreground mb-3">
-            📷 Galerie
-          </h2>
-          <div className="grid grid-cols-3 gap-2">
-            {photos.map((photo, index) => (
-              <button
-                key={`${item.id}-photo-${index}`}
-                onClick={() => setLightboxIndex(index)}
-                className="aspect-square rounded-2xl overflow-hidden bg-muted active:scale-95 transition-transform"
-              >
-                <img src={photo} alt={`${item.name} photo ${index + 1}`} className="w-full h-full object-cover" />
-              </button>
-            ))}
+        {/* Gallery — absente pour une visite ajoutée sans photo */}
+        {photos.length > 0 && (
+          <div className="px-4 mt-5">
+            <h2 data-tutorial-id="place-gallery-title" className="text-base font-black text-foreground mb-3">
+              📷 Galerie
+            </h2>
+            <div className="grid grid-cols-3 gap-2">
+              {photos.map((photo, index) => (
+                <button
+                  key={`${item.id}-photo-${index}`}
+                  onClick={() => setLightboxIndex(index)}
+                  className="aspect-square rounded-2xl overflow-hidden bg-muted active:scale-95 transition-transform"
+                >
+                  <img src={photo} alt={`${item.name} photo ${index + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {lightboxIndex !== null && (
           <div
@@ -6226,15 +6720,17 @@ function ContentDetailScreen({
           </div>
         )}
 
-        {/* History */}
-        <div className="px-4 mt-5">
-          <h2 data-tutorial-id="place-history-title" className="text-base font-black text-foreground mb-2">
-            📜 {item.historyLabel ?? "Histoire"}
-          </h2>
-          <div className="text-sm text-foreground/80 leading-relaxed">
-            {renderFormattedText(item.history)}
+        {/* History — absente pour une visite ajoutée sans texte d'histoire */}
+        {item.history && (
+          <div className="px-4 mt-5">
+            <h2 data-tutorial-id="place-history-title" className="text-base font-black text-foreground mb-2">
+              📜 {item.historyLabel ?? "Histoire"}
+            </h2>
+            <div className="text-sm text-foreground/80 leading-relaxed">
+              {renderFormattedText(item.history)}
+            </div>
           </div>
-        </div>
+        )}
 
         {destinationCoords && (
           <div className="px-4 mt-5">
@@ -6260,25 +6756,27 @@ function ContentDetailScreen({
           </div>
         )}
 
-        {/* Anecdotes */}
-        <div className="px-4 mt-5 mb-6">
-          <h2 data-tutorial-id="place-anecdotes-title" className="text-base font-black text-foreground mb-3">
-            ✨ {item.anecdotesLabel ?? "Le savais-tu ?"}
-          </h2>
-          <div className="space-y-3">
-            {item.anecdotes.map((anecdote, i) => (
-              <div
-                key={i}
-                className="flex gap-2.5 rounded-2xl bg-[#FFF3E0] px-3.5 py-2"
-              >
-                <span className="text-base leading-none flex-shrink-0 pt-0.5">💡</span>
-                <p className="text-sm leading-snug text-foreground/80">
-                  {anecdote}
-                </p>
-              </div>
-            ))}
+        {/* Anecdotes — absentes pour une visite ajoutée sans anecdotes */}
+        {item.anecdotes && item.anecdotes.length > 0 && (
+          <div className="px-4 mt-5 mb-6">
+            <h2 data-tutorial-id="place-anecdotes-title" className="text-base font-black text-foreground mb-3">
+              ✨ {item.anecdotesLabel ?? "Le savais-tu ?"}
+            </h2>
+            <div className="space-y-3">
+              {item.anecdotes.map((anecdote, i) => (
+                <div
+                  key={i}
+                  className="flex gap-2.5 rounded-2xl bg-[#FFF3E0] px-3.5 py-2"
+                >
+                  <span className="text-base leading-none flex-shrink-0 pt-0.5">💡</span>
+                  <p className="text-sm leading-snug text-foreground/80">
+                    {anecdote}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {usefulLinks.length > 0 ? (
           <div className="px-4 mb-6">
@@ -6575,8 +7073,9 @@ function PlaceScreen({
   onOpenInternalLink,
   isOnline,
   onSaveContentOverride,
+  isOwnerAddedPlace,
 }: {
-  place: (typeof PLACES)[0];
+  place: Place;
   profile: Profile;
   familyProfiles: Array<{ id: string; surname: string }>;
   comments: Record<string, PlaceComment>;
@@ -6586,6 +7085,11 @@ function PlaceScreen({
   onOpenInternalLink: (url: string) => boolean;
   isOnline: boolean;
   onSaveContentOverride: (source: ContentSource, itemId: string, patch: ContentOverridePatch | null) => void;
+  // Une visite ajoutée par le propriétaire (ownerGlobalPlaceAdditions) ne
+  // passe pas par contentOverrides (voir placesWithOverrides dans App.tsx) :
+  // on désactive donc ce mécanisme d'édition ici pour éviter un enregistrement
+  // silencieusement sans effet — l'édition se fait via le Guide du séjour.
+  isOwnerAddedPlace: boolean;
 }) {
   const reactionCounts = getPlaceReactionCounts(comments);
 
@@ -6598,7 +7102,7 @@ function PlaceScreen({
       heroReactionCounts={reactionCounts}
       offlineSection="stay-guide"
       isOnline={isOnline}
-      isOwner={profile.role === "proprietaire"}
+      isOwner={profile.role === "proprietaire" && !isOwnerAddedPlace}
       onSaveOverride={(patch) => onSaveContentOverride("places", place.id, patch)}
       extraSection={
         <PlaceCommentsSection
@@ -10335,6 +10839,18 @@ export default function App() {
       return {};
     }
   });
+  const [ownerGlobalPlaceAdditions, setOwnerGlobalPlaceAdditions] = useState<Place[]>(() => {
+    if (cloudEnabled) {
+      return [];
+    }
+    try {
+      return parseOwnerGlobalPlaceAdditions(
+        JSON.parse(localStorage.getItem(OWNER_GLOBAL_PLACE_ADDITIONS_KEY) || "[]")
+      );
+    } catch {
+      return [];
+    }
+  });
   const [placeCommentsByPlace, setPlaceCommentsByPlace] = useState<PlaceCommentsByPlace>(() => {
     if (cloudEnabled) {
       return {};
@@ -11130,6 +11646,10 @@ export default function App() {
             JSON.stringify(ownerGlobalDocumentRemovals)
           );
           localStorage.setItem(
+            OWNER_GLOBAL_PLACE_ADDITIONS_KEY,
+            JSON.stringify(ownerGlobalPlaceAdditions)
+          );
+          localStorage.setItem(
             PLACE_COMMENTS_STORAGE_KEY,
             JSON.stringify(placeCommentsByPlace)
           );
@@ -11220,6 +11740,7 @@ export default function App() {
     ownerGlobalDocumentAdditions,
     ownerGlobalDocumentEdits,
     ownerGlobalDocumentRemovals,
+    ownerGlobalPlaceAdditions,
     placeCommentsByPlace,
     placeVisibilityMap,
     placeSeenMap,
@@ -11494,6 +12015,11 @@ export default function App() {
       areRemovalMapsEqual(previous, cloudSnapshot.ownerGlobalDocumentRemovals ?? {})
         ? previous
         : cloudSnapshot.ownerGlobalDocumentRemovals ?? {}
+    );
+    setOwnerGlobalPlaceAdditions((previous) =>
+      areTravelPlaceListsEqual(previous, cloudSnapshot.ownerGlobalPlaceAdditions ?? [])
+        ? previous
+        : cloudSnapshot.ownerGlobalPlaceAdditions ?? []
     );
     setPlaceCommentsByPlace((previous) => {
       const nextFromCloud = cloudSnapshot.placeComments ?? {};
@@ -11957,6 +12483,7 @@ export default function App() {
       ownerGlobalDocumentAdditions,
       ownerGlobalDocumentEdits,
       ownerGlobalDocumentRemovals,
+      ownerGlobalPlaceAdditions,
       destinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       challengeReactions: challengeReactionsByDay,
       challengeBestVotes: challengeBestVotesByDay,
@@ -12011,6 +12538,7 @@ export default function App() {
       ownerGlobalDocumentAdditions,
       ownerGlobalDocumentEdits,
       ownerGlobalDocumentRemovals,
+      ownerGlobalPlaceAdditions,
       profileDestinationSurveyVote: destinationSurveyVotes[profile.id] ?? null,
       challengeReactions: challengeReactionsByDay,
       challengeBestVotes: challengeBestVotesByDay,
@@ -12058,6 +12586,7 @@ export default function App() {
     ownerGlobalDocumentAdditions,
     ownerGlobalDocumentEdits,
     ownerGlobalDocumentRemovals,
+    ownerGlobalPlaceAdditions,
     placeCommentsByPlace,
     placeVisibilityMap,
     placeDayOverrideMap,
@@ -12254,6 +12783,30 @@ export default function App() {
     } else {
       setOwnerGlobalDocumentAdditions((previous) => previous.filter((doc) => doc.id !== documentId));
     }
+  }
+
+  // Visite/activité ajoutée par le propriétaire dans le Guide du séjour
+  // (n'existe pas dans PLACES). Contrairement aux documents, pas de branche
+  // "place par défaut" ici : éditer/masquer une place par défaut passe déjà
+  // par contentOverrides/placeVisibilityMap, donc ownerGlobalPlaceAdditions ne
+  // contient jamais que des places ajoutées par le propriétaire.
+  function savePlaceForOwner(place: Place): void {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return;
+    }
+    setOwnerGlobalPlaceAdditions((previous) => {
+      const exists = previous.some((p) => p.id === place.id);
+      return exists
+        ? previous.map((p) => (p.id === place.id ? place : p))
+        : [...previous, place];
+    });
+  }
+
+  function deletePlaceForOwner(placeId: string): void {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return;
+    }
+    setOwnerGlobalPlaceAdditions((previous) => previous.filter((p) => p.id !== placeId));
   }
 
   const toggleItem = (id: string) =>
@@ -12744,7 +13297,7 @@ export default function App() {
       return false;
     }
 
-    const placeDefinition = PLACES_WITH_AUTO_GPS.find((candidate) => candidate.id === placeId);
+    const placeDefinition = placesWithOverrides.find((candidate) => candidate.id === placeId);
     if (!placeDefinition) {
       return false;
     }
@@ -12874,8 +13427,15 @@ export default function App() {
   // propriétaire (contentOverrides). Les champs non modifiés restent ceux
   // des fichiers .ts sources (voir applyContentOverride).
   const placesWithOverrides = useMemo(
-    () => PLACES_WITH_AUTO_GPS.map((p) => applyContentOverride(p, contentOverrides.places?.[p.id])),
-    [contentOverrides.places]
+    () => [
+      ...PLACES_WITH_AUTO_GPS.map((p) => applyContentOverride(p, contentOverrides.places?.[p.id])),
+      ...ownerGlobalPlaceAdditions,
+    ],
+    [contentOverrides.places, ownerGlobalPlaceAdditions]
+  );
+  const ownerAddedPlaceIds = useMemo(
+    () => new Set(ownerGlobalPlaceAdditions.map((p) => p.id)),
+    [ownerGlobalPlaceAdditions]
   );
   const histoireTopicsWithOverrides = useMemo(
     () => HISTOIRE_TOPICS.map((t) => applyContentOverride(t, contentOverrides.histoire?.[t.id])),
@@ -15314,6 +15874,9 @@ const resetForProfileSwitch = () => {
             onTogglePlaceSeen={setPlaceSeenForOwner}
             onSetPlaceDays={setPlaceDaysForOwner}
             canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
+            ownerAddedPlaceIds={ownerAddedPlaceIds}
+            onSavePlace={savePlaceForOwner}
+            onDeletePlace={deletePlaceForOwner}
             isOnline={isOnline}
           />
         );
@@ -15322,6 +15885,7 @@ const resetForProfileSwitch = () => {
       if (effectiveScreen === "planning") {
         return (
           <PlanningScreen
+            places={placesWithOverrides}
             onBack={() => goToScreen("dashboard")}
             onDaySelect={(day) => {
               setGuideSelectedDay(day);
@@ -15360,6 +15924,7 @@ const resetForProfileSwitch = () => {
       if (effectiveScreen === "map") {
         return (
           <MapScreen
+            places={placesWithOverrides}
             onBack={() => goToScreen("dashboard")}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
@@ -15385,6 +15950,7 @@ const resetForProfileSwitch = () => {
             onOpenInternalLink={openInternalLink}
             isOnline={isOnline}
             onSaveContentOverride={setContentOverrideForOwner}
+            isOwnerAddedPlace={place ? ownerAddedPlaceIds.has(place.id) : false}
           />
         ) : null;
       }
@@ -15419,6 +15985,7 @@ const resetForProfileSwitch = () => {
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "histoire-topic")}
             isOnline={isOnline}
             onSaveContentOverride={setContentOverrideForOwner}
+            isOwnerAddedPlace={place ? ownerAddedPlaceIds.has(place.id) : false}
           />
         ) : null;
       }
@@ -15443,6 +16010,7 @@ const resetForProfileSwitch = () => {
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "geographie-topic")}
             isOnline={isOnline}
             onSaveContentOverride={setContentOverrideForOwner}
+            isOwnerAddedPlace={place ? ownerAddedPlaceIds.has(place.id) : false}
           />
         ) : null;
       }
@@ -15467,6 +16035,7 @@ const resetForProfileSwitch = () => {
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
             isOnline={isOnline}
             onSaveContentOverride={setContentOverrideForOwner}
+            isOwnerAddedPlace={place ? ownerAddedPlaceIds.has(place.id) : false}
           />
         ) : null;
       }
@@ -15771,12 +16340,16 @@ const resetForProfileSwitch = () => {
             onTogglePlaceSeen={setPlaceSeenForOwner}
             onSetPlaceDays={setPlaceDaysForOwner}
             canManagePlaceVisibility={canUpdateOwnerCode(familyState, profile.id)}
+            ownerAddedPlaceIds={ownerAddedPlaceIds}
+            onSavePlace={savePlaceForOwner}
+            onDeletePlace={deletePlaceForOwner}
             isOnline={isOnline}
           />
         );
       case "planning":
         return (
           <PlanningScreen
+            places={placesWithOverrides}
             onBack={() => goToScreen("dashboard")}
             onDaySelect={(day) => {
               setGuideSelectedDay(day);
@@ -15811,6 +16384,7 @@ const resetForProfileSwitch = () => {
       case "map":
         return (
           <MapScreen
+            places={placesWithOverrides}
             onBack={() => goToScreen("dashboard")}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
@@ -15834,6 +16408,7 @@ const resetForProfileSwitch = () => {
             onOpenInternalLink={openInternalLink}
             isOnline={isOnline}
             onSaveContentOverride={setContentOverrideForOwner}
+            isOwnerAddedPlace={place ? ownerAddedPlaceIds.has(place.id) : false}
           />
         ) : null;
       case "visite-guidee":
@@ -15862,6 +16437,7 @@ const resetForProfileSwitch = () => {
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "histoire-topic")}
             isOnline={isOnline}
             onSaveContentOverride={setContentOverrideForOwner}
+            isOwnerAddedPlace={place ? ownerAddedPlaceIds.has(place.id) : false}
           />
         ) : null;
       case "geographie":
@@ -15882,6 +16458,7 @@ const resetForProfileSwitch = () => {
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "geographie-topic")}
             isOnline={isOnline}
             onSaveContentOverride={setContentOverrideForOwner}
+            isOwnerAddedPlace={place ? ownerAddedPlaceIds.has(place.id) : false}
           />
         ) : null;
       case "culture":
@@ -15902,6 +16479,7 @@ const resetForProfileSwitch = () => {
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
             isOnline={isOnline}
             onSaveContentOverride={setContentOverrideForOwner}
+            isOwnerAddedPlace={place ? ownerAddedPlaceIds.has(place.id) : false}
           />
         ) : null;
       case "game":

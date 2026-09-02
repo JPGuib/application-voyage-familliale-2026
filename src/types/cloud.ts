@@ -1,6 +1,7 @@
 import type { Role, SharedFamilyState } from "../app/owner-policy";
 import type { GameScoringConfig } from "../content/game";
 import type { TravelDocument } from "../content/documents";
+import type { Place } from "../content/places";
 
 export type TravelPhase = "before" | "during";
 
@@ -121,6 +122,14 @@ export type ContentOverrideMap = Partial<Record<ContentSource, Record<string, Co
 // Même esprit que ownerGlobalChecklistAdditions/Removals ci-dessus.
 export type DocumentCatalogRemovalState = Record<string, boolean>;
 
+// Visites/activités du Guide du séjour ajoutées par le propriétaire, absentes
+// de PLACES (src/content/places.ts). Contrairement aux documents, pas besoin
+// d'Edits/Removals séparés : éditer/masquer une place PAR DÉFAUT existe déjà
+// via contentOverrides/placeVisibilityMap, donc ce mécanisme ne gère que les
+// places ajoutées (éditer = remplacer l'entrée par id, supprimer = la retirer
+// du tableau, cf. savePlaceForOwner/deletePlaceForOwner dans App.tsx).
+export type PlaceCatalogAdditionState = Place[];
+
 export type CloudPlaceComment = {
   commentId: string;
   placeId: string;
@@ -214,6 +223,7 @@ export type CloudSyncSnapshot = {
   ownerGlobalDocumentAdditions?: TravelDocument[];
   ownerGlobalDocumentEdits?: Record<string, TravelDocument>;
   ownerGlobalDocumentRemovals?: DocumentCatalogRemovalState;
+  ownerGlobalPlaceAdditions?: PlaceCatalogAdditionState;
   destinationSurvey: CloudDestinationSurveyByProfile;
   challengeReactions?: CloudChallengeReactionsByDay;
   challengeBestVotes?: CloudChallengeBestVotesByDay;
@@ -258,6 +268,7 @@ export type CloudSyncWritePayload = {
   ownerGlobalDocumentAdditions?: TravelDocument[];
   ownerGlobalDocumentEdits?: Record<string, TravelDocument>;
   ownerGlobalDocumentRemovals?: DocumentCatalogRemovalState;
+  ownerGlobalPlaceAdditions?: PlaceCatalogAdditionState;
   profileDestinationSurveyVote?: CloudDestinationSurveyVote | null;
   challengeReactions?: CloudChallengeReactionsByDay;
   challengeBestVotes?: CloudChallengeBestVotesByDay;
