@@ -454,10 +454,16 @@ const MAX_CHALLENGE_RESPONSE_LENGTH = 280;
 // caractères" demandé), juste un garde-fou anti-abus/anti-noeud géant côté
 // Realtime Database (même plafond que la règle Firebase, cf. database.rules.*.json).
 const CARNET_ENTRY_MAX_TEXT_LENGTH = 20000;
-// 5 photos par entrée : compromis validé pour rester loin des quotas gratuits
-// Firebase (chaque photo compressée pèse ~200-260 Ko, cf. image-upload.ts) tout
-// en illustrant correctement une visite.
-const CARNET_ENTRY_MAX_PHOTOS = 5;
+// 5 photos par LIEU (toutes entrées/auteurs confondus), pas par entrée :
+// compromis validé pour rester loin des quotas gratuits Firebase (chaque
+// photo compressée pèse ~200-260 Ko, cf. image-upload.ts) tout en illustrant
+// correctement une visite. Plafond appliqué côté client (CarnetDeVisiteSection
+// compte les photos déjà présentes sur toutes les entrées du lieu avant
+// d'autoriser un ajout) : les règles Firebase ne peuvent valider qu'un nœud
+// à la fois et ne peuvent donc pas additionner les photos de plusieurs
+// entrées ; elles gardent seulement ce nombre comme plafond défensif par
+// entrée (cf. database.rules.*.json).
+const CARNET_PLACE_MAX_PHOTOS = 5;
 const CARNET_VISITE_CACHE_STORAGE_KEY = "jp-carnet-visite-cache";
 
 // Brouillon en cours du formulaire "Carnet de visite" (texte + photos déjà
@@ -488,7 +494,7 @@ function readStoredCarnetDraft(placeId: string): StoredCarnetDraft | null {
     const photos = Array.isArray(parsed.photos)
       ? parsed.photos
           .filter((photo): photo is string => typeof photo === "string")
-          .slice(0, CARNET_ENTRY_MAX_PHOTOS)
+          .slice(0, CARNET_PLACE_MAX_PHOTOS)
       : [];
     if (!text && photos.length === 0) {
       return null;
@@ -649,7 +655,7 @@ type CarnetVisiteEntry = {
   authorProfileId: string;
   authorSurnameSnapshot: string;
   text: string;
-  photos: Record<string, string>; // photoId -> data URI JPEG compressée, max CARNET_ENTRY_MAX_PHOTOS
+  photos: Record<string, string>; // photoId -> data URI JPEG compressée ; max CARNET_PLACE_MAX_PHOTOS au total sur le lieu
   createdAt: number;
   updatedAt: number;
   authorUid?: string;
@@ -1289,7 +1295,7 @@ function parseCarnetVisiteCache(raw: unknown): CarnetVisiteLogByPlace {
           : {};
       const photos: Record<string, string> = {};
       for (const [photoId, photoValue] of Object.entries(rawPhotos)) {
-        if (Object.keys(photos).length >= CARNET_ENTRY_MAX_PHOTOS) {
+        if (Object.keys(photos).length >= CARNET_PLACE_MAX_PHOTOS) {
           break;
         }
         if (typeof photoValue === "string" && photoValue.length > 0) {
@@ -7245,6 +7251,10 @@ function CarnetDeVisiteSection({
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [photoProcessing, setPhotoProcessing] = useState(false);
   const [textError, setTextError] = useState<string | null>(null);
+  // Agrandissement d'une photo (entrée déjà enregistrée ou aperçu en cours de
+  // saisie) : même pattern de lightbox que la galerie de ContentDetailScreen.
+  const [lightboxPhotos, setLightboxPhotos] = useState<string[] | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Brouillon debouncé (texte + photos déjà compressées) : même besoin que
   // PLACE_DRAFT_STORAGE_KEY pour le formulaire d'ajout de visite. Effacé
@@ -7267,6 +7277,22 @@ function CarnetDeVisiteSection({
   }, [placeId, editingEntryId, text, photos, isFormOpen]);
 
   const sortedEntries = Object.values(entries).sort((left, right) => left.createdAt - right.createdAt);
+
+  // Le plafond de CARNET_PLACE_MAX_PHOTOS photos s'applique au LIEU entier,
+  // toutes entrées et tous auteurs confondus — pas à l'entrée en cours. On
+  // exclut l'entrée en cours d'édition (editingEntryId) du total "déjà pris"
+  // : ses photos sont déjà comptées dans le brouillon `photos` ci-dessus, les
+  // compter aussi ici les compterait deux fois.
+  const photosUsedElsewhereOnPlace = Object.values(entries).reduce((sum, entry) => {
+    if (editingEntryId && entry.entryId === editingEntryId) {
+      return sum;
+    }
+    return sum + Object.keys(entry.photos).length;
+  }, 0);
+  const remainingPhotoSlotsForPlace = Math.max(
+    0,
+    CARNET_PLACE_MAX_PHOTOS - photosUsedElsewhereOnPlace - photos.length
+  );
 
   const resolveAuthorSurname = (entry: CarnetVisiteEntry): string => {
     const profileEntry = familyProfiles.find((item) => item.id === entry.authorProfileId);
@@ -7299,7 +7325,7 @@ function CarnetDeVisiteSection({
     const file = event.target.files?.[0];
     // Permet de resélectionner le même fichier plus tard.
     event.target.value = "";
-    if (!file || photos.length >= CARNET_ENTRY_MAX_PHOTOS) return;
+    if (!file || remainingPhotoSlotsForPlace <= 0) return;
 
     setPhotoError(null);
     setPhotoProcessing(true);
@@ -7341,12 +7367,13 @@ function CarnetDeVisiteSection({
   }
 
   return (
-    <div className="px-4 mb-6">
-      <div className="rounded-2xl border border-border bg-card p-4">
-        <h2 className="flex items-center gap-2 text-base font-black text-foreground">
-          <BookOpen size={18} />
-          Carnet de visite
-        </h2>
+    <>
+      <div className="px-4 mb-6">
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <h2 className="flex items-center gap-2 text-base font-black text-foreground">
+            <BookOpen size={18} />
+            Carnet de visite
+          </h2>
 
         {sortedEntries.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">
@@ -7391,12 +7418,22 @@ function CarnetDeVisiteSection({
                   {entryPhotos.length > 0 && (
                     <div className="mt-2 grid grid-cols-3 gap-2">
                       {entryPhotos.map((photo, index) => (
-                        <img
+                        <button
                           key={index}
-                          src={photo}
-                          alt="Photo ajoutée au carnet de visite"
-                          className="w-full h-20 rounded-lg object-cover"
-                        />
+                          type="button"
+                          onClick={() => {
+                            setLightboxPhotos(entryPhotos);
+                            setLightboxIndex(index);
+                          }}
+                          className="h-20 rounded-lg overflow-hidden bg-muted active:scale-95 transition-transform"
+                          aria-label="Voir la photo en plus grand"
+                        >
+                          <img
+                            src={photo}
+                            alt="Photo ajoutée au carnet de visite"
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
                       ))}
                     </div>
                   )}
@@ -7427,7 +7464,17 @@ function CarnetDeVisiteSection({
                   <div className="mt-2 grid grid-cols-3 gap-2">
                     {photos.map((photo, index) => (
                       <div key={index} className="relative h-20 rounded-lg overflow-hidden bg-muted">
-                        <img src={photo} alt="Aperçu de la photo" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLightboxPhotos(photos);
+                            setLightboxIndex(index);
+                          }}
+                          className="w-full h-full"
+                          aria-label="Voir la photo en plus grand"
+                        >
+                          <img src={photo} alt="Aperçu de la photo" className="w-full h-full object-cover" />
+                        </button>
                         <button
                           type="button"
                           onClick={() => removePhoto(index)}
@@ -7440,7 +7487,7 @@ function CarnetDeVisiteSection({
                     ))}
                   </div>
                 )}
-                {photos.length < CARNET_ENTRY_MAX_PHOTOS && (
+                {remainingPhotoSlotsForPlace > 0 ? (
                   <label className="mt-2 inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-black uppercase tracking-widest cursor-pointer">
                     <input
                       type="file"
@@ -7451,8 +7498,12 @@ function CarnetDeVisiteSection({
                     />
                     {photoProcessing
                       ? "Traitement en cours..."
-                      : `Ajouter une photo (${photos.length}/${CARNET_ENTRY_MAX_PHOTOS})`}
+                      : `Ajouter une photo (${photosUsedElsewhereOnPlace + photos.length}/${CARNET_PLACE_MAX_PHOTOS} pour ce lieu)`}
                   </label>
+                ) : (
+                  <p className="mt-2 text-xs font-semibold text-muted-foreground">
+                    Limite de {CARNET_PLACE_MAX_PHOTOS} photos atteinte pour ce lieu (toutes entrées confondues).
+                  </p>
                 )}
                 {photoError && <p className="mt-2 text-xs font-semibold text-destructive">{photoError}</p>}
                 {textError && <p className="mt-2 text-xs text-destructive">{textError}</p>}
@@ -7482,7 +7533,63 @@ function CarnetDeVisiteSection({
           </div>
         )}
       </div>
-    </div>
+      </div>
+
+      {lightboxPhotos && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex flex-col"
+          onClick={() => setLightboxPhotos(null)}
+        >
+          <div className="flex items-center justify-between px-4 pt-12 pb-3 flex-shrink-0">
+            <span className="text-white/70 text-sm font-bold">
+              {lightboxIndex + 1} / {lightboxPhotos.length}
+            </span>
+            <button
+              onClick={() => setLightboxPhotos(null)}
+              aria-label="Fermer"
+              className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-white"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div
+            className="flex-1 flex items-center justify-center px-2 min-h-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={lightboxPhotos[lightboxIndex]}
+              alt={`Photo du carnet de visite ${lightboxIndex + 1}`}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+          </div>
+
+          {lightboxPhotos.length > 1 && (
+            <div
+              className="flex items-center justify-between px-4 pb-10 pt-3 flex-shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() =>
+                  setLightboxIndex((prev) => (prev - 1 + lightboxPhotos.length) % lightboxPhotos.length)
+                }
+                aria-label="Photo précédente"
+                className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-white active:scale-95 transition-transform"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                onClick={() => setLightboxIndex((prev) => (prev + 1) % lightboxPhotos.length)}
+                aria-label="Photo suivante"
+                className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center text-white active:scale-95 transition-transform"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </>
   );
 }
 

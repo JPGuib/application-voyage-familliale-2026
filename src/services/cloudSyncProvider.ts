@@ -679,6 +679,12 @@ function parsePlaceComments(value: unknown): CloudPlaceCommentsByPlace {
 }
 
 const CARNET_VISITE_MAX_TEXT_LENGTH = 20000;
+// Le plafond métier (5 photos) s'applique par LIEU, toutes entrées/auteurs
+// confondus, et est appliqué côté client (CarnetDeVisiteSection dans App.tsx)
+// puisque les règles Firebase ne peuvent pas additionner les photos de
+// plusieurs entrées. Ici, on ne garde qu'un plafond défensif par entrée pour
+// ne jamais construire un objet local disproportionné à partir d'un
+// snapshot cloud inattendu.
 const CARNET_VISITE_MAX_PHOTOS_PER_ENTRY = 5;
 
 function parseCarnetVisiteEntry(
