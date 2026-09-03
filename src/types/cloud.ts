@@ -144,6 +144,29 @@ export type CloudPlaceComment = {
 
 export type CloudPlaceCommentsByPlace = Record<string, Record<string, CloudPlaceComment>>;
 
+// Carnet de visite : notes libres + photos ajoutées par un voyageur ou le
+// propriétaire sur un lieu du Guide du séjour (le visiteur ne peut que lire).
+// Contrairement à CloudPlaceComment (une entrée "principale" par auteur), un
+// même auteur peut avoir plusieurs entrées de carnet dans le temps : entryId
+// = `${authorProfileId}-${timestamp}`. Stocké hors de families/$familyId
+// (chemin placeVisitLogs/$familyId/$placeId/$entryId) et chargé à la demande
+// par lieu, pas dans le flux temps réel global, pour ne pas faire retélé-
+// charger toutes les photos de tous les lieux à chaque synchro famille (voir
+// observePlaceVisitLog dans cloudSyncProvider.ts).
+export type CloudCarnetVisiteEntry = {
+  entryId: string;
+  placeId: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  text: string;
+  photos: Record<string, string>; // photoId -> data URI JPEG compressée, max 5
+  createdAt: number;
+  updatedAt: number;
+  authorUid?: string;
+};
+
+export type CloudCarnetVisiteLog = Record<string, CloudCarnetVisiteEntry>; // entryId -> entrée
+
 export type CloudDestinationSurveyVote = {
   profileId: string;
   proposals: string[];

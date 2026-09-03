@@ -25,6 +25,8 @@ import type {
   CloudCandyCrushChallenge,
   CloudGameHistoryEntry,
   CloudGameProgress,
+  CloudCarnetVisiteEntry,
+  CloudCarnetVisiteLog,
   CloudPlaceComment,
   CloudPlaceCommentsByPlace,
   CloudDestinationSurveyByProfile,
@@ -676,6 +678,85 @@ function parsePlaceComments(value: unknown): CloudPlaceCommentsByPlace {
   return next;
 }
 
+const CARNET_VISITE_MAX_TEXT_LENGTH = 20000;
+const CARNET_VISITE_MAX_PHOTOS_PER_ENTRY = 5;
+
+function parseCarnetVisiteEntry(
+  placeId: string,
+  entryId: string,
+  value: unknown
+): CloudCarnetVisiteEntry | null {
+  const entry = asRecord(value);
+  const normalizedEntryId =
+    typeof entry.entryId === "string" && entry.entryId.trim().length > 0 ? entry.entryId : entryId;
+  const normalizedPlaceId =
+    typeof entry.placeId === "string" && entry.placeId.trim().length > 0 ? entry.placeId : placeId;
+  const authorProfileId =
+    typeof entry.authorProfileId === "string" ? entry.authorProfileId.trim() : "";
+  const authorSurnameSnapshot =
+    typeof entry.authorSurnameSnapshot === "string" ? entry.authorSurnameSnapshot.trim() : "";
+  const text = typeof entry.text === "string" ? entry.text : "";
+  const createdAt = toFiniteNumber(entry.createdAt, 0);
+  const updatedAt = toFiniteNumber(entry.updatedAt, createdAt);
+
+  if (
+    !authorProfileId ||
+    !authorSurnameSnapshot ||
+    !normalizedEntryId ||
+    !normalizedPlaceId ||
+    text.length > CARNET_VISITE_MAX_TEXT_LENGTH ||
+    createdAt <= 0 ||
+    updatedAt <= 0
+  ) {
+    return null;
+  }
+
+  const rawPhotos = asRecord(entry.photos);
+  const photos: Record<string, string> = {};
+  for (const [photoId, photoValue] of Object.entries(rawPhotos)) {
+    if (Object.keys(photos).length >= CARNET_VISITE_MAX_PHOTOS_PER_ENTRY) {
+      break;
+    }
+    if (typeof photoValue === "string" && photoValue.length > 0) {
+      photos[photoId] = photoValue;
+    }
+  }
+
+  const authorUid =
+    typeof entry.authorUid === "string" && entry.authorUid.trim().length > 0
+      ? entry.authorUid
+      : undefined;
+
+  return {
+    entryId: normalizedEntryId,
+    placeId: normalizedPlaceId,
+    authorProfileId,
+    authorSurnameSnapshot,
+    text,
+    photos,
+    createdAt,
+    updatedAt,
+    authorUid,
+  };
+}
+
+// Contrairement à parsePlaceComments, ne parse le carnet que d'UN lieu à la
+// fois : appelé depuis observePlaceVisitLog, jamais depuis parseCloudSnapshot
+// (le carnet de visite vit hors de families/$familyId, cf. CloudCarnetVisiteEntry).
+function parseCarnetVisiteLog(placeId: string, value: unknown): CloudCarnetVisiteLog {
+  const entryRecords = asRecord(value);
+  const next: CloudCarnetVisiteLog = {};
+
+  for (const [entryId, entryValue] of Object.entries(entryRecords)) {
+    const parsed = parseCarnetVisiteEntry(placeId, entryId, entryValue);
+    if (parsed) {
+      next[parsed.entryId] = parsed;
+    }
+  }
+
+  return next;
+}
+
 function parsePlaceVisibilityMap(value: unknown): Record<string, PlaceVisibilityState> {
   const raw = asRecord(value);
   const next: Record<string, PlaceVisibilityState> = {};
@@ -1111,6 +1192,50 @@ export function observeFamilySnapshot(
     (snapshot) => onSnapshot(parseCloudSnapshot(snapshot.val())),
     () => onError?.()
   );
+}
+
+// Carnet de visite d'UN lieu : chemin séparé de families/$familyId (racine
+// placeVisitLogs, cf. database.rules.*.json) pour que ce onValue ne soit
+// souscrit que pendant que la fiche de ce lieu est affichée (PlaceScreen),
+// au lieu d'être retéléchargé par observeFamilySnapshot à chaque changement
+// fait par n'importe qui dans la famille sur n'importe quel lieu. À appeler
+// dans un effet React nettoyé au démontage / changement de placeId.
+export function observePlaceVisitLog(
+  database: Database,
+  familyId: string,
+  placeId: string,
+  onSnapshot: (log: CloudCarnetVisiteLog) => void,
+  onError?: () => void
+): () => void {
+  const logRef = ref(database, `placeVisitLogs/${familyId}/${placeId}`);
+  return onValue(
+    logRef,
+    (snapshot) => onSnapshot(parseCarnetVisiteLog(placeId, snapshot.val())),
+    () => onError?.()
+  );
+}
+
+// Créer/modifier sa propre entrée de carnet (les règles n'autorisent l'écriture
+// qu'à l'auteur, cf. authorUid dans database.rules.*.json). Écriture à chemin
+// unique, complètement isolée de pushCloudSnapshot : un problème de règles pas
+// encore déployées sur ce chemin n'impacte jamais le reste de la synchro.
+export async function upsertPlaceVisitLogEntry(
+  database: Database,
+  familyId: string,
+  entry: CloudCarnetVisiteEntry
+): Promise<void> {
+  await set(ref(database, `placeVisitLogs/${familyId}/${entry.placeId}/${entry.entryId}`), entry);
+}
+
+// Supprimer sa propre entrée de carnet (même logique que la suppression d'un
+// commentaire : écrire null sur son propre nœud).
+export async function deletePlaceVisitLogEntry(
+  database: Database,
+  familyId: string,
+  placeId: string,
+  entryId: string
+): Promise<void> {
+  await set(ref(database, `placeVisitLogs/${familyId}/${placeId}/${entryId}`), null);
 }
 
 export async function pushCloudSnapshot(

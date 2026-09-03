@@ -450,6 +450,59 @@ const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-
 const LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY = "jp-launch-gate-pending-completion-by-profile";
 const MAX_PLACE_COMMENT_LENGTH = 500;
 const MAX_CHALLENGE_RESPONSE_LENGTH = 280;
+// Carnet de visite : pas de limite gênante en usage réel ("sans limite de
+// caractères" demandé), juste un garde-fou anti-abus/anti-noeud géant côté
+// Realtime Database (même plafond que la règle Firebase, cf. database.rules.*.json).
+const CARNET_ENTRY_MAX_TEXT_LENGTH = 20000;
+// 5 photos par entrée : compromis validé pour rester loin des quotas gratuits
+// Firebase (chaque photo compressée pèse ~200-260 Ko, cf. image-upload.ts) tout
+// en illustrant correctement une visite.
+const CARNET_ENTRY_MAX_PHOTOS = 5;
+const CARNET_VISITE_CACHE_STORAGE_KEY = "jp-carnet-visite-cache";
+
+// Brouillon en cours du formulaire "Carnet de visite" (texte + photos déjà
+// compressées) d'un lieu du Guide du séjour. Même besoin que
+// PLACE_DRAFT_STORAGE_KEY ci-dessus : ne pas perdre la saisie si l'app perd le
+// focus (changement d'appli, verrouillage d'écran, service worker qui recycle
+// l'onglet...). Un seul brouillon actif à la fois, scope par lieu (et par
+// entrée en cours de modification le cas échéant). Effacé dès que l'entrée
+// est envoyée ou l'édition annulée.
+const CARNET_DRAFT_STORAGE_KEY = "jp-carnet-draft";
+
+type StoredCarnetDraft = {
+  placeId: string;
+  editingEntryId: string | null;
+  text: string;
+  photos: string[];
+};
+
+function readStoredCarnetDraft(placeId: string): StoredCarnetDraft | null {
+  try {
+    const raw = localStorage.getItem(CARNET_DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<StoredCarnetDraft>;
+    if (!parsed || parsed.placeId !== placeId) {
+      return null;
+    }
+    const text = typeof parsed.text === "string" ? parsed.text : "";
+    const photos = Array.isArray(parsed.photos)
+      ? parsed.photos
+          .filter((photo): photo is string => typeof photo === "string")
+          .slice(0, CARNET_ENTRY_MAX_PHOTOS)
+      : [];
+    if (!text && photos.length === 0) {
+      return null;
+    }
+    return {
+      placeId,
+      editingEntryId: typeof parsed.editingEntryId === "string" ? parsed.editingEntryId : null,
+      text,
+      photos,
+    };
+  } catch {
+    return null;
+  }
+}
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -580,6 +633,28 @@ type PlaceComment = {
 };
 
 type PlaceCommentsByPlace = Record<string, Record<string, PlaceComment>>;
+
+// Carnet de visite : notes libres + photos ajoutées par un voyageur ou le
+// propriétaire sur un lieu du Guide du séjour (lecture ouverte à tous les
+// rôles, y compris visiteur, une fois l'entrée enregistrée). Contrairement à
+// PlaceComment (une entrée "principale" par auteur), un même auteur peut
+// ajouter plusieurs entrées dans le temps : entryId = `${authorProfileId}-${timestamp}`.
+// Chargé à la demande par lieu (cf. l'effet d'abonnement sur selectedPlaceId
+// et subscribeToPlaceVisitLog), pas dans le flux temps réel global famille,
+// pour ne pas faire retélécharger toutes les photos de tous les lieux à
+// chaque synchro (voir aussi placeVisitLogs dans database.rules.*.json).
+type CarnetVisiteEntry = {
+  entryId: string;
+  placeId: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  text: string;
+  photos: Record<string, string>; // photoId -> data URI JPEG compressée, max CARNET_ENTRY_MAX_PHOTOS
+  createdAt: number;
+  updatedAt: number;
+  authorUid?: string;
+};
+type CarnetVisiteLogByPlace = Record<string, Record<string, CarnetVisiteEntry>>; // placeId -> entryId -> entrée
 type ChallengeReactionEmoji = "love" | "laugh" | "wow" | "clap";
 type ChallengeReaction = {
   day: number;
@@ -1152,6 +1227,94 @@ function parsePlaceComments(raw: unknown): PlaceCommentsByPlace {
 
     if (Object.keys(commentsForPlace).length > 0) {
       next[placeId] = commentsForPlace;
+    }
+  }
+
+  return next;
+}
+
+// Cache local best-effort du carnet de visite : contrairement à
+// placeCommentsByPlace, ce n'est pas la source de vérité (le carnet est
+// chargé à la demande via subscribeToPlaceVisitLog quand on ouvre un lieu) —
+// juste un affichage instantané des dernières entrées vues, avant que
+// l'abonnement cloud ne rafraîchisse.
+function parseCarnetVisiteCache(raw: unknown): CarnetVisiteLogByPlace {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  const next: CarnetVisiteLogByPlace = {};
+  for (const [placeId, placeValue] of Object.entries(raw as Record<string, unknown>)) {
+    if (!placeValue || typeof placeValue !== "object") {
+      continue;
+    }
+
+    const entriesForPlace: Record<string, CarnetVisiteEntry> = {};
+    for (const [entryId, entryValue] of Object.entries(placeValue as Record<string, unknown>)) {
+      if (!entryValue || typeof entryValue !== "object") {
+        continue;
+      }
+      const candidate = entryValue as Record<string, unknown>;
+      const authorProfileId =
+        typeof candidate.authorProfileId === "string" ? candidate.authorProfileId.trim() : "";
+      const authorSurnameSnapshot =
+        typeof candidate.authorSurnameSnapshot === "string" ? candidate.authorSurnameSnapshot.trim() : "";
+      const text = typeof candidate.text === "string" ? candidate.text : "";
+      const createdAt = typeof candidate.createdAt === "number" ? candidate.createdAt : 0;
+      const updatedAt = typeof candidate.updatedAt === "number" ? candidate.updatedAt : createdAt;
+      const normalizedEntryId =
+        typeof candidate.entryId === "string" && candidate.entryId.trim().length > 0
+          ? candidate.entryId
+          : entryId;
+      const normalizedPlaceId =
+        typeof candidate.placeId === "string" && candidate.placeId.trim().length > 0
+          ? candidate.placeId
+          : placeId;
+
+      if (
+        !authorProfileId ||
+        !authorSurnameSnapshot ||
+        !normalizedEntryId ||
+        !normalizedPlaceId ||
+        text.length > CARNET_ENTRY_MAX_TEXT_LENGTH ||
+        createdAt <= 0 ||
+        updatedAt <= 0
+      ) {
+        continue;
+      }
+
+      const rawPhotos =
+        candidate.photos && typeof candidate.photos === "object"
+          ? (candidate.photos as Record<string, unknown>)
+          : {};
+      const photos: Record<string, string> = {};
+      for (const [photoId, photoValue] of Object.entries(rawPhotos)) {
+        if (Object.keys(photos).length >= CARNET_ENTRY_MAX_PHOTOS) {
+          break;
+        }
+        if (typeof photoValue === "string" && photoValue.length > 0) {
+          photos[photoId] = photoValue;
+        }
+      }
+
+      entriesForPlace[normalizedEntryId] = {
+        entryId: normalizedEntryId,
+        placeId: normalizedPlaceId,
+        authorProfileId,
+        authorSurnameSnapshot,
+        text,
+        photos,
+        createdAt,
+        updatedAt,
+        authorUid:
+          typeof candidate.authorUid === "string" && candidate.authorUid.trim().length > 0
+            ? candidate.authorUid
+            : undefined,
+      };
+    }
+
+    if (Object.keys(entriesForPlace).length > 0) {
+      next[placeId] = entriesForPlace;
     }
   }
 
@@ -7050,6 +7213,279 @@ function ContentDetailScreen({
 
 // ─── PLACE DETAIL SCREEN ─────────────────────────────────────────────────────
 
+// Carnet de visite : notes libres + photos ajoutées par un voyageur ou le
+// propriétaire (le visiteur lit sans pouvoir écrire, cf. canWrite). Affiché
+// avant "Avis de la famille" (PlaceCommentsSection) sur la fiche d'un lieu.
+function CarnetDeVisiteSection({
+  placeId,
+  entries,
+  profile,
+  familyProfiles,
+  onUpsert,
+  onDelete,
+}: {
+  placeId: string;
+  entries: Record<string, CarnetVisiteEntry>;
+  profile: Profile;
+  familyProfiles: Array<{ id: string; surname: string }>;
+  onUpsert: (input: { placeId: string; text: string; photos: Record<string, string>; entryId?: string }) => void;
+  onDelete: (placeId: string, entryId: string) => void;
+}) {
+  const canWrite = profile.role === "utilisateur" || profile.role === "proprietaire";
+  // Lu une seule fois au montage : restaure le brouillon en cours si l'appli
+  // a perdu le focus (autre appli, verrouillage d'écran...) pendant la saisie
+  // (cf. CARNET_DRAFT_STORAGE_KEY).
+  const storedDraftRef = useRef(readStoredCarnetDraft(placeId));
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(
+    () => storedDraftRef.current?.editingEntryId ?? null
+  );
+  const [text, setText] = useState(() => storedDraftRef.current?.text ?? "");
+  const [photos, setPhotos] = useState<string[]>(() => storedDraftRef.current?.photos ?? []);
+  const [isFormOpen, setIsFormOpen] = useState(() => Boolean(storedDraftRef.current));
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoProcessing, setPhotoProcessing] = useState(false);
+  const [textError, setTextError] = useState<string | null>(null);
+
+  // Brouillon debouncé (texte + photos déjà compressées) : même besoin que
+  // PLACE_DRAFT_STORAGE_KEY pour le formulaire d'ajout de visite. Effacé
+  // automatiquement une fois le formulaire fermé (annulation ou validation).
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      if (!isFormOpen || (!text && photos.length === 0)) {
+        localStorage.removeItem(CARNET_DRAFT_STORAGE_KEY);
+        return;
+      }
+      const draft: StoredCarnetDraft = { placeId, editingEntryId, text, photos };
+      try {
+        localStorage.setItem(CARNET_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+      } catch {
+        // Stockage plein ou indisponible : le brouillon reste fonctionnel en
+        // mémoire pour la session en cours, seule la persistance est perdue.
+      }
+    }, 400);
+    return () => window.clearTimeout(timeout);
+  }, [placeId, editingEntryId, text, photos, isFormOpen]);
+
+  const sortedEntries = Object.values(entries).sort((left, right) => left.createdAt - right.createdAt);
+
+  const resolveAuthorSurname = (entry: CarnetVisiteEntry): string => {
+    const profileEntry = familyProfiles.find((item) => item.id === entry.authorProfileId);
+    if (!profileEntry) {
+      return "Profil supprimé";
+    }
+    return profileEntry.surname || entry.authorSurnameSnapshot || "Profil supprimé";
+  };
+
+  function resetForm(): void {
+    setEditingEntryId(null);
+    setText("");
+    setPhotos([]);
+    setPhotoError(null);
+    setTextError(null);
+    setIsFormOpen(false);
+    localStorage.removeItem(CARNET_DRAFT_STORAGE_KEY);
+  }
+
+  function startEditing(entry: CarnetVisiteEntry): void {
+    setEditingEntryId(entry.entryId);
+    setText(entry.text);
+    setPhotos(Object.values(entry.photos));
+    setPhotoError(null);
+    setTextError(null);
+    setIsFormOpen(true);
+  }
+
+  async function handlePhotoFileChange(event: ChangeEvent<HTMLInputElement>): Promise<void> {
+    const file = event.target.files?.[0];
+    // Permet de resélectionner le même fichier plus tard.
+    event.target.value = "";
+    if (!file || photos.length >= CARNET_ENTRY_MAX_PHOTOS) return;
+
+    setPhotoError(null);
+    setPhotoProcessing(true);
+    try {
+      const dataUrl = await compressImageFileToDataUrl(file);
+      setPhotos((previous) => [...previous, dataUrl]);
+    } catch (error) {
+      setPhotoError(
+        error instanceof PlaceImageError ? error.message : "Impossible de traiter cette photo."
+      );
+    } finally {
+      setPhotoProcessing(false);
+    }
+  }
+
+  function removePhoto(index: number): void {
+    setPhotos((previous) => previous.filter((_, photoIndex) => photoIndex !== index));
+  }
+
+  function handleSubmit(): void {
+    const trimmedText = text.trim();
+    if (!trimmedText && photos.length === 0) {
+      setTextError("Ajoutez du texte ou une photo.");
+      return;
+    }
+    if (trimmedText.length > CARNET_ENTRY_MAX_TEXT_LENGTH) {
+      setTextError(`Le texte doit rester sous ${CARNET_ENTRY_MAX_TEXT_LENGTH} caractères.`);
+      return;
+    }
+    setTextError(null);
+
+    const photosById: Record<string, string> = {};
+    photos.forEach((photo, index) => {
+      photosById[`photo-${index}`] = photo;
+    });
+
+    onUpsert({ placeId, text: trimmedText, photos: photosById, entryId: editingEntryId ?? undefined });
+    resetForm();
+  }
+
+  return (
+    <div className="px-4 mb-6">
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <h2 className="flex items-center gap-2 text-base font-black text-foreground">
+          <BookOpen size={18} />
+          Carnet de visite
+        </h2>
+
+        {sortedEntries.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Personne n'a encore ajouté de souvenir ici{canWrite ? ", soyez le premier" : ""}.
+          </p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {sortedEntries.map((entry) => {
+              const entryPhotos = Object.values(entry.photos);
+              const isOwnEntry = entry.authorProfileId === profile.id;
+              return (
+                <div key={entry.entryId} className="rounded-xl border border-border/80 bg-background p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-black text-foreground">{resolveAuthorSurname(entry)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(entry.updatedAt).toLocaleDateString("fr-FR")}
+                      </p>
+                    </div>
+                    {isOwnEntry && (
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => startEditing(entry)}
+                          className="text-muted-foreground"
+                          aria-label="Modifier cette entrée du carnet"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => onDelete(placeId, entry.entryId)}
+                          className="text-muted-foreground"
+                          aria-label="Supprimer cette entrée du carnet"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {entry.text ? (
+                    <p className="mt-2 text-sm text-foreground/85 break-words whitespace-pre-wrap">{entry.text}</p>
+                  ) : null}
+                  {entryPhotos.length > 0 && (
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {entryPhotos.map((photo, index) => (
+                        <img
+                          key={index}
+                          src={photo}
+                          alt="Photo ajoutée au carnet de visite"
+                          className="w-full h-20 rounded-lg object-cover"
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {canWrite && (
+          <div className="mt-4 rounded-xl bg-muted/50 p-3">
+            {isFormOpen ? (
+              <>
+                <p className="text-sm font-black text-foreground">
+                  {editingEntryId ? "Modifier mon entrée" : "Ajouter un souvenir"}
+                </p>
+                <textarea
+                  value={text}
+                  onChange={(event) => {
+                    setText(event.target.value);
+                    setTextError(null);
+                  }}
+                  placeholder="Ce que vous avez appris, vu ou entendu pendant la visite..."
+                  rows={4}
+                  className="mt-2 w-full rounded-xl border border-border bg-background p-3 text-sm text-foreground outline-none focus:border-primary resize-y"
+                />
+                {photos.length > 0 && (
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {photos.map((photo, index) => (
+                      <div key={index} className="relative h-20 rounded-lg overflow-hidden bg-muted">
+                        <img src={photo} alt="Aperçu de la photo" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(index)}
+                          className="absolute top-1 right-1 rounded-full bg-background/90 p-1 text-muted-foreground shadow"
+                          aria-label="Retirer la photo"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {photos.length < CARNET_ENTRY_MAX_PHOTOS && (
+                  <label className="mt-2 inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-black uppercase tracking-widest cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoFileChange}
+                      className="hidden"
+                      aria-label="Ajouter une photo depuis l'appareil"
+                    />
+                    {photoProcessing
+                      ? "Traitement en cours..."
+                      : `Ajouter une photo (${photos.length}/${CARNET_ENTRY_MAX_PHOTOS})`}
+                  </label>
+                )}
+                {photoError && <p className="mt-2 text-xs font-semibold text-destructive">{photoError}</p>}
+                {textError && <p className="mt-2 text-xs text-destructive">{textError}</p>}
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={handleSubmit}
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-black text-primary-foreground active:scale-95 transition-transform"
+                  >
+                    <Check size={16} /> {editingEntryId ? "Enregistrer" : "Ajouter au carnet"}
+                  </button>
+                  <button
+                    onClick={resetForm}
+                    className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-black text-foreground"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </>
+            ) : (
+              <button
+                onClick={() => setIsFormOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-black text-primary-foreground active:scale-95 transition-transform"
+              >
+                <Plus size={16} /> Ajouter un souvenir
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PlaceCommentsSection({
   placeId,
   comments,
@@ -7269,6 +7705,9 @@ function PlaceScreen({
   familyProfiles,
   comments,
   onUpsertComment,
+  carnetEntries,
+  onUpsertCarnetEntry,
+  onDeleteCarnetEntry,
   onBack,
   onOpenVisiteGuidee,
   onOpenInternalLink,
@@ -7281,6 +7720,9 @@ function PlaceScreen({
   familyProfiles: Array<{ id: string; surname: string }>;
   comments: Record<string, PlaceComment>;
   onUpsertComment: (input: { placeId: string; reaction: PlaceCommentReaction | null; text: string }) => void;
+  carnetEntries: Record<string, CarnetVisiteEntry>;
+  onUpsertCarnetEntry: (input: { placeId: string; text: string; photos: Record<string, string>; entryId?: string }) => void;
+  onDeleteCarnetEntry: (placeId: string, entryId: string) => void;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
   onOpenInternalLink: (url: string) => boolean;
@@ -7306,13 +7748,23 @@ function PlaceScreen({
       isOwner={profile.role === "proprietaire" && !isOwnerAddedPlace}
       onSaveOverride={(patch) => onSaveContentOverride("places", place.id, patch)}
       extraSection={
-        <PlaceCommentsSection
-          placeId={place.id}
-          comments={comments}
-          profile={profile}
-          familyProfiles={familyProfiles}
-          onUpsert={onUpsertComment}
-        />
+        <>
+          <CarnetDeVisiteSection
+            placeId={place.id}
+            entries={carnetEntries}
+            profile={profile}
+            familyProfiles={familyProfiles}
+            onUpsert={onUpsertCarnetEntry}
+            onDelete={onDeleteCarnetEntry}
+          />
+          <PlaceCommentsSection
+            placeId={place.id}
+            comments={comments}
+            profile={profile}
+            familyProfiles={familyProfiles}
+            onUpsert={onUpsertComment}
+          />
+        </>
       }
     />
   );
@@ -10776,6 +11228,18 @@ export default function App() {
     setPlaceDayOverride,
     setPlaceVisibility: setPlaceVisibilityInCloud,
     setPlaceSeen: setPlaceSeenInCloud,
+    // Défauts de secours : ces trois fonctions carnet de visite sont plus
+    // récentes que la plupart des mocks useCloudSync des tests d'intégration
+    // (qui fournissent un objet réduit à la main). subscribeToPlaceVisitLog
+    // est en plus appelée automatiquement dès qu'un lieu est ouvert (effet
+    // sur selectedPlaceId), contrairement aux autres fonctions cloud
+    // ci-dessus qui ne sont déclenchées que par une action utilisateur — un
+    // mock qui ne la fournit pas ne doit donc pas faire planter tout l'écran
+    // "place". Sans effet en production : useCloudSync() fournit toujours
+    // les vraies implémentations.
+    subscribeToPlaceVisitLog = () => () => {},
+    upsertCarnetVisiteEntry: upsertCarnetVisiteEntryInCloud = async () => {},
+    deleteCarnetVisiteEntry: deleteCarnetVisiteEntryInCloud = async () => {},
     setContentOverride: setContentOverrideInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
@@ -11060,6 +11524,19 @@ export default function App() {
     try {
       const parsed = JSON.parse(localStorage.getItem(PLACE_COMMENTS_STORAGE_KEY) || "{}");
       return parsePlaceComments(parsed);
+    } catch {
+      return {};
+    }
+  });
+  // Contrairement à placeCommentsByPlace, on seed toujours depuis le cache
+  // local (même si cloudEnabled) : le carnet est chargé à la demande par lieu
+  // (pas via le snapshot famille global), donc rien ne le remplira tant qu'on
+  // n'a pas ouvert la fiche d'un lieu — le cache permet un affichage immédiat
+  // des dernières entrées déjà vues en attendant l'abonnement cloud.
+  const [carnetVisiteByPlace, setCarnetVisiteByPlace] = useState<CarnetVisiteLogByPlace>(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(CARNET_VISITE_CACHE_STORAGE_KEY) || "{}");
+      return parseCarnetVisiteCache(parsed);
     } catch {
       return {};
     }
@@ -13624,6 +14101,38 @@ export default function App() {
     }
   }, [screen, selectedPlaceId, profile.role, placeVisibilityMap]);
 
+  // Cache local best-effort (voir parseCarnetVisiteCache) : pas de debounce
+  // nécessaire, le volume de données change rarement (une entrée à la fois).
+  useEffect(() => {
+    try {
+      localStorage.setItem(CARNET_VISITE_CACHE_STORAGE_KEY, JSON.stringify(carnetVisiteByPlace));
+    } catch {
+      // Ignore storage errors (quota dépassé, navigation privée...)
+    }
+  }, [carnetVisiteByPlace]);
+
+  // Carnet de visite chargé à la demande : abonnement scope au seul lieu
+  // actuellement ouvert (subscribeToPlaceVisitLog), pas au flux famille
+  // global. Se désabonne dès qu'on change de lieu ou qu'on quitte la fiche.
+  useEffect(() => {
+    if (!selectedPlaceId) {
+      return;
+    }
+
+    const placeId = selectedPlaceId;
+    const unsubscribe = subscribeToPlaceVisitLog(
+      placeId,
+      (log) => {
+        setCarnetVisiteByPlace((previous) => ({ ...previous, [placeId]: log }));
+      },
+      () => {
+        console.error("[carnet-visite] subscription failed", { placeId });
+      }
+    );
+
+    return () => unsubscribe();
+  }, [selectedPlaceId, subscribeToPlaceVisitLog]);
+
   // Contenu des 4 rubriques après application des corrections/ajouts du
   // propriétaire (contentOverrides). Les champs non modifiés restent ceux
   // des fichiers .ts sources (voir applyContentOverride).
@@ -13762,6 +14271,75 @@ export default function App() {
 
       return next;
     });
+  };
+
+  // Carnet de visite : contrairement à upsertPlaceComment, pas de pendingRef
+  // ni de réconciliation au prochain snapshot famille — le carnet vit hors du
+  // snapshot global, donc l'écriture cloud se fait directement ici (comme
+  // setPlaceSeen/setContentOverride ci-dessus), en plus de la mise à jour
+  // optimiste de l'état local.
+  const upsertCarnetVisiteEntry = (input: {
+    placeId: string;
+    text: string;
+    photos: Record<string, string>;
+    entryId?: string;
+  }) => {
+    if (!profile.role || profile.role === "visiteur") {
+      return;
+    }
+
+    const now = Date.now();
+    const authorProfileId = profile.id;
+    const entryId = input.entryId ?? `${authorProfileId}-${now}`;
+    const authorSurnameSnapshot = profile.surname.trim() || "Profil";
+    const existing = carnetVisiteByPlace[input.placeId]?.[entryId];
+
+    const nextEntry: CarnetVisiteEntry = {
+      entryId,
+      placeId: input.placeId,
+      authorProfileId,
+      authorSurnameSnapshot,
+      text: input.text,
+      photos: input.photos,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      authorUid: cloudActorUid ?? undefined,
+    };
+
+    setCarnetVisiteByPlace((previous) => {
+      const placeEntries = previous[input.placeId] ?? {};
+      return {
+        ...previous,
+        [input.placeId]: {
+          ...placeEntries,
+          [entryId]: nextEntry,
+        },
+      };
+    });
+
+    if (cloudEnabled) {
+      void upsertCarnetVisiteEntryInCloud(nextEntry).catch((error) => {
+        console.error("[carnet-visite] cloud write failed", {
+          placeId: input.placeId,
+          entryId,
+          error,
+        });
+      });
+    }
+  };
+
+  const deleteCarnetVisiteEntry = (placeId: string, entryId: string) => {
+    setCarnetVisiteByPlace((previous) => {
+      const placeEntries = { ...(previous[placeId] ?? {}) };
+      delete placeEntries[entryId];
+      return { ...previous, [placeId]: placeEntries };
+    });
+
+    if (cloudEnabled) {
+      void deleteCarnetVisiteEntryInCloud(placeId, entryId).catch((error) => {
+        console.error("[carnet-visite] cloud delete failed", { placeId, entryId, error });
+      });
+    }
   };
 
   const openVisiteGuidee = (item: ContentTopic, backScreen: Screen) => {
@@ -15143,6 +15721,10 @@ const resetForProfileSwitch = () => {
     selectedPlaceId && placeCommentsByPlace[selectedPlaceId]
       ? placeCommentsByPlace[selectedPlaceId]
       : {};
+  const carnetVisiteForSelectedPlace =
+    selectedPlaceId && carnetVisiteByPlace[selectedPlaceId]
+      ? carnetVisiteByPlace[selectedPlaceId]
+      : {};
   const effectiveScreen = canAccessCurrentScreen
     ? screen
     : getSafeScreen(profile.role, phase);
@@ -16146,6 +16728,9 @@ const resetForProfileSwitch = () => {
             familyProfiles={familyProfilesForComments}
             comments={placeCommentsForSelectedPlace}
             onUpsertComment={upsertPlaceComment}
+            carnetEntries={carnetVisiteForSelectedPlace}
+            onUpsertCarnetEntry={upsertCarnetVisiteEntry}
+            onDeleteCarnetEntry={deleteCarnetVisiteEntry}
             onBack={() => goToScreen("guide")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
             onOpenInternalLink={openInternalLink}
@@ -16604,6 +17189,9 @@ const resetForProfileSwitch = () => {
             familyProfiles={familyProfilesForComments}
             comments={placeCommentsForSelectedPlace}
             onUpsertComment={upsertPlaceComment}
+            carnetEntries={carnetVisiteForSelectedPlace}
+            onUpsertCarnetEntry={upsertCarnetVisiteEntry}
+            onDeleteCarnetEntry={deleteCarnetVisiteEntry}
             onBack={() => goToScreen("guide")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "place")}
             onOpenInternalLink={openInternalLink}

@@ -3,10 +3,12 @@ import { type Role, type SharedFamilyState } from "../app/owner-policy";
 import {
   claimProfileRole,
   deleteProfileFromCloud,
+  deletePlaceVisitLogEntry,
   ensureFamilyMembership,
   ensureOwnerMembership,
   ensureProfileMembership,
   observeFamilySnapshot,
+  observePlaceVisitLog,
   pushDestinationSurveyVoteOnly,
   pushCloudSnapshot,
   pushFamilyPhaseChange,
@@ -19,6 +21,7 @@ import {
   pushTripStartDate,
   resetGameProgressInCloud,
   resetGameResultsInCloud,
+  upsertPlaceVisitLogEntry,
 } from "../services/cloudSyncProvider";
 import {
   ensureFirebaseAnonymousAuth,
@@ -32,6 +35,8 @@ import type {
   ChecklistRemovalState,
   ChecklistState,
   CloudCandyCrushChallenge,
+  CloudCarnetVisiteEntry,
+  CloudCarnetVisiteLog,
   CloudChallengeBestVotesByDay,
   CloudChallengeReactionsByDay,
   CloudDestinationSurveyVote,
@@ -955,6 +960,49 @@ export function useCloudSync() {
     }
   }, [cloudUserUid, database, familyId, isEnabled]);
 
+  // Carnet de visite : chemin séparé de families/$familyId, chargé à la
+  // demande par lieu (cf. observePlaceVisitLog dans cloudSyncProvider.ts) —
+  // pas de dépendance à ownerMembers, voyageur et propriétaire peuvent tous
+  // les deux écrire (le rôle "visiteur" est refusé côté règles Firebase en
+  // lisant families/$familyId/profiles/$authorProfileId/role).
+  const subscribeToPlaceVisitLog = useCallback(
+    (
+      placeId: string,
+      onSnapshot: (log: CloudCarnetVisiteLog) => void,
+      onError?: () => void
+    ): (() => void) => {
+      if (!isEnabled || !database) {
+        return () => {};
+      }
+      return observePlaceVisitLog(database, familyId, placeId, onSnapshot, onError);
+    },
+    [database, familyId, isEnabled]
+  );
+
+  const upsertCarnetVisiteEntry = useCallback(
+    async (entry: CloudCarnetVisiteEntry): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await upsertPlaceVisitLogEntry(database, familyId, entry);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  const deleteCarnetVisiteEntry = useCallback(
+    async (placeId: string, entryId: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await deletePlaceVisitLogEntry(database, familyId, placeId, entryId);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
@@ -967,6 +1015,9 @@ export function useCloudSync() {
     setGameDayOverride,
     setPlaceVisibility,
     setPlaceSeen,
+    subscribeToPlaceVisitLog,
+    upsertCarnetVisiteEntry,
+    deleteCarnetVisiteEntry,
     setPlaceDayOverride,
     setContentOverride,
     setTripStartDate,
