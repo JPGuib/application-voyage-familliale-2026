@@ -52,6 +52,32 @@
         }
       }
     },
+    "contentVisitLogs": {
+      "$familyId": {
+        ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
+        ".write": false,
+        "$source": {
+          "$itemId": {
+            "$entryId": {
+              ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && ((newData.val() === null && (!data.exists() || data.child('authorUid').val() === auth.uid)) || (!data.exists() && newData.val() !== null && newData.child('authorUid').val() === auth.uid && root.child('families').child($familyId).child('profiles').child(newData.child('authorProfileId').val()).child('memberUids').child(auth.uid).val() === true && root.child('families').child($familyId).child('profiles').child(newData.child('authorProfileId').val()).child('role').val() !== 'visiteur') || (data.exists() && newData.val() !== null && data.child('authorUid').val() === auth.uid && newData.child('authorUid').val() === auth.uid && root.child('families').child($familyId).child('profiles').child(newData.child('authorProfileId').val()).child('memberUids').child(auth.uid).val() === true && root.child('families').child($familyId).child('profiles').child(newData.child('authorProfileId').val()).child('role').val() !== 'visiteur'))",
+              ".validate": "newData.val() === null || (newData.hasChildren(['entryId','source','itemId','authorProfileId','authorSurnameSnapshot','text','createdAt','updatedAt','authorUid']) && newData.child('entryId').isString() && newData.child('entryId').val() === $entryId && newData.child('source').isString() && newData.child('source').val() === $source && newData.child('itemId').isString() && newData.child('itemId').val() === $itemId && newData.child('authorProfileId').isString() && newData.child('authorProfileId').val().length > 0 && newData.child('authorSurnameSnapshot').isString() && newData.child('authorSurnameSnapshot').val().length > 0 && newData.child('authorSurnameSnapshot').val().length <= 80 && newData.child('text').isString() && newData.child('text').val().length <= 20000 && newData.child('createdAt').isNumber() && newData.child('updatedAt').isNumber() && newData.child('authorUid').isString() && newData.child('authorUid').val().length > 0)",
+              "entryId": {},
+              "source": {},
+              "itemId": {},
+              "authorProfileId": {},
+              "authorSurnameSnapshot": {},
+              "text": {},
+              "createdAt": {},
+              "updatedAt": {},
+              "authorUid": {},
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        }
+      }
+    },
     "families": {
       "$familyId": {
         ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",

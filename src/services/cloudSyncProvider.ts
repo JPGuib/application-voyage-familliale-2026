@@ -27,6 +27,8 @@ import type {
   CloudGameProgress,
   CloudCarnetVisiteEntry,
   CloudCarnetVisiteLog,
+  CloudCarnetContentEntry,
+  CloudCarnetContentLog,
   CloudPlaceComment,
   CloudPlaceCommentsByPlace,
   CloudDestinationSurveyByProfile,
@@ -848,6 +850,88 @@ function parseContentOverrideMap(value: unknown): ContentOverrideMap {
   return next;
 }
 
+function toContentSource(value: unknown, fallback: ContentSource): ContentSource {
+  return typeof value === "string" && (CONTENT_SOURCES as readonly string[]).includes(value)
+    ? (value as ContentSource)
+    : fallback;
+}
+
+// Carnet de visite pour les rubriques de contenu (Histoire, Culture et
+// tradition, Géographie et économie) — même principe que
+// parseCarnetVisiteEntry/parseCarnetVisiteLog ci-dessus pour les lieux, mais
+// sans photos (demande explicite) et avec une clé composite [source][itemId]
+// (cf. CloudCarnetContentEntry).
+function parseCarnetContentEntry(
+  source: ContentSource,
+  itemId: string,
+  entryId: string,
+  value: unknown
+): CloudCarnetContentEntry | null {
+  const entry = asRecord(value);
+  const normalizedEntryId =
+    typeof entry.entryId === "string" && entry.entryId.trim().length > 0 ? entry.entryId : entryId;
+  const normalizedSource = toContentSource(entry.source, source);
+  const normalizedItemId =
+    typeof entry.itemId === "string" && entry.itemId.trim().length > 0 ? entry.itemId : itemId;
+  const authorProfileId =
+    typeof entry.authorProfileId === "string" ? entry.authorProfileId.trim() : "";
+  const authorSurnameSnapshot =
+    typeof entry.authorSurnameSnapshot === "string" ? entry.authorSurnameSnapshot.trim() : "";
+  const text = typeof entry.text === "string" ? entry.text : "";
+  const createdAt = toFiniteNumber(entry.createdAt, 0);
+  const updatedAt = toFiniteNumber(entry.updatedAt, createdAt);
+
+  if (
+    !authorProfileId ||
+    !authorSurnameSnapshot ||
+    !normalizedEntryId ||
+    !normalizedItemId ||
+    text.length > CARNET_VISITE_MAX_TEXT_LENGTH ||
+    createdAt <= 0 ||
+    updatedAt <= 0
+  ) {
+    return null;
+  }
+
+  const authorUid =
+    typeof entry.authorUid === "string" && entry.authorUid.trim().length > 0
+      ? entry.authorUid
+      : undefined;
+
+  return {
+    entryId: normalizedEntryId,
+    source: normalizedSource,
+    itemId: normalizedItemId,
+    authorProfileId,
+    authorSurnameSnapshot,
+    text,
+    createdAt,
+    updatedAt,
+    authorUid,
+  };
+}
+
+// Contrairement à parseCarnetVisiteLog, ne parse le carnet que d'UN item de
+// contenu à la fois (source + itemId) : appelé depuis observeContentVisitLog,
+// jamais depuis parseCloudSnapshot (ce carnet vit hors de families/$familyId).
+function parseCarnetContentLog(
+  source: ContentSource,
+  itemId: string,
+  value: unknown
+): CloudCarnetContentLog {
+  const entryRecords = asRecord(value);
+  const next: CloudCarnetContentLog = {};
+
+  for (const [entryId, entryValue] of Object.entries(entryRecords)) {
+    const parsed = parseCarnetContentEntry(source, itemId, entryId, entryValue);
+    if (parsed) {
+      next[parsed.entryId] = parsed;
+    }
+  }
+
+  return next;
+}
+
 function normalizePlaceDays(value: unknown): number[] {
   const rawValues = Array.isArray(value)
     ? value
@@ -1242,6 +1326,48 @@ export async function deletePlaceVisitLogEntry(
   entryId: string
 ): Promise<void> {
   await set(ref(database, `placeVisitLogs/${familyId}/${placeId}/${entryId}`), null);
+}
+
+// Même principe qu'observePlaceVisitLog/upsertPlaceVisitLogEntry/
+// deletePlaceVisitLogEntry ci-dessus, pour le carnet de visite des rubriques
+// de contenu (Histoire, Culture et tradition, Géographie et économie) :
+// chemin séparé contentVisitLogs/$familyId/$source/$itemId, chargé à la
+// demande, sans photos.
+export function observeContentVisitLog(
+  database: Database,
+  familyId: string,
+  source: ContentSource,
+  itemId: string,
+  onSnapshot: (log: CloudCarnetContentLog) => void,
+  onError?: () => void
+): () => void {
+  const logRef = ref(database, `contentVisitLogs/${familyId}/${source}/${itemId}`);
+  return onValue(
+    logRef,
+    (snapshot) => onSnapshot(parseCarnetContentLog(source, itemId, snapshot.val())),
+    () => onError?.()
+  );
+}
+
+export async function upsertContentVisitLogEntry(
+  database: Database,
+  familyId: string,
+  entry: CloudCarnetContentEntry
+): Promise<void> {
+  await set(
+    ref(database, `contentVisitLogs/${familyId}/${entry.source}/${entry.itemId}/${entry.entryId}`),
+    entry
+  );
+}
+
+export async function deleteContentVisitLogEntry(
+  database: Database,
+  familyId: string,
+  source: ContentSource,
+  itemId: string,
+  entryId: string
+): Promise<void> {
+  await set(ref(database, `contentVisitLogs/${familyId}/${source}/${itemId}/${entryId}`), null);
 }
 
 export async function pushCloudSnapshot(

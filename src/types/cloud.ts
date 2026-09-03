@@ -167,6 +167,28 @@ export type CloudCarnetVisiteEntry = {
 
 export type CloudCarnetVisiteLog = Record<string, CloudCarnetVisiteEntry>; // entryId -> entrée
 
+// Même principe que CloudCarnetVisiteEntry, mais pour les rubriques de
+// contenu (Histoire, Culture et tradition, Géographie et économie) plutôt
+// que pour un lieu du Guide du séjour : PAS de photos (demande explicite),
+// et clé composite [source][itemId] plutôt que placeId seul, car les ids de
+// topics ne sont uniques qu'au sein d'une même rubrique (même pattern que
+// ContentOverrideMap). Stocké hors de families/$familyId, chemin
+// contentVisitLogs/$familyId/$source/$itemId/$entryId, chargé à la demande
+// (voir observeContentVisitLog dans cloudSyncProvider.ts).
+export type CloudCarnetContentEntry = {
+  entryId: string;
+  source: ContentSource;
+  itemId: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  text: string;
+  createdAt: number;
+  updatedAt: number;
+  authorUid?: string;
+};
+
+export type CloudCarnetContentLog = Record<string, CloudCarnetContentEntry>; // entryId -> entrée
+
 export type CloudDestinationSurveyVote = {
   profileId: string;
   proposals: string[];

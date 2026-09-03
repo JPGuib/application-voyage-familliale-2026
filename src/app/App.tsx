@@ -510,6 +510,49 @@ function readStoredCarnetDraft(placeId: string): StoredCarnetDraft | null {
   }
 }
 
+const CARNET_CONTENT_CACHE_STORAGE_KEY = "jp-carnet-content-cache";
+
+// Brouillon en cours du carnet de visite d'une rubrique de contenu (Histoire,
+// Culture et tradition, Géographie et économie) — même besoin et même
+// mécanique que CARNET_DRAFT_STORAGE_KEY ci-dessus, mais sans photos et clé
+// composite [source, itemId] au lieu de placeId. Fichier séparé plutôt que
+// réutiliser CARNET_DRAFT_STORAGE_KEY pour ne jamais mélanger un brouillon de
+// lieu avec un brouillon de rubrique de contenu.
+const CARNET_CONTENT_DRAFT_STORAGE_KEY = "jp-carnet-content-draft";
+
+type StoredCarnetContentDraft = {
+  source: ContentSource;
+  itemId: string;
+  editingEntryId: string | null;
+  text: string;
+};
+
+function readStoredCarnetContentDraft(
+  source: ContentSource,
+  itemId: string
+): StoredCarnetContentDraft | null {
+  try {
+    const raw = localStorage.getItem(CARNET_CONTENT_DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<StoredCarnetContentDraft>;
+    if (!parsed || parsed.source !== source || parsed.itemId !== itemId) {
+      return null;
+    }
+    const text = typeof parsed.text === "string" ? parsed.text : "";
+    if (!text) {
+      return null;
+    }
+    return {
+      source,
+      itemId,
+      editingEntryId: typeof parsed.editingEntryId === "string" ? parsed.editingEntryId : null,
+      text,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
 type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "trivial" | "jeux" | "candy-crush" | "crossword" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
@@ -661,6 +704,32 @@ type CarnetVisiteEntry = {
   authorUid?: string;
 };
 type CarnetVisiteLogByPlace = Record<string, Record<string, CarnetVisiteEntry>>; // placeId -> entryId -> entrée
+
+// Même principe que CarnetVisiteEntry, pour les rubriques de contenu
+// (Histoire, Culture et tradition, Géographie et économie) plutôt qu'un lieu
+// du Guide du séjour : PAS de photos (demande explicite — les règles Firebase
+// interdisent ce champ, cf. contentVisitLogs dans database.rules.*.json), et
+// clé composite source+itemId au lieu de placeId seul, car les ids de topics
+// ne sont uniques qu'au sein d'une même rubrique (même logique que
+// ContentOverrideMap ci-dessus).
+type CarnetContentEntry = {
+  entryId: string;
+  source: ContentSource;
+  itemId: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  text: string;
+  createdAt: number;
+  updatedAt: number;
+  authorUid?: string;
+};
+// Clé composite `${source}::${itemId}` -> entryId -> entrée (voir carnetContentKey).
+type CarnetContentLogByKey = Record<string, Record<string, CarnetContentEntry>>;
+
+function carnetContentKey(source: ContentSource, itemId: string): string {
+  return `${source}::${itemId}`;
+}
+
 type ChallengeReactionEmoji = "love" | "laugh" | "wow" | "clap";
 type ChallengeReaction = {
   day: number;
@@ -1321,6 +1390,85 @@ function parseCarnetVisiteCache(raw: unknown): CarnetVisiteLogByPlace {
 
     if (Object.keys(entriesForPlace).length > 0) {
       next[placeId] = entriesForPlace;
+    }
+  }
+
+  return next;
+}
+
+function isContentSource(value: unknown): value is ContentSource {
+  return typeof value === "string" && (CONTENT_SOURCES as readonly string[]).includes(value);
+}
+
+// Cache local best-effort du carnet de visite des rubriques de contenu
+// (Histoire, Culture et tradition, Géographie et économie) — même esprit que
+// parseCarnetVisiteCache ci-dessus pour les lieux, mais sans photos et clé
+// composite carnetContentKey(source, itemId) plutôt que placeId.
+function parseCarnetContentCache(raw: unknown): CarnetContentLogByKey {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  const next: CarnetContentLogByKey = {};
+  for (const [key, keyValue] of Object.entries(raw as Record<string, unknown>)) {
+    if (!keyValue || typeof keyValue !== "object") {
+      continue;
+    }
+
+    const entriesForKey: Record<string, CarnetContentEntry> = {};
+    for (const [entryId, entryValue] of Object.entries(keyValue as Record<string, unknown>)) {
+      if (!entryValue || typeof entryValue !== "object") {
+        continue;
+      }
+      const candidate = entryValue as Record<string, unknown>;
+      const authorProfileId =
+        typeof candidate.authorProfileId === "string" ? candidate.authorProfileId.trim() : "";
+      const authorSurnameSnapshot =
+        typeof candidate.authorSurnameSnapshot === "string" ? candidate.authorSurnameSnapshot.trim() : "";
+      const text = typeof candidate.text === "string" ? candidate.text : "";
+      const createdAt = typeof candidate.createdAt === "number" ? candidate.createdAt : 0;
+      const updatedAt = typeof candidate.updatedAt === "number" ? candidate.updatedAt : createdAt;
+      const normalizedEntryId =
+        typeof candidate.entryId === "string" && candidate.entryId.trim().length > 0
+          ? candidate.entryId
+          : entryId;
+      const source = isContentSource(candidate.source) ? candidate.source : null;
+      const itemId =
+        typeof candidate.itemId === "string" && candidate.itemId.trim().length > 0
+          ? candidate.itemId
+          : null;
+
+      if (
+        !authorProfileId ||
+        !authorSurnameSnapshot ||
+        !normalizedEntryId ||
+        !source ||
+        !itemId ||
+        text.length > CARNET_ENTRY_MAX_TEXT_LENGTH ||
+        createdAt <= 0 ||
+        updatedAt <= 0
+      ) {
+        continue;
+      }
+
+      entriesForKey[normalizedEntryId] = {
+        entryId: normalizedEntryId,
+        source,
+        itemId,
+        authorProfileId,
+        authorSurnameSnapshot,
+        text,
+        createdAt,
+        updatedAt,
+        authorUid:
+          typeof candidate.authorUid === "string" && candidate.authorUid.trim().length > 0
+            ? candidate.authorUid
+            : undefined,
+      };
+    }
+
+    if (Object.keys(entriesForKey).length > 0) {
+      next[key] = entriesForKey;
     }
   }
 
@@ -7593,6 +7741,195 @@ function CarnetDeVisiteSection({
   );
 }
 
+// Carnet de visite pour une rubrique de contenu (Histoire, Culture et
+// tradition, Géographie et économie) — même principe et même écriture
+// réservée voyageur/propriétaire que CarnetDeVisiteSection ci-dessus, mais
+// SANS photos (demande explicite ; les règles Firebase contentVisitLogs
+// interdisent d'ailleurs ce champ côté serveur).
+function CarnetDeVisiteContentSection({
+  source,
+  itemId,
+  entries,
+  profile,
+  familyProfiles,
+  onUpsert,
+  onDelete,
+}: {
+  source: ContentSource;
+  itemId: string;
+  entries: Record<string, CarnetContentEntry>;
+  profile: Profile;
+  familyProfiles: Array<{ id: string; surname: string }>;
+  onUpsert: (input: { source: ContentSource; itemId: string; text: string; entryId?: string }) => void;
+  onDelete: (source: ContentSource, itemId: string, entryId: string) => void;
+}) {
+  const canWrite = profile.role === "utilisateur" || profile.role === "proprietaire";
+  const storedDraftRef = useRef(readStoredCarnetContentDraft(source, itemId));
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(
+    () => storedDraftRef.current?.editingEntryId ?? null
+  );
+  const [text, setText] = useState(() => storedDraftRef.current?.text ?? "");
+  const [isFormOpen, setIsFormOpen] = useState(() => Boolean(storedDraftRef.current));
+  const [textError, setTextError] = useState<string | null>(null);
+
+  // Brouillon debouncé : même besoin que CarnetDeVisiteSection ci-dessus.
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      if (!isFormOpen || !text) {
+        localStorage.removeItem(CARNET_CONTENT_DRAFT_STORAGE_KEY);
+        return;
+      }
+      const draft: StoredCarnetContentDraft = { source, itemId, editingEntryId, text };
+      try {
+        localStorage.setItem(CARNET_CONTENT_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+      } catch {
+        // Stockage plein ou indisponible : le brouillon reste fonctionnel en
+        // mémoire pour la session en cours, seule la persistance est perdue.
+      }
+    }, 400);
+    return () => window.clearTimeout(timeout);
+  }, [source, itemId, editingEntryId, text, isFormOpen]);
+
+  const sortedEntries = Object.values(entries).sort((left, right) => left.createdAt - right.createdAt);
+
+  const resolveAuthorSurname = (entry: CarnetContentEntry): string => {
+    const profileEntry = familyProfiles.find((item) => item.id === entry.authorProfileId);
+    if (!profileEntry) {
+      return "Profil supprimé";
+    }
+    return profileEntry.surname || entry.authorSurnameSnapshot || "Profil supprimé";
+  };
+
+  function resetForm(): void {
+    setEditingEntryId(null);
+    setText("");
+    setTextError(null);
+    setIsFormOpen(false);
+    localStorage.removeItem(CARNET_CONTENT_DRAFT_STORAGE_KEY);
+  }
+
+  function startEditing(entry: CarnetContentEntry): void {
+    setEditingEntryId(entry.entryId);
+    setText(entry.text);
+    setTextError(null);
+    setIsFormOpen(true);
+  }
+
+  function handleSubmit(): void {
+    const trimmedText = text.trim();
+    if (!trimmedText) {
+      setTextError("Ajoutez du texte.");
+      return;
+    }
+    if (trimmedText.length > CARNET_ENTRY_MAX_TEXT_LENGTH) {
+      setTextError(`Le texte doit rester sous ${CARNET_ENTRY_MAX_TEXT_LENGTH} caractères.`);
+      return;
+    }
+    setTextError(null);
+
+    onUpsert({ source, itemId, text: trimmedText, entryId: editingEntryId ?? undefined });
+    resetForm();
+  }
+
+  return (
+    <div className="px-4 mb-6">
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <h2 className="flex items-center gap-2 text-base font-black text-foreground">
+          <BookOpen size={18} />
+          Carnet de visite
+        </h2>
+
+        {sortedEntries.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Personne n'a encore ajouté de souvenir ici{canWrite ? ", soyez le premier" : ""}.
+          </p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            {sortedEntries.map((entry) => {
+              const isOwnEntry = entry.authorProfileId === profile.id;
+              return (
+                <div key={entry.entryId} className="rounded-xl border border-border/80 bg-background p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-black text-foreground">{resolveAuthorSurname(entry)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(entry.updatedAt).toLocaleDateString("fr-FR")}
+                      </p>
+                    </div>
+                    {isOwnEntry && (
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => startEditing(entry)}
+                          className="text-muted-foreground"
+                          aria-label="Modifier cette entrée du carnet"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => onDelete(source, itemId, entry.entryId)}
+                          className="text-muted-foreground"
+                          aria-label="Supprimer cette entrée du carnet"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm text-foreground/85 break-words whitespace-pre-wrap">{entry.text}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {canWrite && (
+          <div className="mt-4 rounded-xl bg-muted/50 p-3">
+            {isFormOpen ? (
+              <>
+                <p className="text-sm font-black text-foreground">
+                  {editingEntryId ? "Modifier mon entrée" : "Ajouter un souvenir"}
+                </p>
+                <textarea
+                  value={text}
+                  onChange={(event) => {
+                    setText(event.target.value);
+                    setTextError(null);
+                  }}
+                  placeholder="Ce que vous avez appris, vu ou entendu..."
+                  rows={4}
+                  className="mt-2 w-full rounded-xl border border-border bg-background p-3 text-sm text-foreground outline-none focus:border-primary resize-y"
+                />
+                {textError && <p className="mt-2 text-xs text-destructive">{textError}</p>}
+                <div className="mt-3 flex gap-2">
+                  <button
+                    onClick={handleSubmit}
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-black text-primary-foreground active:scale-95 transition-transform"
+                  >
+                    <Check size={16} /> {editingEntryId ? "Enregistrer" : "Ajouter au carnet"}
+                  </button>
+                  <button
+                    onClick={resetForm}
+                    className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-black text-foreground"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </>
+            ) : (
+              <button
+                onClick={() => setIsFormOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-black text-primary-foreground active:scale-95 transition-transform"
+              >
+                <Plus size={16} /> Ajouter un souvenir
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PlaceCommentsSection({
   placeId,
   comments,
@@ -7882,6 +8219,10 @@ function PlaceScreen({
 function HistoireTopicScreen({
   topic,
   profile,
+  familyProfiles,
+  carnetEntries,
+  onUpsertCarnetEntry,
+  onDeleteCarnetEntry,
   onBack,
   onOpenVisiteGuidee,
   isOnline,
@@ -7889,6 +8230,10 @@ function HistoireTopicScreen({
 }: {
   topic: (typeof HISTOIRE_TOPICS)[0];
   profile: Profile;
+  familyProfiles: Array<{ id: string; surname: string }>;
+  carnetEntries: Record<string, CarnetContentEntry>;
+  onUpsertCarnetEntry: (input: { source: ContentSource; itemId: string; text: string; entryId?: string }) => void;
+  onDeleteCarnetEntry: (source: ContentSource, itemId: string, entryId: string) => void;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
   isOnline: boolean;
@@ -7905,6 +8250,17 @@ function HistoireTopicScreen({
       isOnline={isOnline}
       isOwner={profile.role === "proprietaire"}
       onSaveOverride={(patch) => onSaveContentOverride("histoire", topic.id, patch)}
+      extraSection={
+        <CarnetDeVisiteContentSection
+          source="histoire"
+          itemId={topic.id}
+          entries={carnetEntries}
+          profile={profile}
+          familyProfiles={familyProfiles}
+          onUpsert={onUpsertCarnetEntry}
+          onDelete={onDeleteCarnetEntry}
+        />
+      }
     />
   );
 }
@@ -7912,6 +8268,10 @@ function HistoireTopicScreen({
 function GeographieTopicScreen({
   topic,
   profile,
+  familyProfiles,
+  carnetEntries,
+  onUpsertCarnetEntry,
+  onDeleteCarnetEntry,
   onBack,
   onOpenVisiteGuidee,
   isOnline,
@@ -7919,6 +8279,10 @@ function GeographieTopicScreen({
 }: {
   topic: (typeof GEOGRAPHIE_ECONOMIE_TOPICS)[0];
   profile: Profile;
+  familyProfiles: Array<{ id: string; surname: string }>;
+  carnetEntries: Record<string, CarnetContentEntry>;
+  onUpsertCarnetEntry: (input: { source: ContentSource; itemId: string; text: string; entryId?: string }) => void;
+  onDeleteCarnetEntry: (source: ContentSource, itemId: string, entryId: string) => void;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
   isOnline: boolean;
@@ -7935,6 +8299,17 @@ function GeographieTopicScreen({
       isOnline={isOnline}
       isOwner={profile.role === "proprietaire"}
       onSaveOverride={(patch) => onSaveContentOverride("geographie-economie", topic.id, patch)}
+      extraSection={
+        <CarnetDeVisiteContentSection
+          source="geographie-economie"
+          itemId={topic.id}
+          entries={carnetEntries}
+          profile={profile}
+          familyProfiles={familyProfiles}
+          onUpsert={onUpsertCarnetEntry}
+          onDelete={onDeleteCarnetEntry}
+        />
+      }
     />
   );
 }
@@ -7942,6 +8317,10 @@ function GeographieTopicScreen({
 function CultureTopicScreen({
   topic,
   profile,
+  familyProfiles,
+  carnetEntries,
+  onUpsertCarnetEntry,
+  onDeleteCarnetEntry,
   onBack,
   onOpenVisiteGuidee,
   isOnline,
@@ -7949,6 +8328,10 @@ function CultureTopicScreen({
 }: {
   topic: (typeof CULTURE_TRADITION_TOPICS)[0];
   profile: Profile;
+  familyProfiles: Array<{ id: string; surname: string }>;
+  carnetEntries: Record<string, CarnetContentEntry>;
+  onUpsertCarnetEntry: (input: { source: ContentSource; itemId: string; text: string; entryId?: string }) => void;
+  onDeleteCarnetEntry: (source: ContentSource, itemId: string, entryId: string) => void;
   onBack: () => void;
   onOpenVisiteGuidee: (item: ContentTopic) => void;
   isOnline: boolean;
@@ -7965,6 +8348,17 @@ function CultureTopicScreen({
       isOnline={isOnline}
       isOwner={profile.role === "proprietaire"}
       onSaveOverride={(patch) => onSaveContentOverride("culture-tradition", topic.id, patch)}
+      extraSection={
+        <CarnetDeVisiteContentSection
+          source="culture-tradition"
+          itemId={topic.id}
+          entries={carnetEntries}
+          profile={profile}
+          familyProfiles={familyProfiles}
+          onUpsert={onUpsertCarnetEntry}
+          onDelete={onDeleteCarnetEntry}
+        />
+      }
     />
   );
 }
@@ -11347,6 +11741,12 @@ export default function App() {
     subscribeToPlaceVisitLog = () => () => {},
     upsertCarnetVisiteEntry: upsertCarnetVisiteEntryInCloud = async () => {},
     deleteCarnetVisiteEntry: deleteCarnetVisiteEntryInCloud = async () => {},
+    // Même filet de sécurité que ci-dessus pour le carnet de visite des
+    // rubriques de contenu (Histoire, Culture et tradition, Géographie et
+    // économie).
+    subscribeToContentVisitLog = () => () => {},
+    upsertCarnetContentEntry: upsertCarnetContentEntryInCloud = async () => {},
+    deleteCarnetContentEntry: deleteCarnetContentEntryInCloud = async () => {},
     setContentOverride: setContentOverrideInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
@@ -11644,6 +12044,18 @@ export default function App() {
     try {
       const parsed = JSON.parse(localStorage.getItem(CARNET_VISITE_CACHE_STORAGE_KEY) || "{}");
       return parseCarnetVisiteCache(parsed);
+    } catch {
+      return {};
+    }
+  });
+  // Même logique que carnetVisiteByPlace ci-dessus, pour le carnet de visite
+  // des rubriques de contenu (Histoire, Culture et tradition, Géographie et
+  // économie) — seedé depuis son propre cache local, chargé à la demande par
+  // [source, itemId] (cf. carnetContentKey).
+  const [carnetContentByKey, setCarnetContentByKey] = useState<CarnetContentLogByKey>(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(CARNET_CONTENT_CACHE_STORAGE_KEY) || "{}");
+      return parseCarnetContentCache(parsed);
     } catch {
       return {};
     }
@@ -14240,6 +14652,64 @@ export default function App() {
     return () => unsubscribe();
   }, [selectedPlaceId, subscribeToPlaceVisitLog]);
 
+  // Même logique que le cache du carnet de visite des lieux ci-dessus, pour
+  // le carnet de visite des rubriques de contenu.
+  useEffect(() => {
+    try {
+      localStorage.setItem(CARNET_CONTENT_CACHE_STORAGE_KEY, JSON.stringify(carnetContentByKey));
+    } catch {
+      // Ignore storage errors (quota dépassé, navigation privée...)
+    }
+  }, [carnetContentByKey]);
+
+  // Carnet de visite des rubriques de contenu, chargé à la demande : un seul
+  // abonnement à la fois, scope à la rubrique/l'item actuellement affiché
+  // (Histoire, Culture et tradition ou Géographie et économie), déterminé via
+  // l'écran courant + son id de topic sélectionné. Même esprit que l'effet
+  // équivalent pour selectedPlaceId ci-dessus.
+  useEffect(() => {
+    const source: ContentSource | null =
+      screen === "histoire-topic" && selectedTopicId
+        ? "histoire"
+        : screen === "geographie-topic" && selectedGeographieTopicId
+          ? "geographie-economie"
+          : screen === "culture-topic" && selectedCultureTopicId
+            ? "culture-tradition"
+            : null;
+    const itemId =
+      source === "histoire"
+        ? selectedTopicId
+        : source === "geographie-economie"
+          ? selectedGeographieTopicId
+          : source === "culture-tradition"
+            ? selectedCultureTopicId
+            : null;
+
+    if (!source || !itemId) {
+      return;
+    }
+
+    const key = carnetContentKey(source, itemId);
+    const unsubscribe = subscribeToContentVisitLog(
+      source,
+      itemId,
+      (log) => {
+        setCarnetContentByKey((previous) => ({ ...previous, [key]: log }));
+      },
+      () => {
+        console.error("[carnet-visite] content subscription failed", { source, itemId });
+      }
+    );
+
+    return () => unsubscribe();
+  }, [
+    screen,
+    selectedTopicId,
+    selectedGeographieTopicId,
+    selectedCultureTopicId,
+    subscribeToContentVisitLog,
+  ]);
+
   // Contenu des 4 rubriques après application des corrections/ajouts du
   // propriétaire (contentOverrides). Les champs non modifiés restent ceux
   // des fichiers .ts sources (voir applyContentOverride).
@@ -14445,6 +14915,76 @@ export default function App() {
     if (cloudEnabled) {
       void deleteCarnetVisiteEntryInCloud(placeId, entryId).catch((error) => {
         console.error("[carnet-visite] cloud delete failed", { placeId, entryId, error });
+      });
+    }
+  };
+
+  // Même logique qu'upsertCarnetVisiteEntry/deleteCarnetVisiteEntry
+  // ci-dessus, pour le carnet de visite des rubriques de contenu — sans
+  // photos, clé composite [source, itemId] au lieu de placeId.
+  const upsertCarnetContentEntry = (input: {
+    source: ContentSource;
+    itemId: string;
+    text: string;
+    entryId?: string;
+  }) => {
+    if (!profile.role || profile.role === "visiteur") {
+      return;
+    }
+
+    const now = Date.now();
+    const authorProfileId = profile.id;
+    const entryId = input.entryId ?? `${authorProfileId}-${now}`;
+    const authorSurnameSnapshot = profile.surname.trim() || "Profil";
+    const key = carnetContentKey(input.source, input.itemId);
+    const existing = carnetContentByKey[key]?.[entryId];
+
+    const nextEntry: CarnetContentEntry = {
+      entryId,
+      source: input.source,
+      itemId: input.itemId,
+      authorProfileId,
+      authorSurnameSnapshot,
+      text: input.text,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      authorUid: cloudActorUid ?? undefined,
+    };
+
+    setCarnetContentByKey((previous) => {
+      const entriesForKey = previous[key] ?? {};
+      return {
+        ...previous,
+        [key]: {
+          ...entriesForKey,
+          [entryId]: nextEntry,
+        },
+      };
+    });
+
+    if (cloudEnabled) {
+      void upsertCarnetContentEntryInCloud(nextEntry).catch((error) => {
+        console.error("[carnet-visite] content cloud write failed", {
+          source: input.source,
+          itemId: input.itemId,
+          entryId,
+          error,
+        });
+      });
+    }
+  };
+
+  const deleteCarnetContentEntry = (source: ContentSource, itemId: string, entryId: string) => {
+    const key = carnetContentKey(source, itemId);
+    setCarnetContentByKey((previous) => {
+      const entriesForKey = { ...(previous[key] ?? {}) };
+      delete entriesForKey[entryId];
+      return { ...previous, [key]: entriesForKey };
+    });
+
+    if (cloudEnabled) {
+      void deleteCarnetContentEntryInCloud(source, itemId, entryId).catch((error) => {
+        console.error("[carnet-visite] content cloud delete failed", { source, itemId, entryId, error });
       });
     }
   };
@@ -15832,6 +16372,16 @@ const resetForProfileSwitch = () => {
     selectedPlaceId && carnetVisiteByPlace[selectedPlaceId]
       ? carnetVisiteByPlace[selectedPlaceId]
       : {};
+  // Utilisé par HistoireTopicScreen/GeographieTopicScreen/CultureTopicScreen
+  // pour retrouver les entrées de carnet de leur topic actuellement affiché
+  // (voir carnetContentKey).
+  const getCarnetContentEntries = (
+    source: ContentSource,
+    itemId: string | null
+  ): Record<string, CarnetContentEntry> => {
+    if (!itemId) return {};
+    return carnetContentByKey[carnetContentKey(source, itemId)] ?? {};
+  };
   const effectiveScreen = canAccessCurrentScreen
     ? screen
     : getSafeScreen(profile.role, phase);
@@ -16874,6 +17424,10 @@ const resetForProfileSwitch = () => {
           <HistoireTopicScreen
             topic={histoireTopic}
             profile={profile}
+            familyProfiles={familyProfilesForComments}
+            carnetEntries={getCarnetContentEntries("histoire", histoireTopic.id)}
+            onUpsertCarnetEntry={upsertCarnetContentEntry}
+            onDeleteCarnetEntry={deleteCarnetContentEntry}
             onBack={() => goToScreen("histoire")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "histoire-topic")}
             isOnline={isOnline}
@@ -16899,6 +17453,10 @@ const resetForProfileSwitch = () => {
           <GeographieTopicScreen
             topic={geographieTopic}
             profile={profile}
+            familyProfiles={familyProfilesForComments}
+            carnetEntries={getCarnetContentEntries("geographie-economie", geographieTopic.id)}
+            onUpsertCarnetEntry={upsertCarnetContentEntry}
+            onDeleteCarnetEntry={deleteCarnetContentEntry}
             onBack={() => goToScreen("geographie")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "geographie-topic")}
             isOnline={isOnline}
@@ -16924,6 +17482,10 @@ const resetForProfileSwitch = () => {
           <CultureTopicScreen
             topic={cultureTopic}
             profile={profile}
+            familyProfiles={familyProfilesForComments}
+            carnetEntries={getCarnetContentEntries("culture-tradition", cultureTopic.id)}
+            onUpsertCarnetEntry={upsertCarnetContentEntry}
+            onDeleteCarnetEntry={deleteCarnetContentEntry}
             onBack={() => goToScreen("culture")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
             isOnline={isOnline}
@@ -17329,6 +17891,10 @@ const resetForProfileSwitch = () => {
           <HistoireTopicScreen
             topic={histoireTopic}
             profile={profile}
+            familyProfiles={familyProfilesForComments}
+            carnetEntries={getCarnetContentEntries("histoire", histoireTopic.id)}
+            onUpsertCarnetEntry={upsertCarnetContentEntry}
+            onDeleteCarnetEntry={deleteCarnetContentEntry}
             onBack={() => goToScreen("histoire")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "histoire-topic")}
             isOnline={isOnline}
@@ -17350,6 +17916,10 @@ const resetForProfileSwitch = () => {
           <GeographieTopicScreen
             topic={geographieTopic}
             profile={profile}
+            familyProfiles={familyProfilesForComments}
+            carnetEntries={getCarnetContentEntries("geographie-economie", geographieTopic.id)}
+            onUpsertCarnetEntry={upsertCarnetContentEntry}
+            onDeleteCarnetEntry={deleteCarnetContentEntry}
             onBack={() => goToScreen("geographie")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "geographie-topic")}
             isOnline={isOnline}
@@ -17371,6 +17941,10 @@ const resetForProfileSwitch = () => {
           <CultureTopicScreen
             topic={cultureTopic}
             profile={profile}
+            familyProfiles={familyProfilesForComments}
+            carnetEntries={getCarnetContentEntries("culture-tradition", cultureTopic.id)}
+            onUpsertCarnetEntry={upsertCarnetContentEntry}
+            onDeleteCarnetEntry={deleteCarnetContentEntry}
             onBack={() => goToScreen("culture")}
             onOpenVisiteGuidee={(item) => openVisiteGuidee(item, "culture-topic")}
             isOnline={isOnline}

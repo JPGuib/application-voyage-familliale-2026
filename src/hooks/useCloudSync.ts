@@ -3,10 +3,12 @@ import { type Role, type SharedFamilyState } from "../app/owner-policy";
 import {
   claimProfileRole,
   deleteProfileFromCloud,
+  deleteContentVisitLogEntry,
   deletePlaceVisitLogEntry,
   ensureFamilyMembership,
   ensureOwnerMembership,
   ensureProfileMembership,
+  observeContentVisitLog,
   observeFamilySnapshot,
   observePlaceVisitLog,
   pushDestinationSurveyVoteOnly,
@@ -21,6 +23,7 @@ import {
   pushTripStartDate,
   resetGameProgressInCloud,
   resetGameResultsInCloud,
+  upsertContentVisitLogEntry,
   upsertPlaceVisitLogEntry,
 } from "../services/cloudSyncProvider";
 import {
@@ -37,6 +40,8 @@ import type {
   CloudCandyCrushChallenge,
   CloudCarnetVisiteEntry,
   CloudCarnetVisiteLog,
+  CloudCarnetContentEntry,
+  CloudCarnetContentLog,
   CloudChallengeBestVotesByDay,
   CloudChallengeReactionsByDay,
   CloudDestinationSurveyVote,
@@ -1003,6 +1008,49 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  // Même principe que le carnet de visite des lieux ci-dessus, pour les
+  // rubriques de contenu (Histoire, Culture et tradition, Géographie et
+  // économie) — chemin séparé contentVisitLogs, chargé à la demande par
+  // [source, itemId], sans photos.
+  const subscribeToContentVisitLog = useCallback(
+    (
+      source: ContentSource,
+      itemId: string,
+      onSnapshot: (log: CloudCarnetContentLog) => void,
+      onError?: () => void
+    ): (() => void) => {
+      if (!isEnabled || !database) {
+        return () => {};
+      }
+      return observeContentVisitLog(database, familyId, source, itemId, onSnapshot, onError);
+    },
+    [database, familyId, isEnabled]
+  );
+
+  const upsertCarnetContentEntry = useCallback(
+    async (entry: CloudCarnetContentEntry): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await upsertContentVisitLogEntry(database, familyId, entry);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  const deleteCarnetContentEntry = useCallback(
+    async (source: ContentSource, itemId: string, entryId: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await deleteContentVisitLogEntry(database, familyId, source, itemId, entryId);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
@@ -1018,6 +1066,9 @@ export function useCloudSync() {
     subscribeToPlaceVisitLog,
     upsertCarnetVisiteEntry,
     deleteCarnetVisiteEntry,
+    subscribeToContentVisitLog,
+    upsertCarnetContentEntry,
+    deleteCarnetContentEntry,
     setPlaceDayOverride,
     setContentOverride,
     setTripStartDate,
