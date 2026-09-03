@@ -78,6 +78,33 @@
         }
       }
     },
+    "documentPhotos": {
+      "$familyId": {
+        ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
+        ".write": false,
+        "$documentId": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+          "photo-0": {
+            ".validate": "newData.val() === null || (newData.isString() && newData.val().length > 0 && newData.val().length <= 350000)"
+          },
+          "photo-1": {
+            ".validate": "newData.val() === null || (newData.isString() && newData.val().length > 0 && newData.val().length <= 350000)"
+          },
+          "photo-2": {
+            ".validate": "newData.val() === null || (newData.isString() && newData.val().length > 0 && newData.val().length <= 350000)"
+          },
+          "photo-3": {
+            ".validate": "newData.val() === null || (newData.isString() && newData.val().length > 0 && newData.val().length <= 350000)"
+          },
+          "photo-4": {
+            ".validate": "newData.val() === null || (newData.isString() && newData.val().length > 0 && newData.val().length <= 350000)"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
     "families": {
       "$familyId": {
         ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",

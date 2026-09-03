@@ -4,11 +4,13 @@ import {
   claimProfileRole,
   deleteProfileFromCloud,
   deleteContentVisitLogEntry,
+  deleteDocumentPhoto,
   deletePlaceVisitLogEntry,
   ensureFamilyMembership,
   ensureOwnerMembership,
   ensureProfileMembership,
   observeContentVisitLog,
+  observeDocumentPhotos,
   observeFamilySnapshot,
   observePlaceVisitLog,
   pushDestinationSurveyVoteOnly,
@@ -24,6 +26,7 @@ import {
   resetGameProgressInCloud,
   resetGameResultsInCloud,
   upsertContentVisitLogEntry,
+  upsertDocumentPhoto,
   upsertPlaceVisitLogEntry,
 } from "../services/cloudSyncProvider";
 import {
@@ -45,6 +48,7 @@ import type {
   CloudChallengeBestVotesByDay,
   CloudChallengeReactionsByDay,
   CloudDestinationSurveyVote,
+  CloudDocumentPhotoMap,
   CloudGameHistoryEntry,
   CloudGameProgress,
   CloudPlaceCommentsByPlace,
@@ -1051,6 +1055,51 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  // Photos ajoutées par le propriétaire à un document existant (Documents et
+  // informations importants) : chemin séparé documentPhotos, chargé à la
+  // demande pendant que la fiche "Docs" de ce document est ouverte — même
+  // esprit que subscribeToPlaceVisitLog ci-dessus, mais écriture réservée au
+  // propriétaire (ensureOwnerMembership), comme setPlaceVisibility.
+  const subscribeToDocumentPhotos = useCallback(
+    (
+      documentId: string,
+      onSnapshot: (photos: CloudDocumentPhotoMap) => void,
+      onError?: () => void
+    ): (() => void) => {
+      if (!isEnabled || !database) {
+        return () => {};
+      }
+      return observeDocumentPhotos(database, familyId, documentId, onSnapshot, onError);
+    },
+    [database, familyId, isEnabled]
+  );
+
+  const addDocumentPhoto = useCallback(
+    async (documentId: string, photoId: string, dataUri: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await ensureOwnerMembership(database, familyId, cloudUserUid);
+      await upsertDocumentPhoto(database, familyId, documentId, photoId, dataUri);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  const removeDocumentPhoto = useCallback(
+    async (documentId: string, photoId: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await ensureOwnerMembership(database, familyId, cloudUserUid);
+      await deleteDocumentPhoto(database, familyId, documentId, photoId);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
@@ -1069,6 +1118,9 @@ export function useCloudSync() {
     subscribeToContentVisitLog,
     upsertCarnetContentEntry,
     deleteCarnetContentEntry,
+    subscribeToDocumentPhotos,
+    addDocumentPhoto,
+    removeDocumentPhoto,
     setPlaceDayOverride,
     setContentOverride,
     setTripStartDate,

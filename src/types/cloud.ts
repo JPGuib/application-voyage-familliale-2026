@@ -167,6 +167,18 @@ export type CloudCarnetVisiteEntry = {
 
 export type CloudCarnetVisiteLog = Record<string, CloudCarnetVisiteEntry>; // entryId -> entrée
 
+// Photos ajoutées PAR LE PROPRIÉTAIRE UNIQUEMENT à un document existant de
+// Documents et informations importants (ex : scanner un billet retour depuis
+// le téléphone), en complément des scans statiques `TravelDocument.scans`
+// (src/content/documents.ts). Même principe que les photos du carnet de
+// visite ci-dessus (data URI JPEG compressée côté client, clés figées
+// photo-0..photo-4 pour plafonner à 5 côté règles Firebase), mais pas
+// d'auteur multiple ni de texte : une simple carte photoId -> data URI.
+// Stocké hors de families/$familyId, chemin
+// documentPhotos/$familyId/$documentId/$photoId, chargé à la demande (voir
+// observeDocumentPhotos dans cloudSyncProvider.ts).
+export type CloudDocumentPhotoMap = Record<string, string>; // photoId -> data URI JPEG compressée, max 5
+
 // Même principe que CloudCarnetVisiteEntry, mais pour les rubriques de
 // contenu (Histoire, Culture et tradition, Géographie et économie) plutôt
 // que pour un lieu du Guide du séjour : PAS de photos (demande explicite),

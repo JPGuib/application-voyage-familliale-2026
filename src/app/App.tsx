@@ -466,6 +466,13 @@ const CARNET_ENTRY_MAX_TEXT_LENGTH = 20000;
 const CARNET_PLACE_MAX_PHOTOS = 5;
 const CARNET_VISITE_CACHE_STORAGE_KEY = "jp-carnet-visite-cache";
 
+// Même plafond que CARNET_PLACE_MAX_PHOTOS ci-dessus, appliqué par DOCUMENT
+// plutôt que par lieu (cf. DocumentPhotoMap) : le propriétaire peut ajouter
+// jusqu'à 5 photos par document existant (Documents et informations
+// importants), en plus des scans statiques déjà présents dans documents.ts.
+const DOCUMENT_PHOTOS_MAX_PER_ITEM = 5;
+const DOCUMENT_PHOTOS_CACHE_STORAGE_KEY = "jp-document-photos-cache";
+
 // Brouillon en cours du formulaire "Carnet de visite" (texte + photos déjà
 // compressées) d'un lieu du Guide du séjour. Même besoin que
 // PLACE_DRAFT_STORAGE_KEY ci-dessus : ne pas perdre la saisie si l'app perd le
@@ -729,6 +736,16 @@ type CarnetContentLogByKey = Record<string, Record<string, CarnetContentEntry>>;
 function carnetContentKey(source: ContentSource, itemId: string): string {
   return `${source}::${itemId}`;
 }
+
+// Photos ajoutées PAR LE PROPRIÉTAIRE UNIQUEMENT à un document existant de
+// Documents et informations importants (ex : scanner un billet retour depuis
+// le téléphone), en complément des scans statiques `TravelDocument.scans`
+// (src/content/documents.ts). Même principe que les photos du carnet de
+// visite ci-dessus (data URI JPEG compressée, clés figées photo-0..photo-4
+// pour plafonner à DOCUMENT_PHOTOS_MAX_PER_ITEM côté règles Firebase), mais
+// pas d'auteur multiple ni de texte.
+type DocumentPhotoMap = Record<string, string>; // photoId -> data URI JPEG compressée
+type DocumentPhotosByDocument = Record<string, DocumentPhotoMap>; // documentId -> photoId -> data URI
 
 type ChallengeReactionEmoji = "love" | "laugh" | "wow" | "clap";
 type ChallengeReaction = {
@@ -1390,6 +1407,40 @@ function parseCarnetVisiteCache(raw: unknown): CarnetVisiteLogByPlace {
 
     if (Object.keys(entriesForPlace).length > 0) {
       next[placeId] = entriesForPlace;
+    }
+  }
+
+  return next;
+}
+
+// Cache local best-effort des photos de documents ajoutées par le
+// propriétaire — même esprit que parseCarnetVisiteCache ci-dessus : pas la
+// source de vérité (chargée à la demande via subscribeToDocumentPhotos quand
+// on ouvre les docs d'un document), juste un affichage instantané des
+// dernières photos déjà vues.
+function parseDocumentPhotosCache(raw: unknown): DocumentPhotosByDocument {
+  if (!raw || typeof raw !== "object") {
+    return {};
+  }
+
+  const next: DocumentPhotosByDocument = {};
+  for (const [documentId, photosValue] of Object.entries(raw as Record<string, unknown>)) {
+    if (!photosValue || typeof photosValue !== "object") {
+      continue;
+    }
+
+    const photos: DocumentPhotoMap = {};
+    for (const [photoId, photoValue] of Object.entries(photosValue as Record<string, unknown>)) {
+      if (Object.keys(photos).length >= DOCUMENT_PHOTOS_MAX_PER_ITEM) {
+        break;
+      }
+      if (typeof photoValue === "string" && photoValue.length > 0) {
+        photos[photoId] = photoValue;
+      }
+    }
+
+    if (Object.keys(photos).length > 0) {
+      next[documentId] = photos;
     }
   }
 
@@ -4367,6 +4418,11 @@ function DocumentsScreen({
   canManageDocumentVisibility,
   onSaveDocument,
   onDeleteDocument,
+  documentPhotosByDocument,
+  subscribeToDocumentPhotos,
+  onDocumentPhotosSnapshot,
+  onAddDocumentPhoto,
+  onDeleteDocumentPhoto,
   deepLinkTarget,
   onDeepLinkHandled,
   isOnline,
@@ -4383,6 +4439,21 @@ function DocumentsScreen({
   canManageDocumentVisibility: boolean;
   onSaveDocument: (document: TravelDocument) => void;
   onDeleteDocument: (documentId: string) => void;
+  // Photos ajoutées par le propriétaire, en plus des scans statiques de
+  // `documents` ci-dessus (cf. DocumentPhotosByDocument dans App.tsx). Chargé
+  // à la demande : cet écran s'abonne lui-même (subscribeToDocumentPhotos)
+  // pendant que la fiche "Docs" d'un document est affichée (scansDocumentId),
+  // et remonte chaque instantané au parent via onDocumentPhotosSnapshot pour
+  // alimenter le cache local partagé.
+  documentPhotosByDocument: DocumentPhotosByDocument;
+  subscribeToDocumentPhotos: (
+    documentId: string,
+    onSnapshot: (photos: DocumentPhotoMap) => void,
+    onError?: () => void
+  ) => () => void;
+  onDocumentPhotosSnapshot: (documentId: string, photos: DocumentPhotoMap) => void;
+  onAddDocumentPhoto: (documentId: string, dataUri: string) => void;
+  onDeleteDocumentPhoto: (documentId: string, photoId: string) => void;
   deepLinkTarget: DocumentsDeepLinkTarget | null;
   onDeepLinkHandled: () => void;
   isOnline: boolean;
@@ -4403,6 +4474,8 @@ function DocumentsScreen({
   const [documentFilterName, setDocumentFilterName] = useState("");
   const [documentDayDropdownOpen, setDocumentDayDropdownOpen] = useState(false);
   const [highlightedDocumentId, setHighlightedDocumentId] = useState<string | null>(null);
+  const [documentPhotoError, setDocumentPhotoError] = useState<string | null>(null);
+  const [documentPhotoProcessing, setDocumentPhotoProcessing] = useState(false);
 
   const [draftCategory, setDraftCategory] = useState<DocumentCategory>(DOCUMENT_CATEGORIES[0]);
   const [draftTitle, setDraftTitle] = useState("");
@@ -4459,6 +4532,28 @@ function DocumentsScreen({
       setScanLightboxIndex(null);
     }
   }, [documentVisibilityMap, role, scansDocumentId]);
+
+  // Photos ajoutées par le propriétaire, chargées à la demande : abonnement
+  // scope au seul document actuellement ouvert (scansDocumentId), même esprit
+  // que subscribeToPlaceVisitLog dans App.tsx pour le carnet de visite. Se
+  // désabonne dès qu'on change de document ou qu'on quitte la fiche "Docs".
+  useEffect(() => {
+    if (!scansDocumentId) {
+      return;
+    }
+
+    const documentId = scansDocumentId;
+    setDocumentPhotoError(null);
+    const unsubscribe = subscribeToDocumentPhotos(
+      documentId,
+      (photos) => onDocumentPhotosSnapshot(documentId, photos),
+      () => {
+        console.error("[document-photos] subscription failed", { documentId });
+      }
+    );
+
+    return () => unsubscribe();
+  }, [scansDocumentId, subscribeToDocumentPhotos, onDocumentPhotosSnapshot]);
 
   const visibleDocuments = documents.filter((document) =>
     isDocumentVisibleForRole(role, document.id, documentVisibilityMap)
@@ -4663,11 +4758,45 @@ function DocumentsScreen({
     if (!canConsultScans) {
       return;
     }
-    if (!item.scans || item.scans.length === 0) {
+    const hasOwnerPhotos = Object.keys(documentPhotosByDocument[item.id] ?? {}).length > 0;
+    // Le propriétaire peut toujours ouvrir la fiche "Docs" d'un document, même
+    // sans scan statique, pour pouvoir y ajouter une première photo.
+    if (!isOwner && (!item.scans || item.scans.length === 0) && !hasOwnerPhotos) {
       return;
     }
     setScansDocumentId(item.id);
     setScanLightboxIndex(null);
+  }
+
+  // Ajout d'une photo par le propriétaire sur le document actuellement ouvert
+  // (scansDocument) — même compression client que CarnetDeVisiteSection
+  // (compressImageFileToDataUrl), plafonnée à DOCUMENT_PHOTOS_MAX_PER_ITEM
+  // photos ajoutées par document (en plus des scans statiques).
+  async function handleDocumentPhotoFileChange(event: ChangeEvent<HTMLInputElement>): Promise<void> {
+    const file = event.target.files?.[0];
+    // Permet de resélectionner le même fichier plus tard.
+    event.target.value = "";
+    if (!file || !scansDocumentId) return;
+    const currentPhotoCount = Object.keys(documentPhotosByDocument[scansDocumentId] ?? {}).length;
+    if (currentPhotoCount >= DOCUMENT_PHOTOS_MAX_PER_ITEM) return;
+
+    setDocumentPhotoError(null);
+    setDocumentPhotoProcessing(true);
+    try {
+      const dataUrl = await compressImageFileToDataUrl(file);
+      onAddDocumentPhoto(scansDocumentId, dataUrl);
+    } catch (error) {
+      setDocumentPhotoError(
+        error instanceof PlaceImageError ? error.message : "Impossible de traiter cette photo."
+      );
+    } finally {
+      setDocumentPhotoProcessing(false);
+    }
+  }
+
+  function removeDocumentPhoto(photoId: string): void {
+    if (!scansDocumentId) return;
+    onDeleteDocumentPhoto(scansDocumentId, photoId);
   }
 
   function openDocumentLocation(item: TravelDocument): void {
@@ -4855,7 +4984,19 @@ function DocumentsScreen({
   }
 
   if (scansDocument) {
-    const scans = scansDocument.scans ?? [];
+    // Photos ajoutées par le propriétaire (cf. DOCUMENT_PHOTOS_MAX_PER_ITEM),
+    // affichées à la suite des scans statiques dans la même grille/lightbox —
+    // ownerPhotoId distingue les tuiles supprimables (propriétaire) des scans
+    // figés dans documents.ts.
+    const ownerPhotoEntries = Object.entries(documentPhotosByDocument[scansDocument.id] ?? {}).sort(
+      ([left], [right]) => left.localeCompare(right)
+    );
+    const scans: Array<{ src: string; ownerPhotoId?: string }> = [
+      ...(scansDocument.scans ?? []).map((src) => ({ src })),
+      ...ownerPhotoEntries.map(([photoId, src]) => ({ src, ownerPhotoId: photoId })),
+    ];
+    const canAddMoreDocumentPhotos = ownerPhotoEntries.length < DOCUMENT_PHOTOS_MAX_PER_ITEM;
+
     return (
       <div className="flex flex-col h-full overflow-hidden">
         <div className="relative bg-[#1565C0] text-white px-6 pt-12 pb-6 flex-shrink-0">
@@ -4883,20 +5024,57 @@ function DocumentsScreen({
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {scans.map((src, index) => (
-                <button
-                  key={`${scansDocument.id}-scan-${index}`}
-                  onClick={() => setScanLightboxIndex(index)}
-                  data-tutorial-id={index === 0 ? "documents-scan-image-0" : undefined}
-                  className="rounded-2xl overflow-hidden border border-border bg-card active:scale-95 transition-transform"
-                >
-                  <img
-                    src={src}
-                    alt={`${scansDocument.title} scan ${index + 1}`}
-                    className="w-full h-36 object-cover"
-                  />
-                </button>
+              {scans.map((scan, index) => (
+                <div key={`${scansDocument.id}-scan-${index}`} className="relative">
+                  <button
+                    onClick={() => setScanLightboxIndex(index)}
+                    data-tutorial-id={index === 0 ? "documents-scan-image-0" : undefined}
+                    className="w-full rounded-2xl overflow-hidden border border-border bg-card active:scale-95 transition-transform"
+                  >
+                    <img
+                      src={scan.src}
+                      alt={`${scansDocument.title} scan ${index + 1}`}
+                      className="w-full h-36 object-cover"
+                    />
+                  </button>
+                  {isOwner && scan.ownerPhotoId ? (
+                    <button
+                      type="button"
+                      onClick={() => removeDocumentPhoto(scan.ownerPhotoId!)}
+                      className="absolute top-1.5 right-1.5 rounded-full bg-background/90 p-1.5 text-muted-foreground shadow"
+                      aria-label="Supprimer cette photo"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  ) : null}
+                </div>
               ))}
+            </div>
+          )}
+
+          {isOwner && (
+            <div className="mt-3">
+              {canAddMoreDocumentPhotos ? (
+                <label className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-black uppercase tracking-widest cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleDocumentPhotoFileChange}
+                    className="hidden"
+                    aria-label="Ajouter une photo depuis l'appareil"
+                  />
+                  {documentPhotoProcessing
+                    ? "Traitement en cours..."
+                    : `Ajouter une photo (${ownerPhotoEntries.length}/${DOCUMENT_PHOTOS_MAX_PER_ITEM})`}
+                </label>
+              ) : (
+                <p className="text-xs font-semibold text-muted-foreground">
+                  Limite de {DOCUMENT_PHOTOS_MAX_PER_ITEM} photos ajoutées atteinte pour ce document.
+                </p>
+              )}
+              {documentPhotoError && (
+                <p className="mt-2 text-xs font-semibold text-destructive">{documentPhotoError}</p>
+              )}
             </div>
           )}
           <div className="h-2" />
@@ -4921,7 +5099,7 @@ function DocumentsScreen({
             </div>
             <div className="flex-1 flex items-center justify-center px-2 min-h-0" onClick={(e) => e.stopPropagation()}>
               <img
-                src={scans[scanLightboxIndex]}
+                src={scans[scanLightboxIndex].src}
                 alt={`${scansDocument.title} scan agrandi ${scanLightboxIndex + 1}`}
                 data-tutorial-id="documents-scan-lightbox"
                 className="max-w-full max-h-full object-contain rounded-lg"
@@ -5160,7 +5338,14 @@ function DocumentsScreen({
                             Masqué par le propriétaire
                           </span>
                         ) : null}
-                        {(item.scans?.length ?? 0) > 0 && canConsultScans ? (
+                        {(() => {
+                          const totalDocsCount =
+                            (item.scans?.length ?? 0) +
+                            Object.keys(documentPhotosByDocument[item.id] ?? {}).length;
+                          if (!canConsultScans || (totalDocsCount === 0 && !isOwner)) {
+                            return null;
+                          }
+                          return (
                             <button
                               type="button"
                               onClick={() => openScans(item)}
@@ -5168,9 +5353,10 @@ function DocumentsScreen({
                               className="inline-flex items-center justify-center whitespace-nowrap rounded-full border-0 bg-[#E8F5E9] px-2.5 py-1 text-[10px] font-black uppercase tracking-widest leading-none text-[#2E7D32] transition-transform active:scale-95"
                               aria-label={`Ouvrir les docs de ${item.title}`}
                             >
-                              {item.scans?.length} doc(s)
+                              {totalDocsCount > 0 ? `${totalDocsCount} doc(s)` : "Ajouter un doc"}
                             </button>
-                        ) : null}
+                          );
+                        })()}
                       </div>
                     </div>
                     {isOwner && (
@@ -11747,6 +11933,12 @@ export default function App() {
     subscribeToContentVisitLog = () => () => {},
     upsertCarnetContentEntry: upsertCarnetContentEntryInCloud = async () => {},
     deleteCarnetContentEntry: deleteCarnetContentEntryInCloud = async () => {},
+    // Même filet de sécurité que ci-dessus pour les photos de documents
+    // ajoutées par le propriétaire : subscribeToDocumentPhotos est appelée
+    // automatiquement dès qu'un document est ouvert dans DocumentsScreen.
+    subscribeToDocumentPhotos = () => () => {},
+    addDocumentPhoto: addDocumentPhotoInCloud = async () => {},
+    removeDocumentPhoto: removeDocumentPhotoInCloud = async () => {},
     setContentOverride: setContentOverrideInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
@@ -12056,6 +12248,17 @@ export default function App() {
     try {
       const parsed = JSON.parse(localStorage.getItem(CARNET_CONTENT_CACHE_STORAGE_KEY) || "{}");
       return parseCarnetContentCache(parsed);
+    } catch {
+      return {};
+    }
+  });
+  // Même logique que carnetVisiteByPlace ci-dessus, pour les photos de
+  // documents ajoutées par le propriétaire — seedé depuis son propre cache
+  // local, chargé à la demande par documentId (cf. subscribeToDocumentPhotos).
+  const [documentPhotosByDocument, setDocumentPhotosByDocument] = useState<DocumentPhotosByDocument>(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(DOCUMENT_PHOTOS_CACHE_STORAGE_KEY) || "{}");
+      return parseDocumentPhotosCache(parsed);
     } catch {
       return {};
     }
@@ -13982,6 +14185,72 @@ export default function App() {
     }
   }
 
+  // Reçoit le dernier instantané cloud des photos d'UN document (voir
+  // subscribeToDocumentPhotos, déclenché depuis DocumentsScreen sur son
+  // propre état local scansDocumentId — même esprit que l'effet sur
+  // selectedPlaceId pour carnetVisiteByPlace, mais tenu par l'écran lui-même
+  // puisque l'id du document ouvert n'existe pas au niveau d'App.tsx).
+  function onDocumentPhotosSnapshot(documentId: string, photos: DocumentPhotoMap): void {
+    setDocumentPhotosByDocument((previous) => ({ ...previous, [documentId]: photos }));
+  }
+
+  // Ajout d'une photo par le propriétaire sur un document existant (Documents
+  // et informations importants), en plus des scans statiques de
+  // documents.ts — même principe que upsertCarnetVisiteEntry plus bas, mais
+  // réservé au propriétaire et sans texte : un simple slot photo-N figé (les
+  // règles Firebase ne validant que photo-0..photo-4, cf. database.rules.*.json).
+  function addDocumentPhotoForOwner(documentId: string, dataUri: string): void {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return;
+    }
+
+    const existingPhotos = documentPhotosByDocument[documentId] ?? {};
+    if (Object.keys(existingPhotos).length >= DOCUMENT_PHOTOS_MAX_PER_ITEM) {
+      return;
+    }
+
+    let photoId = "";
+    for (let index = 0; index < DOCUMENT_PHOTOS_MAX_PER_ITEM; index += 1) {
+      const candidate = `photo-${index}`;
+      if (!existingPhotos[candidate]) {
+        photoId = candidate;
+        break;
+      }
+    }
+    if (!photoId) {
+      return;
+    }
+
+    setDocumentPhotosByDocument((previous) => ({
+      ...previous,
+      [documentId]: { ...(previous[documentId] ?? {}), [photoId]: dataUri },
+    }));
+
+    if (cloudEnabled) {
+      void addDocumentPhotoInCloud(documentId, photoId, dataUri).catch((error) => {
+        console.error("[document-photos] cloud write failed", { documentId, photoId, error });
+      });
+    }
+  }
+
+  function deleteDocumentPhotoForOwner(documentId: string, photoId: string): void {
+    if (!canUpdateOwnerCode(familyState, profile.id)) {
+      return;
+    }
+
+    setDocumentPhotosByDocument((previous) => {
+      const photosForDocument = { ...(previous[documentId] ?? {}) };
+      delete photosForDocument[photoId];
+      return { ...previous, [documentId]: photosForDocument };
+    });
+
+    if (cloudEnabled) {
+      void removeDocumentPhotoInCloud(documentId, photoId).catch((error) => {
+        console.error("[document-photos] cloud delete failed", { documentId, photoId, error });
+      });
+    }
+  }
+
   // Visite/activité ajoutée par le propriétaire dans le Guide du séjour
   // (n'existe pas dans PLACES). Contrairement aux documents, pas de branche
   // "place par défaut" ici : éditer/masquer une place par défaut passe déjà
@@ -14661,6 +14930,20 @@ export default function App() {
       // Ignore storage errors (quota dépassé, navigation privée...)
     }
   }, [carnetContentByKey]);
+
+  // Même logique que le cache du carnet de visite ci-dessus, pour les photos
+  // de documents ajoutées par le propriétaire. Contrairement au carnet, la
+  // souscription à la demande (subscribeToDocumentPhotos) est déclenchée
+  // depuis DocumentsScreen lui-même (l'id du document actuellement ouvert,
+  // scansDocumentId, est un état local à cet écran) via onDocumentPhotosSnapshot
+  // ci-dessous, plutôt que par un effet ici scopé sur un état d'App.tsx.
+  useEffect(() => {
+    try {
+      localStorage.setItem(DOCUMENT_PHOTOS_CACHE_STORAGE_KEY, JSON.stringify(documentPhotosByDocument));
+    } catch {
+      // Ignore storage errors (quota dépassé, navigation privée...)
+    }
+  }, [documentPhotosByDocument]);
 
   // Carnet de visite des rubriques de contenu, chargé à la demande : un seul
   // abonnement à la fois, scope à la rubrique/l'item actuellement affiché
@@ -17354,6 +17637,11 @@ const resetForProfileSwitch = () => {
             canManageDocumentVisibility={canUpdateOwnerCode(familyState, profile.id)}
             onSaveDocument={saveDocumentForOwner}
             onDeleteDocument={deleteDocumentForOwner}
+            documentPhotosByDocument={documentPhotosByDocument}
+            subscribeToDocumentPhotos={subscribeToDocumentPhotos}
+            onDocumentPhotosSnapshot={onDocumentPhotosSnapshot}
+            onAddDocumentPhoto={addDocumentPhotoForOwner}
+            onDeleteDocumentPhoto={deleteDocumentPhotoForOwner}
             deepLinkTarget={documentsDeepLinkTarget}
             onDeepLinkHandled={() => setDocumentsDeepLinkTarget(null)}
             isOnline={isOnline}
@@ -17831,6 +18119,11 @@ const resetForProfileSwitch = () => {
             canManageDocumentVisibility={canUpdateOwnerCode(familyState, profile.id)}
             onSaveDocument={saveDocumentForOwner}
             onDeleteDocument={deleteDocumentForOwner}
+            documentPhotosByDocument={documentPhotosByDocument}
+            subscribeToDocumentPhotos={subscribeToDocumentPhotos}
+            onDocumentPhotosSnapshot={onDocumentPhotosSnapshot}
+            onAddDocumentPhoto={addDocumentPhotoForOwner}
+            onDeleteDocumentPhoto={deleteDocumentPhotoForOwner}
             deepLinkTarget={documentsDeepLinkTarget}
             onDeepLinkHandled={() => setDocumentsDeepLinkTarget(null)}
             isOnline={isOnline}

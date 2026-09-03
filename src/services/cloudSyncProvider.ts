@@ -29,6 +29,7 @@ import type {
   CloudCarnetVisiteLog,
   CloudCarnetContentEntry,
   CloudCarnetContentLog,
+  CloudDocumentPhotoMap,
   CloudPlaceComment,
   CloudPlaceCommentsByPlace,
   CloudDestinationSurveyByProfile,
@@ -932,6 +933,28 @@ function parseCarnetContentLog(
   return next;
 }
 
+// Photos ajoutées par le propriétaire à un document existant (Documents et
+// informations importants) — même plafond défensif que
+// CARNET_VISITE_MAX_PHOTOS_PER_ENTRY ci-dessus, appliqué ici par document
+// plutôt que par entrée de carnet (cf. CloudDocumentPhotoMap).
+const DOCUMENT_PHOTOS_MAX_PER_ITEM = 5;
+
+function parseDocumentPhotoMap(value: unknown): CloudDocumentPhotoMap {
+  const raw = asRecord(value);
+  const next: CloudDocumentPhotoMap = {};
+
+  for (const [photoId, photoValue] of Object.entries(raw)) {
+    if (Object.keys(next).length >= DOCUMENT_PHOTOS_MAX_PER_ITEM) {
+      break;
+    }
+    if (typeof photoValue === "string" && photoValue.length > 0) {
+      next[photoId] = photoValue;
+    }
+  }
+
+  return next;
+}
+
 function normalizePlaceDays(value: unknown): number[] {
   const rawValues = Array.isArray(value)
     ? value
@@ -1368,6 +1391,48 @@ export async function deleteContentVisitLogEntry(
   entryId: string
 ): Promise<void> {
   await set(ref(database, `contentVisitLogs/${familyId}/${source}/${itemId}/${entryId}`), null);
+}
+
+// Photos ajoutées par le propriétaire à un document existant (Documents et
+// informations importants) : chemin séparé documentPhotos/$familyId/$documentId
+// (hors de families/$familyId, même raison qu'observePlaceVisitLog ci-dessus :
+// ne pas retélécharger toutes les photos de tous les documents à chaque
+// synchro famille), chargé à la demande pendant que la fiche "Docs" de ce
+// document est affichée (cf. DocumentsScreen dans App.tsx).
+export function observeDocumentPhotos(
+  database: Database,
+  familyId: string,
+  documentId: string,
+  onSnapshot: (photos: CloudDocumentPhotoMap) => void,
+  onError?: () => void
+): () => void {
+  const photosRef = ref(database, `documentPhotos/${familyId}/${documentId}`);
+  return onValue(
+    photosRef,
+    (snapshot) => onSnapshot(parseDocumentPhotoMap(snapshot.val())),
+    () => onError?.()
+  );
+}
+
+// Écriture réservée au propriétaire (cf. database.rules.*.json) : contrairement
+// au carnet de visite, il n'y a qu'un seul auteur possible pour ces photos.
+export async function upsertDocumentPhoto(
+  database: Database,
+  familyId: string,
+  documentId: string,
+  photoId: string,
+  dataUri: string
+): Promise<void> {
+  await set(ref(database, `documentPhotos/${familyId}/${documentId}/${photoId}`), dataUri);
+}
+
+export async function deleteDocumentPhoto(
+  database: Database,
+  familyId: string,
+  documentId: string,
+  photoId: string
+): Promise<void> {
+  await set(ref(database, `documentPhotos/${familyId}/${documentId}/${photoId}`), null);
 }
 
 export async function pushCloudSnapshot(
