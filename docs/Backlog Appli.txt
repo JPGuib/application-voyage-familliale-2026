@@ -4,7 +4,6 @@ BACKLOG / EVOLUTIONS
 * GENERIQUE - G1 - préparer l'application pour un autre voyage ! 
 * GENERIQUE - G2 - Un administrateur général, et un groupe de famille avec des droits d'aministrateurs pour faire une partie de ce que peut faire l'administrateur
 
-* CONTENU - C3 - rajouter facilement les scans des billets retour, possibilité d'intégrer les codes pythons qui découpent, transformé en webp et mettent dans l'appli ? sinon utiliser un lien drive?
 * CONTENU - C7 - rajouter des musiques dans l'audio (genre les mouettes ...)
 =>REMARQUE : TOUT REDEPLOIEMENT DE L'APPLICATION n'entraine pas 
 de pertes car c'est firebase qui est prioritaire et lors du 
@@ -29,10 +28,11 @@ l'application se reconnecte au cloud et on perd ce qu'on faisait. Voir si possib
 * POST-SEJOUR - PSJ2 - créer un album souvenir
 * POST-SEJOUR - PSJ3 - Pouvoir visionner les vidéos voyage mystere
 
-* CHAT/NETWORKING - CN1 - messagerie / chat en ligne
-* CHAT/NETWORKING - CN2 - agenda interactif pour que chacun puisse mettre les horaires sur l'agenda pour peremttre de dire heure de reveil ...
-* CHAT/NETWORKING - CN3 - sondage quotidien 
-* CHAT/NETWORKING - CN4 - pouvoir rajouter un contenu divers (ex ce que dit la guide)   
+* CHAT/NETWORKING - CN1 - messagerie / chat en ligne => spec prete, voir docs/specs-stories/epic-28 (stories 28.1/28.2/28.4)
+* CHAT/NETWORKING - CN2 - sondage quotidien => spec prete, voir docs/specs-stories/epic-28 (story 28.3)
+
+* AGENDA - AG1 - agenda interactif pour que chacun puisse mettre les horaires sur l'agenda pour peremttre de dire heure de reveil ...
+il faudra distinguer le planning de visite, du planning du groupe
 
 
 Développés (penser à faire de la doc ?) !
