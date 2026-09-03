@@ -34,6 +34,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
+import { ChatScreen } from "./ChatScreen";
 import { OfflineMediaScreen } from "./OfflineMediaScreen";
 import { TrivialGameScreen } from "./TrivialGameScreen";
 import { ArcadeHubScreen } from "./ArcadeHubScreen";
@@ -197,6 +198,14 @@ import {
   readOfflineDownloadRegistry,
   type OfflineSectionKey,
 } from "./offline-media";
+import {
+  VOYAGE_CONVERSATION_ID,
+  VOYAGE_CONVERSATION_NAME,
+  resolveChatAuthorSnapshotLabel,
+  sanitizeChatMessageText,
+  type ChatMemberProfile,
+} from "./chat";
+import type { CloudChatMessage } from "../types/cloud";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -562,8 +571,8 @@ function readStoredCarnetContentDraft(
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "trivial" | "jeux" | "candy-crush" | "crossword" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
-const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "trivial", "jeux", "candy-crush", "crossword", "ordalie", "imposteur", "results", "tips", "settings"];
+type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "chat" | "trivial" | "jeux" | "candy-crush" | "crossword" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "chat", "trivial", "jeux", "candy-crush", "crossword", "ordalie", "imposteur", "results", "tips", "settings"];
 type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
 
 const INTERNAL_DOCUMENT_LINK_PREFIX = "app://document/";
@@ -930,6 +939,7 @@ const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> =
   { id: "guide", icon: BookOpen, label: "Séjour" },
   { id: "map", icon: MapIcon, label: "Carte" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
+  { id: "chat", icon: MessageCircle, label: "Chat" },
   { id: "tips", icon: Lightbulb, label: "Conseils" },
   { id: "histoire", icon: Scroll, label: "Histoire" },
   { id: "geographie", icon: Globe, label: "Géographie" },
@@ -11939,6 +11949,14 @@ export default function App() {
     subscribeToDocumentPhotos = () => () => {},
     addDocumentPhoto: addDocumentPhotoInCloud = async () => {},
     removeDocumentPhoto: removeDocumentPhotoInCloud = async () => {},
+    // Chat familial (story 28.1) : même filet de sécurité que ci-dessus.
+    // subscribeToChatMessages est appelée automatiquement dès que la
+    // rubrique Chat est ouverte (ChatScreen) ; ensureVoyageConversation est
+    // appelée automatiquement par l'effet dédié dès que la liste des
+    // profils change (création de famille ou nouveau profil).
+    subscribeToChatMessages = () => () => {},
+    sendChatMessage: sendChatMessageInCloud = async () => {},
+    ensureVoyageConversation: ensureVoyageConversationInCloud = async () => {},
     setContentOverride: setContentOverrideInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
@@ -16647,6 +16665,57 @@ const resetForProfileSwitch = () => {
         id: item.id,
         surname: item.id === profile.id ? profile.surname : item.id,
       }));
+
+  // Story 28.1 : crée/complète automatiquement la conversation de groupe
+  // "Voyage" dès que la liste des profils proprietaire/utilisateur change
+  // (création de famille, nouveau profil créé après coup) — jamais pour les
+  // visiteurs (cf. isChatEligibleRole dans chat.ts). Clé mémorisée sur les
+  // ids triés pour ne relancer l'appel Firebase que quand la composition
+  // réelle change, pas à chaque tick de synchro cloud sans rapport.
+  const voyageEligibleProfiles: ChatMemberProfile[] = cloudSnapshot
+    ? Object.values(cloudSnapshot.profiles)
+        .filter((entry) => entry.role !== "visiteur")
+        .map((entry) => ({ profileId: entry.profileId, role: entry.role }))
+    : [];
+  const voyageEligibleProfileIdsKey = voyageEligibleProfiles
+    .map((entry) => entry.profileId)
+    .sort()
+    .join(",");
+  const voyageOwnerProfileId =
+    cloudSnapshot?.familyState.ownerProfileId ?? voyageEligibleProfiles[0]?.profileId ?? null;
+
+  useEffect(() => {
+    if (!cloudEnabled || !voyageOwnerProfileId || voyageEligibleProfileIdsKey === "") {
+      return;
+    }
+    void ensureVoyageConversationInCloud(voyageEligibleProfiles, voyageOwnerProfileId);
+    // voyageEligibleProfiles est recalculé à chaque rendu ; seule sa
+    // composition réelle (voyageEligibleProfileIdsKey) doit relancer l'appel.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cloudEnabled, voyageEligibleProfileIdsKey, voyageOwnerProfileId, ensureVoyageConversationInCloud]);
+
+  // Construit et envoie un message texte dans la conversation "Voyage" ;
+  // authorSurnameSnapshot est figé ici, jamais recalculé après coup :
+  // "Organisateur" pour le propriétaire, son surnom courant sinon (cf.
+  // resolveChatAuthorSnapshotLabel, story 28.1).
+  const handleSendChatMessage = async (text: string) => {
+    const trimmed = sanitizeChatMessageText(text);
+    if (!trimmed) return;
+
+    const message: CloudChatMessage = {
+      messageId: `${profile.id}-${Date.now()}`,
+      conversationId: VOYAGE_CONVERSATION_ID,
+      authorProfileId: profile.id,
+      authorSurnameSnapshot: resolveChatAuthorSnapshotLabel(profile.role ?? "utilisateur", profile.surname),
+      authorUid: cloudActorUid ?? "",
+      kind: "text",
+      text: trimmed,
+      createdAt: Date.now(),
+    };
+
+    await sendChatMessageInCloud(message);
+  };
+
   const placeCommentsForSelectedPlace =
     selectedPlaceId && placeCommentsByPlace[selectedPlaceId]
       ? placeCommentsByPlace[selectedPlaceId]
@@ -17649,6 +17718,20 @@ const resetForProfileSwitch = () => {
         );
       }
 
+      if (effectiveScreen === "chat") {
+        return (
+          <ChatScreen
+            conversationId={VOYAGE_CONVERSATION_ID}
+            conversationName={VOYAGE_CONVERSATION_NAME}
+            currentProfileId={profile.id}
+            cloudEnabled={cloudEnabled}
+            onBack={() => goToScreen("dashboard")}
+            subscribeToChatMessages={subscribeToChatMessages}
+            onSendMessage={handleSendChatMessage}
+          />
+        );
+      }
+
       if (effectiveScreen === "map") {
         return (
           <MapScreen
@@ -18127,6 +18210,18 @@ const resetForProfileSwitch = () => {
             deepLinkTarget={documentsDeepLinkTarget}
             onDeepLinkHandled={() => setDocumentsDeepLinkTarget(null)}
             isOnline={isOnline}
+          />
+        );
+      case "chat":
+        return (
+          <ChatScreen
+            conversationId={VOYAGE_CONVERSATION_ID}
+            conversationName={VOYAGE_CONVERSATION_NAME}
+            currentProfileId={profile.id}
+            cloudEnabled={cloudEnabled}
+            onBack={() => goToScreen("dashboard")}
+            subscribeToChatMessages={subscribeToChatMessages}
+            onSendMessage={handleSendChatMessage}
           />
         );
       case "map":

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type Role, type SharedFamilyState } from "../app/owner-policy";
+import type { ChatMemberProfile } from "../app/chat";
 import {
   claimProfileRole,
   deleteProfileFromCloud,
@@ -9,10 +10,13 @@ import {
   ensureFamilyMembership,
   ensureOwnerMembership,
   ensureProfileMembership,
+  ensureVoyageConversationMembers,
+  observeChatMessages,
   observeContentVisitLog,
   observeDocumentPhotos,
   observeFamilySnapshot,
   observePlaceVisitLog,
+  sendChatMessage,
   pushDestinationSurveyVoteOnly,
   pushCloudSnapshot,
   pushFamilyPhaseChange,
@@ -47,6 +51,8 @@ import type {
   CloudCarnetContentLog,
   CloudChallengeBestVotesByDay,
   CloudChallengeReactionsByDay,
+  CloudChatMessage,
+  CloudChatMessagesLog,
   CloudDestinationSurveyVote,
   CloudDocumentPhotoMap,
   CloudGameHistoryEntry,
@@ -1100,6 +1106,51 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  // Chat familial (story 28.1) : chargé à la demande pendant que la rubrique
+  // Chat est ouverte, même esprit que subscribeToDocumentPhotos ci-dessus.
+  const subscribeToChatMessages = useCallback(
+    (
+      conversationId: string,
+      messageLimit: number,
+      onSnapshot: (messages: CloudChatMessagesLog) => void,
+      onError?: () => void
+    ): (() => void) => {
+      if (!isEnabled || !database) {
+        return () => {};
+      }
+      return observeChatMessages(database, familyId, conversationId, messageLimit, onSnapshot, onError);
+    },
+    [database, familyId, isEnabled]
+  );
+
+  const sendChatMessageToCloud = useCallback(
+    async (message: CloudChatMessage): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await sendChatMessage(database, familyId, message);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  // Idempotent : crée la conversation "Voyage" si elle n'existe pas encore,
+  // sinon y ajoute les profils proprietaire/utilisateur pas encore membres
+  // (nouveau profil créé après coup). Appelé automatiquement dès que la
+  // liste des profils change (voir l'effet dédié dans App.tsx).
+  const ensureVoyageConversation = useCallback(
+    async (eligibleProfiles: ChatMemberProfile[], createdByProfileId: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        return;
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await ensureVoyageConversationMembers(database, familyId, eligibleProfiles, createdByProfileId);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
@@ -1121,6 +1172,9 @@ export function useCloudSync() {
     subscribeToDocumentPhotos,
     addDocumentPhoto,
     removeDocumentPhoto,
+    subscribeToChatMessages,
+    sendChatMessage: sendChatMessageToCloud,
+    ensureVoyageConversation,
     setPlaceDayOverride,
     setContentOverride,
     setTripStartDate,

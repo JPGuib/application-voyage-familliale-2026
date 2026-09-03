@@ -201,6 +201,46 @@ export type CloudCarnetContentEntry = {
 
 export type CloudCarnetContentLog = Record<string, CloudCarnetContentEntry>; // entryId -> entrée
 
+// Chat familial (story 28.1) : conversation de groupe "Voyage" créée
+// automatiquement, réunissant tous les profils proprietaire/utilisateur
+// (jamais les visiteurs, cf. access-control.ts). Comme placeVisitLogs et
+// documentPhotos ci-dessus, stocké hors de families/$familyId (chemins
+// chatConversations/$familyId et chatMessages/$familyId), chargé à la
+// demande par ChatScreen plutôt que dans le flux temps réel global (voir
+// observeChatMessages/ensureVoyageConversationMembers dans
+// cloudSyncProvider.ts).
+export type ChatConversationType = "group" | "direct";
+
+export type CloudChatConversation = {
+  conversationId: string;
+  type: ChatConversationType;
+  name: string;
+  isDefaultVoyage: boolean;
+  memberProfileIds: Record<string, true>;
+  createdAt: number;
+  createdByProfileId: string;
+};
+
+export type CloudChatConversationsMap = Record<string, CloudChatConversation>;
+
+// authorSurnameSnapshot est figé à l'envoi : "Organisateur" si l'auteur est
+// propriétaire au moment de l'envoi (cf. resolveChatAuthorSnapshotLabel dans
+// chat.ts), sinon son surnom à cet instant — ni l'un ni l'autre ne change
+// rétroactivement si le rôle ou le surnom de l'auteur change plus tard
+// (même logique que CloudPlaceComment/CloudCarnetVisiteEntry ci-dessus).
+export type CloudChatMessage = {
+  messageId: string;
+  conversationId: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  authorUid: string;
+  kind: "text";
+  text: string;
+  createdAt: number;
+};
+
+export type CloudChatMessagesLog = Record<string, CloudChatMessage>;
+
 export type CloudDestinationSurveyVote = {
   profileId: string;
   proposals: string[];

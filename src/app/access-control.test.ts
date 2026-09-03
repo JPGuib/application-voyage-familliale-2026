@@ -17,6 +17,7 @@ const ALL_SECTIONS: AccessSection[] = [
   "geographie",
   "culture",
   "game",
+  "chat",
   "tips",
   "results",
   "settings",
@@ -62,6 +63,7 @@ describe("access-control policy", () => {
       "geographie",
       "culture",
       "game",
+      "chat",
       "tips",
       "results",
       "settings",
@@ -111,6 +113,29 @@ describe("access-control policy", () => {
     expect(getAccessDeniedMessage("visiteur", "during", "results")).toBe(
       "Cette rubrique est reservee aux voyageurs."
     );
+    expect(getAccessDeniedMessage("visiteur", "during", "chat")).toBe(
+      "Cette rubrique est reservee aux voyageurs."
+    );
+  });
+
+  // Story 28.1 : le Chat suit les mêmes règles d'accès que le jeu du jour
+  // (propriétaire toujours, utilisateur une fois le séjour commencé,
+  // visiteur jamais) plutôt qu'une checklist dédiée.
+  describe("chat section (story 28.1)", () => {
+    it("is always accessible to the owner, before and during", () => {
+      expect(canAccessSection("proprietaire", "before", "chat")).toBe(true);
+      expect(canAccessSection("proprietaire", "during", "chat")).toBe(true);
+    });
+
+    it("is accessible to utilisateur only once the trip has started", () => {
+      expect(canAccessSection("utilisateur", "before", "chat")).toBe(false);
+      expect(canAccessSection("utilisateur", "during", "chat")).toBe(true);
+    });
+
+    it("is never accessible to a visiteur, regardless of phase", () => {
+      expect(canAccessSection("visiteur", "before", "chat")).toBe(false);
+      expect(canAccessSection("visiteur", "during", "chat")).toBe(false);
+    });
   });
 
   it("grants visitor access to their own settings screen", () => {

@@ -105,6 +105,54 @@
         }
       }
     },
+    "chatConversations": {
+      "$familyId": {
+        ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
+        ".write": false,
+        "$conversationId": {
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && newData.child('isDefaultVoyage').val() === true",
+          ".validate": "newData.hasChildren(['conversationId','type','name','isDefaultVoyage','memberProfileIds','createdAt','createdByProfileId']) && newData.child('conversationId').isString() && newData.child('conversationId').val() === $conversationId && newData.child('type').val() === 'group' && newData.child('name').isString() && newData.child('name').val() === 'Voyage' && newData.child('isDefaultVoyage').val() === true && newData.child('createdAt').isNumber() && newData.child('createdByProfileId').isString() && newData.child('createdByProfileId').val().length > 0",
+          "conversationId": {},
+          "type": {},
+          "name": {},
+          "isDefaultVoyage": {},
+          "createdAt": {},
+          "createdByProfileId": {},
+          "memberProfileIds": {
+            "$profileId": {
+              ".validate": "newData.val() === true ? root.child('families').child($familyId).child('profiles').child($profileId).child('role').val() !== 'visiteur' : (newData.val() === null && !root.child('families').child($familyId).child('profiles').child($profileId).exists())"
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "chatMessages": {
+      "$familyId": {
+        ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
+        ".write": false,
+        "$conversationId": {
+          ".write": false,
+          "$messageId": {
+            ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && !data.exists() && newData.val() !== null && newData.child('authorUid').val() === auth.uid && root.child('families').child($familyId).child('profiles').child(newData.child('authorProfileId').val()).child('memberUids').child(auth.uid).val() === true && root.child('chatConversations').child($familyId).child($conversationId).child('memberProfileIds').child(newData.child('authorProfileId').val()).val() === true",
+            ".validate": "newData.hasChildren(['messageId','conversationId','authorProfileId','authorSurnameSnapshot','authorUid','kind','text','createdAt']) && newData.child('messageId').isString() && newData.child('messageId').val() === $messageId && newData.child('conversationId').isString() && newData.child('conversationId').val() === $conversationId && newData.child('authorProfileId').isString() && newData.child('authorProfileId').val().length > 0 && newData.child('authorSurnameSnapshot').isString() && newData.child('authorSurnameSnapshot').val().length > 0 && newData.child('authorSurnameSnapshot').val().length <= 80 && newData.child('authorUid').isString() && newData.child('authorUid').val().length > 0 && newData.child('kind').val() === 'text' && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 2000 && newData.child('createdAt').isNumber()",
+            "messageId": {},
+            "conversationId": {},
+            "authorProfileId": {},
+            "authorSurnameSnapshot": {},
+            "authorUid": {},
+            "kind": {},
+            "text": {},
+            "createdAt": {},
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      }
+    },
     "families": {
       "$familyId": {
         ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",

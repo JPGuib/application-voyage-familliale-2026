@@ -1008,7 +1008,7 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     const nulledPaths = Object.entries(updates)
-      .filter(([key, val]) => val === null && key !== "families/famille-test/profiles/profile-y" && key !== "families/famille-test/checklists/profile-y" && key !== "families/famille-test/gameResults/profile-y" && key !== "families/famille-test/gameProgress/profile-y" && key !== "families/famille-test/candyCrushChallenge/profile-y")
+      .filter(([key, val]) => val === null && key !== "families/famille-test/profiles/profile-y" && key !== "families/famille-test/checklists/profile-y" && key !== "families/famille-test/gameResults/profile-y" && key !== "families/famille-test/gameProgress/profile-y" && key !== "families/famille-test/candyCrushChallenge/profile-y" && key !== "chatConversations/famille-test/voyage/memberProfileIds/profile-y")
       .map(([key]) => key);
     expect(nulledPaths).toHaveLength(0);
   });
@@ -1023,6 +1023,18 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
     for (const key of nulledKeys) {
       expect(key).toMatch(/famille-test.*profile-abc/);
     }
+  });
+
+  // Story 28.1, cas limite : un profil supprimé est retiré de la
+  // conversation "Voyage" (ses messages passés restent visibles avec leur
+  // authorSurnameSnapshot figé, cf. types/cloud.ts).
+  it("also removes the deleted profile from the Voyage chat conversation members", async () => {
+    mockUpdate.mockClear();
+
+    await deleteProfileFromCloud(db, familyId, "profile-y");
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["chatConversations/famille-test/voyage/memberProfileIds/profile-y"]).toBeNull();
   });
 });
 

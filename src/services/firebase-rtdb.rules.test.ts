@@ -682,6 +682,220 @@ suite("firebase rtdb rules owner phase guard", () => {
       })
     );
   });
+
+  // Story 28.1 : conversation de groupe "Voyage" créée automatiquement,
+  // messagerie texte réservée aux membres, aucune édition/suppression.
+  describe("chat (story 28.1)", () => {
+    const voyageConversation = {
+      conversationId: "voyage",
+      type: "group",
+      name: "Voyage",
+      isDefaultVoyage: true,
+      memberProfileIds: { [OWNER_PROFILE_ID]: true, [NON_OWNER_PROFILE_ID]: true },
+      createdAt: 100,
+      createdByProfileId: OWNER_PROFILE_ID,
+    };
+
+    it("allows a family member to create the Voyage conversation with eligible members", async () => {
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+      await assertSucceeds(
+        ownerDb.ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation)
+      );
+    });
+
+    it("denies creating a conversation that is not flagged isDefaultVoyage (custom groups are story 28.2)", async () => {
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+      await assertFails(
+        ownerDb.ref(`chatConversations/${FAMILY_ID}/custom-group`).set({
+          ...voyageConversation,
+          conversationId: "custom-group",
+          isDefaultVoyage: false,
+        })
+      );
+    });
+
+    it("denies adding a visiteur profile to the Voyage conversation members", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertFails(
+        ownerDb.ref(`chatConversations/${FAMILY_ID}/voyage/memberProfileIds/${VISITOR_PROFILE_ID}`).set(true)
+      );
+    });
+
+    it("denies renaming the Voyage conversation, even for the owner", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertFails(ownerDb.ref(`chatConversations/${FAMILY_ID}/voyage/name`).set("Autre nom"));
+    });
+
+    it("denies deleting the Voyage conversation, even for the owner", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertFails(ownerDb.ref(`chatConversations/${FAMILY_ID}/voyage`).set(null));
+    });
+
+    it("denies a member from unilaterally leaving the Voyage conversation while their profile still exists", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatConversations/${FAMILY_ID}/voyage/memberProfileIds/${NON_OWNER_PROFILE_ID}`).set(null)
+      );
+    });
+
+    it("allows removing a deleted profile from the Voyage conversation in the same atomic update", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertSucceeds(
+        ownerDb.ref().update({
+          [`families/${FAMILY_ID}/profiles/${NON_OWNER_PROFILE_ID}`]: null,
+          [`chatConversations/${FAMILY_ID}/voyage/memberProfileIds/${NON_OWNER_PROFILE_ID}`]: null,
+        })
+      );
+    });
+
+    it("allows a member to send a text message in the Voyage conversation", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertSucceeds(
+        nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/message-1`).set({
+          messageId: "message-1",
+          conversationId: "voyage",
+          authorProfileId: NON_OWNER_PROFILE_ID,
+          authorSurnameSnapshot: "User",
+          authorUid: NON_OWNER_UID,
+          kind: "text",
+          text: "Salut la famille",
+          createdAt: 200,
+        })
+      );
+    });
+
+    it("denies sending a message on behalf of a profile that is not a member of the conversation", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set({
+          ...voyageConversation,
+          memberProfileIds: { [OWNER_PROFILE_ID]: true },
+        });
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/message-2`).set({
+          messageId: "message-2",
+          conversationId: "voyage",
+          authorProfileId: NON_OWNER_PROFILE_ID,
+          authorSurnameSnapshot: "User",
+          authorUid: NON_OWNER_UID,
+          kind: "text",
+          text: "Je ne suis pas membre",
+          createdAt: 201,
+        })
+      );
+    });
+
+    it("denies a visiteur from sending a message even if somehow listed as a member", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set({
+          ...voyageConversation,
+          memberProfileIds: { ...voyageConversation.memberProfileIds, [VISITOR_PROFILE_ID]: true },
+        });
+      });
+
+      const visitorDb = testEnv.authenticatedContext(VISITOR_UID).database();
+      await assertFails(
+        visitorDb.ref(`chatMessages/${FAMILY_ID}/voyage/message-3`).set({
+          messageId: "message-3",
+          conversationId: "voyage",
+          authorProfileId: VISITOR_PROFILE_ID,
+          authorSurnameSnapshot: "Visitor",
+          authorUid: VISITOR_UID,
+          kind: "text",
+          text: "Je ne devrais pas pouvoir écrire",
+          createdAt: 202,
+        })
+      );
+    });
+
+    it("denies editing an already-sent message", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+        await context.database().ref(`chatMessages/${FAMILY_ID}/voyage/message-4`).set({
+          messageId: "message-4",
+          conversationId: "voyage",
+          authorProfileId: NON_OWNER_PROFILE_ID,
+          authorSurnameSnapshot: "User",
+          authorUid: NON_OWNER_UID,
+          kind: "text",
+          text: "Message initial",
+          createdAt: 203,
+        });
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/message-4/text`).set("Message modifié")
+      );
+    });
+
+    it("denies deleting an already-sent message", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+        await context.database().ref(`chatMessages/${FAMILY_ID}/voyage/message-5`).set({
+          messageId: "message-5",
+          conversationId: "voyage",
+          authorProfileId: NON_OWNER_PROFILE_ID,
+          authorSurnameSnapshot: "User",
+          authorUid: NON_OWNER_UID,
+          kind: "text",
+          text: "Message à ne pas supprimer",
+          createdAt: 204,
+        });
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/message-5`).set(null));
+    });
+
+    it("denies a message text longer than 2000 characters", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/message-6`).set({
+          messageId: "message-6",
+          conversationId: "voyage",
+          authorProfileId: NON_OWNER_PROFILE_ID,
+          authorSurnameSnapshot: "User",
+          authorUid: NON_OWNER_UID,
+          kind: "text",
+          text: "a".repeat(2001),
+          createdAt: 205,
+        })
+      );
+    });
+  });
 });
 
 if (!hasDatabaseEmulator) {

@@ -1,6 +1,8 @@
 import {
   get,
+  limitToLast,
   onValue,
+  query,
   ref,
   runTransaction,
   set,
@@ -12,6 +14,13 @@ import {
   enforceOwnerUniqueness,
   type Role,
 } from "../app/owner-policy";
+import {
+  buildVoyageConversationSeed,
+  CHAT_MESSAGE_MAX_LENGTH,
+  computeMissingVoyageMembers,
+  VOYAGE_CONVERSATION_ID,
+  type ChatMemberProfile,
+} from "../app/chat";
 import type {
   ChallengeReactionEmoji,
   ChecklistCustomItem,
@@ -29,6 +38,9 @@ import type {
   CloudCarnetVisiteLog,
   CloudCarnetContentEntry,
   CloudCarnetContentLog,
+  CloudChatConversation,
+  CloudChatMessage,
+  CloudChatMessagesLog,
   CloudDocumentPhotoMap,
   CloudPlaceComment,
   CloudPlaceCommentsByPlace,
@@ -953,6 +965,163 @@ function parseDocumentPhotoMap(value: unknown): CloudDocumentPhotoMap {
   }
 
   return next;
+}
+
+// Chat familial (story 28.1) : parse défensif de la conversation "Voyage",
+// même esprit que les autres parseXxx ci-dessus (une entrée malformée est
+// ignorée plutôt que de faire planter tout l'écran Chat).
+function parseChatConversation(conversationId: string, value: unknown): CloudChatConversation | null {
+  const raw = asRecord(value);
+  const type = raw.type === "direct" ? "direct" : "group";
+  const name = typeof raw.name === "string" ? raw.name : "";
+  const isDefaultVoyage = raw.isDefaultVoyage === true;
+  const createdAt = toFiniteNumber(raw.createdAt, 0);
+  const createdByProfileId = typeof raw.createdByProfileId === "string" ? raw.createdByProfileId : "";
+
+  if (!name || createdAt <= 0 || !createdByProfileId) {
+    return null;
+  }
+
+  const memberProfileIds: Record<string, true> = {};
+  for (const [profileId, member] of Object.entries(asRecord(raw.memberProfileIds))) {
+    if (member === true) {
+      memberProfileIds[profileId] = true;
+    }
+  }
+
+  return {
+    conversationId,
+    type,
+    name,
+    isDefaultVoyage,
+    memberProfileIds,
+    createdAt,
+    createdByProfileId,
+  };
+}
+
+function parseChatMessage(
+  conversationId: string,
+  messageId: string,
+  value: unknown
+): CloudChatMessage | null {
+  const raw = asRecord(value);
+  const authorProfileId = typeof raw.authorProfileId === "string" ? raw.authorProfileId.trim() : "";
+  const authorSurnameSnapshot =
+    typeof raw.authorSurnameSnapshot === "string" ? raw.authorSurnameSnapshot.trim() : "";
+  const authorUid = typeof raw.authorUid === "string" ? raw.authorUid.trim() : "";
+  const text = typeof raw.text === "string" ? raw.text : "";
+  const createdAt = toFiniteNumber(raw.createdAt, 0);
+
+  if (
+    !authorProfileId ||
+    !authorSurnameSnapshot ||
+    !authorUid ||
+    !text ||
+    text.length > CHAT_MESSAGE_MAX_LENGTH ||
+    createdAt <= 0
+  ) {
+    return null;
+  }
+
+  return {
+    messageId,
+    conversationId,
+    authorProfileId,
+    authorSurnameSnapshot,
+    authorUid,
+    kind: "text",
+    text,
+    createdAt,
+  };
+}
+
+function parseChatMessagesLog(conversationId: string, value: unknown): CloudChatMessagesLog {
+  const raw = asRecord(value);
+  const next: CloudChatMessagesLog = {};
+
+  for (const [messageId, messageValue] of Object.entries(raw)) {
+    const parsed = parseChatMessage(conversationId, messageId, messageValue);
+    if (parsed) {
+      next[parsed.messageId] = parsed;
+    }
+  }
+
+  return next;
+}
+
+// Crée la conversation de groupe "Voyage" si elle n'existe pas encore (à la
+// création de la famille, ou à la première ouverture de la rubrique Chat si
+// la famille existait déjà sans conversation), sinon y ajoute les profils
+// proprietaire/utilisateur pas encore membres (nouveau profil créé après
+// coup) — jamais de retrait ici, cf. computeMissingVoyageMembers et le
+// commentaire sur deleteProfileFromCloud pour le seul cas de retrait prévu.
+// Chemin hors de families/$familyId comme les autres ressources chargées à
+// la demande ci-dessus (voir CloudChatConversation dans types/cloud.ts).
+export async function ensureVoyageConversationMembers(
+  database: Database,
+  familyId: string,
+  eligibleProfiles: readonly ChatMemberProfile[],
+  createdByProfileId: string
+): Promise<void> {
+  const conversationRef = ref(database, `chatConversations/${familyId}/${VOYAGE_CONVERSATION_ID}`);
+  const snapshot = await get(conversationRef);
+  const existing = snapshot.exists() ? parseChatConversation(VOYAGE_CONVERSATION_ID, snapshot.val()) : null;
+
+  if (!existing) {
+    await set(conversationRef, buildVoyageConversationSeed(eligibleProfiles, createdByProfileId, Date.now()));
+    return;
+  }
+
+  const eligibleProfileIds = eligibleProfiles
+    .filter((profile) => profile.role !== "visiteur")
+    .map((profile) => profile.profileId);
+  const missingProfileIds = computeMissingVoyageMembers(existing, eligibleProfileIds);
+
+  if (missingProfileIds.length === 0) {
+    return;
+  }
+
+  const updates: Record<string, true> = {};
+  for (const profileId of missingProfileIds) {
+    updates[`chatConversations/${familyId}/${VOYAGE_CONVERSATION_ID}/memberProfileIds/${profileId}`] = true;
+  }
+
+  await update(ref(database), updates);
+}
+
+// Chargée à la demande pendant que la rubrique Chat est ouverte (jamais
+// depuis observeFamilySnapshot) : messageLimit borne la fenêtre de messages
+// récents chargés (cf. cas limite "historique long" de la story 28.1),
+// augmentée côté appelant pour charger plus d'ancien historique.
+export function observeChatMessages(
+  database: Database,
+  familyId: string,
+  conversationId: string,
+  messageLimit: number,
+  onSnapshot: (messages: CloudChatMessagesLog) => void,
+  onError?: () => void
+): () => void {
+  const messagesQuery = query(
+    ref(database, `chatMessages/${familyId}/${conversationId}`),
+    limitToLast(messageLimit)
+  );
+  return onValue(
+    messagesQuery,
+    (snapshot) => onSnapshot(parseChatMessagesLog(conversationId, snapshot.val())),
+    () => onError?.()
+  );
+}
+
+// Écriture réservée à l'auteur (cf. database.rules.*.json) : ni édition ni
+// suppression dans ce périmètre (story 28.1, Hors périmètre), d'où un
+// simple set une seule fois sur un messageId neuf.
+export async function sendChatMessage(
+  database: Database,
+  familyId: string,
+  message: CloudChatMessage
+): Promise<void> {
+  await set(ref(database, `chatMessages/${familyId}/${message.conversationId}/${message.messageId}`), message);
 }
 
 function normalizePlaceDays(value: unknown): number[] {
@@ -2021,6 +2190,12 @@ export async function deleteProfileFromCloud(
     [`families/${familyId}/gameProgress/${profileIdToDelete}`]: null,
     [`families/${familyId}/candyCrushChallenge/${profileIdToDelete}`]: null,
     [`families/${familyId}/updatedAt`]: Date.now(),
+    // Story 28.1, cas limite : un profil supprimé est simplement retiré de
+    // memberProfileIds de la conversation "Voyage" (ses messages passés
+    // restent visibles avec leur authorSurnameSnapshot figé). Autorisé par
+    // les règles Firebase uniquement parce que le profil est supprimé dans
+    // cette même écriture atomique (cf. database.rules.*.json).
+    [`chatConversations/${familyId}/${VOYAGE_CONVERSATION_ID}/memberProfileIds/${profileIdToDelete}`]: null,
   };
 
   await update(ref(database), updates);
