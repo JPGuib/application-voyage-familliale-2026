@@ -110,17 +110,21 @@
         ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
         ".write": false,
         "$conversationId": {
-          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && newData.child('isDefaultVoyage').val() === true",
-          ".validate": "newData.hasChildren(['conversationId','type','name','isDefaultVoyage','memberProfileIds','createdAt','createdByProfileId']) && newData.child('conversationId').isString() && newData.child('conversationId').val() === $conversationId && newData.child('type').val() === 'group' && newData.child('name').isString() && newData.child('name').val() === 'Voyage' && newData.child('isDefaultVoyage').val() === true && newData.child('createdAt').isNumber() && newData.child('createdByProfileId').isString() && newData.child('createdByProfileId').val().length > 0",
+          ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && !data.exists()",
+          ".validate": "newData.hasChildren(['conversationId','type','name','isDefaultVoyage','memberProfileIds','createdAt','createdByProfileId']) && newData.child('conversationId').isString() && newData.child('conversationId').val() === $conversationId && (newData.child('type').val() === 'group' || newData.child('type').val() === 'direct') && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 60 && newData.child('isDefaultVoyage').val() === ($conversationId === 'voyage') && (newData.child('isDefaultVoyage').val() !== true || (newData.child('type').val() === 'group' && newData.child('name').val() === 'Voyage')) && (newData.child('type').val() !== 'direct' || newData.child('memberProfileIds').numChildren() === 2) && newData.child('memberProfileIds').numChildren() >= 2 && newData.child('createdAt').isNumber() && newData.child('createdAt').val() > 0 && newData.child('createdByProfileId').isString() && newData.child('createdByProfileId').val().length > 0 && newData.child('memberProfileIds').child(newData.child('createdByProfileId').val()).val() === true && root.child('families').child($familyId).child('profiles').child(newData.child('createdByProfileId').val()).child('memberUids').child(auth.uid).val() === true",
           "conversationId": {},
           "type": {},
-          "name": {},
+          "name": {
+            ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && data.exists() && root.child('chatConversations').child($familyId).child($conversationId).child('isDefaultVoyage').val() !== true",
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+          },
           "isDefaultVoyage": {},
           "createdAt": {},
           "createdByProfileId": {},
           "memberProfileIds": {
             "$profileId": {
-              ".validate": "newData.val() === true ? root.child('families').child($familyId).child('profiles').child($profileId).child('role').val() !== 'visiteur' : (newData.val() === null && !root.child('families').child($familyId).child('profiles').child($profileId).exists())"
+              ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && ((newData.val() === true && root.child('chatConversations').child($familyId).child($conversationId).child('isDefaultVoyage').val() === true) || (newData.val() === null && root.child('chatConversations').child($familyId).child($conversationId).child('isDefaultVoyage').val() !== true && root.child('families').child($familyId).child('profiles').child($profileId).child('memberUids').child(auth.uid).val() === true) || (newData.val() === null && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true && !root.child('families').child($familyId).child('profiles').child($profileId).exists()))",
+              ".validate": "newData.val() === true ? root.child('families').child($familyId).child('profiles').child($profileId).child('role').val() !== 'visiteur' : (!root.child('families').child($familyId).child('profiles').child($profileId).exists() || (root.child('chatConversations').child($familyId).child($conversationId).child('isDefaultVoyage').val() !== true && root.child('families').child($familyId).child('profiles').child($profileId).child('memberUids').child(auth.uid).val() === true))"
             }
           },
           "$other": {

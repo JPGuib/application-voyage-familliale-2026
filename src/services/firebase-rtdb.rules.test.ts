@@ -704,14 +704,14 @@ suite("firebase rtdb rules owner phase guard", () => {
       );
     });
 
-    it("denies creating a conversation that is not flagged isDefaultVoyage (custom groups are story 28.2)", async () => {
+    it("denies creating a conversation that claims isDefaultVoyage for a non-'voyage' id", async () => {
       const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
 
       await assertFails(
         ownerDb.ref(`chatConversations/${FAMILY_ID}/custom-group`).set({
           ...voyageConversation,
           conversationId: "custom-group",
-          isDefaultVoyage: false,
+          isDefaultVoyage: true,
         })
       );
     });
@@ -892,6 +892,156 @@ suite("firebase rtdb rules owner phase guard", () => {
           kind: "text",
           text: "a".repeat(2001),
           createdAt: 205,
+        })
+      );
+    });
+  });
+
+  describe("chat groups and 1-to-1 conversations (story 28.2)", () => {
+    function customGroupPayload(overrides: Record<string, unknown> = {}) {
+      return {
+        conversationId: "custom-group",
+        type: "group",
+        name: "Les grands",
+        isDefaultVoyage: false,
+        memberProfileIds: { [OWNER_PROFILE_ID]: true, [NON_OWNER_PROFILE_ID]: true },
+        createdAt: 100,
+        createdByProfileId: OWNER_PROFILE_ID,
+        ...overrides,
+      };
+    }
+
+    function directPayload(overrides: Record<string, unknown> = {}) {
+      return {
+        conversationId: "custom-direct",
+        type: "direct",
+        name: "Conversation",
+        isDefaultVoyage: false,
+        memberProfileIds: { [OWNER_PROFILE_ID]: true, [NON_OWNER_PROFILE_ID]: true },
+        createdAt: 100,
+        createdByProfileId: OWNER_PROFILE_ID,
+        ...overrides,
+      };
+    }
+
+    it("allows a member to create a named custom group with eligible members", async () => {
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+      await assertSucceeds(
+        ownerDb.ref(`chatConversations/${FAMILY_ID}/custom-group`).set(customGroupPayload())
+      );
+    });
+
+    it("allows a member to create a 1-to-1 conversation with exactly two members", async () => {
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+      await assertSucceeds(
+        ownerDb.ref(`chatConversations/${FAMILY_ID}/custom-direct`).set(directPayload())
+      );
+    });
+
+    it("denies a 1-to-1 conversation with more than two members", async () => {
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+      await assertFails(
+        ownerDb.ref(`chatConversations/${FAMILY_ID}/custom-direct`).set(
+          directPayload({
+            memberProfileIds: {
+              [OWNER_PROFILE_ID]: true,
+              [NON_OWNER_PROFILE_ID]: true,
+              extra: true,
+            },
+          })
+        )
+      );
+    });
+
+    it("denies a group with only the creator (no other member)", async () => {
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+      await assertFails(
+        ownerDb.ref(`chatConversations/${FAMILY_ID}/custom-group`).set(
+          customGroupPayload({ memberProfileIds: { [OWNER_PROFILE_ID]: true } })
+        )
+      );
+    });
+
+    it("denies including a visiteur profile as a member at creation", async () => {
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+
+      await assertFails(
+        ownerDb.ref(`chatConversations/${FAMILY_ID}/custom-group`).set(
+          customGroupPayload({
+            memberProfileIds: { [OWNER_PROFILE_ID]: true, [VISITOR_PROFILE_ID]: true },
+          })
+        )
+      );
+    });
+
+    it("denies impersonating another profile as createdByProfileId", async () => {
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+      await assertFails(
+        nonOwnerDb.ref(`chatConversations/${FAMILY_ID}/custom-group`).set(customGroupPayload())
+      );
+    });
+
+    it("allows any member (not just the creator) to rename a custom group", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/custom-group`).set(customGroupPayload());
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertSucceeds(
+        nonOwnerDb.ref(`chatConversations/${FAMILY_ID}/custom-group/name`).set("Nouveau nom")
+      );
+    });
+
+    it("allows a member to leave a custom group (self-only)", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/custom-group`).set(customGroupPayload());
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertSucceeds(
+        nonOwnerDb.ref(`chatConversations/${FAMILY_ID}/custom-group/memberProfileIds/${NON_OWNER_PROFILE_ID}`).set(null)
+      );
+    });
+
+    it("denies a member from removing someone else's membership in a custom group", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/custom-group`).set(customGroupPayload());
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatConversations/${FAMILY_ID}/custom-group/memberProfileIds/${OWNER_PROFILE_ID}`).set(null)
+      );
+    });
+
+    it("denies adding a new member to a custom group after its creation (composition is fixed in v1)", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/custom-group`).set(
+          customGroupPayload({ memberProfileIds: { [OWNER_PROFILE_ID]: true } })
+        );
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertFails(
+        ownerDb.ref(`chatConversations/${FAMILY_ID}/custom-group/memberProfileIds/${NON_OWNER_PROFILE_ID}`).set(true)
+      );
+    });
+
+    it("allows removing a deleted profile from a custom group in the same atomic update", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/custom-group`).set(customGroupPayload());
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertSucceeds(
+        ownerDb.ref().update({
+          [`families/${FAMILY_ID}/profiles/${NON_OWNER_PROFILE_ID}`]: null,
+          [`chatConversations/${FAMILY_ID}/custom-group/memberProfileIds/${NON_OWNER_PROFILE_ID}`]: null,
         })
       );
     });

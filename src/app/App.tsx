@@ -34,7 +34,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { MapScreen } from "./MapScreen";
-import { ChatScreen } from "./ChatScreen";
+import { ChatHomeScreen } from "./ChatHomeScreen";
 import { OfflineMediaScreen } from "./OfflineMediaScreen";
 import { TrivialGameScreen } from "./TrivialGameScreen";
 import { ArcadeHubScreen } from "./ArcadeHubScreen";
@@ -199,11 +199,10 @@ import {
   type OfflineSectionKey,
 } from "./offline-media";
 import {
-  VOYAGE_CONVERSATION_ID,
-  VOYAGE_CONVERSATION_NAME,
   resolveChatAuthorSnapshotLabel,
   sanitizeChatMessageText,
   type ChatMemberProfile,
+  type ChatProfileLookup,
 } from "./chat";
 import type { CloudChatMessage } from "../types/cloud";
 
@@ -393,6 +392,10 @@ const PLACE_DAY_OVERRIDES_STORAGE_KEY = "jp-place-day-overrides";
 const PLACE_DAY_ORDER_OVERRIDES_STORAGE_KEY = "jp-place-day-order-overrides";
 const DOCUMENT_VISIBILITY_STORAGE_KEY = "jp-document-visibility-map";
 const CONTENT_OVERRIDES_STORAGE_KEY = "jp-content-overrides";
+// Story 28.2 : masquage local (jamais côté cloud) d'une conversation 1-to-1
+// dans la liste du Chat, par profil — cf. canLeaveChatConversation dans
+// chat.ts pour la distinction avec le départ d'un groupe personnalisé.
+const CHAT_HIDDEN_CONVERSATIONS_STORAGE_KEY = "jp-chat-hidden-conversations-by-profile";
 const OWNER_GLOBAL_DOCUMENT_ADDITIONS_KEY = "jp-owner-global-document-additions";
 const OWNER_GLOBAL_DOCUMENT_EDITS_KEY = "jp-owner-global-document-edits";
 const OWNER_GLOBAL_DOCUMENT_REMOVALS_KEY = "jp-owner-global-document-removals";
@@ -11951,12 +11954,19 @@ export default function App() {
     removeDocumentPhoto: removeDocumentPhotoInCloud = async () => {},
     // Chat familial (story 28.1) : même filet de sécurité que ci-dessus.
     // subscribeToChatMessages est appelée automatiquement dès que la
-    // rubrique Chat est ouverte (ChatScreen) ; ensureVoyageConversation est
+    // rubrique Chat est ouverte (ChatHomeScreen) ; ensureVoyageConversation est
     // appelée automatiquement par l'effet dédié dès que la liste des
     // profils change (création de famille ou nouveau profil).
     subscribeToChatMessages = () => () => {},
     sendChatMessage: sendChatMessageInCloud = async () => {},
     ensureVoyageConversation: ensureVoyageConversationInCloud = async () => {},
+    // Groupes personnalisés/1-to-1 (story 28.2) : même filet de sécurité.
+    // subscribeToChatConversations est appelée automatiquement dès que
+    // l'écran d'accueil du Chat est ouvert (ChatHomeScreen).
+    subscribeToChatConversations = () => () => {},
+    createChatConversation: createChatConversationInCloud = async () => {},
+    renameChatConversation: renameChatConversationInCloud = async () => {},
+    leaveChatConversation: leaveChatConversationInCloud = async () => {},
     setContentOverride: setContentOverrideInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
@@ -16694,17 +16704,17 @@ const resetForProfileSwitch = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cloudEnabled, voyageEligibleProfileIdsKey, voyageOwnerProfileId, ensureVoyageConversationInCloud]);
 
-  // Construit et envoie un message texte dans la conversation "Voyage" ;
-  // authorSurnameSnapshot est figé ici, jamais recalculé après coup :
-  // "Organisateur" pour le propriétaire, son surnom courant sinon (cf.
-  // resolveChatAuthorSnapshotLabel, story 28.1).
-  const handleSendChatMessage = async (text: string) => {
+  // Construit et envoie un message texte dans une conversation (Voyage ou
+  // personnalisée, story 28.2) ; authorSurnameSnapshot est figé ici, jamais
+  // recalculé après coup : "Organisateur" pour le propriétaire, son surnom
+  // courant sinon (cf. resolveChatAuthorSnapshotLabel, story 28.1).
+  const handleSendChatMessage = async (conversationId: string, text: string) => {
     const trimmed = sanitizeChatMessageText(text);
     if (!trimmed) return;
 
     const message: CloudChatMessage = {
       messageId: `${profile.id}-${Date.now()}`,
-      conversationId: VOYAGE_CONVERSATION_ID,
+      conversationId,
       authorProfileId: profile.id,
       authorSurnameSnapshot: resolveChatAuthorSnapshotLabel(profile.role ?? "utilisateur", profile.surname),
       authorUid: cloudActorUid ?? "",
@@ -16715,6 +16725,67 @@ const resetForProfileSwitch = () => {
 
     await sendChatMessageInCloud(message);
   };
+
+  // Story 28.2 : profils connus (surnom + rôle) pour recalculer à chaque
+  // affichage le nom d'une conversation 1-to-1 (cf.
+  // resolveChatConversationDisplayName) — inclut aussi les visiteurs, au
+  // cas où l'un d'eux apparaîtrait comme "autre participant" d'une
+  // conversation créée avant un changement de rôle (l'écran retombe alors
+  // sur un simple surnom, jamais un blocage).
+  const chatProfilesById: ChatProfileLookup = cloudSnapshot
+    ? Object.fromEntries(
+        Object.values(cloudSnapshot.profiles).map((entry) => [
+          entry.profileId,
+          { surname: entry.surname, role: entry.role },
+        ])
+      )
+    : {};
+
+  // Masquage local (jamais cloud) d'une conversation 1-to-1 dans la liste
+  // du Chat (story 28.2, cas limite) : par profil, persistant en
+  // localStorage uniquement — l'historique et l'appartenance à la
+  // conversation restent intacts côté cloud.
+  const [hiddenChatConversationsByProfile, setHiddenChatConversationsByProfile] = useState<
+    Record<string, string[]>
+  >(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem(CHAT_HIDDEN_CONVERSATIONS_STORAGE_KEY) || "{}");
+      return raw && typeof raw === "object" ? raw : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const persistHiddenChatConversations = (next: Record<string, string[]>) => {
+    setHiddenChatConversationsByProfile(next);
+    try {
+      localStorage.setItem(CHAT_HIDDEN_CONVERSATIONS_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Ignore storage errors
+    }
+  };
+
+  const hiddenChatConversationIds = hiddenChatConversationsByProfile[profile.id] ?? [];
+
+  const handleHideChatConversation = (conversationId: string) => {
+    const current = hiddenChatConversationsByProfile[profile.id] ?? [];
+    if (current.includes(conversationId)) return;
+    persistHiddenChatConversations({
+      ...hiddenChatConversationsByProfile,
+      [profile.id]: [...current, conversationId],
+    });
+  };
+
+  const handleUnhideChatConversation = (conversationId: string) => {
+    const current = hiddenChatConversationsByProfile[profile.id] ?? [];
+    persistHiddenChatConversations({
+      ...hiddenChatConversationsByProfile,
+      [profile.id]: current.filter((id) => id !== conversationId),
+    });
+  };
+
+  const handleLeaveChatConversation = (conversationId: string) =>
+    leaveChatConversationInCloud(conversationId, profile.id);
 
   const placeCommentsForSelectedPlace =
     selectedPlaceId && placeCommentsByPlace[selectedPlaceId]
@@ -17720,14 +17791,21 @@ const resetForProfileSwitch = () => {
 
       if (effectiveScreen === "chat") {
         return (
-          <ChatScreen
-            conversationId={VOYAGE_CONVERSATION_ID}
-            conversationName={VOYAGE_CONVERSATION_NAME}
+          <ChatHomeScreen
             currentProfileId={profile.id}
             cloudEnabled={cloudEnabled}
+            eligibleProfiles={voyageEligibleProfiles}
+            profilesById={chatProfilesById}
             onBack={() => goToScreen("dashboard")}
+            subscribeToChatConversations={subscribeToChatConversations}
             subscribeToChatMessages={subscribeToChatMessages}
             onSendMessage={handleSendChatMessage}
+            onCreateConversation={createChatConversationInCloud}
+            onRenameConversation={renameChatConversationInCloud}
+            onLeaveConversation={handleLeaveChatConversation}
+            hiddenConversationIds={hiddenChatConversationIds}
+            onHideConversation={handleHideChatConversation}
+            onUnhideConversation={handleUnhideChatConversation}
           />
         );
       }
@@ -18214,14 +18292,21 @@ const resetForProfileSwitch = () => {
         );
       case "chat":
         return (
-          <ChatScreen
-            conversationId={VOYAGE_CONVERSATION_ID}
-            conversationName={VOYAGE_CONVERSATION_NAME}
+          <ChatHomeScreen
             currentProfileId={profile.id}
             cloudEnabled={cloudEnabled}
+            eligibleProfiles={voyageEligibleProfiles}
+            profilesById={chatProfilesById}
             onBack={() => goToScreen("dashboard")}
+            subscribeToChatConversations={subscribeToChatConversations}
             subscribeToChatMessages={subscribeToChatMessages}
             onSendMessage={handleSendChatMessage}
+            onCreateConversation={createChatConversationInCloud}
+            onRenameConversation={renameChatConversationInCloud}
+            onLeaveConversation={handleLeaveChatConversation}
+            hiddenConversationIds={hiddenChatConversationIds}
+            onHideConversation={handleHideChatConversation}
+            onUnhideConversation={handleUnhideChatConversation}
           />
         );
       case "map":

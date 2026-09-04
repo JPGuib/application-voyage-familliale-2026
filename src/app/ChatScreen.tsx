@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ChevronLeft, Send, Smile } from "lucide-react";
 import {
   CHAT_MESSAGE_MAX_LENGTH,
@@ -29,6 +29,7 @@ export function ChatScreen({
   onBack,
   subscribeToChatMessages,
   onSendMessage,
+  headerActions,
 }: {
   conversationId: string;
   conversationName: string;
@@ -42,6 +43,11 @@ export function ChatScreen({
     onError?: () => void
   ) => () => void;
   onSendMessage: (text: string) => Promise<void>;
+  // Actions supplémentaires dans l'en-tête (renommer/quitter/masquer, story
+  // 28.2) : ChatScreen reste un simple afficheur d'UNE conversation, toute
+  // la logique de navigation/actions multi-conversations vit dans
+  // ChatHomeScreen.
+  headerActions?: ReactNode;
 }) {
   const [messageLimit, setMessageLimit] = useState(INITIAL_MESSAGE_LIMIT);
   const [messagesLog, setMessagesLog] = useState<CloudChatMessagesLog>({});
@@ -125,7 +131,10 @@ export function ChatScreen({
         <button onClick={onBack} className="flex items-center gap-1 text-white/85 text-sm font-bold mb-3">
           <ChevronLeft size={18} /> Accueil
         </button>
-        <h1 className="text-2xl font-black">{conversationName}</h1>
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-2xl font-black truncate">{conversationName}</h1>
+          {headerActions}
+        </div>
       </div>
 
       {!cloudEnabled ? (

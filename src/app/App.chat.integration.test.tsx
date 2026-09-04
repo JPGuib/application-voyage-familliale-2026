@@ -85,6 +85,43 @@ function setupSessionToken(profileId: string) {
   localStorage.setItem("jp-session-token-timestamp", Date.now().toString());
 }
 
+// Story 28.2 : la rubrique Chat ouvre désormais la liste des conversations
+// (ChatHomeScreen) avant d'afficher une conversation précise. Ce mock ne
+// fournit que la conversation "Voyage" (comportement de la story 28.1).
+function makeSubscribeToChatConversationsMock() {
+  return vi.fn(
+    (onSnapshot: (conversations: Record<string, unknown>) => void) => {
+      onSnapshot({
+        voyage: {
+          conversationId: "voyage",
+          type: "group",
+          name: "Voyage",
+          isDefaultVoyage: true,
+          memberProfileIds: { p1: true, p2: true },
+          createdAt: 1,
+          createdByProfileId: "p1",
+        },
+      });
+      return () => {};
+    }
+  );
+}
+
+// Depuis la liste du Chat, ouvre la conversation "Voyage" (cf.
+// makeSubscribeToChatConversationsMock ci-dessus).
+async function openVoyageConversation() {
+  fireEvent.click(screen.getByRole("button", { name: "Chat" }));
+
+  await waitFor(() => {
+    expect(screen.getByText("Voyage")).toBeInTheDocument();
+  });
+  fireEvent.click(screen.getByText("Voyage"));
+
+  await waitFor(() => {
+    expect(screen.getByRole("heading", { name: "Voyage" })).toBeInTheDocument();
+  });
+}
+
 describe("App chat integration (story 28.1)", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -135,6 +172,7 @@ describe("App chat integration (story 28.1)", () => {
       subscribeToChatMessages: subscribeToChatMessagesMock,
       sendChatMessage: sendChatMessageMock,
       ensureVoyageConversation: vi.fn().mockResolvedValue(undefined),
+      subscribeToChatConversations: makeSubscribeToChatConversationsMock(),
       familyId: "famille-voyage-2026",
     });
 
@@ -144,11 +182,7 @@ describe("App chat integration (story 28.1)", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Chat" }));
-
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Voyage" })).toBeInTheDocument();
-    });
+    await openVoyageConversation();
 
     expect(screen.getByText("Vivement le départ !")).toBeInTheDocument();
     expect(screen.getByText("Hâte d'y être !")).toBeInTheDocument();
@@ -192,6 +226,7 @@ describe("App chat integration (story 28.1)", () => {
       subscribeToChatMessages: vi.fn(() => () => {}),
       sendChatMessage: vi.fn().mockResolvedValue(undefined),
       ensureVoyageConversation: vi.fn().mockResolvedValue(undefined),
+      subscribeToChatConversations: makeSubscribeToChatConversationsMock(),
       familyId: "famille-voyage-2026",
     });
 
@@ -201,11 +236,7 @@ describe("App chat integration (story 28.1)", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Chat" }));
-
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Voyage" })).toBeInTheDocument();
-    });
+    await openVoyageConversation();
 
     const textarea = screen.getByPlaceholderText(/Écrire un message/i) as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: "On part " } });
@@ -233,6 +264,7 @@ describe("App chat integration (story 28.1)", () => {
       subscribeToChatMessages: vi.fn(() => () => {}),
       sendChatMessage: sendChatMessageMock,
       ensureVoyageConversation: vi.fn().mockResolvedValue(undefined),
+      subscribeToChatConversations: makeSubscribeToChatConversationsMock(),
       familyId: "famille-voyage-2026",
     });
 
@@ -242,11 +274,7 @@ describe("App chat integration (story 28.1)", () => {
       expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Chat" }));
-
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Voyage" })).toBeInTheDocument();
-    });
+    await openVoyageConversation();
 
     const textarea = screen.getByPlaceholderText(/Écrire un message/i);
     fireEvent.change(textarea, { target: { value: "Salut !" } });

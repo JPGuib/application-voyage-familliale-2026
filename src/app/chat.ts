@@ -145,3 +145,153 @@ export function formatChatMessageTimestamp(
 export function sanitizeChatMessageText(rawText: string): string {
   return rawText.trim().slice(0, CHAT_MESSAGE_MAX_LENGTH);
 }
+
+// --- Groupes personnalisés et conversations 1-to-1 (story 28.2) ---------
+
+export const CUSTOM_CHAT_NAME_MAX_LENGTH = 60;
+
+// Nom technique de remplissage stocké pour une conversation 1-to-1 (le champ
+// `name` est obligatoire dans CloudChatConversation) : jamais affiché tel
+// quel, cf. resolveChatConversationDisplayName ci-dessous qui recalcule
+// toujours l'affichage à partir du profil courant de l'autre participant.
+export const DIRECT_CONVERSATION_PLACEHOLDER_NAME = "Conversation";
+
+function generateRandomIdSuffix(): string {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+// Id généré côté client (contrairement à VOYAGE_CONVERSATION_ID qui est
+// déterministe) : les groupes personnalisés et conversations 1-to-1 sont
+// multiples par famille, cf. story 28.2. Pas de déduplication en v1 (deux
+// 1-to-1 entre les deux mêmes profils peuvent coexister, cf. Cas limites).
+export function generateChatConversationId(): string {
+  return `conv-${Date.now()}-${generateRandomIdSuffix()}`;
+}
+
+export function sanitizeChatConversationName(rawName: string): string {
+  return rawName.trim().slice(0, CUSTOM_CHAT_NAME_MAX_LENGTH);
+}
+
+// Groupe personnalisé nommé (story 28.2 §règles métier) : le créateur est
+// toujours inclus, avec au moins un autre membre (déjà filtré des visiteurs
+// par l'appelant, cf. listSelectableChatMembers).
+export function buildGroupConversationDraft(
+  name: string,
+  creatorProfileId: string,
+  otherMemberProfileIds: readonly string[],
+  createdAt: number
+): CloudChatConversation {
+  const memberProfileIds: Record<string, true> = { [creatorProfileId]: true };
+  for (const profileId of otherMemberProfileIds) {
+    memberProfileIds[profileId] = true;
+  }
+
+  return {
+    conversationId: generateChatConversationId(),
+    type: "group",
+    name: sanitizeChatConversationName(name),
+    isDefaultVoyage: false,
+    memberProfileIds,
+    createdAt,
+    createdByProfileId: creatorProfileId,
+  };
+}
+
+// Conversation 1-to-1 (story 28.2 §règles métier) : toujours exactement deux
+// membres, jamais de nom saisi par l'utilisateur.
+export function buildDirectConversationDraft(
+  creatorProfileId: string,
+  otherProfileId: string,
+  createdAt: number
+): CloudChatConversation {
+  return {
+    conversationId: generateChatConversationId(),
+    type: "direct",
+    name: DIRECT_CONVERSATION_PLACEHOLDER_NAME,
+    isDefaultVoyage: false,
+    memberProfileIds: { [creatorProfileId]: true, [otherProfileId]: true },
+    createdAt,
+    createdByProfileId: creatorProfileId,
+  };
+}
+
+// La conversation "Voyage" reste figée (story 28.1) ; n'importe quel membre
+// d'un groupe personnalisé ou d'une conversation 1-to-1 peut en revanche
+// modifier le nom (tranché avec Jean-Philippe, story 28.2) — revérifié côté
+// règles Firebase (isDefaultVoyage !== true), y compris pour le propriétaire.
+export function canRenameChatConversation(
+  conversation: Pick<CloudChatConversation, "isDefaultVoyage">
+): boolean {
+  return conversation.isDefaultVoyage !== true;
+}
+
+// Seul un groupe personnalisé (jamais "Voyage") peut être quitté ; une
+// conversation 1-to-1 ne se "quitte" pas unilatéralement (elle reste
+// accessible aux deux participants), seul un masquage local est proposé
+// (cf. ChatHomeScreen, mécanisme purement local/hors cloud).
+export function canLeaveChatConversation(
+  conversation: Pick<CloudChatConversation, "isDefaultVoyage" | "type">
+): boolean {
+  return conversation.isDefaultVoyage !== true && conversation.type === "group";
+}
+
+export type ChatProfileLookup = Record<string, { surname: string; role: Role } | undefined>;
+
+// Nom affiché d'une conversation : "Voyage"/nom du groupe tel quel, ou pour
+// une conversation 1-to-1, recalculé à chaque appel à partir du profil
+// courant de l'autre participant (jamais figé, contrairement à
+// authorSurnameSnapshot sur les messages) — un renommage ultérieur du
+// surnom de l'autre participant doit se refléter immédiatement ici. Si ce
+// profil a été supprimé entre-temps (cas limite story 28.2), on retombe sur
+// un libellé neutre plutôt que de planter l'écran.
+export function resolveChatConversationDisplayName(
+  conversation: Pick<CloudChatConversation, "type" | "name" | "memberProfileIds">,
+  currentProfileId: string,
+  profilesById: ChatProfileLookup
+): string {
+  if (conversation.type !== "direct") {
+    return conversation.name;
+  }
+
+  const otherProfileId = Object.keys(conversation.memberProfileIds).find(
+    (profileId) => profileId !== currentProfileId
+  );
+  const otherProfile = otherProfileId ? profilesById[otherProfileId] : undefined;
+
+  if (!otherProfile) {
+    return "Profil supprimé";
+  }
+
+  return resolveChatAuthorSnapshotLabel(otherProfile.role, otherProfile.surname);
+}
+
+// Membres proposés à la sélection lors de la création d'une conversation
+// (story 28.2 §règles métier) : jamais les visiteurs, jamais le profil
+// courant (déjà inclus automatiquement en tant que créateur).
+export function listSelectableChatMembers(
+  profiles: readonly ChatMemberProfile[],
+  currentProfileId: string
+): ChatMemberProfile[] {
+  return profiles.filter(
+    (profile) => isChatEligibleRole(profile.role) && profile.profileId !== currentProfileId
+  );
+}
+
+// Aperçu tronqué à afficher dans la liste des conversations (story 28.2) :
+// mis à plat sur une seule ligne (pas de retours à la ligne dans la liste).
+export function truncateChatMessagePreview(text: string, maxLength: number = 60): string {
+  const singleLine = text.replace(/\s+/g, " ").trim();
+  return singleLine.length > maxLength ? `${singleLine.slice(0, maxLength - 1)}…` : singleLine;
+}
+
+// Tri de la liste des conversations, la plus récemment active en premier
+// (dernier message si connu, sinon date de création) ; clé secondaire sur
+// conversationId pour un ordre stable entre deux rendus à activité égale.
+export function sortChatConversationsByActivity<
+  T extends { conversationId: string; createdAt: number }
+>(conversations: readonly T[], lastActivityAt: (conversation: T) => number): T[] {
+  return [...conversations].sort((a, b) => {
+    const diff = lastActivityAt(b) - lastActivityAt(a);
+    return diff !== 0 ? diff : a.conversationId.localeCompare(b.conversationId);
+  });
+}

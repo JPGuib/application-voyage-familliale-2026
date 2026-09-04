@@ -3,6 +3,7 @@ import { type Role, type SharedFamilyState } from "../app/owner-policy";
 import type { ChatMemberProfile } from "../app/chat";
 import {
   claimProfileRole,
+  createChatConversation,
   deleteProfileFromCloud,
   deleteContentVisitLogEntry,
   deleteDocumentPhoto,
@@ -11,11 +12,14 @@ import {
   ensureOwnerMembership,
   ensureProfileMembership,
   ensureVoyageConversationMembers,
+  leaveChatConversation,
+  observeChatConversations,
   observeChatMessages,
   observeContentVisitLog,
   observeDocumentPhotos,
   observeFamilySnapshot,
   observePlaceVisitLog,
+  renameChatConversation,
   sendChatMessage,
   pushDestinationSurveyVoteOnly,
   pushCloudSnapshot,
@@ -51,6 +55,8 @@ import type {
   CloudCarnetContentLog,
   CloudChallengeBestVotesByDay,
   CloudChallengeReactionsByDay,
+  CloudChatConversation,
+  CloudChatConversationsMap,
   CloudChatMessage,
   CloudChatMessagesLog,
   CloudDestinationSurveyVote,
@@ -1151,6 +1157,58 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  // Story 28.2 : liste de toutes les conversations de la famille, chargée à
+  // la demande pendant que l'écran d'accueil du Chat est ouvert (même
+  // esprit que subscribeToChatMessages ci-dessus).
+  const subscribeToChatConversations = useCallback(
+    (
+      onSnapshot: (conversations: CloudChatConversationsMap) => void,
+      onError?: () => void
+    ): (() => void) => {
+      if (!isEnabled || !database) {
+        return () => {};
+      }
+      return observeChatConversations(database, familyId, onSnapshot, onError);
+    },
+    [database, familyId, isEnabled]
+  );
+
+  const createChatConversationInCloud = useCallback(
+    async (conversation: CloudChatConversation): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await createChatConversation(database, familyId, conversation);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  const renameChatConversationInCloud = useCallback(
+    async (conversationId: string, name: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await renameChatConversation(database, familyId, conversationId, name);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  const leaveChatConversationInCloud = useCallback(
+    async (conversationId: string, profileId: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await leaveChatConversation(database, familyId, conversationId, profileId);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
@@ -1175,6 +1233,10 @@ export function useCloudSync() {
     subscribeToChatMessages,
     sendChatMessage: sendChatMessageToCloud,
     ensureVoyageConversation,
+    subscribeToChatConversations,
+    createChatConversation: createChatConversationInCloud,
+    renameChatConversation: renameChatConversationInCloud,
+    leaveChatConversation: leaveChatConversationInCloud,
     setPlaceDayOverride,
     setContentOverride,
     setTripStartDate,

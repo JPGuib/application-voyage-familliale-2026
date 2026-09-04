@@ -11,11 +11,17 @@ import {
 
 const mockUpdate = vi.fn().mockResolvedValue(undefined);
 const mockRef = vi.fn().mockReturnValue({});
+// Par défaut, aucune conversation personnalisée/1-to-1 à nettoyer (story
+// 28.2) : deleteProfileFromCloud fait un get() sur chatConversations/$familyId
+// avant son update() atomique, cf. les tests dédiés ci-dessous pour le cas où
+// des conversations personnalisées existent.
+const mockGet = vi.fn().mockResolvedValue({ val: () => null, exists: () => false });
 vi.mock("firebase/database", async (importOriginal) => {
   const actual = await importOriginal<typeof import("firebase/database")>();
   return {
     ...actual,
     ref: () => mockRef(),
+    get: (...args: unknown[]) => mockGet(...args),
     update: (_ref: unknown, updates: Record<string, unknown>) => mockUpdate(updates),
     onValue: vi.fn(),
     runTransaction: vi.fn(),
@@ -1035,6 +1041,25 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     expect(updates["chatConversations/famille-test/voyage/memberProfileIds/profile-y"]).toBeNull();
+  });
+
+  // Story 28.2, cas limite : même retrait pour les groupes personnalisés et
+  // conversations 1-to-1 dont le profil supprimé est membre.
+  it("also removes the deleted profile from custom group/direct conversations it belongs to", async () => {
+    mockUpdate.mockClear();
+    mockGet.mockResolvedValueOnce({
+      val: () => ({
+        "conv-1": { memberProfileIds: { "profile-y": true, "profile-other": true } },
+        "conv-2": { memberProfileIds: { "profile-other": true } },
+      }),
+      exists: () => true,
+    });
+
+    await deleteProfileFromCloud(db, familyId, "profile-y");
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["chatConversations/famille-test/conv-1/memberProfileIds/profile-y"]).toBeNull();
+    expect(updates["chatConversations/famille-test/conv-2/memberProfileIds/profile-y"]).toBeUndefined();
   });
 });
 

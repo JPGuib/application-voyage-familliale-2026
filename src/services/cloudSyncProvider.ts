@@ -39,6 +39,7 @@ import type {
   CloudCarnetContentEntry,
   CloudCarnetContentLog,
   CloudChatConversation,
+  CloudChatConversationsMap,
   CloudChatMessage,
   CloudChatMessagesLog,
   CloudDocumentPhotoMap,
@@ -1124,6 +1125,75 @@ export async function sendChatMessage(
   await set(ref(database, `chatMessages/${familyId}/${message.conversationId}/${message.messageId}`), message);
 }
 
+// Story 28.2 : liste de toutes les conversations de la famille (Voyage +
+// groupes personnalisés + 1-to-1), chargée à la demande pour l'écran
+// d'accueil du Chat — le filtrage "conversations dont je suis membre" est
+// fait côté client (voir ChatHomeScreen), même modèle de confiance
+// "famille" que placeVisitLogs/documentPhotos ci-dessus (cf. .read
+// database.rules.*.json, inchangé par rapport à la story 28.1).
+export function observeChatConversations(
+  database: Database,
+  familyId: string,
+  onSnapshot: (conversations: CloudChatConversationsMap) => void,
+  onError?: () => void
+): () => void {
+  return onValue(
+    ref(database, `chatConversations/${familyId}`),
+    (snapshot) => {
+      const raw = asRecord(snapshot.val());
+      const next: CloudChatConversationsMap = {};
+      for (const [conversationId, value] of Object.entries(raw)) {
+        const parsed = parseChatConversation(conversationId, value);
+        if (parsed) {
+          next[conversationId] = parsed;
+        }
+      }
+      onSnapshot(next);
+    },
+    () => onError?.()
+  );
+}
+
+// Création d'un groupe personnalisé ou d'une conversation 1-to-1 (story
+// 28.2) : un seul `set()` sur un conversationId neuf, le créateur et les
+// membres choisis étant déjà inclus dans `conversation.memberProfileIds`
+// (cf. buildGroupConversationDraft/buildDirectConversationDraft dans
+// chat.ts). Composition figée à la création (ajout de membre après coup
+// hors périmètre v1).
+export async function createChatConversation(
+  database: Database,
+  familyId: string,
+  conversation: CloudChatConversation
+): Promise<void> {
+  await set(ref(database, `chatConversations/${familyId}/${conversation.conversationId}`), conversation);
+}
+
+// Renommage d'un groupe personnalisé ou d'une conversation 1-to-1 (story
+// 28.2) : autorisé pour n'importe quel membre, refusé côté règles Firebase
+// pour la conversation "Voyage" (isDefaultVoyage) — cf.
+// canRenameChatConversation dans chat.ts pour la vérification côté client.
+export async function renameChatConversation(
+  database: Database,
+  familyId: string,
+  conversationId: string,
+  name: string
+): Promise<void> {
+  await set(ref(database, `chatConversations/${familyId}/${conversationId}/name`), name);
+}
+
+// Un membre quitte un groupe personnalisé (jamais "Voyage", jamais une
+// conversation 1-to-1, cf. canLeaveChatConversation) : retrait de sa seule
+// propre clé, même mécanisme "self" que memberUids ailleurs dans les
+// règles. L'historique des messages reste intact pour les membres restants.
+export async function leaveChatConversation(
+  database: Database,
+  familyId: string,
+  conversationId: string,
+  profileId: string
+): Promise<void> {
+  await set(ref(database, `chatConversations/${familyId}/${conversationId}/memberProfileIds/${profileId}`), null);
+}
+
 function normalizePlaceDays(value: unknown): number[] {
   const rawValues = Array.isArray(value)
     ? value
@@ -2197,6 +2267,23 @@ export async function deleteProfileFromCloud(
     // cette même écriture atomique (cf. database.rules.*.json).
     [`chatConversations/${familyId}/${VOYAGE_CONVERSATION_ID}/memberProfileIds/${profileIdToDelete}`]: null,
   };
+
+  // Story 28.2, cas limite : même retrait pour les groupes personnalisés et
+  // conversations 1-to-1 dont le profil supprimé est membre (le groupe
+  // reste consultable en lecture seule par les membres restants, historique
+  // conservé). "Voyage" est déjà traité ci-dessus, pas la peine de le
+  // revisiter ici.
+  const conversationsSnapshot = await get(ref(database, `chatConversations/${familyId}`));
+  const conversationsRaw = asRecord(conversationsSnapshot.val());
+  for (const [conversationId, value] of Object.entries(conversationsRaw)) {
+    if (conversationId === VOYAGE_CONVERSATION_ID) {
+      continue;
+    }
+    const memberProfileIds = asRecord(asRecord(value).memberProfileIds);
+    if (memberProfileIds[profileIdToDelete] === true) {
+      updates[`chatConversations/${familyId}/${conversationId}/memberProfileIds/${profileIdToDelete}`] = null;
+    }
+  }
 
   await update(ref(database), updates);
 }
