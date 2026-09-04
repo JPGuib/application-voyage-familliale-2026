@@ -1067,6 +1067,24 @@ suite("firebase rtdb rules owner phase guard", () => {
       await assertSucceeds(ownerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-1`).set(pollPayload()));
     });
 
+    // Régression : buildChatPollMessage (chat.ts) envoie toujours un champ
+    // `text: ""` (CloudChatMessage.text est un champ obligatoire, jamais
+    // affiché pour kind "poll") ; une chaîne vide compte comme une valeur
+    // existante côté RTDB (`hasChild` renvoie true), donc la règle doit
+    // explicitement l'autoriser plutôt que d'exiger l'absence du champ.
+    it("allows creating a poll message that also carries an empty text field", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertSucceeds(
+        ownerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-1b`).set(
+          pollPayload({ messageId: "poll-1b", text: "" })
+        )
+      );
+    });
+
     it("denies a non-owner from creating a poll, even in the Voyage conversation", async () => {
       await testEnv.withSecurityRulesDisabled(async (context) => {
         await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
