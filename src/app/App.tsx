@@ -170,6 +170,7 @@ import {
   updateNotificationPreferences,
 } from "./notifications";
 import { useCloudSync } from "../hooks/useCloudSync";
+import { useChatUnreadBadge } from "../hooks/useChatUnreadBadge";
 import {
   filterCategoriesForProfile,
   getCategoryBadges,
@@ -3073,10 +3074,14 @@ function BottomNav({
   current,
   items,
   onNavigate,
+  // Badge de messages non lus (story 28.4) : liste d'ids d'écrans à
+  // pastiller, générique pour rester réutilisable au-delà du seul Chat.
+  badgeScreenIds = [],
 }: {
   current: Screen;
   items: Array<{ id: Screen; icon: LucideIcon; label: string }>;
   onNavigate: (s: Screen) => void;
+  badgeScreenIds?: readonly Screen[];
 }) {
   const activeId =
     current === "place" || current === "visite-guidee"
@@ -3096,6 +3101,7 @@ function BottomNav({
       <div className="flex items-center min-w-max px-2 gap-1">
         {items.map((item) => {
           const active = activeId === item.id;
+          const showBadge = badgeScreenIds.includes(item.id);
           return (
             <button
               key={item.id}
@@ -3105,7 +3111,19 @@ function BottomNav({
                 active ? "bg-primary/10 text-primary" : "text-muted-foreground"
               }`}
             >
-              <item.icon size={22} />
+              <span className="relative inline-flex">
+                <item.icon size={22} />
+                {showBadge && (
+                  // Purement décoratif : le nom accessible du bouton doit
+                  // rester le libellé de l'onglet (ex. "Chat"), pas un
+                  // aria-label concaténé ici qui le transformerait en
+                  // "Nouveaux messagesChat" pour les lecteurs d'écran.
+                  <span
+                    aria-hidden="true"
+                    className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#E53935] ring-2 ring-card"
+                  />
+                )}
+              </span>
               <span className="text-[10px] font-extrabold">{item.label}</span>
             </button>
           );
@@ -11967,6 +11985,13 @@ export default function App() {
     createChatConversation: createChatConversationInCloud = async () => {},
     renameChatConversation: renameChatConversationInCloud = async () => {},
     leaveChatConversation: leaveChatConversationInCloud = async () => {},
+    // Badge de messages non lus (story 28.4) : même filet de sécurité que
+    // ci-dessus. subscribeToChatReadState est appelée en continu par
+    // useChatUnreadBadge (contrairement aux autres abonnements Chat
+    // ci-dessus, chargés "à la demande" seulement pendant que la rubrique
+    // Chat est ouverte).
+    subscribeToChatReadState = () => () => {},
+    markChatConversationRead: markChatConversationReadInCloud = async () => {},
     setContentOverride: setContentOverrideInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
@@ -16787,6 +16812,36 @@ const resetForProfileSwitch = () => {
   const handleLeaveChatConversation = (conversationId: string) =>
     leaveChatConversationInCloud(conversationId, profile.id);
 
+  // Badge de messages non lus (story 28.4) : abonnements dédiés, toujours
+  // actifs dès qu'un profil est connecté (contrairement à ChatHomeScreen,
+  // monté uniquement pendant que la rubrique Chat est ouverte) puisque la
+  // pastille de la navigation principale doit rester à jour même sans avoir
+  // ouvert le Chat.
+  const { hasUnreadChat } = useChatUnreadBadge({
+    cloudEnabled,
+    currentProfileId: profile.id,
+    // Rôle pas encore attribué (profil en cours de création) : traité comme
+    // inéligible par défaut, cohérent avec resolveChatAuthorSnapshotLabel
+    // ailleurs qui retombe sur "utilisateur" seulement une fois un message
+    // envoyé (jamais avant que le rôle soit connu).
+    currentProfileRole: profile.role ?? "visiteur",
+    subscribeToChatConversations,
+    subscribeToChatMessages,
+    subscribeToChatReadState,
+  });
+
+  // Marque une conversation comme lue par le profil courant (story 28.4) :
+  // non bloquant, un échec d'écriture ne doit jamais empêcher la lecture des
+  // messages eux-mêmes (cf. ChatHomeScreen, appelé à l'ouverture d'une
+  // conversation et à chaque nouveau message reçu pendant qu'elle est
+  // ouverte).
+  const handleMarkChatConversationRead = (conversationId: string, lastReadAt: number) => {
+    void markChatConversationReadInCloud(conversationId, profile.id, lastReadAt).catch(() => {
+      // Ignoré : le badge non-lu restera simplement obsolète jusqu'au
+      // prochain passage réussi.
+    });
+  };
+
   const placeCommentsForSelectedPlace =
     selectedPlaceId && placeCommentsByPlace[selectedPlaceId]
       ? placeCommentsByPlace[selectedPlaceId]
@@ -17799,6 +17854,8 @@ const resetForProfileSwitch = () => {
             onBack={() => goToScreen("dashboard")}
             subscribeToChatConversations={subscribeToChatConversations}
             subscribeToChatMessages={subscribeToChatMessages}
+            subscribeToChatReadState={subscribeToChatReadState}
+            onMarkConversationRead={handleMarkChatConversationRead}
             onSendMessage={handleSendChatMessage}
             onCreateConversation={createChatConversationInCloud}
             onRenameConversation={renameChatConversationInCloud}
@@ -18300,6 +18357,8 @@ const resetForProfileSwitch = () => {
             onBack={() => goToScreen("dashboard")}
             subscribeToChatConversations={subscribeToChatConversations}
             subscribeToChatMessages={subscribeToChatMessages}
+            subscribeToChatReadState={subscribeToChatReadState}
+            onMarkConversationRead={handleMarkChatConversationRead}
             onSendMessage={handleSendChatMessage}
             onCreateConversation={createChatConversationInCloud}
             onRenameConversation={renameChatConversationInCloud}
@@ -18773,7 +18832,12 @@ const resetForProfileSwitch = () => {
         )}
         {renderScreen()}
         {!launchGateForced && visibleBottomNavItems.length > 0 && (effectiveScreen !== "checklist" || canAccessScreen(profile.role, phase, "dashboard")) && (
-          <BottomNav current={effectiveScreen} items={visibleBottomNavItems} onNavigate={goToScreen} />
+          <BottomNav
+            current={effectiveScreen}
+            items={visibleBottomNavItems}
+            onNavigate={goToScreen}
+            badgeScreenIds={hasUnreadChat ? ["chat"] : []}
+          />
         )}
         {pendingScreen && (
           <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-6">

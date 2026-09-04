@@ -241,6 +241,21 @@ export type CloudChatMessage = {
 
 export type CloudChatMessagesLog = Record<string, CloudChatMessage>;
 
+// Badge de messages non lus (story 28.4) : un marqueur "dernier passage" par
+// profil et par conversation, écrit uniquement par le profil concerné
+// (self-write). Le calcul du non-lu (messages avec createdAt > lastReadAt)
+// reste entièrement côté client, cf. computeUnreadChatMessageCount dans
+// chat.ts — pas de compteur dénormalisé côté cloud, même esprit que le
+// modèle "sans backend applicatif" déjà en place pour le Chat.
+export type CloudChatReadState = {
+  lastReadAt: number;
+  authorUid: string;
+};
+
+export type CloudChatReadStateByProfile = Record<string, CloudChatReadState>; // profileId -> état
+
+export type CloudChatReadStateMap = Record<string, CloudChatReadStateByProfile>; // conversationId -> profileId -> état
+
 export type CloudDestinationSurveyVote = {
   profileId: string;
   proposals: string[];

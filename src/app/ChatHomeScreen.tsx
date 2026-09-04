@@ -6,18 +6,28 @@ import {
   buildGroupConversationDraft,
   canLeaveChatConversation,
   canRenameChatConversation,
+  CHAT_UNREAD_COUNT_MESSAGE_LIMIT,
+  computeUnreadChatMessageCount,
   CUSTOM_CHAT_NAME_MAX_LENGTH,
   formatChatMessageTimestamp,
+  formatUnreadBadgeLabel,
   listSelectableChatMembers,
   resolveChatAuthorSnapshotLabel,
   resolveChatConversationDisplayName,
   sanitizeChatConversationName,
   sortChatConversationsByActivity,
+  sortChatMessagesAscending,
   truncateChatMessagePreview,
   type ChatMemberProfile,
   type ChatProfileLookup,
 } from "./chat";
-import type { CloudChatConversation, CloudChatConversationsMap, CloudChatMessage, CloudChatMessagesLog } from "../types/cloud";
+import type {
+  CloudChatConversation,
+  CloudChatConversationsMap,
+  CloudChatMessage,
+  CloudChatMessagesLog,
+  CloudChatReadStateMap,
+} from "../types/cloud";
 
 // Écran d'accueil du Chat (story 28.2) : liste des conversations dont le
 // profil courant est membre (Voyage + groupes personnalisés + 1-to-1),
@@ -44,6 +54,8 @@ export function ChatHomeScreen({
   onBack,
   subscribeToChatConversations,
   subscribeToChatMessages,
+  subscribeToChatReadState,
+  onMarkConversationRead,
   onSendMessage,
   onCreateConversation,
   onRenameConversation,
@@ -67,6 +79,12 @@ export function ChatHomeScreen({
     onSnapshot: (messages: CloudChatMessagesLog) => void,
     onError?: () => void
   ) => () => void;
+  // Badge de messages non lus (story 28.4).
+  subscribeToChatReadState: (
+    onSnapshot: (readState: CloudChatReadStateMap) => void,
+    onError?: () => void
+  ) => () => void;
+  onMarkConversationRead: (conversationId: string, lastReadAt: number) => void;
   onSendMessage: (conversationId: string, text: string) => Promise<void>;
   onCreateConversation: (conversation: CloudChatConversation) => Promise<void>;
   onRenameConversation: (conversationId: string, name: string) => Promise<void>;
@@ -138,10 +156,16 @@ export function ChatHomeScreen({
     [visibleConversations, lastMessageByConversation]
   );
 
-  // Aperçu du dernier message de chaque conversation visible (story 28.2) :
-  // un abonnement léger par conversation (limité à 1 message), pas de champ
-  // dénormalisé côté cloud pour rester sur le modèle déjà déployé et validé
-  // en story 28.1 (cf. observeChatMessages).
+  // Aperçu du dernier message + compteur de non-lu de chaque conversation
+  // visible (story 28.2, puis story 28.4 pour le compteur) : un abonnement
+  // par conversation, plafonné à CHAT_UNREAD_COUNT_MESSAGE_LIMIT messages
+  // (assez pour l'aperçu ET pour compter le non-lu, cf. cas limite "plafonné
+  // à l'historique chargé"), pas de champ dénormalisé côté cloud pour rester
+  // sur le modèle déjà déployé et validé en story 28.1 (cf.
+  // observeChatMessages).
+  const [messagesByVisibleConversation, setMessagesByVisibleConversation] = useState<
+    Record<string, CloudChatMessagesLog>
+  >({});
   const visibleConversationIdsKey = sortedVisibleConversations.map((c) => c.conversationId).sort().join(",");
   useEffect(() => {
     if (!cloudEnabled || visibleConversationIdsKey === "") {
@@ -149,9 +173,13 @@ export function ChatHomeScreen({
     }
     const ids = visibleConversationIdsKey.split(",");
     const unsubscribes = ids.map((conversationId) =>
-      subscribeToChatMessages(conversationId, 1, (messages) => {
-        const [onlyMessage] = Object.values(messages);
-        setLastMessageByConversation((previous) => ({ ...previous, [conversationId]: onlyMessage }));
+      subscribeToChatMessages(conversationId, CHAT_UNREAD_COUNT_MESSAGE_LIMIT, (messages) => {
+        setMessagesByVisibleConversation((previous) => ({ ...previous, [conversationId]: messages }));
+        const sorted = sortChatMessagesAscending(Object.values(messages));
+        setLastMessageByConversation((previous) => ({
+          ...previous,
+          [conversationId]: sorted[sorted.length - 1],
+        }));
       })
     );
     return () => {
@@ -160,9 +188,50 @@ export function ChatHomeScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cloudEnabled, visibleConversationIdsKey]);
 
+  // Badge de messages non lus (story 28.4) : dernier passage du profil
+  // courant sur chaque conversation, chargé pendant que l'écran d'accueil du
+  // Chat est ouvert (même esprit "à la demande" que les abonnements
+  // ci-dessus, contrairement à useChatUnreadBadge côté App.tsx qui reste
+  // monté en permanence pour la pastille de navigation).
+  const [readStateByConversation, setReadStateByConversation] = useState<CloudChatReadStateMap>({});
+  useEffect(() => {
+    if (!cloudEnabled) {
+      return;
+    }
+    return subscribeToChatReadState((next) => setReadStateByConversation(next));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cloudEnabled, subscribeToChatReadState]);
+
+  const unreadCountByConversation = useMemo(() => {
+    const next: Record<string, number> = {};
+    for (const conversationId of Object.keys(messagesByVisibleConversation)) {
+      const lastReadAt = readStateByConversation[conversationId]?.[currentProfileId]?.lastReadAt ?? null;
+      next[conversationId] = computeUnreadChatMessageCount(
+        Object.values(messagesByVisibleConversation[conversationId]),
+        lastReadAt
+      );
+    }
+    return next;
+  }, [messagesByVisibleConversation, readStateByConversation, currentProfileId]);
+
   const activeConversation: CloudChatConversation | null =
     (activeConversationId ? conversations[activeConversationId] : null) ??
     (justCreated && justCreated.conversationId === activeConversationId ? justCreated : null);
+
+  // Marque la conversation ouverte comme lue (story 28.4, critère
+  // d'acceptation #2) : déclenché à l'ouverture ET à chaque nouveau message
+  // reçu tant qu'elle reste affichée, en réutilisant l'aperçu déjà chargé
+  // ci-dessus plutôt qu'un abonnement dédié (toute conversation ouvrable
+  // depuis la liste fait déjà partie de sortedVisibleConversations).
+  useEffect(() => {
+    if (!cloudEnabled || mode !== "conversation" || !activeConversationId) {
+      return;
+    }
+    const latest = lastMessageByConversation[activeConversationId];
+    if (latest) {
+      onMarkConversationRead(activeConversationId, latest.createdAt);
+    }
+  }, [cloudEnabled, mode, activeConversationId, lastMessageByConversation, onMarkConversationRead]);
 
   const openConversation = (conversationId: string) => {
     setActiveConversationId(conversationId);
@@ -583,6 +652,9 @@ export function ChatHomeScreen({
             const displayName = resolveChatConversationDisplayName(conversation, currentProfileId, profilesById);
             const lastMessage = lastMessageByConversation[conversation.conversationId];
             const timestamp = lastMessage ? formatChatMessageTimestamp(lastMessage.createdAt) : null;
+            // Story 28.4 : compteur de non-lu par conversation, plafonné
+            // visuellement à "9+" (cf. formatUnreadBadgeLabel).
+            const unreadCount = unreadCountByConversation[conversation.conversationId] ?? 0;
 
             return (
               <button
@@ -600,11 +672,21 @@ export function ChatHomeScreen({
                     {lastMessage ? truncateChatMessagePreview(lastMessage.text) : "Aucun message pour l'instant"}
                   </p>
                 </div>
-                {timestamp && (
-                  <span className="flex-shrink-0 text-[10px] font-bold text-muted-foreground">
-                    {timestamp.dateLabel ? timestamp.dateLabel : timestamp.time}
-                  </span>
-                )}
+                <div className="flex flex-shrink-0 flex-col items-end gap-1">
+                  {timestamp && (
+                    <span className="text-[10px] font-bold text-muted-foreground">
+                      {timestamp.dateLabel ? timestamp.dateLabel : timestamp.time}
+                    </span>
+                  )}
+                  {unreadCount > 0 && (
+                    <span
+                      aria-label={`${unreadCount} message${unreadCount > 1 ? "s" : ""} non lu${unreadCount > 1 ? "s" : ""}`}
+                      className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#2E7D32] px-1.5 text-[10px] font-black text-white"
+                    >
+                      {formatUnreadBadgeLabel(unreadCount)}
+                    </span>
+                  )}
+                </div>
               </button>
             );
           })}

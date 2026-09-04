@@ -157,6 +157,23 @@
         }
       }
     },
+    "chatReadState": {
+      "$familyId": {
+        ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
+        ".write": false,
+        "$conversationId": {
+          "$profileId": {
+            ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",
+            ".validate": "newData.hasChildren(['lastReadAt','authorUid']) && newData.child('lastReadAt').isNumber() && newData.child('lastReadAt').val() > 0 && (!data.exists() || newData.child('lastReadAt').val() >= data.child('lastReadAt').val()) && newData.child('authorUid').isString() && newData.child('authorUid').val().length > 0",
+            "lastReadAt": {},
+            "authorUid": {},
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      }
+    },
     "families": {
       "$familyId": {
         ".read": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true",

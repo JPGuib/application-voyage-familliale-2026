@@ -1029,6 +1029,74 @@ suite("firebase rtdb rules owner phase guard", () => {
       );
     });
   });
+
+  describe("chat read state (story 28.4)", () => {
+    it("allows a family member to write their own read state on a conversation", async () => {
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+      await assertSucceeds(
+        nonOwnerDb.ref(`chatReadState/${FAMILY_ID}/voyage/${NON_OWNER_PROFILE_ID}`).set({
+          lastReadAt: 100,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("denies a read state missing required fields", async () => {
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+      await assertFails(
+        nonOwnerDb.ref(`chatReadState/${FAMILY_ID}/voyage/${NON_OWNER_PROFILE_ID}`).set({
+          lastReadAt: 100,
+        })
+      );
+    });
+
+    it("denies lastReadAt going backwards (cas limite multi-appareils)", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatReadState/${FAMILY_ID}/voyage/${NON_OWNER_PROFILE_ID}`).set({
+          lastReadAt: 500,
+          authorUid: NON_OWNER_UID,
+        });
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatReadState/${FAMILY_ID}/voyage/${NON_OWNER_PROFILE_ID}`).set({
+          lastReadAt: 100,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("allows lastReadAt to advance", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatReadState/${FAMILY_ID}/voyage/${NON_OWNER_PROFILE_ID}`).set({
+          lastReadAt: 100,
+          authorUid: NON_OWNER_UID,
+        });
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertSucceeds(
+        nonOwnerDb.ref(`chatReadState/${FAMILY_ID}/voyage/${NON_OWNER_PROFILE_ID}`).set({
+          lastReadAt: 500,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("denies a non-family-member from writing a read state", async () => {
+      const outsiderDb = testEnv.unauthenticatedContext().database();
+
+      await assertFails(
+        outsiderDb.ref(`chatReadState/${FAMILY_ID}/voyage/${NON_OWNER_PROFILE_ID}`).set({
+          lastReadAt: 100,
+          authorUid: "outsider-uid",
+        })
+      );
+    });
+  });
 });
 
 if (!hasDatabaseEmulator) {

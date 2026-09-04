@@ -107,6 +107,41 @@ function makeSubscribeToChatConversationsMock() {
   );
 }
 
+// Story 28.4 : petit "faux Firebase" en mémoire pour chatReadState, assez
+// réaliste pour vérifier que markChatConversationRead notifie bien les
+// abonnés de subscribeToChatReadState (contrairement aux autres mocks de ce
+// fichier qui ne simulent qu'un aller simple, sans boucle de rétroaction).
+function makeChatReadStateHarness() {
+  let store: Record<string, Record<string, { lastReadAt: number; authorUid: string }>> = {};
+  const listeners: Array<(state: typeof store) => void> = [];
+
+  const subscribeToChatReadState = vi.fn((onSnapshot: (state: typeof store) => void) => {
+    listeners.push(onSnapshot);
+    onSnapshot(store);
+    return () => {
+      const index = listeners.indexOf(onSnapshot);
+      if (index !== -1) listeners.splice(index, 1);
+    };
+  });
+
+  const markChatConversationRead = vi.fn(
+    async (conversationId: string, profileId: string, lastReadAt: number) => {
+      const current = store[conversationId]?.[profileId]?.lastReadAt ?? 0;
+      if (lastReadAt <= current) return;
+      store = {
+        ...store,
+        [conversationId]: {
+          ...store[conversationId],
+          [profileId]: { lastReadAt, authorUid: "actor-owner" },
+        },
+      };
+      for (const listener of listeners) listener(store);
+    }
+  );
+
+  return { subscribeToChatReadState, markChatConversationRead };
+}
+
 // Depuis la liste du Chat, ouvre la conversation "Voyage" (cf.
 // makeSubscribeToChatConversationsMock ci-dessus).
 async function openVoyageConversation() {
@@ -333,5 +368,80 @@ describe("App chat integration (story 28.1)", () => {
     });
 
     expect(screen.queryByRole("button", { name: "Chat" })).not.toBeInTheDocument();
+  });
+});
+
+describe("App chat unread badge (story 28.4)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    cloudSyncMock.mockReset();
+  });
+
+  it("shows a badge on the Chat nav icon for an unread message, and clears it once the conversation is opened", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+    setupSessionToken("p1");
+
+    const readStateHarness = makeChatReadStateHarness();
+    // Timestamp figé et partagé par tous les abonnés (badge de nav ET
+    // ChatHomeScreen) : sans ça, deux appels indépendants à Date.now() dans
+    // le mock pourraient produire des millisecondes différentes et rendre le
+    // test intermittent (cf. shouldAdvanceChatReadState, comparaison stricte).
+    const messageCreatedAt = Date.now();
+    const subscribeToChatMessagesMock = vi.fn(
+      (_conversationId: string, _limit: number, onSnapshot: (messages: unknown) => void) => {
+        onSnapshot({
+          m1: {
+            messageId: "m1",
+            conversationId: "voyage",
+            authorProfileId: "p2",
+            authorSurnameSnapshot: "Leo",
+            authorUid: "actor-user",
+            kind: "text",
+            text: "Coucou !",
+            createdAt: messageCreatedAt,
+          },
+        });
+        return () => {};
+      }
+    );
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-owner",
+      cloudSnapshot: makeSnapshot("proprietaire", "during"),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      subscribeToChatMessages: subscribeToChatMessagesMock,
+      sendChatMessage: vi.fn().mockResolvedValue(undefined),
+      ensureVoyageConversation: vi.fn().mockResolvedValue(undefined),
+      subscribeToChatConversations: makeSubscribeToChatConversationsMock(),
+      subscribeToChatReadState: readStateHarness.subscribeToChatReadState,
+      markChatConversationRead: readStateHarness.markChatConversationRead,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      const chatNavButton = screen.getByRole("button", { name: "Chat" });
+      expect(chatNavButton.querySelector('[aria-hidden="true"]')).not.toBeNull();
+    });
+
+    await openVoyageConversation();
+
+    await waitFor(() => {
+      expect(readStateHarness.markChatConversationRead).toHaveBeenCalledWith("voyage", "p1", messageCreatedAt);
+    });
+
+    await waitFor(() => {
+      const chatNavButton = screen.getByRole("button", { name: "Chat" });
+      expect(chatNavButton.querySelector('[aria-hidden="true"]')).toBeNull();
+    });
   });
 });

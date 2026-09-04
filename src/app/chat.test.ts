@@ -4,6 +4,7 @@ import {
   CUSTOM_CHAT_NAME_MAX_LENGTH,
   DIRECT_CONVERSATION_PLACEHOLDER_NAME,
   ORGANISATEUR_LABEL,
+  UNREAD_BADGE_DISPLAY_CAP,
   VOYAGE_CONVERSATION_ID,
   VOYAGE_CONVERSATION_NAME,
   buildDirectConversationDraft,
@@ -12,7 +13,9 @@ import {
   canLeaveChatConversation,
   canRenameChatConversation,
   computeMissingVoyageMembers,
+  computeUnreadChatMessageCount,
   formatChatMessageTimestamp,
+  formatUnreadBadgeLabel,
   generateChatConversationId,
   groupConsecutiveChatMessages,
   isChatEligibleRole,
@@ -21,6 +24,7 @@ import {
   resolveChatConversationDisplayName,
   sanitizeChatConversationName,
   sanitizeChatMessageText,
+  shouldAdvanceChatReadState,
   sortChatConversationsByActivity,
   sortChatMessagesAscending,
   truncateChatMessagePreview,
@@ -310,5 +314,56 @@ describe("sortChatConversationsByActivity", () => {
     ];
     const sorted = sortChatConversationsByActivity(input, (c) => c.createdAt);
     expect(sorted.map((c) => c.conversationId)).toEqual(["a", "z"]);
+  });
+});
+
+// Story 28.4 : badge de messages non lus.
+describe("computeUnreadChatMessageCount", () => {
+  it("counts only messages strictly newer than lastReadAt", () => {
+    const messages = [
+      makeMessage({ messageId: "m1", createdAt: 100 }),
+      makeMessage({ messageId: "m2", createdAt: 200 }),
+      makeMessage({ messageId: "m3", createdAt: 300 }),
+    ];
+    expect(computeUnreadChatMessageCount(messages, 200)).toBe(1);
+  });
+
+  it("counts every loaded message when lastReadAt is absent (never opened before)", () => {
+    const messages = [makeMessage({ messageId: "m1", createdAt: 1 }), makeMessage({ messageId: "m2", createdAt: 2 })];
+    expect(computeUnreadChatMessageCount(messages, null)).toBe(2);
+    expect(computeUnreadChatMessageCount(messages, undefined)).toBe(2);
+  });
+
+  it("returns 0 when nothing is newer than lastReadAt", () => {
+    const messages = [makeMessage({ messageId: "m1", createdAt: 100 })];
+    expect(computeUnreadChatMessageCount(messages, 500)).toBe(0);
+  });
+});
+
+describe("formatUnreadBadgeLabel", () => {
+  it("shows the exact count below the display cap", () => {
+    expect(formatUnreadBadgeLabel(1)).toBe("1");
+    expect(formatUnreadBadgeLabel(UNREAD_BADGE_DISPLAY_CAP)).toBe("9");
+  });
+
+  it("caps the label past the display cap", () => {
+    expect(formatUnreadBadgeLabel(UNREAD_BADGE_DISPLAY_CAP + 1)).toBe("9+");
+    expect(formatUnreadBadgeLabel(42)).toBe("9+");
+  });
+});
+
+describe("shouldAdvanceChatReadState", () => {
+  it("allows advancing when the candidate is strictly newer", () => {
+    expect(shouldAdvanceChatReadState(100, 200)).toBe(true);
+  });
+
+  it("never regresses lastReadAt (cas limite multi-appareils)", () => {
+    expect(shouldAdvanceChatReadState(200, 100)).toBe(false);
+    expect(shouldAdvanceChatReadState(200, 200)).toBe(false);
+  });
+
+  it("treats a missing current value as 0", () => {
+    expect(shouldAdvanceChatReadState(null, 1)).toBe(true);
+    expect(shouldAdvanceChatReadState(undefined, 1)).toBe(true);
   });
 });

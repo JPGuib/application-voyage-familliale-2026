@@ -18,6 +18,7 @@ import {
   buildVoyageConversationSeed,
   CHAT_MESSAGE_MAX_LENGTH,
   computeMissingVoyageMembers,
+  shouldAdvanceChatReadState,
   VOYAGE_CONVERSATION_ID,
   type ChatMemberProfile,
 } from "../app/chat";
@@ -42,6 +43,8 @@ import type {
   CloudChatConversationsMap,
   CloudChatMessage,
   CloudChatMessagesLog,
+  CloudChatReadState,
+  CloudChatReadStateMap,
   CloudDocumentPhotoMap,
   CloudPlaceComment,
   CloudPlaceCommentsByPlace,
@@ -1192,6 +1195,77 @@ export async function leaveChatConversation(
   profileId: string
 ): Promise<void> {
   await set(ref(database, `chatConversations/${familyId}/${conversationId}/memberProfileIds/${profileId}`), null);
+}
+
+// Badge de messages non lus (story 28.4) : parse défensif d'un marqueur
+// "dernier passage", même esprit que les autres parseXxx ci-dessus.
+function parseChatReadState(value: unknown): CloudChatReadState | null {
+  const raw = asRecord(value);
+  const lastReadAt = toFiniteNumber(raw.lastReadAt, 0);
+  const authorUid = typeof raw.authorUid === "string" ? raw.authorUid : "";
+
+  if (lastReadAt <= 0 || !authorUid) {
+    return null;
+  }
+
+  return { lastReadAt, authorUid };
+}
+
+// Chargé en continu (contrairement à observeChatMessages/observeChatConversations
+// ci-dessus, chargés à la demande pendant que le Chat est ouvert) : la
+// pastille de non-lu sur l'icône de navigation doit rester à jour même
+// quand la rubrique Chat n'est pas affichée, cf. useChatUnreadBadge.
+export function observeChatReadState(
+  database: Database,
+  familyId: string,
+  onSnapshot: (readState: CloudChatReadStateMap) => void,
+  onError?: () => void
+): () => void {
+  return onValue(
+    ref(database, `chatReadState/${familyId}`),
+    (snapshot) => {
+      const raw = asRecord(snapshot.val());
+      const next: CloudChatReadStateMap = {};
+      for (const [conversationId, byProfileValue] of Object.entries(raw)) {
+        const byProfileRaw = asRecord(byProfileValue);
+        const byProfile: Record<string, CloudChatReadState> = {};
+        for (const [profileId, value] of Object.entries(byProfileRaw)) {
+          const parsed = parseChatReadState(value);
+          if (parsed) {
+            byProfile[profileId] = parsed;
+          }
+        }
+        if (Object.keys(byProfile).length > 0) {
+          next[conversationId] = byProfile;
+        }
+      }
+      onSnapshot(next);
+    },
+    () => onError?.()
+  );
+}
+
+// Marque une conversation comme lue par un profil (story 28.4) : transaction
+// plutôt qu'un simple `set()` pour garantir que `lastReadAt` ne recule
+// jamais (cas limite multi-appareils, cf. shouldAdvanceChatReadState dans
+// chat.ts) — retourner `undefined` depuis le callback annule l'écriture côté
+// SDK Firebase sans erreur.
+export async function markChatConversationRead(
+  database: Database,
+  familyId: string,
+  conversationId: string,
+  profileId: string,
+  authorUid: string,
+  lastReadAt: number
+): Promise<void> {
+  const stateRef = ref(database, `chatReadState/${familyId}/${conversationId}/${profileId}`);
+  await runTransaction(stateRef, (current) => {
+    const currentLastReadAt = toFiniteNumber(asRecord(current).lastReadAt, 0);
+    if (!shouldAdvanceChatReadState(currentLastReadAt, lastReadAt)) {
+      return; // no-op : ne recule jamais lastReadAt.
+    }
+    return { lastReadAt, authorUid };
+  });
 }
 
 function normalizePlaceDays(value: unknown): number[] {

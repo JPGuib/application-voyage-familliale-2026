@@ -13,8 +13,10 @@ import {
   ensureProfileMembership,
   ensureVoyageConversationMembers,
   leaveChatConversation,
+  markChatConversationRead,
   observeChatConversations,
   observeChatMessages,
+  observeChatReadState,
   observeContentVisitLog,
   observeDocumentPhotos,
   observeFamilySnapshot,
@@ -59,6 +61,7 @@ import type {
   CloudChatConversationsMap,
   CloudChatMessage,
   CloudChatMessagesLog,
+  CloudChatReadStateMap,
   CloudDestinationSurveyVote,
   CloudDocumentPhotoMap,
   CloudGameHistoryEntry,
@@ -1209,6 +1212,32 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  // Badge de messages non lus (story 28.4) : chargé en continu (pas "à la
+  // demande" comme les autres abonnements Chat ci-dessus) car la pastille de
+  // navigation doit rester à jour même quand la rubrique Chat n'est pas
+  // ouverte, cf. useChatUnreadBadge.
+  const subscribeToChatReadState = useCallback(
+    (onSnapshot: (readState: CloudChatReadStateMap) => void, onError?: () => void): (() => void) => {
+      if (!isEnabled || !database) {
+        return () => {};
+      }
+      return observeChatReadState(database, familyId, onSnapshot, onError);
+    },
+    [database, familyId, isEnabled]
+  );
+
+  const markChatConversationReadInCloud = useCallback(
+    async (conversationId: string, profileId: string, lastReadAt: number): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await markChatConversationRead(database, familyId, conversationId, profileId, cloudUserUid, lastReadAt);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
@@ -1237,6 +1266,8 @@ export function useCloudSync() {
     createChatConversation: createChatConversationInCloud,
     renameChatConversation: renameChatConversationInCloud,
     leaveChatConversation: leaveChatConversationInCloud,
+    subscribeToChatReadState,
+    markChatConversationRead: markChatConversationReadInCloud,
     setPlaceDayOverride,
     setContentOverride,
     setTripStartDate,

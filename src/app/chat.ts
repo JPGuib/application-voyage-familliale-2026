@@ -295,3 +295,45 @@ export function sortChatConversationsByActivity<
     return diff !== 0 ? diff : a.conversationId.localeCompare(b.conversationId);
   });
 }
+
+// --- Badge de messages non lus (story 28.4) -----------------------------
+
+// Nombre de messages chargés par conversation pour calculer le badge non-lu
+// dans ChatHomeScreen, plafonné à l'historique chargé (cf. cas limite dédié
+// de la story 28.4) — indépendant de INITIAL_MESSAGE_LIMIT dans ChatScreen
+// (le badge n'a pas besoin d'afficher ces messages, seulement de les
+// compter).
+export const CHAT_UNREAD_COUNT_MESSAGE_LIMIT = 50;
+
+// Plafond d'affichage du compteur par conversation ("9+", règle métier
+// story 28.4) : purement visuel, ne change rien au calcul du non-lu.
+export const UNREAD_BADGE_DISPLAY_CAP = 9;
+
+// Non-lu = messages plus récents que le dernier passage sur la conversation
+// (ou tous les messages chargés si le profil n'a jamais ouvert la
+// conversation, cf. cas limite "profil ajouté après coup à un groupe
+// existant").
+export function computeUnreadChatMessageCount(
+  messages: readonly CloudChatMessage[],
+  lastReadAt: number | null | undefined
+): number {
+  const threshold = lastReadAt ?? 0;
+  return messages.filter((message) => message.createdAt > threshold).length;
+}
+
+export function formatUnreadBadgeLabel(count: number): string {
+  return count > UNREAD_BADGE_DISPLAY_CAP ? `${UNREAD_BADGE_DISPLAY_CAP}+` : String(count);
+}
+
+// `lastReadAt` ne doit jamais reculer (cas limite story 28.4 : deux
+// appareils du même profil, un resté ouvert sur un ancien état ne doit pas
+// écraser une lecture plus récente faite depuis un autre appareil).
+// Comparaison pure, réutilisée à la fois par la transaction Firebase
+// (markChatConversationRead dans cloudSyncProvider.ts) et testable
+// indépendamment du SDK.
+export function shouldAdvanceChatReadState(
+  currentLastReadAt: number | null | undefined,
+  candidateLastReadAt: number
+): boolean {
+  return candidateLastReadAt > (currentLastReadAt ?? 0);
+}
