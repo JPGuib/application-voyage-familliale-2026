@@ -940,31 +940,14 @@ suite("firebase rtdb rules owner phase guard", () => {
       );
     });
 
-    it("denies a 1-to-1 conversation with more than two members", async () => {
-      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
-
-      await assertFails(
-        ownerDb.ref(`chatConversations/${FAMILY_ID}/custom-direct`).set(
-          directPayload({
-            memberProfileIds: {
-              [OWNER_PROFILE_ID]: true,
-              [NON_OWNER_PROFILE_ID]: true,
-              extra: true,
-            },
-          })
-        )
-      );
-    });
-
-    it("denies a group with only the creator (no other member)", async () => {
-      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
-
-      await assertFails(
-        ownerDb.ref(`chatConversations/${FAMILY_ID}/custom-group`).set(
-          customGroupPayload({ memberProfileIds: { [OWNER_PROFILE_ID]: true } })
-        )
-      );
-    });
+    // Note : le nombre de membres (exactement 2 pour un 1-to-1, au moins 2
+    // pour un groupe) n'est PAS vérifiable côté règles RTDB — il n'existe
+    // pas d'équivalent rules de `numChildren()` (propre au SDK client, pas
+    // au langage des règles ; une première version de ces règles s'appuyait
+    // dessus à tort et a été rejetée par la console Firebase avec l'erreur
+    // "No such method/property 'numChildren'"). Cette contrainte reste donc
+    // uniquement appliquée côté client (cf. ChatHomeScreen : sélecteur à
+    // choix unique pour un 1-to-1, au moins un membre coché pour un groupe).
 
     it("denies including a visiteur profile as a member at creation", async () => {
       const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
