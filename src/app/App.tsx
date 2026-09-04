@@ -200,12 +200,15 @@ import {
   type OfflineSectionKey,
 } from "./offline-media";
 import {
+  buildChatPollMessage,
+  buildChatPollResponse,
   resolveChatAuthorSnapshotLabel,
   sanitizeChatMessageText,
+  sanitizePollLibreAnswer,
   type ChatMemberProfile,
   type ChatProfileLookup,
 } from "./chat";
-import type { CloudChatMessage } from "../types/cloud";
+import type { ChatPollType, CloudChatMessage } from "../types/cloud";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -11992,6 +11995,10 @@ export default function App() {
     // Chat est ouverte).
     subscribeToChatReadState = () => () => {},
     markChatConversationRead: markChatConversationReadInCloud = async () => {},
+    // Sondages du propriétaire dans "Voyage" (story 28.3) : même filet de
+    // sécurité que ci-dessus.
+    submitChatPollResponse: submitChatPollResponseInCloud = async () => {},
+    closeChatPoll: closeChatPollInCloud = async () => {},
     setContentOverride: setContentOverrideInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
@@ -16751,6 +16758,46 @@ const resetForProfileSwitch = () => {
     await sendChatMessageInCloud(message);
   };
 
+  // Sondage du propriétaire dans "Voyage" (story 28.3) : un simple message
+  // spécial envoyé via le même canal que handleSendChatMessage ci-dessus
+  // (voir buildChatPollMessage dans chat.ts). Le bouton n'est proposé côté
+  // UI que pour le propriétaire dans la conversation "Voyage" (cf.
+  // canCreateChatPoll), revérifié côté règles Firebase.
+  const handleCreateChatPoll = async (conversationId: string, pollType: ChatPollType, question: string) => {
+    const message = buildChatPollMessage(
+      conversationId,
+      pollType,
+      question,
+      profile.id,
+      resolveChatAuthorSnapshotLabel(profile.role ?? "utilisateur", profile.surname),
+      cloudActorUid ?? "",
+      Date.now()
+    );
+    await sendChatMessageInCloud(message);
+  };
+
+  // Réponse à un sondage (story 28.3) : la valeur libre est sanitizée ici
+  // (même esprit que sanitizeChatMessageText ci-dessus), "oui"/"non" arrivant
+  // déjà sous cette forme exacte depuis les boutons dédiés de ChatScreen.
+  const handleSubmitChatPollResponse = async (
+    conversationId: string,
+    messageId: string,
+    pollType: ChatPollType,
+    rawValue: string
+  ) => {
+    const value = pollType === "libre" ? sanitizePollLibreAnswer(rawValue) : rawValue;
+    if (!value) return;
+
+    await submitChatPollResponseInCloud(
+      conversationId,
+      messageId,
+      buildChatPollResponse(profile.id, value, cloudActorUid ?? "", Date.now())
+    );
+  };
+
+  const handleCloseChatPoll = (conversationId: string, messageId: string) =>
+    closeChatPollInCloud(conversationId, messageId);
+
   // Story 28.2 : profils connus (surnom + rôle) pour recalculer à chaque
   // affichage le nom d'une conversation 1-to-1 (cf.
   // resolveChatConversationDisplayName) — inclut aussi les visiteurs, au
@@ -17848,6 +17895,7 @@ const resetForProfileSwitch = () => {
         return (
           <ChatHomeScreen
             currentProfileId={profile.id}
+            currentProfileRole={profile.role ?? "visiteur"}
             cloudEnabled={cloudEnabled}
             eligibleProfiles={voyageEligibleProfiles}
             profilesById={chatProfilesById}
@@ -17863,6 +17911,9 @@ const resetForProfileSwitch = () => {
             hiddenConversationIds={hiddenChatConversationIds}
             onHideConversation={handleHideChatConversation}
             onUnhideConversation={handleUnhideChatConversation}
+            onCreatePoll={handleCreateChatPoll}
+            onSubmitPollResponse={handleSubmitChatPollResponse}
+            onClosePoll={handleCloseChatPoll}
           />
         );
       }
@@ -18351,6 +18402,7 @@ const resetForProfileSwitch = () => {
         return (
           <ChatHomeScreen
             currentProfileId={profile.id}
+            currentProfileRole={profile.role ?? "visiteur"}
             cloudEnabled={cloudEnabled}
             eligibleProfiles={voyageEligibleProfiles}
             profilesById={chatProfilesById}
@@ -18366,6 +18418,9 @@ const resetForProfileSwitch = () => {
             hiddenConversationIds={hiddenChatConversationIds}
             onHideConversation={handleHideChatConversation}
             onUnhideConversation={handleUnhideChatConversation}
+            onCreatePoll={handleCreateChatPoll}
+            onSubmitPollResponse={handleSubmitChatPollResponse}
+            onClosePoll={handleCloseChatPoll}
           />
         );
       case "map":

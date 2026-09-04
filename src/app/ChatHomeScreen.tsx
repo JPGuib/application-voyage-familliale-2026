@@ -1,12 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, EyeOff, LogOut, Pencil, Plus, Users, User as UserIcon } from "lucide-react";
+import {
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+  EyeOff,
+  LogOut,
+  Pencil,
+  Plus,
+  Users,
+  User as UserIcon,
+} from "lucide-react";
 import { ChatScreen } from "./ChatScreen";
+import type { Role } from "./owner-policy";
 import {
   buildDirectConversationDraft,
   buildGroupConversationDraft,
+  canCreateChatPoll,
   canLeaveChatConversation,
   canRenameChatConversation,
   CHAT_UNREAD_COUNT_MESSAGE_LIMIT,
+  chatMessagePreviewSourceText,
   computeUnreadChatMessageCount,
   CUSTOM_CHAT_NAME_MAX_LENGTH,
   formatChatMessageTimestamp,
@@ -15,6 +28,7 @@ import {
   resolveChatAuthorSnapshotLabel,
   resolveChatConversationDisplayName,
   sanitizeChatConversationName,
+  sanitizePollQuestion,
   sortChatConversationsByActivity,
   sortChatMessagesAscending,
   truncateChatMessagePreview,
@@ -22,6 +36,7 @@ import {
   type ChatProfileLookup,
 } from "./chat";
 import type {
+  ChatPollType,
   CloudChatConversation,
   CloudChatConversationsMap,
   CloudChatMessage,
@@ -44,10 +59,12 @@ type ChatHomeMode =
   | "create-direct"
   | "conversation"
   | "rename"
-  | "leave-confirm";
+  | "leave-confirm"
+  | "create-poll";
 
 export function ChatHomeScreen({
   currentProfileId,
+  currentProfileRole,
   cloudEnabled,
   eligibleProfiles,
   profilesById,
@@ -63,8 +80,14 @@ export function ChatHomeScreen({
   hiddenConversationIds,
   onHideConversation,
   onUnhideConversation,
+  onCreatePoll,
+  onSubmitPollResponse,
+  onClosePoll,
 }: {
   currentProfileId: string;
+  // Sondages du propriétaire (story 28.3) : seul ce rôle voit le bouton
+  // "Créer un sondage", cf. canCreateChatPoll.
+  currentProfileRole: Role;
   cloudEnabled: boolean;
   eligibleProfiles: readonly ChatMemberProfile[];
   profilesById: ChatProfileLookup;
@@ -92,6 +115,15 @@ export function ChatHomeScreen({
   hiddenConversationIds: readonly string[];
   onHideConversation: (conversationId: string) => void;
   onUnhideConversation: (conversationId: string) => void;
+  // Sondages du propriétaire dans "Voyage" (story 28.3).
+  onCreatePoll: (conversationId: string, pollType: ChatPollType, question: string) => Promise<void>;
+  onSubmitPollResponse: (
+    conversationId: string,
+    messageId: string,
+    pollType: ChatPollType,
+    value: string
+  ) => Promise<void>;
+  onClosePoll: (conversationId: string, messageId: string) => Promise<void>;
 }) {
   const [mode, setMode] = useState<ChatHomeMode>("list");
   const [conversations, setConversations] = useState<CloudChatConversationsMap>({});
@@ -117,6 +149,13 @@ export function ChatHomeScreen({
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionPending, setActionPending] = useState(false);
   const [showHiddenList, setShowHiddenList] = useState(false);
+
+  // Création d'un sondage (story 28.3) : formulaire en 2 champs (type puis
+  // question), même esprit que le formulaire de création de groupe.
+  const [pollType, setPollType] = useState<ChatPollType>("oui_non");
+  const [pollQuestionDraft, setPollQuestionDraft] = useState("");
+  const [pollError, setPollError] = useState<string | null>(null);
+  const [pollCreating, setPollCreating] = useState(false);
 
   useEffect(() => {
     if (!cloudEnabled) {
@@ -333,6 +372,32 @@ export function ChatHomeScreen({
     }
   };
 
+  const resetPollForm = () => {
+    setPollType("oui_non");
+    setPollQuestionDraft("");
+    setPollError(null);
+  };
+
+  const handleCreatePoll = async () => {
+    const question = sanitizePollQuestion(pollQuestionDraft);
+    if (!activeConversationId || !question || pollCreating) {
+      setPollError("Écrivez une question pour le sondage.");
+      return;
+    }
+
+    setPollCreating(true);
+    setPollError(null);
+    try {
+      await onCreatePoll(activeConversationId, pollType, question);
+      resetPollForm();
+      setMode("conversation");
+    } catch {
+      setPollError("Impossible de créer le sondage. Vérifiez votre connexion et réessayez.");
+    } finally {
+      setPollCreating(false);
+    }
+  };
+
   if (mode === "create-type") {
     return (
       <div className="flex flex-col h-full overflow-hidden">
@@ -485,6 +550,70 @@ export function ChatHomeScreen({
     );
   }
 
+  if (mode === "create-poll" && activeConversationId) {
+    return (
+      <div className="flex flex-col h-full overflow-hidden">
+        <ChatSectionHeader title="Créer un sondage" onBack={() => setMode("conversation")} />
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div>
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-2">
+              Type de réponse *
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPollType("oui_non")}
+                className={`rounded-xl border px-3 py-3 text-sm font-bold ${
+                  pollType === "oui_non"
+                    ? "border-[#2E7D32] bg-[#2E7D32]/10 text-[#2E7D32]"
+                    : "border-border text-foreground"
+                }`}
+              >
+                Oui / Non
+              </button>
+              <button
+                type="button"
+                onClick={() => setPollType("libre")}
+                className={`rounded-xl border px-3 py-3 text-sm font-bold ${
+                  pollType === "libre"
+                    ? "border-[#2E7D32] bg-[#2E7D32]/10 text-[#2E7D32]"
+                    : "border-border text-foreground"
+                }`}
+              >
+                Réponse libre
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest mb-2">
+              Question *
+            </p>
+            <textarea
+              value={pollQuestionDraft}
+              onChange={(event) => setPollQuestionDraft(event.target.value)}
+              placeholder="Ex: On part tôt demain ?"
+              rows={3}
+              className="w-full resize-none rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
+            />
+          </div>
+
+          {pollError && <p className="text-xs font-semibold text-destructive">{pollError}</p>}
+        </div>
+        <div className="flex-shrink-0 px-4 pb-8 pt-3 bg-background border-t border-border">
+          <button
+            type="button"
+            disabled={pollCreating || sanitizePollQuestion(pollQuestionDraft).length === 0}
+            onClick={() => void handleCreatePoll()}
+            className="w-full rounded-2xl py-4 text-base font-black bg-[#2E7D32] text-white disabled:opacity-50"
+          >
+            Créer le sondage
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (mode === "rename" && activeConversation) {
     return (
       <div className="flex flex-col h-full overflow-hidden">
@@ -548,12 +677,18 @@ export function ChatHomeScreen({
     const canRename = canRenameChatConversation(activeConversation);
     const canLeave = canLeaveChatConversation(activeConversation);
     const canHide = activeConversation.type === "direct";
+    // Sondages (story 28.3) : bouton de création réservé au propriétaire,
+    // uniquement dans "Voyage" ; la gestion (répondre/clôturer) reste dans
+    // ChatScreen, à même le fil de messages.
+    const canCreatePoll = canCreateChatPoll(currentProfileRole, activeConversation);
 
     return (
       <ChatScreen
         conversationId={activeConversationId}
         conversationName={displayName}
         currentProfileId={currentProfileId}
+        canManagePolls={currentProfileRole === "proprietaire"}
+        profilesById={profilesById}
         cloudEnabled={cloudEnabled}
         onBack={() => {
           setActiveConversationId(null);
@@ -561,9 +696,26 @@ export function ChatHomeScreen({
         }}
         subscribeToChatMessages={subscribeToChatMessages}
         onSendMessage={(text) => onSendMessage(activeConversationId, text)}
+        onSubmitPollResponse={(messageId, pollType, value) =>
+          onSubmitPollResponse(activeConversationId, messageId, pollType, value)
+        }
+        onClosePoll={(messageId) => onClosePoll(activeConversationId, messageId)}
         headerActions={
-          canRename || canLeave || canHide ? (
+          canRename || canLeave || canHide || canCreatePoll ? (
             <div className="flex items-center gap-1 flex-shrink-0">
+              {canCreatePoll && (
+                <button
+                  type="button"
+                  aria-label="Créer un sondage"
+                  onClick={() => {
+                    resetPollForm();
+                    setMode("create-poll");
+                  }}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-white/85"
+                >
+                  <BarChart3 size={16} />
+                </button>
+              )}
               {canRename && (
                 <button
                   type="button"
@@ -669,7 +821,9 @@ export function ChatHomeScreen({
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-black text-foreground truncate">{displayName}</p>
                   <p className="text-xs font-semibold text-muted-foreground truncate">
-                    {lastMessage ? truncateChatMessagePreview(lastMessage.text) : "Aucun message pour l'instant"}
+                    {lastMessage
+                      ? truncateChatMessagePreview(chatMessagePreviewSourceText(lastMessage))
+                      : "Aucun message pour l'instant"}
                   </p>
                 </div>
                 <div className="flex flex-shrink-0 flex-col items-end gap-1">

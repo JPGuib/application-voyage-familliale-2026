@@ -1030,6 +1030,191 @@ suite("firebase rtdb rules owner phase guard", () => {
     });
   });
 
+  // Story 28.3 : sondages du propriétaire, uniquement dans "Voyage".
+  describe("chat polls (story 28.3)", () => {
+    const voyageConversation = {
+      conversationId: "voyage",
+      type: "group",
+      name: "Voyage",
+      isDefaultVoyage: true,
+      memberProfileIds: { [OWNER_PROFILE_ID]: true, [NON_OWNER_PROFILE_ID]: true },
+      createdAt: 100,
+      createdByProfileId: OWNER_PROFILE_ID,
+    };
+
+    function pollPayload(overrides: Record<string, unknown> = {}) {
+      return {
+        messageId: "poll-1",
+        conversationId: "voyage",
+        authorProfileId: OWNER_PROFILE_ID,
+        authorSurnameSnapshot: "Organisateur",
+        authorUid: OWNER_UID,
+        kind: "poll",
+        pollType: "oui_non",
+        pollQuestion: "On part tôt demain ?",
+        pollClosed: false,
+        createdAt: 300,
+        ...overrides,
+      };
+    }
+
+    it("allows the proprietaire to create a poll in the Voyage conversation", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertSucceeds(ownerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-1`).set(pollPayload()));
+    });
+
+    it("denies a non-owner from creating a poll, even in the Voyage conversation", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-2`).set(
+          pollPayload({
+            messageId: "poll-2",
+            authorProfileId: NON_OWNER_PROFILE_ID,
+            authorSurnameSnapshot: "User",
+            authorUid: NON_OWNER_UID,
+          })
+        )
+      );
+    });
+
+    it("denies the owner from creating a poll in a custom group", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/custom-group`).set({
+          conversationId: "custom-group",
+          type: "group",
+          name: "Les grands",
+          isDefaultVoyage: false,
+          memberProfileIds: { [OWNER_PROFILE_ID]: true, [NON_OWNER_PROFILE_ID]: true },
+          createdAt: 100,
+          createdByProfileId: OWNER_PROFILE_ID,
+        });
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertFails(
+        ownerDb
+          .ref(`chatMessages/${FAMILY_ID}/custom-group/poll-3`)
+          .set(pollPayload({ messageId: "poll-3", conversationId: "custom-group" }))
+      );
+    });
+
+    it("allows a member to submit their own poll response", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+        await context.database().ref(`chatMessages/${FAMILY_ID}/voyage/poll-1`).set(pollPayload());
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertSucceeds(
+        nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-1/pollResponses/${NON_OWNER_PROFILE_ID}`).set({
+          profileId: NON_OWNER_PROFILE_ID,
+          value: "oui",
+          updatedAt: 400,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("denies submitting a poll response on behalf of another profile", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+        await context.database().ref(`chatMessages/${FAMILY_ID}/voyage/poll-1`).set(pollPayload());
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-1/pollResponses/${OWNER_PROFILE_ID}`).set({
+          profileId: OWNER_PROFILE_ID,
+          value: "oui",
+          updatedAt: 400,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("denies a value other than 'oui'/'non' for an oui_non poll", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+        await context.database().ref(`chatMessages/${FAMILY_ID}/voyage/poll-1`).set(pollPayload());
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-1/pollResponses/${NON_OWNER_PROFILE_ID}`).set({
+          profileId: NON_OWNER_PROFILE_ID,
+          value: "peut-être",
+          updatedAt: 400,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("denies a libre answer longer than 100 characters", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+        await context
+          .database()
+          .ref(`chatMessages/${FAMILY_ID}/voyage/poll-1`)
+          .set(pollPayload({ pollType: "libre", pollQuestion: "Comment vous sentez-vous ?" }));
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-1/pollResponses/${NON_OWNER_PROFILE_ID}`).set({
+          profileId: NON_OWNER_PROFILE_ID,
+          value: "a".repeat(101),
+          updatedAt: 400,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("denies responding once the poll is closed", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+        await context.database().ref(`chatMessages/${FAMILY_ID}/voyage/poll-1`).set(pollPayload({ pollClosed: true }));
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-1/pollResponses/${NON_OWNER_PROFILE_ID}`).set({
+          profileId: NON_OWNER_PROFILE_ID,
+          value: "oui",
+          updatedAt: 400,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("allows the owner to close an open poll", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+        await context.database().ref(`chatMessages/${FAMILY_ID}/voyage/poll-1`).set(pollPayload());
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertSucceeds(ownerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-1/pollClosed`).set(true));
+    });
+
+    it("denies a non-owner from closing the poll", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`chatConversations/${FAMILY_ID}/voyage`).set(voyageConversation);
+        await context.database().ref(`chatMessages/${FAMILY_ID}/voyage/poll-1`).set(pollPayload());
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(nonOwnerDb.ref(`chatMessages/${FAMILY_ID}/voyage/poll-1/pollClosed`).set(true));
+    });
+  });
+
   describe("chat read state (story 28.4)", () => {
     it("allows a family member to write their own read state on a conversation", async () => {
       const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();

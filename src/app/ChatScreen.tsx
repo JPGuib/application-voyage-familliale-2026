@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { ChevronLeft, Send, Smile } from "lucide-react";
+import { BarChart3, ChevronLeft, Send, Smile } from "lucide-react";
 import {
   CHAT_MESSAGE_MAX_LENGTH,
+  canRespondToChatPoll,
+  computeOuiNonPollTally,
   formatChatMessageTimestamp,
+  getChatPollResponseForProfile,
   groupConsecutiveChatMessages,
+  POLL_BUBBLE_LABEL,
+  POLL_LIBRE_ANSWER_MAX_LENGTH,
+  POLL_OUI_NON_OPTIONS,
+  resolveChatAuthorSnapshotLabel,
   sortChatMessagesAscending,
+  type ChatProfileLookup,
 } from "./chat";
-import type { CloudChatMessagesLog } from "../types/cloud";
+import type { ChatPollType, CloudChatMessage, CloudChatMessagesLog } from "../types/cloud";
 
 const INITIAL_MESSAGE_LIMIT = 50;
 const LOAD_MORE_STEP = 50;
@@ -21,19 +29,176 @@ const QUICK_EMOJIS = [
   "🏖️", "📸", "🗺️", "🚗", "⛱️", "🥵", "🥶", "💤",
 ];
 
+// Résout le libellé affiché d'un répondant à un sondage (story 28.3) : les
+// réponses ne stockent qu'un profileId (cf. CloudChatPollResponse), le
+// surnom est toujours recalculé à l'affichage à partir du profil courant —
+// contrairement à authorSurnameSnapshot sur les messages, jamais figé. Un
+// profil supprimé après coup retombe sur un libellé neutre plutôt que de
+// planter l'écran (même esprit que resolveChatConversationDisplayName).
+function resolveChatPollResponderLabel(profileId: string, profilesById: ChatProfileLookup): string {
+  const profile = profilesById[profileId];
+  return profile ? resolveChatAuthorSnapshotLabel(profile.role, profile.surname) : "Profil supprimé";
+}
+
+// Sondage du propriétaire dans "Voyage" (story 28.3) : bulle spéciale avec
+// zone de réponse intégrée, distincte au premier coup d'œil d'un message
+// texte classique (cf. Contraintes UX de la story). Composant dédié (plutôt
+// qu'un simple bloc JSX inline) pour que chaque sondage garde son propre
+// état de brouillon de réponse libre, indépendant des autres sondages du
+// même fil.
+function ChatPollBubble({
+  message,
+  currentProfileId,
+  profilesById,
+  canManagePolls,
+  onSubmitPollResponse,
+  onClosePoll,
+}: {
+  message: CloudChatMessage;
+  currentProfileId: string;
+  profilesById: ChatProfileLookup;
+  canManagePolls: boolean;
+  onSubmitPollResponse: (messageId: string, pollType: ChatPollType, value: string) => Promise<void>;
+  onClosePoll: (messageId: string) => Promise<void>;
+}) {
+  const pollType = message.pollType ?? "oui_non";
+  const responses = message.pollResponses ?? {};
+  const ownResponse = getChatPollResponseForProfile(responses, currentProfileId);
+  const [libreDraft, setLibreDraft] = useState(ownResponse?.value ?? "");
+  const [submitting, setSubmitting] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const canRespond = canRespondToChatPoll(message);
+  const tally = pollType === "oui_non" ? computeOuiNonPollTally(responses) : null;
+  const responseEntries = Object.values(responses).sort((a, b) => a.updatedAt - b.updatedAt);
+
+  const submitResponse = async (value: string) => {
+    setSubmitting(true);
+    setActionError(null);
+    try {
+      await onSubmitPollResponse(message.messageId, pollType, value);
+    } catch {
+      setActionError("Réponse non enregistrée. Vérifiez votre connexion et réessayez.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleClose = async () => {
+    setClosing(true);
+    setActionError(null);
+    try {
+      await onClosePoll(message.messageId);
+    } catch {
+      setActionError("Clôture impossible. Vérifiez votre connexion et réessayez.");
+    } finally {
+      setClosing(false);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-[92%] rounded-2xl border-2 border-[#2E7D32] bg-[#2E7D32]/5 px-4 py-3">
+      <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-[#2E7D32]">
+        <BarChart3 size={14} /> {POLL_BUBBLE_LABEL}
+      </div>
+      <p className="mt-1 text-sm font-bold text-foreground break-words">{message.pollQuestion}</p>
+
+      {message.pollClosed ? (
+        <p className="mt-2 text-xs font-bold text-muted-foreground">Ce sondage est clos.</p>
+      ) : (
+        canRespond &&
+        (pollType === "oui_non" ? (
+          <div className="mt-3 flex gap-2">
+            {POLL_OUI_NON_OPTIONS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                disabled={submitting}
+                onClick={() => void submitResponse(option)}
+                className={`flex-1 rounded-xl border px-3 py-2 text-sm font-bold disabled:opacity-50 ${
+                  ownResponse?.value === option
+                    ? "border-[#2E7D32] bg-[#2E7D32] text-white"
+                    : "border-border text-foreground"
+                }`}
+              >
+                {option === "oui" ? "Oui" : "Non"}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-3 flex items-end gap-2">
+            <input
+              value={libreDraft}
+              onChange={(event) => setLibreDraft(event.target.value.slice(0, POLL_LIBRE_ANSWER_MAX_LENGTH))}
+              placeholder="Votre réponse…"
+              className="flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground outline-none"
+            />
+            <button
+              type="button"
+              disabled={submitting || libreDraft.trim().length === 0}
+              onClick={() => void submitResponse(libreDraft.trim())}
+              className="flex-shrink-0 rounded-xl bg-[#2E7D32] px-3 py-2 text-xs font-black text-white disabled:opacity-50"
+            >
+              {ownResponse ? "Modifier" : "Répondre"}
+            </button>
+          </div>
+        ))
+      )}
+
+      {actionError && <p className="mt-2 text-xs font-semibold text-destructive">{actionError}</p>}
+
+      {tally && (
+        <p className="mt-3 text-xs font-black text-foreground">
+          Oui : {tally.oui} · Non : {tally.non}
+        </p>
+      )}
+
+      {responseEntries.length > 0 && (
+        <ul className="mt-2 space-y-0.5">
+          {responseEntries.map((response) => (
+            <li key={response.profileId} className="text-xs font-semibold text-foreground/80">
+              {resolveChatPollResponderLabel(response.profileId, profilesById)} :{" "}
+              {pollType === "oui_non" ? (response.value === "oui" ? "Oui" : "Non") : response.value}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {canManagePolls && !message.pollClosed && (
+        <button
+          type="button"
+          disabled={closing}
+          onClick={() => void handleClose()}
+          className="mt-3 text-xs font-black text-destructive underline disabled:opacity-50"
+        >
+          Clôturer le sondage
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function ChatScreen({
   conversationId,
   conversationName,
   currentProfileId,
+  canManagePolls,
+  profilesById,
   cloudEnabled,
   onBack,
   subscribeToChatMessages,
   onSendMessage,
+  onSubmitPollResponse,
+  onClosePoll,
   headerActions,
 }: {
   conversationId: string;
   conversationName: string;
   currentProfileId: string;
+  // Sondages du propriétaire (story 28.3) : true uniquement pour le
+  // propriétaire, contrôle l'affichage du bouton "Clôturer le sondage".
+  canManagePolls: boolean;
+  profilesById: ChatProfileLookup;
   cloudEnabled: boolean;
   onBack: () => void;
   subscribeToChatMessages: (
@@ -43,10 +208,12 @@ export function ChatScreen({
     onError?: () => void
   ) => () => void;
   onSendMessage: (text: string) => Promise<void>;
+  onSubmitPollResponse: (messageId: string, pollType: ChatPollType, value: string) => Promise<void>;
+  onClosePoll: (messageId: string) => Promise<void>;
   // Actions supplémentaires dans l'en-tête (renommer/quitter/masquer, story
-  // 28.2) : ChatScreen reste un simple afficheur d'UNE conversation, toute
-  // la logique de navigation/actions multi-conversations vit dans
-  // ChatHomeScreen.
+  // 28.2 ; créer un sondage, story 28.3) : ChatScreen reste un simple
+  // afficheur d'UNE conversation, toute la logique de navigation/actions
+  // multi-conversations vit dans ChatHomeScreen.
   headerActions?: ReactNode;
 }) {
   const [messageLimit, setMessageLimit] = useState(INITIAL_MESSAGE_LIMIT);
@@ -178,18 +345,39 @@ export function ChatScreen({
             {messageGroups.map((group) => {
               const first = group[0];
               const isOwnGroup = first.authorProfileId === currentProfileId;
+              // Un sondage (story 28.3) a besoin de plus de largeur qu'une
+              // bulle de texte classique pour sa zone de réponse intégrée.
+              const hasPollInGroup = group.some((message) => message.kind === "poll");
 
               return (
                 <div
                   key={first.messageId}
                   className={`flex items-start ${isOwnGroup ? "justify-end" : "justify-start"}`}
                 >
-                  <div className={`flex max-w-[75%] flex-col gap-1 ${isOwnGroup ? "items-end" : "items-start"}`}>
+                  <div
+                    className={`flex flex-col gap-1 ${hasPollInGroup ? "max-w-[92%]" : "max-w-[75%]"} ${
+                      isOwnGroup ? "items-end" : "items-start"
+                    }`}
+                  >
                     <span className="px-1 text-xs font-bold text-muted-foreground">
                       {first.authorSurnameSnapshot}
                     </span>
 
                     {group.map((message) => {
+                      if (message.kind === "poll") {
+                        return (
+                          <ChatPollBubble
+                            key={message.messageId}
+                            message={message}
+                            currentProfileId={currentProfileId}
+                            profilesById={profilesById}
+                            canManagePolls={canManagePolls}
+                            onSubmitPollResponse={onSubmitPollResponse}
+                            onClosePoll={onClosePoll}
+                          />
+                        );
+                      }
+
                       const { time, dateLabel } = formatChatMessageTimestamp(message.createdAt);
                       return (
                         <div

@@ -43,6 +43,8 @@ import type {
   CloudChatConversationsMap,
   CloudChatMessage,
   CloudChatMessagesLog,
+  CloudChatPollResponse,
+  CloudChatPollResponsesByProfile,
   CloudChatReadState,
   CloudChatReadStateMap,
   CloudDocumentPhotoMap,
@@ -1004,6 +1006,37 @@ function parseChatConversation(conversationId: string, value: unknown): CloudCha
   };
 }
 
+// Story 28.3 : parse défensif d'une réponse à un sondage, même esprit que
+// les autres parseXxx de ce fichier — une entrée malformée est ignorée
+// plutôt que de faire planter tout l'écran Chat.
+function parseChatPollResponse(profileId: string, value: unknown): CloudChatPollResponse | null {
+  const raw = asRecord(value);
+  const responseProfileId = typeof raw.profileId === "string" ? raw.profileId : "";
+  const responseValue = typeof raw.value === "string" ? raw.value : "";
+  const updatedAt = toFiniteNumber(raw.updatedAt, 0);
+  const authorUid = typeof raw.authorUid === "string" ? raw.authorUid : "";
+
+  if (responseProfileId !== profileId || !responseValue || updatedAt <= 0 || !authorUid) {
+    return null;
+  }
+
+  return { profileId: responseProfileId, value: responseValue, updatedAt, authorUid };
+}
+
+function parseChatPollResponses(value: unknown): CloudChatPollResponsesByProfile {
+  const raw = asRecord(value);
+  const next: CloudChatPollResponsesByProfile = {};
+
+  for (const [profileId, responseValue] of Object.entries(raw)) {
+    const parsed = parseChatPollResponse(profileId, responseValue);
+    if (parsed) {
+      next[profileId] = parsed;
+    }
+  }
+
+  return next;
+}
+
 function parseChatMessage(
   conversationId: string,
   messageId: string,
@@ -1014,17 +1047,40 @@ function parseChatMessage(
   const authorSurnameSnapshot =
     typeof raw.authorSurnameSnapshot === "string" ? raw.authorSurnameSnapshot.trim() : "";
   const authorUid = typeof raw.authorUid === "string" ? raw.authorUid.trim() : "";
-  const text = typeof raw.text === "string" ? raw.text : "";
   const createdAt = toFiniteNumber(raw.createdAt, 0);
 
-  if (
-    !authorProfileId ||
-    !authorSurnameSnapshot ||
-    !authorUid ||
-    !text ||
-    text.length > CHAT_MESSAGE_MAX_LENGTH ||
-    createdAt <= 0
-  ) {
+  if (!authorProfileId || !authorSurnameSnapshot || !authorUid || createdAt <= 0) {
+    return null;
+  }
+
+  // Sondage du propriétaire (story 28.3) : text reste "" pour ce kind, cf.
+  // buildChatPollMessage dans chat.ts.
+  if (raw.kind === "poll") {
+    const pollType = raw.pollType === "oui_non" || raw.pollType === "libre" ? raw.pollType : null;
+    const pollQuestion = typeof raw.pollQuestion === "string" ? raw.pollQuestion : "";
+
+    if (!pollType || !pollQuestion) {
+      return null;
+    }
+
+    return {
+      messageId,
+      conversationId,
+      authorProfileId,
+      authorSurnameSnapshot,
+      authorUid,
+      kind: "poll",
+      text: "",
+      createdAt,
+      pollType,
+      pollQuestion,
+      pollClosed: raw.pollClosed === true,
+      pollResponses: parseChatPollResponses(raw.pollResponses),
+    };
+  }
+
+  const text = typeof raw.text === "string" ? raw.text : "";
+  if (!text || text.length > CHAT_MESSAGE_MAX_LENGTH) {
     return null;
   }
 
@@ -1126,6 +1182,36 @@ export async function sendChatMessage(
   message: CloudChatMessage
 ): Promise<void> {
   await set(ref(database, `chatMessages/${familyId}/${message.conversationId}/${message.messageId}`), message);
+}
+
+// Story 28.3 : réponse à un sondage, self-write réservé au profil concerné
+// (cf. database.rules.*.json) — un simple `set()` suffit, contrairement à
+// markChatConversationRead ci-dessous : la dernière réponse écrase toujours
+// la précédente (règle métier "peut modifier sa réponse tant que le
+// sondage n'est pas clos"), pas de progression monotone à garantir ici.
+export async function submitChatPollResponse(
+  database: Database,
+  familyId: string,
+  conversationId: string,
+  messageId: string,
+  response: CloudChatPollResponse
+): Promise<void> {
+  await set(
+    ref(database, `chatMessages/${familyId}/${conversationId}/${messageId}/pollResponses/${response.profileId}`),
+    response
+  );
+}
+
+// Clôture d'un sondage par le propriétaire (story 28.3) : réservé côté
+// règles Firebase au rôle proprietaire ; jamais réouvert dans ce périmètre
+// (cf. Cas limites de la story).
+export async function closeChatPoll(
+  database: Database,
+  familyId: string,
+  conversationId: string,
+  messageId: string
+): Promise<void> {
+  await set(ref(database, `chatMessages/${familyId}/${conversationId}/${messageId}/pollClosed`), true);
 }
 
 // Story 28.2 : liste de toutes les conversations de la famille (Voyage +

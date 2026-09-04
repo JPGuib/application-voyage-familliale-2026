@@ -1,5 +1,11 @@
 import type { Role } from "./owner-policy";
-import type { CloudChatConversation, CloudChatMessage } from "../types/cloud";
+import type {
+  ChatPollType,
+  CloudChatConversation,
+  CloudChatMessage,
+  CloudChatPollResponse,
+  CloudChatPollResponsesByProfile,
+} from "../types/cloud";
 
 // Identifiant fixe de la conversation de groupe "Voyage" créée automatiquement
 // (story 28.1) : contrairement aux groupes personnalisés/1-to-1 de la story
@@ -284,6 +290,13 @@ export function truncateChatMessagePreview(text: string, maxLength: number = 60)
   return singleLine.length > maxLength ? `${singleLine.slice(0, maxLength - 1)}…` : singleLine;
 }
 
+// Texte source de l'aperçu ci-dessus pour le dernier message d'une
+// conversation (story 28.2, puis story 28.3) : un sondage n'a pas de
+// `text` (toujours ""), on affiche donc sa question à la place.
+export function chatMessagePreviewSourceText(message: Pick<CloudChatMessage, "kind" | "text" | "pollQuestion">): string {
+  return message.kind === "poll" ? `📊 ${message.pollQuestion ?? ""}` : message.text;
+}
+
 // Tri de la liste des conversations, la plus récemment active en premier
 // (dernier message si connu, sinon date de création) ; clé secondaire sur
 // conversationId pour un ordre stable entre deux rendus à activité égale.
@@ -336,4 +349,114 @@ export function shouldAdvanceChatReadState(
   candidateLastReadAt: number
 ): boolean {
   return candidateLastReadAt > (currentLastReadAt ?? 0);
+}
+
+// --- Sondages du propriétaire dans la conversation "Voyage" (story 28.3) --
+
+// Libellé fixe affiché sur la bulle d'un sondage, quel que soit le surnom
+// réel du propriétaire (cf. règle métier §Contraintes UX de la story : "Ton
+// familial pour les libellés").
+export const POLL_BUBBLE_LABEL = "Sondage de l'Organisateur";
+
+// Les deux seules options possibles pour un sondage de type "oui_non" (pas
+// de choix multiples dans ce périmètre, cf. Hors périmètre de la story).
+export const POLL_OUI_NON_OPTIONS = ["oui", "non"] as const;
+
+export const POLL_LIBRE_ANSWER_MAX_LENGTH = 100;
+
+// Seul le propriétaire peut créer un sondage, et uniquement dans la
+// conversation "Voyage" (jamais un groupe personnalisé ni un 1-to-1, cf.
+// story 28.2) — règle métier exacte de la story 28.3, revérifiée côté
+// règles Firebase (voir database.rules.*.json).
+export function canCreateChatPoll(
+  role: Role,
+  conversation: Pick<CloudChatConversation, "isDefaultVoyage">
+): boolean {
+  return role === "proprietaire" && conversation.isDefaultVoyage === true;
+}
+
+// La question d'un sondage suit la même limite de longueur qu'un message
+// texte classique (pas de nouveau champ magique dans les règles Firebase).
+export function sanitizePollQuestion(rawQuestion: string): string {
+  return rawQuestion.trim().slice(0, CHAT_MESSAGE_MAX_LENGTH);
+}
+
+export function sanitizePollLibreAnswer(rawAnswer: string): string {
+  return rawAnswer.trim().slice(0, POLL_LIBRE_ANSWER_MAX_LENGTH);
+}
+
+// Construit le message spécial `kind: "poll"` à envoyer dans la conversation
+// "Voyage" (cf. sendChatMessage, réutilisé tel quel pour ce kind : seul le
+// contenu du message change, pas le mécanisme d'envoi). `text` reste ""
+// et n'est jamais affiché pour ce kind (voir CloudChatMessage dans
+// types/cloud.ts) ; `pollClosed` démarre toujours à false.
+export function buildChatPollMessage(
+  conversationId: string,
+  pollType: ChatPollType,
+  rawQuestion: string,
+  authorProfileId: string,
+  authorSurnameSnapshot: string,
+  authorUid: string,
+  createdAt: number
+): CloudChatMessage {
+  return {
+    messageId: `${authorProfileId}-${createdAt}`,
+    conversationId,
+    authorProfileId,
+    authorSurnameSnapshot,
+    authorUid,
+    kind: "poll",
+    text: "",
+    createdAt,
+    pollType,
+    pollQuestion: sanitizePollQuestion(rawQuestion),
+    pollClosed: false,
+  };
+}
+
+// Un sondage clos refuse toute nouvelle réponse ou modification, pour
+// n'importe quel profil (règle métier exacte, revérifiée côté règles
+// Firebase via pollClosed).
+export function canRespondToChatPoll(poll: Pick<CloudChatMessage, "pollClosed">): boolean {
+  return poll.pollClosed !== true;
+}
+
+// Validation de la forme d'une réponse avant envoi : "oui"/"non" strict pour
+// un sondage fermé, texte non vide plafonné à 100 caractères pour un
+// sondage libre.
+export function isChatPollAnswerValueValid(pollType: ChatPollType, value: string): boolean {
+  if (pollType === "oui_non") {
+    return (POLL_OUI_NON_OPTIONS as readonly string[]).includes(value);
+  }
+  return value.length > 0 && value.length <= POLL_LIBRE_ANSWER_MAX_LENGTH;
+}
+
+export function buildChatPollResponse(
+  profileId: string,
+  value: string,
+  authorUid: string,
+  updatedAt: number
+): CloudChatPollResponse {
+  return { profileId, value, authorUid, updatedAt };
+}
+
+export function getChatPollResponseForProfile(
+  responses: CloudChatPollResponsesByProfile | undefined,
+  profileId: string
+): CloudChatPollResponse | undefined {
+  return responses?.[profileId];
+}
+
+// Décompte des deux options d'un sondage "oui_non" (critère d'acceptation
+// #2 de la story) : les résultats restent nominatifs (voir
+// getChatPollResponseForProfile/resolveChatAuthorSnapshotLabel côté UI pour
+// afficher qui a répondu quoi), ce décompte n'est qu'un résumé chiffré.
+export function computeOuiNonPollTally(
+  responses: CloudChatPollResponsesByProfile | undefined
+): { oui: number; non: number } {
+  const values = Object.values(responses ?? {});
+  return {
+    oui: values.filter((response) => response.value === "oui").length,
+    non: values.filter((response) => response.value === "non").length,
+  };
 }

@@ -4,32 +4,45 @@ import {
   CUSTOM_CHAT_NAME_MAX_LENGTH,
   DIRECT_CONVERSATION_PLACEHOLDER_NAME,
   ORGANISATEUR_LABEL,
+  POLL_BUBBLE_LABEL,
+  POLL_LIBRE_ANSWER_MAX_LENGTH,
+  POLL_OUI_NON_OPTIONS,
   UNREAD_BADGE_DISPLAY_CAP,
   VOYAGE_CONVERSATION_ID,
   VOYAGE_CONVERSATION_NAME,
+  buildChatPollMessage,
+  buildChatPollResponse,
   buildDirectConversationDraft,
   buildGroupConversationDraft,
   buildVoyageConversationSeed,
+  canCreateChatPoll,
   canLeaveChatConversation,
   canRenameChatConversation,
+  canRespondToChatPoll,
+  chatMessagePreviewSourceText,
   computeMissingVoyageMembers,
+  computeOuiNonPollTally,
   computeUnreadChatMessageCount,
   formatChatMessageTimestamp,
   formatUnreadBadgeLabel,
   generateChatConversationId,
+  getChatPollResponseForProfile,
   groupConsecutiveChatMessages,
   isChatEligibleRole,
+  isChatPollAnswerValueValid,
   listSelectableChatMembers,
   resolveChatAuthorSnapshotLabel,
   resolveChatConversationDisplayName,
   sanitizeChatConversationName,
   sanitizeChatMessageText,
+  sanitizePollLibreAnswer,
+  sanitizePollQuestion,
   shouldAdvanceChatReadState,
   sortChatConversationsByActivity,
   sortChatMessagesAscending,
   truncateChatMessagePreview,
 } from "./chat";
-import type { CloudChatConversation, CloudChatMessage } from "../types/cloud";
+import type { CloudChatConversation, CloudChatMessage, CloudChatPollResponsesByProfile } from "../types/cloud";
 
 function makeMessage(overrides: Partial<CloudChatMessage>): CloudChatMessage {
   return {
@@ -365,5 +378,130 @@ describe("shouldAdvanceChatReadState", () => {
   it("treats a missing current value as 0", () => {
     expect(shouldAdvanceChatReadState(null, 1)).toBe(true);
     expect(shouldAdvanceChatReadState(undefined, 1)).toBe(true);
+  });
+});
+
+// --- Story 28.3 : sondages du propriétaire dans "Voyage" ----------------
+
+describe("canCreateChatPoll", () => {
+  it("allows only the proprietaire, and only in the Voyage conversation", () => {
+    const voyage = { isDefaultVoyage: true };
+    const customGroup = { isDefaultVoyage: false };
+
+    expect(canCreateChatPoll("proprietaire", voyage)).toBe(true);
+    expect(canCreateChatPoll("utilisateur", voyage)).toBe(false);
+    expect(canCreateChatPoll("visiteur", voyage)).toBe(false);
+    expect(canCreateChatPoll("proprietaire", customGroup)).toBe(false);
+  });
+});
+
+describe("sanitizePollQuestion / sanitizePollLibreAnswer", () => {
+  it("trims and caps the question at CHAT_MESSAGE_MAX_LENGTH", () => {
+    expect(sanitizePollQuestion("  On part tôt demain ?  ")).toBe("On part tôt demain ?");
+    const long = "a".repeat(CHAT_MESSAGE_MAX_LENGTH + 10);
+    expect(sanitizePollQuestion(long)).toHaveLength(CHAT_MESSAGE_MAX_LENGTH);
+  });
+
+  it("trims and caps a libre answer at POLL_LIBRE_ANSWER_MAX_LENGTH", () => {
+    expect(sanitizePollLibreAnswer("  Fatigué  ")).toBe("Fatigué");
+    const long = "a".repeat(POLL_LIBRE_ANSWER_MAX_LENGTH + 10);
+    expect(sanitizePollLibreAnswer(long)).toHaveLength(POLL_LIBRE_ANSWER_MAX_LENGTH);
+  });
+});
+
+describe("buildChatPollMessage", () => {
+  it("builds a poll message with an empty text and pollClosed starting at false", () => {
+    const message = buildChatPollMessage(
+      VOYAGE_CONVERSATION_ID,
+      "oui_non",
+      "On part tôt demain ?",
+      "p1",
+      ORGANISATEUR_LABEL,
+      "uid-1",
+      1000
+    );
+
+    expect(message.kind).toBe("poll");
+    expect(message.text).toBe("");
+    expect(message.pollType).toBe("oui_non");
+    expect(message.pollQuestion).toBe("On part tôt demain ?");
+    expect(message.pollClosed).toBe(false);
+    expect(message.messageId).toBe("p1-1000");
+  });
+});
+
+describe("canRespondToChatPoll", () => {
+  it("allows responding while the poll is open, denies once closed", () => {
+    expect(canRespondToChatPoll({ pollClosed: false })).toBe(true);
+    expect(canRespondToChatPoll({ pollClosed: undefined })).toBe(true);
+    expect(canRespondToChatPoll({ pollClosed: true })).toBe(false);
+  });
+});
+
+describe("isChatPollAnswerValueValid", () => {
+  it("only accepts the two fixed options for oui_non", () => {
+    expect(isChatPollAnswerValueValid("oui_non", "oui")).toBe(true);
+    expect(isChatPollAnswerValueValid("oui_non", "non")).toBe(true);
+    expect(isChatPollAnswerValueValid("oui_non", "peut-être")).toBe(false);
+    expect(isChatPollAnswerValueValid("oui_non", "")).toBe(false);
+  });
+
+  it("accepts any non-empty text within the limit for libre", () => {
+    expect(isChatPollAnswerValueValid("libre", "Fatigué mais content")).toBe(true);
+    expect(isChatPollAnswerValueValid("libre", "")).toBe(false);
+    expect(isChatPollAnswerValueValid("libre", "a".repeat(POLL_LIBRE_ANSWER_MAX_LENGTH + 1))).toBe(false);
+    expect(isChatPollAnswerValueValid("libre", "a".repeat(POLL_LIBRE_ANSWER_MAX_LENGTH))).toBe(true);
+  });
+});
+
+describe("buildChatPollResponse / getChatPollResponseForProfile", () => {
+  it("builds a response and retrieves it by profileId", () => {
+    const response = buildChatPollResponse("p2", "oui", "uid-2", 500);
+    const responses: CloudChatPollResponsesByProfile = { p2: response };
+
+    expect(getChatPollResponseForProfile(responses, "p2")).toEqual(response);
+    expect(getChatPollResponseForProfile(responses, "p3")).toBeUndefined();
+    expect(getChatPollResponseForProfile(undefined, "p2")).toBeUndefined();
+  });
+});
+
+describe("computeOuiNonPollTally", () => {
+  it("counts oui and non answers separately, ignoring libre-shaped values", () => {
+    const responses: CloudChatPollResponsesByProfile = {
+      p1: buildChatPollResponse("p1", "oui", "uid-1", 1),
+      p2: buildChatPollResponse("p2", "non", "uid-2", 2),
+      p3: buildChatPollResponse("p3", "oui", "uid-3", 3),
+    };
+
+    expect(computeOuiNonPollTally(responses)).toEqual({ oui: 2, non: 1 });
+  });
+
+  it("returns zero counts when there are no responses yet", () => {
+    expect(computeOuiNonPollTally(undefined)).toEqual({ oui: 0, non: 0 });
+    expect(computeOuiNonPollTally({})).toEqual({ oui: 0, non: 0 });
+  });
+});
+
+describe("chatMessagePreviewSourceText", () => {
+  it("uses the raw text for a text message", () => {
+    expect(chatMessagePreviewSourceText({ kind: "text", text: "Salut !", pollQuestion: undefined })).toBe(
+      "Salut !"
+    );
+  });
+
+  it("uses the poll question, prefixed, for a poll message", () => {
+    expect(
+      chatMessagePreviewSourceText({ kind: "poll", text: "", pollQuestion: "On part tôt demain ?" })
+    ).toBe("📊 On part tôt demain ?");
+  });
+});
+
+describe("POLL_OUI_NON_OPTIONS / POLL_BUBBLE_LABEL", () => {
+  it("exposes exactly the two fixed options, in this order", () => {
+    expect(POLL_OUI_NON_OPTIONS).toEqual(["oui", "non"]);
+  });
+
+  it("uses the familial 'Organisateur' wording, never an administrative one", () => {
+    expect(POLL_BUBBLE_LABEL).toBe("Sondage de l'Organisateur");
   });
 });

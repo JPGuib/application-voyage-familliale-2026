@@ -24,12 +24,14 @@ vi.mock("firebase/database", async (importOriginal) => {
 });
 
 import {
+  closeChatPoll,
   ensureVoyageConversationMembers,
   observeChatMessages,
   sendChatMessage,
+  submitChatPollResponse,
 } from "./cloudSyncProvider";
 import { VOYAGE_CONVERSATION_NAME, VOYAGE_CONVERSATION_ID } from "../app/chat";
-import type { CloudChatMessage } from "../types/cloud";
+import type { CloudChatMessage, CloudChatPollResponse } from "../types/cloud";
 
 const db = {} as import("firebase/database").Database;
 const familyId = "famille-test";
@@ -186,5 +188,110 @@ describe("observeChatMessages (story 28.1)", () => {
         createdAt: 10,
       },
     });
+  });
+
+  // Story 28.3 : un sondage se parse avec text: "" et ses champs pollXxx,
+  // y compris les réponses nominatives déjà présentes.
+  it("parses a poll message along with its pollResponses", () => {
+    const onSnapshot = vi.fn();
+
+    observeChatMessages(db, familyId, VOYAGE_CONVERSATION_ID, 50, onSnapshot);
+
+    const [, onValueCallback] = mockOnValue.mock.calls[0];
+    onValueCallback({
+      val: () => ({
+        "poll-1": {
+          authorProfileId: "p1",
+          authorSurnameSnapshot: "Organisateur",
+          authorUid: "uid-1",
+          kind: "poll",
+          pollType: "oui_non",
+          pollQuestion: "On part tôt demain ?",
+          pollClosed: false,
+          createdAt: 20,
+          pollResponses: {
+            p2: { profileId: "p2", value: "oui", updatedAt: 30, authorUid: "uid-2" },
+            // Réponse malformée (profileId incohérent) : ignorée plutôt que
+            // de faire planter tout l'écran, même esprit que les autres
+            // parseXxx défensifs de ce fichier.
+            p3: { profileId: "autre", value: "non", updatedAt: 40, authorUid: "uid-3" },
+          },
+        },
+      }),
+    });
+
+    expect(onSnapshot).toHaveBeenCalledWith({
+      "poll-1": {
+        messageId: "poll-1",
+        conversationId: VOYAGE_CONVERSATION_ID,
+        authorProfileId: "p1",
+        authorSurnameSnapshot: "Organisateur",
+        authorUid: "uid-1",
+        kind: "poll",
+        text: "",
+        createdAt: 20,
+        pollType: "oui_non",
+        pollQuestion: "On part tôt demain ?",
+        pollClosed: false,
+        pollResponses: {
+          p2: { profileId: "p2", value: "oui", updatedAt: 30, authorUid: "uid-2" },
+        },
+      },
+    });
+  });
+
+  it("ignores a poll message missing its pollType or pollQuestion", () => {
+    const onSnapshot = vi.fn();
+
+    observeChatMessages(db, familyId, VOYAGE_CONVERSATION_ID, 50, onSnapshot);
+
+    const [, onValueCallback] = mockOnValue.mock.calls[0];
+    onValueCallback({
+      val: () => ({
+        "poll-broken": {
+          authorProfileId: "p1",
+          authorSurnameSnapshot: "Organisateur",
+          authorUid: "uid-1",
+          kind: "poll",
+          pollQuestion: "Question sans type",
+          createdAt: 20,
+        },
+      }),
+    });
+
+    expect(onSnapshot).toHaveBeenCalledWith({});
+  });
+});
+
+describe("submitChatPollResponse (story 28.3)", () => {
+  it("writes the response under chatMessages/{familyId}/{conversationId}/{messageId}/pollResponses/{profileId}", async () => {
+    const response: CloudChatPollResponse = {
+      profileId: "p2",
+      value: "oui",
+      updatedAt: 500,
+      authorUid: "uid-2",
+    };
+
+    await submitChatPollResponse(db, familyId, VOYAGE_CONVERSATION_ID, "poll-1", response);
+
+    expect(mockSet).toHaveBeenCalledOnce();
+    const [target, value] = mockSet.mock.calls[0];
+    expect(target).toEqual({
+      path: `chatMessages/${familyId}/${VOYAGE_CONVERSATION_ID}/poll-1/pollResponses/p2`,
+    });
+    expect(value).toEqual(response);
+  });
+});
+
+describe("closeChatPoll (story 28.3)", () => {
+  it("sets pollClosed to true", async () => {
+    await closeChatPoll(db, familyId, VOYAGE_CONVERSATION_ID, "poll-1");
+
+    expect(mockSet).toHaveBeenCalledOnce();
+    const [target, value] = mockSet.mock.calls[0];
+    expect(target).toEqual({
+      path: `chatMessages/${familyId}/${VOYAGE_CONVERSATION_ID}/poll-1/pollClosed`,
+    });
+    expect(value).toBe(true);
   });
 });

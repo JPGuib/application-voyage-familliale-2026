@@ -140,8 +140,8 @@
         "$conversationId": {
           ".write": false,
           "$messageId": {
-            ".write": "auth != null && !data.exists() && newData.val() !== null && newData.child('authorUid').val() === auth.uid && root.child('families').child($familyId).child('profiles').child(newData.child('authorProfileId').val()).child('memberUids').child(auth.uid).val() === true && root.child('chatConversations').child($familyId).child($conversationId).child('memberProfileIds').child(newData.child('authorProfileId').val()).val() === true",
-            ".validate": "newData.hasChildren(['messageId','conversationId','authorProfileId','authorSurnameSnapshot','authorUid','kind','text','createdAt']) && newData.child('messageId').isString() && newData.child('messageId').val() === $messageId && newData.child('conversationId').isString() && newData.child('conversationId').val() === $conversationId && newData.child('authorProfileId').isString() && newData.child('authorProfileId').val().length > 0 && newData.child('authorSurnameSnapshot').isString() && newData.child('authorSurnameSnapshot').val().length > 0 && newData.child('authorSurnameSnapshot').val().length <= 80 && newData.child('authorUid').isString() && newData.child('authorUid').val().length > 0 && newData.child('kind').val() === 'text' && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 2000 && newData.child('createdAt').isNumber()",
+            ".write": "auth != null && !data.exists() && newData.val() !== null && newData.child('authorUid').val() === auth.uid && root.child('families').child($familyId).child('profiles').child(newData.child('authorProfileId').val()).child('memberUids').child(auth.uid).val() === true && root.child('chatConversations').child($familyId).child($conversationId).child('memberProfileIds').child(newData.child('authorProfileId').val()).val() === true && (newData.child('kind').val() !== 'poll' || ($conversationId === 'voyage' && root.child('families').child($familyId).child('profiles').child(newData.child('authorProfileId').val()).child('role').val() === 'proprietaire'))",
+            ".validate": "newData.hasChildren(['messageId','conversationId','authorProfileId','authorSurnameSnapshot','authorUid','kind','createdAt']) && newData.child('messageId').isString() && newData.child('messageId').val() === $messageId && newData.child('conversationId').isString() && newData.child('conversationId').val() === $conversationId && newData.child('authorProfileId').isString() && newData.child('authorProfileId').val().length > 0 && newData.child('authorSurnameSnapshot').isString() && newData.child('authorSurnameSnapshot').val().length > 0 && newData.child('authorSurnameSnapshot').val().length <= 80 && newData.child('authorUid').isString() && newData.child('authorUid').val().length > 0 && newData.child('createdAt').isNumber() && ((newData.child('kind').val() === 'text' && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 2000 && !newData.hasChild('pollType') && !newData.hasChild('pollQuestion') && !newData.hasChild('pollClosed') && !newData.hasChild('pollResponses')) || (newData.child('kind').val() === 'poll' && (newData.child('pollType').val() === 'oui_non' || newData.child('pollType').val() === 'libre') && newData.child('pollQuestion').isString() && newData.child('pollQuestion').val().length > 0 && newData.child('pollQuestion').val().length <= 2000 && newData.child('pollClosed').isBoolean() && !newData.hasChild('text')))",
             "messageId": {},
             "conversationId": {},
             "authorProfileId": {},
@@ -150,6 +150,25 @@
             "kind": {},
             "text": {},
             "createdAt": {},
+            "pollType": {},
+            "pollQuestion": {},
+            "pollClosed": {
+              ".write": "auth != null && data.exists() && root.child('chatMessages').child($familyId).child($conversationId).child($messageId).child('kind').val() === 'poll' && root.child('ownerMembers').child($familyId).child(auth.uid).val() === true",
+              ".validate": "newData.isBoolean()"
+            },
+            "pollResponses": {
+              "$profileId": {
+                ".write": "auth != null && root.child('chatMessages').child($familyId).child($conversationId).child($messageId).child('kind').val() === 'poll' && root.child('chatMessages').child($familyId).child($conversationId).child($messageId).child('pollClosed').val() !== true && root.child('families').child($familyId).child('profiles').child($profileId).child('memberUids').child(auth.uid).val() === true && root.child('chatConversations').child($familyId).child($conversationId).child('memberProfileIds').child($profileId).val() === true",
+                ".validate": "newData.hasChildren(['profileId','value','updatedAt','authorUid']) && newData.child('profileId').isString() && newData.child('profileId').val() === $profileId && newData.child('value').isString() && newData.child('value').val().length > 0 && (root.child('chatMessages').child($familyId).child($conversationId).child($messageId).child('pollType').val() === 'oui_non' ? (newData.child('value').val() === 'oui' || newData.child('value').val() === 'non') : newData.child('value').val().length <= 100) && newData.child('updatedAt').isNumber() && newData.child('authorUid').isString() && newData.child('authorUid').val() === auth.uid",
+                "profileId": {},
+                "value": {},
+                "updatedAt": {},
+                "authorUid": {},
+                "$other": {
+                  ".validate": false
+                }
+              }
+            },
             "$other": {
               ".validate": false
             }

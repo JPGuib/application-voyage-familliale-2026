@@ -3,6 +3,7 @@ import { type Role, type SharedFamilyState } from "../app/owner-policy";
 import type { ChatMemberProfile } from "../app/chat";
 import {
   claimProfileRole,
+  closeChatPoll,
   createChatConversation,
   deleteProfileFromCloud,
   deleteContentVisitLogEntry,
@@ -23,6 +24,7 @@ import {
   observePlaceVisitLog,
   renameChatConversation,
   sendChatMessage,
+  submitChatPollResponse,
   pushDestinationSurveyVoteOnly,
   pushCloudSnapshot,
   pushFamilyPhaseChange,
@@ -61,6 +63,7 @@ import type {
   CloudChatConversationsMap,
   CloudChatMessage,
   CloudChatMessagesLog,
+  CloudChatPollResponse,
   CloudChatReadStateMap,
   CloudDestinationSurveyVote,
   CloudDocumentPhotoMap,
@@ -1238,6 +1241,39 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  // Sondages du propriétaire dans "Voyage" (story 28.3) : la création du
+  // sondage réutilise sendChatMessageToCloud ci-dessus (c'est un simple
+  // message d'un kind particulier), seules la réponse et la clôture ont
+  // besoin d'un chemin d'écriture dédié.
+  const submitChatPollResponseInCloud = useCallback(
+    async (
+      conversationId: string,
+      messageId: string,
+      response: CloudChatPollResponse
+    ): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await submitChatPollResponse(database, familyId, conversationId, messageId, response);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  const closeChatPollInCloud = useCallback(
+    async (conversationId: string, messageId: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await ensureOwnerMembership(database, familyId, cloudUserUid);
+      await closeChatPoll(database, familyId, conversationId, messageId);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
@@ -1268,6 +1304,8 @@ export function useCloudSync() {
     leaveChatConversation: leaveChatConversationInCloud,
     subscribeToChatReadState,
     markChatConversationRead: markChatConversationReadInCloud,
+    submitChatPollResponse: submitChatPollResponseInCloud,
+    closeChatPoll: closeChatPollInCloud,
     setPlaceDayOverride,
     setContentOverride,
     setTripStartDate,

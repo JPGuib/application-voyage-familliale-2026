@@ -223,20 +223,48 @@ export type CloudChatConversation = {
 
 export type CloudChatConversationsMap = Record<string, CloudChatConversation>;
 
+// Sondage du propriétaire dans la conversation "Voyage" (story 28.3) :
+// question fermée (oui/non) ou libre ("humeur"), résultats nominatifs — voir
+// docs/specs-stories/epic-28/28.3-sondages-proprietaire.md.
+export type ChatPollType = "oui_non" | "libre";
+
+// Une entrée par profil ayant répondu (une seule réponse par profil, la
+// nouvelle remplace la précédente tant que le sondage n'est pas clos) :
+// value = "oui" | "non" pour pollType "oui_non", texte libre sinon. Stockée
+// sous chatMessages/$familyId/$conversationId/$messageId/pollResponses,
+// donc chargée avec le message lui-même (voir observeChatMessages), pas
+// besoin d'un abonnement séparé.
+export type CloudChatPollResponse = {
+  profileId: string;
+  value: string;
+  updatedAt: number;
+  authorUid: string;
+};
+
+export type CloudChatPollResponsesByProfile = Record<string, CloudChatPollResponse>; // profileId -> réponse
+
 // authorSurnameSnapshot est figé à l'envoi : "Organisateur" si l'auteur est
 // propriétaire au moment de l'envoi (cf. resolveChatAuthorSnapshotLabel dans
 // chat.ts), sinon son surnom à cet instant — ni l'un ni l'autre ne change
 // rétroactivement si le rôle ou le surnom de l'auteur change plus tard
 // (même logique que CloudPlaceComment/CloudCarnetVisiteEntry ci-dessus).
+// kind "poll" (story 28.3) : text reste "" et n'est jamais affiché pour ce
+// kind ; pollType/pollQuestion/pollClosed sont alors toujours présents (cf.
+// buildChatPollMessage dans chat.ts), pollResponses absent tant que personne
+// n'a répondu.
 export type CloudChatMessage = {
   messageId: string;
   conversationId: string;
   authorProfileId: string;
   authorSurnameSnapshot: string;
   authorUid: string;
-  kind: "text";
+  kind: "text" | "poll";
   text: string;
   createdAt: number;
+  pollType?: ChatPollType;
+  pollQuestion?: string;
+  pollClosed?: boolean;
+  pollResponses?: CloudChatPollResponsesByProfile;
 };
 
 export type CloudChatMessagesLog = Record<string, CloudChatMessage>;

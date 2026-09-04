@@ -445,3 +445,218 @@ describe("App chat unread badge (story 28.4)", () => {
     });
   });
 });
+
+describe("App chat poll integration (story 28.3)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    cloudSyncMock.mockReset();
+  });
+
+  it("lets the owner create a poll, which is only offered to the owner", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+    setupSessionToken("p1");
+
+    const sendChatMessageMock = vi.fn().mockResolvedValue(undefined);
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-owner",
+      cloudSnapshot: makeSnapshot("proprietaire", "during"),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      subscribeToChatMessages: vi.fn(() => () => {}),
+      sendChatMessage: sendChatMessageMock,
+      ensureVoyageConversation: vi.fn().mockResolvedValue(undefined),
+      subscribeToChatConversations: makeSubscribeToChatConversationsMock(),
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    await openVoyageConversation();
+
+    fireEvent.click(screen.getByRole("button", { name: "Créer un sondage" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Créer un sondage" })).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText(/On part tôt demain/i), {
+      target: { value: "On part tôt demain ?" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Créer le sondage" }));
+
+    await waitFor(() => {
+      expect(sendChatMessageMock).toHaveBeenCalledOnce();
+    });
+
+    const sentPoll = sendChatMessageMock.mock.calls[0][0];
+    expect(sentPoll.kind).toBe("poll");
+    expect(sentPoll.pollType).toBe("oui_non");
+    expect(sentPoll.pollQuestion).toBe("On part tôt demain ?");
+    expect(sentPoll.pollClosed).toBe(false);
+    expect(sentPoll.conversationId).toBe("voyage");
+  });
+
+  it("does not offer poll creation to a non-owner", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+    setupSessionToken("p2");
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-user",
+      cloudSnapshot: makeSnapshot("utilisateur", "during"),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      subscribeToChatMessages: vi.fn(() => () => {}),
+      sendChatMessage: vi.fn().mockResolvedValue(undefined),
+      ensureVoyageConversation: vi.fn().mockResolvedValue(undefined),
+      subscribeToChatConversations: makeSubscribeToChatConversationsMock(),
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    await openVoyageConversation();
+
+    expect(screen.queryByRole("button", { name: "Créer un sondage" })).not.toBeInTheDocument();
+  });
+
+  it("lets a member answer an open oui_non poll, and shows the nominative tally", async () => {
+    localStorage.setItem("jp-active-profile-id", "p2");
+    setupSessionToken("p2");
+
+    const submitChatPollResponseMock = vi.fn().mockResolvedValue(undefined);
+    const subscribeToChatMessagesMock = vi.fn(
+      (_conversationId: string, _limit: number, onSnapshot: (messages: unknown) => void) => {
+        onSnapshot({
+          "poll-1": {
+            messageId: "poll-1",
+            conversationId: "voyage",
+            authorProfileId: "p1",
+            authorSurnameSnapshot: "Organisateur",
+            authorUid: "actor-owner",
+            kind: "poll",
+            text: "",
+            pollType: "oui_non",
+            pollQuestion: "On part tôt demain ?",
+            pollClosed: false,
+            createdAt: Date.now(),
+            pollResponses: {
+              p1: { profileId: "p1", value: "oui", updatedAt: 10, authorUid: "actor-owner" },
+            },
+          },
+        });
+        return () => {};
+      }
+    );
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-user",
+      cloudSnapshot: makeSnapshot("utilisateur", "during"),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      subscribeToChatMessages: subscribeToChatMessagesMock,
+      sendChatMessage: vi.fn().mockResolvedValue(undefined),
+      ensureVoyageConversation: vi.fn().mockResolvedValue(undefined),
+      subscribeToChatConversations: makeSubscribeToChatConversationsMock(),
+      submitChatPollResponse: submitChatPollResponseMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    await openVoyageConversation();
+
+    expect(screen.getByText("On part tôt demain ?")).toBeInTheDocument();
+    expect(screen.getByText("Oui : 1 · Non : 0")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Non" }));
+
+    await waitFor(() => {
+      expect(submitChatPollResponseMock).toHaveBeenCalledOnce();
+    });
+
+    expect(submitChatPollResponseMock).toHaveBeenCalledWith(
+      "voyage",
+      "poll-1",
+      expect.objectContaining({ profileId: "p2", value: "non", authorUid: "actor-user" })
+    );
+  });
+
+  it("lets the owner close a poll, hiding the response controls for everyone", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+    setupSessionToken("p1");
+
+    const closeChatPollMock = vi.fn().mockResolvedValue(undefined);
+    const subscribeToChatMessagesMock = vi.fn(
+      (_conversationId: string, _limit: number, onSnapshot: (messages: unknown) => void) => {
+        onSnapshot({
+          "poll-1": {
+            messageId: "poll-1",
+            conversationId: "voyage",
+            authorProfileId: "p1",
+            authorSurnameSnapshot: "Organisateur",
+            authorUid: "actor-owner",
+            kind: "poll",
+            text: "",
+            pollType: "oui_non",
+            pollQuestion: "On part tôt demain ?",
+            pollClosed: false,
+            createdAt: Date.now(),
+          },
+        });
+        return () => {};
+      }
+    );
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-owner",
+      cloudSnapshot: makeSnapshot("proprietaire", "during"),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      subscribeToChatMessages: subscribeToChatMessagesMock,
+      sendChatMessage: vi.fn().mockResolvedValue(undefined),
+      ensureVoyageConversation: vi.fn().mockResolvedValue(undefined),
+      subscribeToChatConversations: makeSubscribeToChatConversationsMock(),
+      closeChatPoll: closeChatPollMock,
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    await openVoyageConversation();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clôturer le sondage" }));
+
+    await waitFor(() => {
+      expect(closeChatPollMock).toHaveBeenCalledWith("voyage", "poll-1");
+    });
+  });
+});
