@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, Send } from "lucide-react";
+import { ChevronLeft, Send, Smile } from "lucide-react";
 import {
   CHAT_MESSAGE_MAX_LENGTH,
   formatChatMessageTimestamp,
@@ -10,6 +10,16 @@ import type { CloudChatMessagesLog } from "../types/cloud";
 
 const INITIAL_MESSAGE_LIMIT = 50;
 const LOAD_MORE_STEP = 50;
+
+// Sélecteur d'emoji intégré à l'app (story 28.1 : "texte + emoji Unicode via
+// le clavier natif OU un sélecteur d'emoji dans l'app"), volontairement une
+// liste courte et curatée plutôt qu'un picker exhaustif à catégories.
+const QUICK_EMOJIS = [
+  "😀", "😂", "🥰", "😍", "😎", "😢", "😮", "😡",
+  "🤔", "😴", "🥳", "👍", "👎", "🙏", "👏", "🙌",
+  "❤️", "🔥", "🎉", "✈️", "🌞", "🌙", "☕", "🍕",
+  "🏖️", "📸", "🗺️", "🚗", "⛱️", "🥵", "🥶", "💤",
+];
 
 function initialLetter(label: string): string {
   const trimmed = label.trim();
@@ -44,7 +54,9 @@ export function ChatScreen({
   const [draftText, setDraftText] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     if (!cloudEnabled) {
@@ -78,6 +90,21 @@ export function ChatScreen({
       anchor.scrollIntoView({ block: "end" });
     }
   }, [sortedMessages.length]);
+
+  const insertEmoji = (emoji: string) => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? draftText.length;
+    const end = textarea?.selectionEnd ?? draftText.length;
+    const next = (draftText.slice(0, start) + emoji + draftText.slice(end)).slice(0, CHAT_MESSAGE_MAX_LENGTH);
+    setDraftText(next);
+    setShowEmojiPicker(false);
+
+    const cursor = start + emoji.length;
+    requestAnimationFrame(() => {
+      textarea?.focus();
+      textarea?.setSelectionRange(cursor, cursor);
+    });
+  };
 
   const handleSend = async () => {
     const trimmed = draftText.trim();
@@ -155,11 +182,9 @@ export function ChatScreen({
                   )}
 
                   <div className={`flex max-w-[75%] flex-col gap-1 ${isOwnGroup ? "items-end" : "items-start"}`}>
-                    {!isOwnGroup && (
-                      <span className="px-1 text-xs font-bold text-muted-foreground">
-                        {first.authorSurnameSnapshot}
-                      </span>
-                    )}
+                    <span className="px-1 text-xs font-bold text-muted-foreground">
+                      {first.authorSurnameSnapshot}
+                    </span>
 
                     {group.map((message) => {
                       const { time, dateLabel } = formatChatMessageTimestamp(message.createdAt);
@@ -192,10 +217,39 @@ export function ChatScreen({
 
           <div className="flex-shrink-0 border-t border-border bg-background p-3">
             {sendError && <p className="mb-2 text-xs font-semibold text-destructive">{sendError}</p>}
+
+            {showEmojiPicker && (
+              <div className="mb-2 grid grid-cols-8 gap-1 rounded-2xl border border-border bg-card p-2">
+                {QUICK_EMOJIS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => insertEmoji(emoji)}
+                    className="flex h-9 items-center justify-center rounded-lg text-lg hover:bg-muted"
+                    aria-label={`Ajouter ${emoji}`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="flex items-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker((current) => !current)}
+                className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-border ${
+                  showEmojiPicker ? "bg-muted text-foreground" : "text-muted-foreground"
+                }`}
+                aria-label="Choisir un emoji"
+              >
+                <Smile size={18} />
+              </button>
               <textarea
+                ref={textareaRef}
                 value={draftText}
                 onChange={(event) => setDraftText(event.target.value.slice(0, CHAT_MESSAGE_MAX_LENGTH))}
+                onFocus={() => setShowEmojiPicker(false)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();

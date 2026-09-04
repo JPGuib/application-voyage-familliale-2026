@@ -107,6 +107,16 @@ describe("App chat integration (story 28.1)", () => {
             authorUid: "actor-user",
             kind: "text",
             text: "Vivement le départ !",
+            createdAt: Date.now() - 1000,
+          },
+          "m2": {
+            messageId: "m2",
+            conversationId: "voyage",
+            authorProfileId: "p1",
+            authorSurnameSnapshot: "Organisateur",
+            authorUid: "actor-owner",
+            kind: "text",
+            text: "Hâte d'y être !",
             createdAt: Date.now(),
           },
         });
@@ -141,7 +151,16 @@ describe("App chat integration (story 28.1)", () => {
     });
 
     expect(screen.getByText("Vivement le départ !")).toBeInTheDocument();
-    expect(screen.getByText("Leo")).toBeInTheDocument();
+    expect(screen.getByText("Hâte d'y être !")).toBeInTheDocument();
+
+    // Story 28.1 feedback (test réel de Jean-Philippe) : le surnom (ou
+    // "Organisateur") doit être visible au-dessus de CHAQUE bulle, pas
+    // seulement celles des autres, pour qu'on distingue toujours qui a
+    // écrit quoi. On vérifie aussi l'alignement gauche/droite en même temps.
+    const otherLabel = screen.getByText("Leo");
+    const ownLabel = screen.getByText("Organisateur");
+    expect(otherLabel.closest(".items-start")).not.toBeNull();
+    expect(ownLabel.closest(".items-end")).not.toBeNull();
 
     const textarea = screen.getByPlaceholderText(/Écrire un message/i);
     fireEvent.change(textarea, { target: { value: "Bonne préparation à tous !" } });
@@ -156,6 +175,45 @@ describe("App chat integration (story 28.1)", () => {
     expect(sentMessage.authorProfileId).toBe("p1");
     expect(sentMessage.text).toBe("Bonne préparation à tous !");
     expect(sentMessage.conversationId).toBe("voyage");
+  });
+
+  it("lets the owner insert an emoji from the built-in picker into the draft message", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+    setupSessionToken("p1");
+
+    cloudSyncMock.mockReturnValue({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-owner",
+      cloudSnapshot: makeSnapshot("proprietaire", "during"),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      subscribeToChatMessages: vi.fn(() => () => {}),
+      sendChatMessage: vi.fn().mockResolvedValue(undefined),
+      ensureVoyageConversation: vi.fn().mockResolvedValue(undefined),
+      familyId: "famille-voyage-2026",
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Chat" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Voyage" })).toBeInTheDocument();
+    });
+
+    const textarea = screen.getByPlaceholderText(/Écrire un message/i) as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: "On part " } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Choisir un emoji" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ajouter ✈️" }));
+
+    expect(textarea.value).toBe("On part ✈️");
   });
 
   it("labels a non-owner's sent message with their own surname, not Organisateur", async () => {
