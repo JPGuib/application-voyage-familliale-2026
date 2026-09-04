@@ -21,11 +21,6 @@ const QUICK_EMOJIS = [
   "🏖️", "📸", "🗺️", "🚗", "⛱️", "🥵", "🥶", "💤",
 ];
 
-function initialLetter(label: string): string {
-  const trimmed = label.trim();
-  return trimmed.length > 0 ? trimmed[0].toUpperCase() : "?";
-}
-
 export function ChatScreen({
   conversationId,
   conversationName,
@@ -166,6 +161,11 @@ export function ChatScreen({
               </p>
             )}
 
+            {/* Pas d'avatar/photo par groupe (retiré le 2026-09-04, retour de
+                Jean-Philippe) : il n'y a pas de photo de profil dans l'app
+                aujourd'hui, une simple initiale sans visage n'apportait rien.
+                À réintroduire ici si une photo de profil par utilisateur est
+                ajoutée un jour dans les paramètres. */}
             {messageGroups.map((group) => {
               const first = group[0];
               const isOwnGroup = first.authorProfileId === currentProfileId;
@@ -173,14 +173,8 @@ export function ChatScreen({
               return (
                 <div
                   key={first.messageId}
-                  className={`flex items-start gap-2 ${isOwnGroup ? "flex-row-reverse" : ""}`}
+                  className={`flex items-start ${isOwnGroup ? "justify-end" : "justify-start"}`}
                 >
-                  {!isOwnGroup && (
-                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted text-xs font-black text-foreground">
-                      {initialLetter(first.authorSurnameSnapshot)}
-                    </div>
-                  )}
-
                   <div className={`flex max-w-[75%] flex-col gap-1 ${isOwnGroup ? "items-end" : "items-start"}`}>
                     <span className="px-1 text-xs font-bold text-muted-foreground">
                       {first.authorSurnameSnapshot}
