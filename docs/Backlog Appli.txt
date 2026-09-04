@@ -28,9 +28,6 @@ l'application se reconnecte au cloud et on perd ce qu'on faisait. Voir si possib
 * POST-SEJOUR - PSJ2 - créer un album souvenir
 * POST-SEJOUR - PSJ3 - Pouvoir visionner les vidéos voyage mystere
 
-* CHAT/NETWORKING - CN1 - messagerie / chat en ligne => spec prete, voir docs/specs-stories/epic-28 (stories 28.1/28.2/28.4)
-* CHAT/NETWORKING - CN2 - sondage quotidien => spec prete, voir docs/specs-stories/epic-28 (story 28.3)
-
 * AGENDA - AG1 - agenda interactif pour que chacun puisse mettre les horaires sur l'agenda pour peremttre de dire heure de reveil ...
 il faudra distinguer le planning de visite, du planning du groupe
 
