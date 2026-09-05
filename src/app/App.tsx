@@ -18056,6 +18056,7 @@ const resetForProfileSwitch = () => {
             cloudEnabled={cloudEnabled}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
+            lastDefinedDay={lastDefinedDay}
             onBack={() => goToScreen("dashboard")}
             subscribeToGroupInfoItems={subscribeToGroupInfoItems}
             onAddItem={handleAddGroupInfoItem}
@@ -18581,6 +18582,7 @@ const resetForProfileSwitch = () => {
             cloudEnabled={cloudEnabled}
             currentDay={currentDay}
             tripStartDate={tripStartDate}
+            lastDefinedDay={lastDefinedDay}
             onBack={() => goToScreen("dashboard")}
             subscribeToGroupInfoItems={subscribeToGroupInfoItems}
             onAddItem={handleAddGroupInfoItem}

@@ -25,6 +25,8 @@ function GroupInfoItemForm({
   initialText,
   isOwner,
   submitLabel,
+  tripStartDate,
+  lastDefinedDay,
   onSubmit,
   onCancel,
 }: {
@@ -33,6 +35,12 @@ function GroupInfoItemForm({
   initialText: string;
   isOwner: boolean;
   submitLabel: string;
+  // Bornes des jours réels du voyage (date de début + dernier jour défini
+  // par le contenu de l'itinéraire, cf. lastDefinedDay dans App.tsx) —
+  // retour de Jean-Philippe (2026-09-05) : le sélecteur doit refléter les
+  // vrais jours du séjour, pas un simple nombre libre.
+  tripStartDate: string | null;
+  lastDefinedDay: number | null;
   onSubmit: (day: number, time: string | null, text: string) => Promise<void>;
   onCancel?: () => void;
 }) {
@@ -61,14 +69,21 @@ function GroupInfoItemForm({
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
-        <input
-          type="number"
-          min={1}
+        <select
           value={day}
-          onChange={(event) => setDay(Math.max(1, Number(event.target.value) || 1))}
+          onChange={(event) => setDay(Number(event.target.value))}
           aria-label="Jour"
-          className="w-20 rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground outline-none"
-        />
+          className="rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground outline-none"
+        >
+          {Array.from(
+            { length: Math.max(lastDefinedDay ?? day, 1) },
+            (_, index) => index + 1
+          ).map((dayOption) => (
+            <option key={dayOption} value={dayOption}>
+              {formatTripDayLabel(dayOption, tripStartDate)}
+            </option>
+          ))}
+        </select>
         <input
           value={time}
           onChange={(event) => setTime(event.target.value.slice(0, GROUP_INFO_TIME_MAX_LENGTH))}
@@ -120,6 +135,8 @@ function GroupInfoItemCard({
   item,
   currentProfileId,
   isOwner,
+  tripStartDate,
+  lastDefinedDay,
   onUpdateItem,
   onDeleteItem,
   onSetPinned,
@@ -128,6 +145,8 @@ function GroupInfoItemCard({
   item: CloudGroupInfoItem;
   currentProfileId: string;
   isOwner: boolean;
+  tripStartDate: string | null;
+  lastDefinedDay: number | null;
   onUpdateItem: (itemId: string, day: number, time: string | null, text: string) => Promise<void>;
   onDeleteItem: (itemId: string) => Promise<void>;
   onSetPinned: (itemId: string, pinned: boolean) => Promise<void>;
@@ -151,6 +170,8 @@ function GroupInfoItemCard({
           initialTime={item.time}
           initialText={item.text}
           isOwner={isOwner}
+          tripStartDate={tripStartDate}
+          lastDefinedDay={lastDefinedDay}
           submitLabel="Enregistrer"
           onCancel={() => setEditing(false)}
           onSubmit={async (day, time, text) => {
@@ -253,6 +274,7 @@ export function GroupInfoScreen({
   cloudEnabled,
   currentDay,
   tripStartDate,
+  lastDefinedDay,
   onBack,
   subscribeToGroupInfoItems,
   onAddItem,
@@ -267,6 +289,7 @@ export function GroupInfoScreen({
   cloudEnabled: boolean;
   currentDay: number;
   tripStartDate: string | null;
+  lastDefinedDay: number | null;
   onBack: () => void;
   subscribeToGroupInfoItems: (
     onSnapshot: (items: CloudGroupInfoItemsLog) => void,
@@ -332,6 +355,8 @@ export function GroupInfoScreen({
       item={item}
       currentProfileId={currentProfileId}
       isOwner={isOwner}
+      tripStartDate={tripStartDate}
+      lastDefinedDay={lastDefinedDay}
       onUpdateItem={onUpdateItem}
       onDeleteItem={onDeleteItem}
       onSetPinned={onSetPinned}
@@ -369,6 +394,8 @@ export function GroupInfoScreen({
                 initialTime={null}
                 initialText=""
                 isOwner={isOwner}
+                tripStartDate={tripStartDate}
+                lastDefinedDay={lastDefinedDay}
                 submitLabel="Publier"
                 onCancel={() => setShowComposer(false)}
                 onSubmit={async (day, time, text) => {
