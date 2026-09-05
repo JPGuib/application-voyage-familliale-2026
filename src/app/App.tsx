@@ -28,6 +28,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   MessageCircle,
+  StickyNote,
   Scroll,
   Globe,
   Download,
@@ -171,6 +172,7 @@ import {
 } from "./notifications";
 import { useCloudSync } from "../hooks/useCloudSync";
 import { useChatUnreadBadge } from "../hooks/useChatUnreadBadge";
+import { useGroupInfoUnreadBadge } from "../hooks/useGroupInfoUnreadBadge";
 import {
   filterCategoriesForProfile,
   getCategoryBadges,
@@ -208,6 +210,8 @@ import {
   type ChatMemberProfile,
   type ChatProfileLookup,
 } from "./chat";
+import { buildGroupInfoItem } from "./groupInfo";
+import { GroupInfoScreen } from "./GroupInfoScreen";
 import type { ChatPollType, CloudChatMessage } from "../types/cloud";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
@@ -578,8 +582,8 @@ function readStoredCarnetContentDraft(
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "chat" | "trivial" | "jeux" | "candy-crush" | "crossword" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
-const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "chat", "trivial", "jeux", "candy-crush", "crossword", "ordalie", "imposteur", "results", "tips", "settings"];
+type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "chat" | "groupInfo" | "trivial" | "jeux" | "candy-crush" | "crossword" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "chat", "groupInfo", "trivial", "jeux", "candy-crush", "crossword", "ordalie", "imposteur", "results", "tips", "settings"];
 type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
 
 const INTERNAL_DOCUMENT_LINK_PREFIX = "app://document/";
@@ -947,6 +951,7 @@ const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> =
   { id: "map", icon: MapIcon, label: "Carte" },
   { id: "game", icon: Gamepad2, label: "Jeu" },
   { id: "chat", icon: MessageCircle, label: "Chat" },
+  { id: "groupInfo", icon: StickyNote, label: "Infos du groupe" },
   { id: "tips", icon: Lightbulb, label: "Conseils" },
   { id: "histoire", icon: Scroll, label: "Histoire" },
   { id: "geographie", icon: Globe, label: "Géographie" },
@@ -11999,6 +12004,17 @@ export default function App() {
     // sécurité que ci-dessus.
     submitChatPollResponse: submitChatPollResponseInCloud = async () => {},
     closeChatPoll: closeChatPollInCloud = async () => {},
+    // Infos du groupe (epic 29) : même filet de sécurité que ci-dessus.
+    // subscribeToGroupInfoItems et subscribeToGroupInfoReadState sont
+    // chargés en continu (pas "à la demande"), cf. cloudSyncProvider.ts.
+    subscribeToGroupInfoItems = () => () => {},
+    addGroupInfoItem: addGroupInfoItemInCloud = async () => {},
+    updateGroupInfoItem: updateGroupInfoItemInCloud = async () => {},
+    deleteGroupInfoItem: deleteGroupInfoItemInCloud = async () => {},
+    setGroupInfoItemPinned: setGroupInfoItemPinnedInCloud = async () => {},
+    setGroupInfoItemDone: setGroupInfoItemDoneInCloud = async () => {},
+    subscribeToGroupInfoReadState = () => () => {},
+    markGroupInfoRead: markGroupInfoReadInCloud = async () => {},
     setContentOverride: setContentOverrideInCloud,
     setTripStartDate: setTripStartDateInCloud,
     setGameScoring: setGameScoringInCloud,
@@ -16889,6 +16905,60 @@ const resetForProfileSwitch = () => {
     });
   };
 
+  // Infos du groupe (epic 29) : le propriétaire peut éditer/supprimer/
+  // épingler n'importe quel item, pas seulement les siens (cf.
+  // canEditGroupInfoItem/canPinGroupInfoItem dans groupInfo.ts, revérifié
+  // côté règles Firebase).
+  const isGroupInfoOwner = canUpdateOwnerCode(familyState, profile.id);
+
+  const handleAddGroupInfoItem = async (day: number, time: string | null, text: string) => {
+    const item = buildGroupInfoItem(
+      day,
+      time,
+      text,
+      profile.id,
+      resolveChatAuthorSnapshotLabel(profile.role ?? "utilisateur", profile.surname),
+      cloudActorUid ?? "",
+      Date.now()
+    );
+    await addGroupInfoItemInCloud(item);
+  };
+
+  const handleUpdateGroupInfoItem = async (itemId: string, day: number, time: string | null, text: string) => {
+    await updateGroupInfoItemInCloud(itemId, { day, time, text });
+  };
+
+  const handleDeleteGroupInfoItem = async (itemId: string) => {
+    await deleteGroupInfoItemInCloud(itemId);
+  };
+
+  const handleSetGroupInfoItemPinned = async (itemId: string, pinned: boolean) => {
+    await setGroupInfoItemPinnedInCloud(itemId, pinned);
+  };
+
+  const handleSetGroupInfoItemDone = async (itemId: string, done: boolean) => {
+    await setGroupInfoItemDoneInCloud(itemId, profile.id, done);
+  };
+
+  // Badge non-lu (même principe que useChatUnreadBadge ci-dessus) : toujours
+  // actif dès qu'un profil éligible est connecté, indépendant de l'ouverture
+  // de l'écran "Infos du groupe".
+  const { hasUnreadGroupInfo } = useGroupInfoUnreadBadge({
+    cloudEnabled,
+    currentProfileId: profile.id,
+    currentProfileRole: profile.role ?? "visiteur",
+    subscribeToGroupInfoItems,
+    subscribeToGroupInfoReadState,
+  });
+
+  // Non bloquant, mêmes raisons que handleMarkChatConversationRead ci-dessus.
+  const handleMarkGroupInfoRead = (lastReadAt: number) => {
+    void markGroupInfoReadInCloud(profile.id, lastReadAt).catch(() => {
+      // Ignoré : le badge non-lu restera simplement obsolète jusqu'au
+      // prochain passage réussi.
+    });
+  };
+
   const placeCommentsForSelectedPlace =
     selectedPlaceId && placeCommentsByPlace[selectedPlaceId]
       ? placeCommentsByPlace[selectedPlaceId]
@@ -17918,6 +17988,26 @@ const resetForProfileSwitch = () => {
         );
       }
 
+      if (effectiveScreen === "groupInfo") {
+        return (
+          <GroupInfoScreen
+            currentProfileId={profile.id}
+            isOwner={isGroupInfoOwner}
+            cloudEnabled={cloudEnabled}
+            currentDay={currentDay}
+            tripStartDate={tripStartDate}
+            onBack={() => goToScreen("dashboard")}
+            subscribeToGroupInfoItems={subscribeToGroupInfoItems}
+            onAddItem={handleAddGroupInfoItem}
+            onUpdateItem={handleUpdateGroupInfoItem}
+            onDeleteItem={handleDeleteGroupInfoItem}
+            onSetPinned={handleSetGroupInfoItemPinned}
+            onSetDone={handleSetGroupInfoItemDone}
+            onMarkRead={handleMarkGroupInfoRead}
+          />
+        );
+      }
+
       if (effectiveScreen === "map") {
         return (
           <MapScreen
@@ -18423,6 +18513,24 @@ const resetForProfileSwitch = () => {
             onClosePoll={handleCloseChatPoll}
           />
         );
+      case "groupInfo":
+        return (
+          <GroupInfoScreen
+            currentProfileId={profile.id}
+            isOwner={isGroupInfoOwner}
+            cloudEnabled={cloudEnabled}
+            currentDay={currentDay}
+            tripStartDate={tripStartDate}
+            onBack={() => goToScreen("dashboard")}
+            subscribeToGroupInfoItems={subscribeToGroupInfoItems}
+            onAddItem={handleAddGroupInfoItem}
+            onUpdateItem={handleUpdateGroupInfoItem}
+            onDeleteItem={handleDeleteGroupInfoItem}
+            onSetPinned={handleSetGroupInfoItemPinned}
+            onSetDone={handleSetGroupInfoItemDone}
+            onMarkRead={handleMarkGroupInfoRead}
+          />
+        );
       case "map":
         return (
           <MapScreen
@@ -18891,7 +18999,10 @@ const resetForProfileSwitch = () => {
             current={effectiveScreen}
             items={visibleBottomNavItems}
             onNavigate={goToScreen}
-            badgeScreenIds={hasUnreadChat ? ["chat"] : []}
+            badgeScreenIds={[
+              ...(hasUnreadChat ? (["chat"] as const) : []),
+              ...(hasUnreadGroupInfo ? (["groupInfo"] as const) : []),
+            ]}
           />
         )}
         {pendingScreen && (

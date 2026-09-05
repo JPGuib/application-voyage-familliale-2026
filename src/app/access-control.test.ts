@@ -18,6 +18,7 @@ const ALL_SECTIONS: AccessSection[] = [
   "culture",
   "game",
   "chat",
+  "groupInfo",
   "tips",
   "results",
   "settings",
@@ -42,12 +43,15 @@ describe("access-control policy", () => {
     expect(allowed).toEqual(ALL_SECTIONS);
   });
 
-  it("restricts user before unlock to checklist, documents and settings", () => {
+  // "groupInfo" (epic 29) est accessible avant le départ, contrairement au
+  // Chat : cf. docs/specs-stories/epic-29/29.1-tableau-infos-du-groupe.md.
+  it("restricts user before unlock to checklist, documents, groupInfo and settings", () => {
     const allowed = getAllowedSections("utilisateur", "before");
 
-    expect(allowed).toEqual(["checklist", "documents", "settings"]);
+    expect(allowed).toEqual(["checklist", "documents", "groupInfo", "settings"]);
     expect(canAccessSection("utilisateur", "before", "dashboard")).toBe(false);
     expect(canAccessSection("utilisateur", "before", "documents")).toBe(true);
+    expect(canAccessSection("utilisateur", "before", "groupInfo")).toBe(true);
   });
 
   it("unlocks all user sections except owner code actions", () => {
@@ -64,6 +68,7 @@ describe("access-control policy", () => {
       "culture",
       "game",
       "chat",
+      "groupInfo",
       "tips",
       "results",
       "settings",
@@ -74,7 +79,7 @@ describe("access-control policy", () => {
   it("keeps null role restricted even during phase", () => {
     const allowed = getAllowedSections(null, "during");
 
-    expect(allowed).toEqual(["checklist", "documents", "settings"]);
+    expect(allowed).toEqual(["checklist", "documents", "groupInfo", "settings"]);
   });
 
   it("grants visitor access only to read-only content and their own settings (story 24.3, restreint le 2026-08-01)", () => {
@@ -135,6 +140,33 @@ describe("access-control policy", () => {
     it("is never accessible to a visiteur, regardless of phase", () => {
       expect(canAccessSection("visiteur", "before", "chat")).toBe(false);
       expect(canAccessSection("visiteur", "during", "chat")).toBe(false);
+    });
+  });
+
+  // Epic 29 : contrairement au Chat, "groupInfo" est accessible avant ET
+  // pendant le séjour pour utilisateur/propriétaire, mais reste totalement
+  // inaccessible au visiteur (aucun accès, décision actée avec
+  // Jean-Philippe).
+  describe("group info section (epic 29)", () => {
+    it("is always accessible to the owner, before and during", () => {
+      expect(canAccessSection("proprietaire", "before", "groupInfo")).toBe(true);
+      expect(canAccessSection("proprietaire", "during", "groupInfo")).toBe(true);
+    });
+
+    it("is accessible to utilisateur both before and during, unlike chat", () => {
+      expect(canAccessSection("utilisateur", "before", "groupInfo")).toBe(true);
+      expect(canAccessSection("utilisateur", "during", "groupInfo")).toBe(true);
+    });
+
+    it("is never accessible to a visiteur, regardless of phase", () => {
+      expect(canAccessSection("visiteur", "before", "groupInfo")).toBe(false);
+      expect(canAccessSection("visiteur", "during", "groupInfo")).toBe(false);
+    });
+
+    it("returns the traveler-only denial message for a visiteur", () => {
+      expect(getAccessDeniedMessage("visiteur", "during", "groupInfo")).toBe(
+        "Cette rubrique est reservee aux voyageurs."
+      );
     });
   });
 

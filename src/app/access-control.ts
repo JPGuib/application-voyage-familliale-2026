@@ -13,6 +13,7 @@ export type AccessSection =
   | "culture"
   | "game"
   | "chat"
+  | "groupInfo"
   | "tips"
   | "results"
   | "settings"
@@ -36,6 +37,7 @@ export type AppScreen =
   | "visite-guidee"
   | "game"
   | "chat"
+  | "groupInfo"
   | "trivial"
   | "jeux"
   | "candy-crush"
@@ -57,13 +59,22 @@ const OWNER_ALLOWED: ReadonlyArray<AccessSection> = [
   "culture",
   "game",
   "chat",
+  "groupInfo",
   "tips",
   "results",
   "settings",
   "owner-code-actions",
 ];
 
-const USER_BEFORE_ALLOWED: ReadonlyArray<AccessSection> = ["checklist", "documents", "settings"];
+// "Infos du groupe" (epic 29) est accessible avant ET pendant le séjour
+// (contrairement au Chat), pour pouvoir préparer des annonces à l'avance —
+// cf. docs/specs-stories/epic-29/29.1-tableau-infos-du-groupe.md.
+const USER_BEFORE_ALLOWED: ReadonlyArray<AccessSection> = [
+  "checklist",
+  "documents",
+  "groupInfo",
+  "settings",
+];
 
 const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
   "checklist",
@@ -76,6 +87,7 @@ const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
   "culture",
   "game",
   "chat",
+  "groupInfo",
   "tips",
   "results",
   "settings",
@@ -86,7 +98,8 @@ const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
 // bloqué par la phase avant/pendant : il suit dès sa création, contrairement
 // à l'utilisateur qui attend le déblocage. Il n'a non plus jamais accès au
 // Chat (story 28.1) : il n'est jamais membre de la conversation "Voyage" ni
-// d'aucune conversation personnalisée (story 28.2).
+// d'aucune conversation personnalisée (story 28.2). Même exclusion pour
+// "Infos du groupe" (epic 29, décision actée avec Jean-Philippe).
 const VISITOR_ALLOWED: ReadonlyArray<AccessSection> = [
   "dashboard",
   "guide",
@@ -203,7 +216,11 @@ export function getAccessDeniedMessage(
 
   if (
     role === "visiteur" &&
-    (section === "checklist" || section === "game" || section === "results" || section === "chat")
+    (section === "checklist" ||
+      section === "game" ||
+      section === "results" ||
+      section === "chat" ||
+      section === "groupInfo")
   ) {
     return "Cette rubrique est reservee aux voyageurs.";
   }

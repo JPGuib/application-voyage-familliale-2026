@@ -22,6 +22,10 @@ import {
   VOYAGE_CONVERSATION_ID,
   type ChatMemberProfile,
 } from "../app/chat";
+import {
+  GROUP_INFO_TEXT_MAX_LENGTH,
+  shouldAdvanceGroupInfoReadState,
+} from "../app/groupInfo";
 import type {
   ChallengeReactionEmoji,
   ChecklistCustomItem,
@@ -47,6 +51,10 @@ import type {
   CloudChatPollResponsesByProfile,
   CloudChatReadState,
   CloudChatReadStateMap,
+  CloudGroupInfoItem,
+  CloudGroupInfoItemsLog,
+  CloudGroupInfoReadState,
+  CloudGroupInfoReadStateByProfile,
   CloudDocumentPhotoMap,
   CloudPlaceComment,
   CloudPlaceCommentsByPlace,
@@ -1348,6 +1356,212 @@ export async function markChatConversationRead(
   await runTransaction(stateRef, (current) => {
     const currentLastReadAt = toFiniteNumber(asRecord(current).lastReadAt, 0);
     if (!shouldAdvanceChatReadState(currentLastReadAt, lastReadAt)) {
+      return; // no-op : ne recule jamais lastReadAt.
+    }
+    return { lastReadAt, authorUid };
+  });
+}
+
+// --- Infos du groupe (epic 29) ------------------------------------------
+//
+// Même stratégie de stockage que le Chat ci-dessus (hors families/$familyId,
+// chemins groupInfoItems/$familyId et groupInfoReadState/$familyId), mais un
+// seul tableau partagé par famille (pas de conversations/membres à gérer).
+
+// Parse défensif d'un item, même esprit que parseChatMessage ci-dessus : une
+// entrée malformée est ignorée plutôt que de faire planter tout l'écran.
+function parseGroupInfoItem(itemId: string, value: unknown): CloudGroupInfoItem | null {
+  const raw = asRecord(value);
+  const day = toFiniteNumber(raw.day, 0);
+  const text = typeof raw.text === "string" ? raw.text : "";
+  const authorProfileId = typeof raw.authorProfileId === "string" ? raw.authorProfileId.trim() : "";
+  const authorSurnameSnapshot =
+    typeof raw.authorSurnameSnapshot === "string" ? raw.authorSurnameSnapshot.trim() : "";
+  const authorUid = typeof raw.authorUid === "string" ? raw.authorUid.trim() : "";
+  const createdAt = toFiniteNumber(raw.createdAt, 0);
+
+  if (
+    day <= 0 ||
+    !text ||
+    text.length > GROUP_INFO_TEXT_MAX_LENGTH ||
+    !authorProfileId ||
+    !authorSurnameSnapshot ||
+    !authorUid ||
+    createdAt <= 0
+  ) {
+    return null;
+  }
+
+  const time = typeof raw.time === "string" && raw.time.length > 0 ? raw.time : null;
+
+  const doneBy: Record<string, true> = {};
+  for (const [profileId, done] of Object.entries(asRecord(raw.doneBy))) {
+    if (done === true) {
+      doneBy[profileId] = true;
+    }
+  }
+
+  return {
+    itemId,
+    day,
+    time,
+    text,
+    authorProfileId,
+    authorSurnameSnapshot,
+    authorUid,
+    createdAt,
+    pinned: raw.pinned === true,
+    doneBy,
+  };
+}
+
+function parseGroupInfoItemsLog(value: unknown): CloudGroupInfoItemsLog {
+  const raw = asRecord(value);
+  const next: CloudGroupInfoItemsLog = {};
+
+  for (const [itemId, itemValue] of Object.entries(raw)) {
+    const parsed = parseGroupInfoItem(itemId, itemValue);
+    if (parsed) {
+      next[parsed.itemId] = parsed;
+    }
+  }
+
+  return next;
+}
+
+// Chargé en continu (contrairement à observeChatMessages, chargé à la
+// demande) : le badge non-lu doit rester à jour même écran fermé, et
+// l'écran "Infos du groupe" lui-même n'a pas de fenêtrage d'historique à
+// gérer (contrairement au Chat, pas de messageLimit ici).
+export function observeGroupInfoItems(
+  database: Database,
+  familyId: string,
+  onSnapshot: (items: CloudGroupInfoItemsLog) => void,
+  onError?: () => void
+): () => void {
+  return onValue(
+    ref(database, `groupInfoItems/${familyId}`),
+    (snapshot) => onSnapshot(parseGroupInfoItemsLog(snapshot.val())),
+    () => onError?.()
+  );
+}
+
+export async function addGroupInfoItem(
+  database: Database,
+  familyId: string,
+  item: CloudGroupInfoItem
+): Promise<void> {
+  await set(ref(database, `groupInfoItems/${familyId}/${item.itemId}`), item);
+}
+
+// Édition (auteur ou propriétaire, cf. canEditGroupInfoItem dans
+// groupInfo.ts, revérifié côté règles Firebase) : un `update()` multi-champs
+// pour ne toucher que jour/heure/texte, jamais l'auteur ni les coches
+// doneBy déjà posées par d'autres profils.
+export async function updateGroupInfoItem(
+  database: Database,
+  familyId: string,
+  itemId: string,
+  patch: Partial<Pick<CloudGroupInfoItem, "day" | "time" | "text">>
+): Promise<void> {
+  const updates: Record<string, unknown> = {};
+  const basePath = `groupInfoItems/${familyId}/${itemId}`;
+  if (patch.day !== undefined) updates[`${basePath}/day`] = patch.day;
+  if (patch.time !== undefined) updates[`${basePath}/time`] = patch.time;
+  if (patch.text !== undefined) updates[`${basePath}/text`] = patch.text;
+  await update(ref(database), updates);
+}
+
+// Suppression définitive (auteur ou propriétaire) : pas d'historique conservé
+// dans ce périmètre, même choix que placeVisitLogs/leaveChatConversation.
+export async function deleteGroupInfoItem(
+  database: Database,
+  familyId: string,
+  itemId: string
+): Promise<void> {
+  await set(ref(database, `groupInfoItems/${familyId}/${itemId}`), null);
+}
+
+// Épingler/désépingler (réservé au propriétaire, cf. canPinGroupInfoItem) :
+// champ à part, revérifié owner-only côté règles Firebase.
+export async function setGroupInfoItemPinned(
+  database: Database,
+  familyId: string,
+  itemId: string,
+  pinned: boolean
+): Promise<void> {
+  await set(ref(database, `groupInfoItems/${familyId}/${itemId}/pinned`), pinned);
+}
+
+// Coche "fait/vu" individuelle par profil : self-write, chaque profil ne
+// peut écrire que sa propre clé (cf. règles Firebase, pattern
+// destinationSurvey plutôt que le modèle plus faible de chatReadState).
+export async function setGroupInfoItemDone(
+  database: Database,
+  familyId: string,
+  itemId: string,
+  profileId: string,
+  done: boolean
+): Promise<void> {
+  await set(ref(database, `groupInfoItems/${familyId}/${itemId}/doneBy/${profileId}`), done ? true : null);
+}
+
+// Badge non-lu (même principe que chatReadState) : parse défensif d'un
+// marqueur "dernier passage".
+function parseGroupInfoReadState(value: unknown): CloudGroupInfoReadState | null {
+  const raw = asRecord(value);
+  const lastReadAt = toFiniteNumber(raw.lastReadAt, 0);
+  const authorUid = typeof raw.authorUid === "string" ? raw.authorUid : "";
+
+  if (lastReadAt <= 0 || !authorUid) {
+    return null;
+  }
+
+  return { lastReadAt, authorUid };
+}
+
+// Chargé en continu (même raison que observeChatReadState) : la pastille de
+// non-lu sur l'icône de navigation doit rester à jour même quand la rubrique
+// n'est pas affichée, cf. useGroupInfoUnreadBadge. Pas de dimension
+// conversation ici (un seul tableau partagé), d'où un niveau de moins que
+// chatReadState.
+export function observeGroupInfoReadState(
+  database: Database,
+  familyId: string,
+  onSnapshot: (readState: CloudGroupInfoReadStateByProfile) => void,
+  onError?: () => void
+): () => void {
+  return onValue(
+    ref(database, `groupInfoReadState/${familyId}`),
+    (snapshot) => {
+      const raw = asRecord(snapshot.val());
+      const next: CloudGroupInfoReadStateByProfile = {};
+      for (const [profileId, value] of Object.entries(raw)) {
+        const parsed = parseGroupInfoReadState(value);
+        if (parsed) {
+          next[profileId] = parsed;
+        }
+      }
+      onSnapshot(next);
+    },
+    () => onError?.()
+  );
+}
+
+// Marque le tableau comme lu par un profil : transaction pour garantir que
+// `lastReadAt` ne recule jamais (même cas limite multi-appareils que
+// markChatConversationRead ci-dessus).
+export async function markGroupInfoRead(
+  database: Database,
+  familyId: string,
+  profileId: string,
+  authorUid: string,
+  lastReadAt: number
+): Promise<void> {
+  const stateRef = ref(database, `groupInfoReadState/${familyId}/${profileId}`);
+  await runTransaction(stateRef, (current) => {
+    const currentLastReadAt = toFiniteNumber(asRecord(current).lastReadAt, 0);
+    if (!shouldAdvanceGroupInfoReadState(currentLastReadAt, lastReadAt)) {
       return; // no-op : ne recule jamais lastReadAt.
     }
     return { lastReadAt, authorUid };

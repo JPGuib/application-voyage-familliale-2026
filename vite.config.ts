@@ -75,6 +75,15 @@ export default defineConfig({
         // mises à jour : le SW prenait le contrôle avant que les nouveaux
         // chunks JS soient servis, causant un écran blanc au refresh.
         globPatterns: ['**/*.{js,css,html,woff2}'],
+        // Le chunk JS principal (un seul gros bundle, cf. avertissement
+        // rollup "chunks larger than 500 kB") a dépassé la limite par défaut
+        // de Workbox (2 MiB) lors de l'ajout de l'epic 29 ("Infos du
+        // groupe") : sans cette limite relevée, le build échoue purement à
+        // cause de la taille du précache, indépendamment de toute erreur de
+        // code. Relevé à 3 MiB pour laisser de la marge aux prochaines
+        // epics plutôt que de revenir dessus à chaque fois qu'un seuil est
+        // dépassé de peu.
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

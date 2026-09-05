@@ -284,6 +284,43 @@ export type CloudChatReadStateByProfile = Record<string, CloudChatReadState>; //
 
 export type CloudChatReadStateMap = Record<string, CloudChatReadStateByProfile>; // conversationId -> profileId -> état
 
+// Infos du groupe (epic 29) : pense-bête/fil d'annonces partagé, distinct de
+// l'agenda de visite — accessible avant le départ ET pendant le séjour
+// (contrairement au Chat), jamais aux visiteurs (cf. isChatEligibleRole,
+// réutilisé tel quel). Comme le Chat, stocké hors de families/$familyId
+// (chemins groupInfoItems/$familyId et groupInfoReadState/$familyId), chargé
+// en continu (pas seulement à la demande) car le badge non-lu doit pouvoir
+// tourner même écran fermé (voir observeGroupInfoItems dans
+// cloudSyncProvider.ts).
+export type CloudGroupInfoItem = {
+  itemId: string;
+  day: number;
+  time: string | null;
+  text: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  authorUid: string;
+  createdAt: number;
+  pinned: boolean;
+  // Coche "fait/vu" individuelle par profil (contrairement à placeSeenMap qui
+  // est un flag global owner-only) : chaque profil ne peut écrire que sa
+  // propre clé (cf. règle de sécurité inspirée de destinationSurvey plutôt
+  // que du modèle plus faible de chatReadState).
+  doneBy: Record<string, true>;
+};
+
+export type CloudGroupInfoItemsLog = Record<string, CloudGroupInfoItem>; // itemId -> item
+
+// Badge non-lu (même principe que CloudChatReadState) : un marqueur "dernier
+// passage" par profil, self-write, indépendant des coches doneBy ci-dessus
+// (cocher un item "fait" ne marque pas le tableau comme lu, et inversement).
+export type CloudGroupInfoReadState = {
+  lastReadAt: number;
+  authorUid: string;
+};
+
+export type CloudGroupInfoReadStateByProfile = Record<string, CloudGroupInfoReadState>; // profileId -> état
+
 export type CloudDestinationSurveyVote = {
   profileId: string;
   proposals: string[];

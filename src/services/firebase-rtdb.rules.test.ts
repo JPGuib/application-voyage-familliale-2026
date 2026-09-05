@@ -1300,6 +1300,181 @@ suite("firebase rtdb rules owner phase guard", () => {
       );
     });
   });
+
+  describe("group info (epic 29)", () => {
+    const item = {
+      itemId: "item-1",
+      day: 1,
+      text: "Ne pas oublier les passeports",
+      authorProfileId: NON_OWNER_PROFILE_ID,
+      authorSurnameSnapshot: "User",
+      authorUid: NON_OWNER_UID,
+      createdAt: 100,
+      pinned: false,
+      doneBy: {},
+    };
+
+    it("allows the author to create their own item", async () => {
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+      await assertSucceeds(nonOwnerDb.ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(item));
+    });
+
+    it("denies creating an item on behalf of a profile that is not the actor's own", async () => {
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+      await assertFails(
+        nonOwnerDb.ref(`groupInfoItems/${FAMILY_ID}/item-2`).set({
+          ...item,
+          itemId: "item-2",
+          authorProfileId: OWNER_PROFILE_ID,
+          authorSurnameSnapshot: "Owner",
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("allows the author to edit their own item", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(item);
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertSucceeds(
+        nonOwnerDb.ref(`groupInfoItems/${FAMILY_ID}/item-1`).set({ ...item, text: "Texte modifié" })
+      );
+    });
+
+    it("denies a non-author, non-owner profile from editing someone else's item", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(item);
+      });
+
+      const visitorDb = testEnv.authenticatedContext(VISITOR_UID).database();
+      await assertFails(
+        visitorDb.ref(`groupInfoItems/${FAMILY_ID}/item-1`).set({ ...item, text: "Modifié par un tiers" })
+      );
+    });
+
+    it("allows the owner to edit an item authored by someone else", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(item);
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertSucceeds(
+        ownerDb.ref(`groupInfoItems/${FAMILY_ID}/item-1`).set({ ...item, text: "Modifié par le propriétaire" })
+      );
+    });
+
+    it("allows the author to delete their own item", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(item);
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertSucceeds(nonOwnerDb.ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(null));
+    });
+
+    it("denies a non-author, non-owner profile from deleting someone else's item", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(item);
+      });
+
+      const visitorDb = testEnv.authenticatedContext(VISITOR_UID).database();
+      await assertFails(visitorDb.ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(null));
+    });
+
+    it("denies a non-owner from pinning an item, including their own", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(item);
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(nonOwnerDb.ref(`groupInfoItems/${FAMILY_ID}/item-1/pinned`).set(true));
+    });
+
+    it("allows the owner to pin any item", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(item);
+      });
+
+      const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
+      await assertSucceeds(ownerDb.ref(`groupInfoItems/${FAMILY_ID}/item-1/pinned`).set(true));
+    });
+
+    it("denies an unknown top-level field on an item ($other allowlist)", async () => {
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+      await assertFails(
+        nonOwnerDb.ref(`groupInfoItems/${FAMILY_ID}/item-1`).set({ ...item, unexpectedField: "nope" })
+      );
+    });
+
+    // Régression : contrairement à chatReadState (qui ne vérifie que
+    // l'appartenance à la famille), doneBy/$profileId vérifie que l'uid
+    // agissant correspond bien au profil ciblé (pattern destinationSurvey).
+    it("allows a profile to mark its own doneBy entry", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(item);
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertSucceeds(
+        nonOwnerDb.ref(`groupInfoItems/${FAMILY_ID}/item-1/doneBy/${NON_OWNER_PROFILE_ID}`).set(true)
+      );
+    });
+
+    it("denies marking doneBy for a profile that is not the actor's own", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`groupInfoItems/${FAMILY_ID}/item-1`).set(item);
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`groupInfoItems/${FAMILY_ID}/item-1/doneBy/${OWNER_PROFILE_ID}`).set(true)
+      );
+    });
+
+    it("allows a family member to write their own group info read state", async () => {
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+      await assertSucceeds(
+        nonOwnerDb.ref(`groupInfoReadState/${FAMILY_ID}/${NON_OWNER_PROFILE_ID}`).set({
+          lastReadAt: 100,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("denies writing a group info read state for a profile that is not the actor's own", async () => {
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+      await assertFails(
+        nonOwnerDb.ref(`groupInfoReadState/${FAMILY_ID}/${OWNER_PROFILE_ID}`).set({
+          lastReadAt: 100,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+
+    it("denies group info read state lastReadAt going backwards", async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await context.database().ref(`groupInfoReadState/${FAMILY_ID}/${NON_OWNER_PROFILE_ID}`).set({
+          lastReadAt: 500,
+          authorUid: NON_OWNER_UID,
+        });
+      });
+
+      const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+      await assertFails(
+        nonOwnerDb.ref(`groupInfoReadState/${FAMILY_ID}/${NON_OWNER_PROFILE_ID}`).set({
+          lastReadAt: 100,
+          authorUid: NON_OWNER_UID,
+        })
+      );
+    });
+  });
 });
 
 if (!hasDatabaseEmulator) {

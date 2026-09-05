@@ -25,6 +25,14 @@ import {
   renameChatConversation,
   sendChatMessage,
   submitChatPollResponse,
+  addGroupInfoItem,
+  deleteGroupInfoItem,
+  markGroupInfoRead,
+  observeGroupInfoItems,
+  observeGroupInfoReadState,
+  setGroupInfoItemDone,
+  setGroupInfoItemPinned,
+  updateGroupInfoItem,
   pushDestinationSurveyVoteOnly,
   pushCloudSnapshot,
   pushFamilyPhaseChange,
@@ -65,6 +73,9 @@ import type {
   CloudChatMessagesLog,
   CloudChatPollResponse,
   CloudChatReadStateMap,
+  CloudGroupInfoItem,
+  CloudGroupInfoItemsLog,
+  CloudGroupInfoReadStateByProfile,
   CloudDestinationSurveyVote,
   CloudDocumentPhotoMap,
   CloudGameHistoryEntry,
@@ -1274,6 +1285,106 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  // Infos du groupe (epic 29) : chargé en continu (pas "à la demande" comme
+  // subscribeToChatMessages), même raison que subscribeToChatReadState —
+  // c'est un seul tableau partagé, pas de fenêtrage d'historique à gérer.
+  const subscribeToGroupInfoItems = useCallback(
+    (onSnapshot: (items: CloudGroupInfoItemsLog) => void, onError?: () => void): (() => void) => {
+      if (!isEnabled || !database) {
+        return () => {};
+      }
+      return observeGroupInfoItems(database, familyId, onSnapshot, onError);
+    },
+    [database, familyId, isEnabled]
+  );
+
+  const addGroupInfoItemToCloud = useCallback(
+    async (item: CloudGroupInfoItem): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await addGroupInfoItem(database, familyId, item);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  const updateGroupInfoItemInCloud = useCallback(
+    async (itemId: string, patch: Partial<Pick<CloudGroupInfoItem, "day" | "time" | "text">>): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await updateGroupInfoItem(database, familyId, itemId, patch);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  const deleteGroupInfoItemInCloud = useCallback(
+    async (itemId: string): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await deleteGroupInfoItem(database, familyId, itemId);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  // Épingler/désépingler : réservé au propriétaire (cf. canPinGroupInfoItem
+  // dans groupInfo.ts), même garde ensureOwnerMembership que closeChatPollInCloud.
+  const setGroupInfoItemPinnedInCloud = useCallback(
+    async (itemId: string, pinned: boolean): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await ensureOwnerMembership(database, familyId, cloudUserUid);
+      await setGroupInfoItemPinned(database, familyId, itemId, pinned);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  const setGroupInfoItemDoneInCloud = useCallback(
+    async (itemId: string, profileId: string, done: boolean): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await setGroupInfoItemDone(database, familyId, itemId, profileId, done);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
+  // Badge non-lu (mêmes raisons que subscribeToChatReadState/
+  // markChatConversationReadInCloud).
+  const subscribeToGroupInfoReadState = useCallback(
+    (onSnapshot: (readState: CloudGroupInfoReadStateByProfile) => void, onError?: () => void): (() => void) => {
+      if (!isEnabled || !database) {
+        return () => {};
+      }
+      return observeGroupInfoReadState(database, familyId, onSnapshot, onError);
+    },
+    [database, familyId, isEnabled]
+  );
+
+  const markGroupInfoReadInCloud = useCallback(
+    async (profileId: string, lastReadAt: number): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await markGroupInfoRead(database, familyId, profileId, cloudUserUid, lastReadAt);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
@@ -1306,6 +1417,14 @@ export function useCloudSync() {
     markChatConversationRead: markChatConversationReadInCloud,
     submitChatPollResponse: submitChatPollResponseInCloud,
     closeChatPoll: closeChatPollInCloud,
+    subscribeToGroupInfoItems,
+    addGroupInfoItem: addGroupInfoItemToCloud,
+    updateGroupInfoItem: updateGroupInfoItemInCloud,
+    deleteGroupInfoItem: deleteGroupInfoItemInCloud,
+    setGroupInfoItemPinned: setGroupInfoItemPinnedInCloud,
+    setGroupInfoItemDone: setGroupInfoItemDoneInCloud,
+    subscribeToGroupInfoReadState,
+    markGroupInfoRead: markGroupInfoReadInCloud,
     setPlaceDayOverride,
     setContentOverride,
     setTripStartDate,

@@ -32,8 +32,5 @@ l'application se reconnecte au cloud et on perd ce qu'on faisait. Voir si possib
 il faudra distinguer le planning de visite, du planning du groupe
 
 
-Développés (penser à faire de la doc ?) !
-*  
-
 Abandonnés
 * CONTENU - C6 - pouvoir stocker des photos (=>attention cela a un coût)
