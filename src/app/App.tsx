@@ -3101,10 +3101,70 @@ function BottomNav({
       : current === "culture-topic"
       ? "culture"
       : current;
+
+  // Sur ordinateur (souris, pas d'écran tactile), le défilement horizontal
+  // du menu (trop d'onglets pour la largeur du cadre) n'est accessible ni
+  // au clic-glissé ni à la molette verticale classique, contrairement au
+  // doigt sur smartphone (retour de Jean-Philippe, 2026-09-05) : on ajoute
+  // donc un glisser-déposer à la souris et une conversion molette
+  // verticale -> défilement horizontal, en plus du scroll tactile/trackpad
+  // déjà natif via overflow-x-auto.
+  const navScrollRef = useRef<HTMLElement | null>(null);
+  const dragStateRef = useRef({ isDown: false, startX: 0, startScrollLeft: 0, moved: false });
+
+  const handleNavMouseDown = (event: React.MouseEvent<HTMLElement>) => {
+    const nav = navScrollRef.current;
+    if (!nav) return;
+    dragStateRef.current = { isDown: true, startX: event.pageX, startScrollLeft: nav.scrollLeft, moved: false };
+  };
+
+  const handleNavMouseMove = (event: React.MouseEvent<HTMLElement>) => {
+    const nav = navScrollRef.current;
+    const state = dragStateRef.current;
+    if (!state.isDown || !nav) return;
+    const delta = event.pageX - state.startX;
+    if (Math.abs(delta) > 3) {
+      state.moved = true;
+    }
+    nav.scrollLeft = state.startScrollLeft - delta;
+  };
+
+  const endNavDrag = () => {
+    dragStateRef.current.isDown = false;
+  };
+
+  // Un clic-glissé ne doit jamais déclencher la navigation du bouton relâché
+  // dessous (même piège que n'importe quel carrousel "drag to scroll").
+  const handleNavClickCapture = (event: React.MouseEvent<HTMLElement>) => {
+    if (dragStateRef.current.moved) {
+      event.preventDefault();
+      event.stopPropagation();
+      dragStateRef.current.moved = false;
+    }
+  };
+
+  const handleNavWheel = (event: React.WheelEvent<HTMLElement>) => {
+    const nav = navScrollRef.current;
+    if (!nav) return;
+    // Une souris de bureau classique ne fournit que du deltaY ; un trackpad
+    // fournissant déjà du deltaX gère nativement le défilement horizontal,
+    // qu'on ne veut pas perturber.
+    if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+      nav.scrollLeft += event.deltaY;
+    }
+  };
+
   return (
     <nav
+      ref={navScrollRef}
       data-tutorial-id="bottom-nav"
-      className="flex-shrink-0 bg-card border-t border-border overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="flex-shrink-0 bg-card border-t border-border overflow-x-auto py-2 cursor-grab select-none active:cursor-grabbing [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      onMouseDown={handleNavMouseDown}
+      onMouseMove={handleNavMouseMove}
+      onMouseUp={endNavDrag}
+      onMouseLeave={endNavDrag}
+      onClickCapture={handleNavClickCapture}
+      onWheel={handleNavWheel}
     >
       <div className="flex items-center min-w-max px-2 gap-1">
         {items.map((item) => {
