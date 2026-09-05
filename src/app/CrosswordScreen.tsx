@@ -41,11 +41,13 @@ const SCOPED_CSS = `
   --cw-accent-strong: #093f43;
   --cw-red: #b3243b;
   --cw-gold: #c9972f;
-  --cw-cell-size: 32px;
+  --cw-cell-size: clamp(16px, calc((100cqw - 40px) / var(--cw-cols)), 30px);
   width: 100%;
   height: 100%;
   min-height: 0;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   container-type: inline-size;
   background: var(--background);
   color: var(--foreground);
@@ -56,8 +58,8 @@ const SCOPED_CSS = `
 .cw-heading { min-width: 0; }
 .cw-heading h1 { margin: 0; font-size: 18px; line-height: 1.2; font-weight: 700; }
 .cw-heading p { margin: 2px 0 0; font-size: 12px; line-height: 1.35; opacity: .82; }
-.cw-main { max-width: 1180px; margin: 0 auto; padding: 16px; }
-.cw-toolbar { display: flex; align-items: end; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.cw-main { width: 100%; max-width: 1180px; flex: 1; min-height: 0; display: flex; flex-direction: column; margin: 0 auto; padding: 12px 16px; }
+.cw-toolbar { flex: 0 0 auto; display: flex; align-items: end; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
 .cw-picker { display: grid; gap: 5px; flex: 1 1 280px; }
 .cw-picker label { font-size: 12px; font-weight: 700; color: var(--muted-foreground); }
 .cw-picker select { width: 100%; min-height: 42px; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; background: var(--card); color: var(--card-foreground); font: inherit; }
@@ -67,19 +69,19 @@ const SCOPED_CSS = `
 .cw-action-primary { border-color: var(--cw-accent); background: var(--cw-accent); color: white; }
 .cw-action-danger { color: var(--cw-red); }
 .cw-action:disabled { opacity: .45; cursor: not-allowed; }
-.cw-layout { display: grid; grid-template-columns: 1fr; gap: 20px; align-items: start; }
-.cw-board-scroll { max-width: 100%; overflow-x: auto; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
-.cw-board { display: grid; width: max-content; border-top: 1px solid var(--foreground); border-left: 1px solid var(--foreground); }
+.cw-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); gap: 12px; align-items: start; }
+.cw-board-scroll { width: 100%; max-width: 100%; overflow: hidden; padding: 8px; border: 2px solid #244449; border-radius: 8px; background: #ffffff; }
+.cw-board { display: grid; width: max-content; margin: 0 auto; border-top: 2px solid #173b40; border-left: 2px solid #173b40; }
 .cw-cell, .cw-block { width: var(--cw-cell-size); height: var(--cw-cell-size); }
 .cw-block { visibility: hidden; }
-.cw-cell { position: relative; border: 0; border-right: 1px solid var(--foreground); border-bottom: 1px solid var(--foreground); background: var(--card); color: var(--foreground); padding: 0; }
+.cw-cell { position: relative; border: 0; border-right: 1px solid #173b40; border-bottom: 1px solid #173b40; background: #ffffff; color: #10282c; padding: 0; }
 .cw-cell input { width: 100%; height: 100%; border: 0; outline: 0; padding: 5px 1px 1px; background: transparent; color: inherit; text-align: center; text-transform: uppercase; font-size: 15px; font-weight: 800; }
 .cw-cell input:focus { box-shadow: inset 0 0 0 3px var(--cw-accent); }
-.cw-cell.cw-highlight { background: #f7e6b7; color: #2a1c14; }
-.cw-cell.cw-correct { background: #d8efe3; color: #145a3d; }
-.cw-cell.cw-wrong { background: #f7d7d7; color: #7e1a29; }
-.cw-number { position: absolute; top: 1px; left: 2px; z-index: 1; font-size: 8px; line-height: 1; color: var(--cw-accent-strong); font-weight: 800; pointer-events: none; }
-.cw-clues { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.cw-cell.cw-highlight { background: #ffe08a; color: #1a1a00; }
+.cw-cell.cw-correct { background: #b9e7c5; color: #0b4a2d; }
+.cw-cell.cw-wrong { background: #ffc4c9; color: #8d1021; }
+.cw-number { position: absolute; top: 1px; left: 2px; z-index: 1; font-size: 8px; line-height: 1; color: #093f43; font-weight: 800; pointer-events: none; }
+.cw-clues { min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding-right: 4px; }
 .cw-clue-group h2 { margin: 0 0 8px; color: var(--cw-red); font-size: 13px; text-transform: uppercase; }
 .cw-clue-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .cw-clue { width: 100%; display: grid; grid-template-columns: 24px 1fr; gap: 5px; border: 0; border-radius: 6px; padding: 7px; background: transparent; color: var(--foreground); text-align: left; font: inherit; font-size: 13px; line-height: 1.35; cursor: pointer; }
@@ -90,17 +92,20 @@ const SCOPED_CSS = `
 .cw-win { margin: 18px 0 0; border-left: 4px solid var(--cw-gold); padding: 12px 14px; background: var(--cw-accent); color: white; border-radius: 6px; }
 .cw-win strong { display: block; margin-bottom: 2px; }
 @container (min-width: 840px) {
-  .cw-layout { grid-template-columns: minmax(0, auto) minmax(280px, 1fr); }
+  .cw-root { --cw-cell-size: clamp(16px, calc((100cqw - 324px) / var(--cw-cols)), 28px); }
+  .cw-layout { grid-template-columns: minmax(0, auto) minmax(280px, 1fr); grid-template-rows: minmax(0, 1fr); }
+  .cw-board-scroll { height: 100%; display: grid; place-items: center; }
 }
 @container (max-width: 820px) {
   .cw-clues { grid-template-columns: 1fr 1fr; }
 }
 @container (max-width: 560px) {
-  .cw-root { --cw-cell-size: 28px; }
   .cw-main { padding: 12px; }
   .cw-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .cw-action { padding: 8px 5px; font-size: 12px; }
   .cw-clues { grid-template-columns: 1fr; }
+  .cw-cell input { padding-top: 4px; font-size: 12px; }
+  .cw-number { font-size: 7px; }
 }
 `;
 
@@ -300,7 +305,7 @@ export function CrosswordScreen({
   }
 
   return (
-    <div className="cw-root">
+    <div className="cw-root" style={{ "--cw-cols": puzzle.cols } as React.CSSProperties}>
       <style>{SCOPED_CSS}</style>
       <header className="cw-header">
         <button className="cw-back" type="button" onClick={onBack} aria-label="Retour aux jeux">
