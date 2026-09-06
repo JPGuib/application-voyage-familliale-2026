@@ -580,6 +580,83 @@ describe("gameProgress parsing and sync (jeu du jour persistance)", () => {
   });
 });
 
+describe("crosswordProgress parsing and sync", () => {
+  const crosswordProgress = {
+    puzzleId: "turquie-general",
+    entries: { "0,6": "A", "4,13": "I" },
+    results: { "0,6": "correct", "4,13": "wrong" },
+    completedPuzzleIds: ["turquie-general"],
+    updatedAt: 123,
+  };
+
+  it("keeps valid per-profile progress and discards malformed crossword fields", () => {
+    const snapshot = parseCloudSnapshot({
+      profiles: {
+        "profile-a": { surname: "A", role: "utilisateur", createdAt: 1, lastSyncAt: 2 },
+      },
+      crosswordProgress: {
+        "profile-a": {
+          ...crosswordProgress,
+          entries: { ...crosswordProgress.entries, invalid: "Z", "0,6": "too long" },
+          results: { ...crosswordProgress.results, invalid: "correct", "4,13": "unknown" },
+          completedPuzzleIds: ["turquie-general", "unknown", "turquie-general"],
+        },
+        "profile-b": { ...crosswordProgress, puzzleId: "unknown" },
+      },
+    });
+
+    expect(snapshot.crosswordProgress["profile-a"]).toEqual({
+      ...crosswordProgress,
+      entries: { "4,13": "I" },
+      results: {},
+    });
+    expect(snapshot.crosswordProgress["profile-b"]).toBeNull();
+  });
+
+  it("writes and clears only the active profile crossword path", async () => {
+    mockUpdate.mockClear();
+    const db = {} as import("firebase/database").Database;
+    const basePayload = {
+      actorUid: "uid-1",
+      canWriteFamilyState: false,
+      familyState: { version: 1, ownerProfileId: null, profiles: [] } as import("../app/owner-policy").SharedFamilyState,
+      ownerCodeHash: "",
+      ownerRecoveryHash: "",
+      ownerRecoveryConfiguredAt: undefined,
+      profileId: "profile-a",
+      surname: "A",
+      role: "utilisateur" as const,
+      checklist: {},
+      profileCustomChecklistItems: [],
+      ownerGlobalChecklistAdditions: [],
+      ownerGlobalChecklistRemovals: {},
+      placeComments: {},
+      gameResults: [],
+      gameProgress: null,
+      candyCrushChallenge: null,
+      phase: "before" as const,
+    };
+
+    await pushCloudSnapshot(db, "famille-test", { ...basePayload, crosswordProgress });
+    let updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["crosswordProgress/profile-a"]).toEqual(crosswordProgress);
+    expect(updates["crosswordProgress/profile-b"]).toBeUndefined();
+
+    mockUpdate.mockClear();
+    await pushCloudSnapshot(db, "famille-test", { ...basePayload, crosswordProgress: null });
+    updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["crosswordProgress/profile-a"]).toBeNull();
+  });
+
+  it("clears crossword progress when deleting the profile", async () => {
+    mockUpdate.mockClear();
+    await deleteProfileFromCloud({} as import("firebase/database").Database, "famille-test", "profile-to-delete");
+
+    const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates["families/famille-test/crosswordProgress/profile-to-delete"]).toBeNull();
+  });
+});
+
 describe("cloudSyncProvider metadata (story 10.4)", () => {
   it("parses gender and householdRole when present", () => {
     const snapshot = parseCloudSnapshot({
@@ -1014,7 +1091,7 @@ describe("deleteProfileFromCloud (story 18.3)", () => {
 
     const updates = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
     const nulledPaths = Object.entries(updates)
-      .filter(([key, val]) => val === null && key !== "families/famille-test/profiles/profile-y" && key !== "families/famille-test/checklists/profile-y" && key !== "families/famille-test/gameResults/profile-y" && key !== "families/famille-test/gameProgress/profile-y" && key !== "families/famille-test/candyCrushChallenge/profile-y" && key !== "chatConversations/famille-test/voyage/memberProfileIds/profile-y")
+      .filter(([key, val]) => val === null && key !== "families/famille-test/profiles/profile-y" && key !== "families/famille-test/checklists/profile-y" && key !== "families/famille-test/gameResults/profile-y" && key !== "families/famille-test/gameProgress/profile-y" && key !== "families/famille-test/crosswordProgress/profile-y" && key !== "families/famille-test/candyCrushChallenge/profile-y" && key !== "chatConversations/famille-test/voyage/memberProfileIds/profile-y")
       .map(([key]) => key);
     expect(nulledPaths).toHaveLength(0);
   });

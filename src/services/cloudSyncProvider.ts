@@ -83,6 +83,7 @@ import { DEFAULT_GAME_SCORING, type GameScoringConfig } from "../content/game";
 import { DOCUMENT_CATEGORIES, type DocumentCategory, type TravelDocument } from "../content/documents";
 import { normalizeDocumentDays } from "../app/documents-screen";
 import type { Place } from "../content/places";
+import { normalizeCrosswordProgress } from "../app/crossword-progress";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -1768,6 +1769,7 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
   const challengeBestVoteRecords = parseChallengeBestVotes(root.challengeBestVotes);
   const gameResultRecords = asRecord(root.gameResults);
   const gameProgressRecords = asRecord(root.gameProgress);
+  const crosswordProgressRecords = asRecord(root.crosswordProgress);
   const candyCrushChallengeRecords = asRecord(root.candyCrushChallenge);
   const phaseRecords = asRecord(root.phase);
 
@@ -1854,6 +1856,12 @@ export function parseCloudSnapshot(raw: unknown): CloudSyncSnapshot {
       Object.entries(profiles).map(([profileId, record]) => [
         profileId,
         toNonNegativeInteger(record.launchGateCompletedCycle),
+      ])
+    ),
+    crosswordProgress: Object.fromEntries(
+      Object.entries(crosswordProgressRecords).map(([profileId, progress]) => [
+        profileId,
+        normalizeCrosswordProgress(progress),
       ])
     ),
     profiles,
@@ -2088,6 +2096,10 @@ export async function pushCloudSnapshot(
     [`gameProgress/${payload.profileId}`]: payload.gameProgress,
     [`candyCrushChallenge/${payload.profileId}`]: payload.candyCrushChallenge,
   };
+
+  if (payload.crosswordProgress !== undefined) {
+    updates[`crosswordProgress/${payload.profileId}`] = payload.crosswordProgress;
+  }
 
   if (payload.launchGateCompletedCycleForProfile === null) {
     updates[`profiles/${payload.profileId}/launchGateCompletedCycle`] = null;
@@ -2632,6 +2644,7 @@ export async function deleteProfileFromCloud(
     [`families/${familyId}/checklists/${profileIdToDelete}`]: null,
     [`families/${familyId}/gameResults/${profileIdToDelete}`]: null,
     [`families/${familyId}/gameProgress/${profileIdToDelete}`]: null,
+    [`families/${familyId}/crosswordProgress/${profileIdToDelete}`]: null,
     [`families/${familyId}/candyCrushChallenge/${profileIdToDelete}`]: null,
     [`families/${familyId}/updatedAt`]: Date.now(),
     // Story 28.1, cas limite : un profil supprimé est simplement retiré de

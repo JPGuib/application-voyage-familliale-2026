@@ -1,6 +1,11 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, Eye, RotateCcw } from "lucide-react";
 import crosswordData from "../../crossword-data.json";
+import {
+  normalizeCrosswordProgress,
+  type CrosswordCellResult,
+  type CrosswordProgressSnapshot,
+} from "./crossword-progress";
 
 type Direction = "across" | "down";
 
@@ -31,7 +36,7 @@ type CellDefinition = {
   memberships: CellMembership[];
 };
 
-type CellResult = "correct" | "wrong";
+type CellResult = CrosswordCellResult;
 
 const puzzles = crosswordData.puzzles as CrosswordPuzzle[];
 
@@ -152,21 +157,39 @@ function findPuzzle(id: string | undefined) {
 export function CrosswordScreen({
   onBack,
   initialPuzzleId,
+  initialProgress,
+  onProgressChange,
 }: {
   onBack: () => void;
   initialPuzzleId?: string;
+  initialProgress?: CrosswordProgressSnapshot | null;
+  onProgressChange?: (progress: CrosswordProgressSnapshot) => void;
 }) {
-  const [puzzle, setPuzzle] = useState(() => findPuzzle(initialPuzzleId));
-  const [entries, setEntries] = useState<Record<string, string>>({});
+  const restoredProgress = normalizeCrosswordProgress(initialProgress);
+  const [puzzle, setPuzzle] = useState(() => findPuzzle(restoredProgress?.puzzleId ?? initialPuzzleId));
+  const [entries, setEntries] = useState<Record<string, string>>(() => restoredProgress?.entries ?? {});
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [direction, setDirection] = useState<Direction>("across");
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null);
-  const [results, setResults] = useState<Record<string, CellResult>>({});
+  const [results, setResults] = useState<Record<string, CellResult>>(() => restoredProgress?.results ?? {});
+  const [completedPuzzleIds, setCompletedPuzzleIds] = useState<string[]>(() => restoredProgress?.completedPuzzleIds ?? []);
   const [checkSummary, setCheckSummary] = useState("");
   const inputRefs = useRef(new Map<string, HTMLInputElement>());
   const toggleDirectionOnClick = useRef(false);
   const programmaticFocus = useRef(false);
   const { cells, numbers } = useMemo(() => derivePuzzle(puzzle), [puzzle]);
+
+  useEffect(() => {
+    const next = normalizeCrosswordProgress(initialProgress);
+    if (!next) return;
+    const nextPuzzle = findPuzzle(next.puzzleId);
+    setPuzzle((current) => (current.id === nextPuzzle.id ? current : nextPuzzle));
+    setEntries((current) => JSON.stringify(current) === JSON.stringify(next.entries) ? current : next.entries);
+    setResults((current) => JSON.stringify(current) === JSON.stringify(next.results) ? current : next.results);
+    setCompletedPuzzleIds((current) =>
+      JSON.stringify(current) === JSON.stringify(next.completedPuzzleIds) ? current : next.completedPuzzleIds
+    );
+  }, [initialProgress]);
 
   const solvedWords = puzzle.words.map((word) =>
     wordKeys(word).every((key, index) => entries[key] === word.word[index])
@@ -183,6 +206,28 @@ export function CrosswordScreen({
   const highlightedKeys = new Set(
     activeWordIndex === null ? [] : wordKeys(puzzle.words[activeWordIndex])
   );
+
+  function publishProgress(
+    nextPuzzle = puzzle,
+    nextEntries = entries,
+    nextResults = results,
+    nextCompletedPuzzleIds = completedPuzzleIds
+  ) {
+    const complete = nextPuzzle.words.every((word) =>
+      wordKeys(word).every((key, index) => nextEntries[key] === word.word[index])
+    );
+    const completed = complete && !nextCompletedPuzzleIds.includes(nextPuzzle.id)
+      ? [...nextCompletedPuzzleIds, nextPuzzle.id]
+      : nextCompletedPuzzleIds;
+    if (completed !== nextCompletedPuzzleIds) setCompletedPuzzleIds(completed);
+    onProgressChange?.({
+      puzzleId: nextPuzzle.id,
+      entries: nextEntries,
+      results: nextResults,
+      completedPuzzleIds: completed,
+      updatedAt: Date.now(),
+    });
+  }
 
   function focusCell(key: string, preferredDirection?: Direction, preferredWordIndex?: number) {
     const memberships = cells.get(key)?.memberships;
@@ -236,12 +281,17 @@ export function CrosswordScreen({
   function handleEntry(key: string, rawValue: string) {
     const value = rawValue.toUpperCase().replace(/[^A-ZÇĞİÖŞÜ]/g, "").slice(-1);
     if (rawValue && !value) return;
-    setEntries((current) => ({ ...current, [key]: value }));
-    setResults((current) => {
-      const next = { ...current };
-      delete next[key];
-      return next;
-    });
+    const nextEntries = { ...entries };
+    if (value) {
+      nextEntries[key] = value;
+    } else {
+      delete nextEntries[key];
+    }
+    const nextResults = { ...results };
+    delete nextResults[key];
+    setEntries(nextEntries);
+    setResults(nextResults);
+    publishProgress(puzzle, nextEntries, nextResults);
     if (value) moveWithinWord(key, 1);
   }
 
@@ -264,13 +314,15 @@ export function CrosswordScreen({
   }
 
   function changePuzzle(id: string) {
-    setPuzzle(findPuzzle(id));
+    const nextPuzzle = findPuzzle(id);
+    setPuzzle(nextPuzzle);
     setEntries({});
     setResults({});
     setSelectedKey(null);
     setDirection("across");
     setSelectedWordIndex(null);
     setCheckSummary("");
+    publishProgress(nextPuzzle, {}, {});
   }
 
   function checkGrid() {
@@ -283,14 +335,18 @@ export function CrosswordScreen({
     const correctCount = resultValues.filter((result) => result === "correct").length;
     const wrongCount = resultValues.filter((result) => result === "wrong").length;
     setCheckSummary(`${correctCount} cases correctes, ${wrongCount} incorrectes.`);
+    publishProgress(puzzle, entries, nextResults);
   }
 
   function revealCell() {
     if (!selectedKey) return;
     const answer = cells.get(selectedKey)?.answer;
     if (!answer) return;
-    setEntries((current) => ({ ...current, [selectedKey]: answer }));
-    setResults((current) => ({ ...current, [selectedKey]: "correct" }));
+    const nextEntries = { ...entries, [selectedKey]: answer };
+    const nextResults = { ...results, [selectedKey]: "correct" as const };
+    setEntries(nextEntries);
+    setResults(nextResults);
+    publishProgress(puzzle, nextEntries, nextResults);
     moveWithinWord(selectedKey, 1);
   }
 
@@ -299,6 +355,7 @@ export function CrosswordScreen({
     setEntries({});
     setResults({});
     setCheckSummary("");
+    publishProgress(puzzle, {}, {});
   }
 
   return (

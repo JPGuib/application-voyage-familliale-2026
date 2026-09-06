@@ -87,6 +87,35 @@ describe("CrosswordScreen", () => {
     expect(screen.getAllByRole("textbox").every((input) => (input as HTMLInputElement).value === "")).toBe(true);
   });
 
+  it("restores validated progress and reports durable changes", () => {
+    const onProgressChange = vi.fn();
+    render(
+      <CrosswordScreen
+        onBack={vi.fn()}
+        onProgressChange={onProgressChange}
+        initialProgress={{
+          puzzleId: "turquie-general",
+          entries: { "0,6": "A", invalid: "Z" },
+          results: { "0,6": "correct", invalid: "wrong" },
+          completedPuzzleIds: ["turquie-general", "unknown"],
+          updatedAt: 1,
+        }}
+      />
+    );
+
+    const first = screen.getByRole("textbox", { name: "Case ligne 1, colonne 7" });
+    expect(first).toHaveValue("A");
+    expect(first.closest("[role='gridcell']")).toHaveAttribute("data-status", "correct");
+
+    fireEvent.change(first, { target: { value: "N" } });
+    expect(onProgressChange).toHaveBeenCalledWith(expect.objectContaining({
+      puzzleId: "turquie-general",
+      entries: expect.objectContaining({ "0,6": "N" }),
+      results: {},
+      completedPuzzleIds: ["turquie-general"],
+    }));
+  });
+
   it("keeps an explicitly selected clue active when two across words share cells", async () => {
     const user = userEvent.setup();
     renderCrossword("nature-montagnes");

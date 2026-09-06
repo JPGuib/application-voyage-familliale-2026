@@ -623,6 +623,26 @@
             ".validate": "newData.val() === null || (newData.hasChildren(['day','phase','quizDurationSec','riddleValidated','riddleSolved']) && (newData.child('phase').val() === 'playing' || newData.child('phase').val() === 'riddle' || newData.child('phase').val() === 'challenge') && (!newData.child('quizStartedAt').exists() || newData.child('quizStartedAt').isNumber()))"
           }
         },
+        "crosswordProgress": {
+          "$profileId": {
+            ".write": "auth != null && root.child('families').child($familyId).child('profiles').child($profileId).child('memberUids').child(auth.uid).val() === true",
+            ".validate": "newData.val() === null || (newData.hasChildren(['puzzleId','entries','results','completedPuzzleIds','updatedAt']) && newData.child('entries').numChildren() <= 400 && newData.child('results').numChildren() <= 400 && newData.child('completedPuzzleIds').numChildren() <= 21 && newData.child('updatedAt').isNumber())",
+            "puzzleId": {
+              ".validate": "newData.val() === 'turquie-general' || newData.val() === 'istanbul-quartiers' || newData.val() === 'cappadoce-nature' || newData.val() === 'antiquite-sites' || newData.val() === 'cuisine-turque' || newData.val() === 'douceurs-boissons' || newData.val() === 'empire-ottoman' || newData.val() === 'villes-turquie' || newData.val() === 'cotes-mers' || newData.val() === 'nature-montagnes' || newData.val() === 'faune-flore' || newData.val() === 'bazar-artisanat' || newData.val() === 'religion-architecture' || newData.val() === 'langue-turque' || newData.val() === 'transports-voyage' || newData.val() === 'fetes-traditions' || newData.val() === 'personnages-histoire' || newData.val() === 'anatolie-centrale' || newData.val() === 'mer-noire' || newData.val() === 'iles-peninsules' || newData.val() === 'sport-loisirs'"
+            },
+            "entries": {
+              "$cellKey": { ".validate": "$cellKey.matches(/^[0-9]+,[0-9]+$/) && newData.isString() && newData.val().matches(/^[A-ZÇĞİÖŞÜ]$/)" }
+            },
+            "results": {
+                "$cellKey": { ".validate": "$cellKey.matches(/^[0-9]+,[0-9]+$/) && (newData.val() === 'correct' || newData.val() === 'wrong') && newData.parent().parent().child('entries').child($cellKey).exists()" }
+            },
+            "completedPuzzleIds": {
+              "$index": { ".validate": "$index.matches(/^[0-9]+$/) && (newData.val() === 'turquie-general' || newData.val() === 'istanbul-quartiers' || newData.val() === 'cappadoce-nature' || newData.val() === 'antiquite-sites' || newData.val() === 'cuisine-turque' || newData.val() === 'douceurs-boissons' || newData.val() === 'empire-ottoman' || newData.val() === 'villes-turquie' || newData.val() === 'cotes-mers' || newData.val() === 'nature-montagnes' || newData.val() === 'faune-flore' || newData.val() === 'bazar-artisanat' || newData.val() === 'religion-architecture' || newData.val() === 'langue-turque' || newData.val() === 'transports-voyage' || newData.val() === 'fetes-traditions' || newData.val() === 'personnages-histoire' || newData.val() === 'anatolie-centrale' || newData.val() === 'mer-noire' || newData.val() === 'iles-peninsules' || newData.val() === 'sport-loisirs')" }
+            },
+            "updatedAt": { ".validate": "newData.isNumber()" },
+            "$other": { ".validate": false }
+          }
+        },
         "candyCrushChallenge": {
           "$profileId": {
             ".write": "auth != null",

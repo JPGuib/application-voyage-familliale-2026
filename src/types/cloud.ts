@@ -52,6 +52,14 @@ export type CloudGameProgress = {
   challengeDraft?: string;
 } | null;
 
+export type CloudCrosswordProgress = {
+  puzzleId: string;
+  entries: Record<string, string>;
+  results: Record<string, "correct" | "wrong">;
+  completedPuzzleIds: string[];
+  updatedAt: number;
+} | null;
+
 export type ChallengeReactionEmoji = "love" | "laugh" | "wow" | "clap";
 
 export type CloudChallengeReaction = {
@@ -407,6 +415,7 @@ export type CloudSyncSnapshot = {
   gameDayOverrides: Record<number, GameDayOverride>;
   launchGateCycle: number;
   launchGateCompletedCycleByProfile: Record<string, number>;
+  crosswordProgress: Record<string, CloudCrosswordProgress>;
   profiles: Record<string, CloudProfileState>;
   updatedAt: number;
 };
@@ -454,6 +463,7 @@ export type CloudSyncWritePayload = {
   resetDestinationSurvey?: boolean;
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
+  crosswordProgress?: CloudCrosswordProgress;
   candyCrushChallenge: CloudCandyCrushChallenge;
   phase: TravelPhase;
   tripStartDate?: string | null;

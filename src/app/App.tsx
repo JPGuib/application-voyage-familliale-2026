@@ -41,6 +41,7 @@ import { TrivialGameScreen } from "./TrivialGameScreen";
 import { ArcadeHubScreen } from "./ArcadeHubScreen";
 import { CandyCrushScreen } from "./CandyCrushScreen";
 import { CrosswordScreen } from "./CrosswordScreen";
+import type { CrosswordProgressSnapshot } from "./crossword-progress";
 import { OrdalieScreen } from "./OrdalieScreen";
 import { ImposteurScreen } from "./ImposteurScreen";
 import { TRIP } from "../content/trip";
@@ -12771,6 +12772,7 @@ export default function App() {
       return null;
     }
   });
+  const [crosswordProgress, setCrosswordProgress] = useState<CrosswordProgressSnapshot | null>(null);
   const [postTripReplayDay, setPostTripReplayDay] = useState<number | null>(null);
 
   // Calculé tôt (avant l'effet d'hydratation cloud plus bas) car la
@@ -13694,6 +13696,17 @@ export default function App() {
     setGameHistory((previous) =>
       areGameHistoriesEqual(previous, cloudProfile.gameResults) ? previous : cloudProfile.gameResults
     );
+    setCrosswordProgress((previous) => {
+      const next = cloudSnapshot.crosswordProgress?.[profile.id] ?? null;
+      const pending = pendingCrosswordProgressRef.current;
+      if (pending !== "none") {
+        if (stableSerializeForCloudPush(next) !== pending) {
+          return previous;
+        }
+        pendingCrosswordProgressRef.current = "none";
+      }
+      return stableSerializeForCloudPush(previous) === stableSerializeForCloudPush(next) ? previous : next;
+    });
     // Ne régresse jamais un record déjà connu localement (cf.
     // mergeCandyCrushChallengeRecord) : une hydratation cloud partielle/à la
     // traîne ne doit jamais effacer un record fraîchement battu en local.
@@ -13887,6 +13900,7 @@ export default function App() {
   const pendingContentOverridesRef = useRef<string | "none">("none");
   const pendingChallengeReactionsRef = useRef<string | "none">("none");
   const pendingChallengeBestVotesRef = useRef<string | "none">("none");
+  const pendingCrosswordProgressRef = useRef<string | "none">("none");
   const previousCommentsSnapshotRef = useRef<PlaceCommentsByPlace | null>(null);
   const pendingLaunchGateCompletionRef = useRef<{ profileId: string; cycle: number } | null>(null);
   const lastChecklistReminderKeyRef = useRef<string | null>(null);
@@ -14030,6 +14044,7 @@ export default function App() {
       gameScoring,
       gameHistory,
       currentGameProgress,
+      crosswordProgress,
       candyCrushBest,
     });
     if (lastCloudPushRef.current === payload) {
@@ -14082,6 +14097,7 @@ export default function App() {
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       gameResults: gameHistory,
       gameProgress: currentGameProgress,
+      crosswordProgress,
       candyCrushChallenge: candyCrushBest,
       phase,
       tripStartDate,
@@ -14096,6 +14112,7 @@ export default function App() {
     familyState,
     gameHistory,
     candyCrushBest,
+    crosswordProgress,
     gameState,
     currentDay,
     answers,
@@ -15563,6 +15580,7 @@ const resetForProfileSwitch = () => {
     setOpenCategories(new Set([CHECKLIST_CATEGORIES[0]?.id ?? "vetements-hommes"]));
     setChecked({});
     setGameHistory([]);
+    setCrosswordProgress(null);
     setCandyCrushBest(null);
     setGameState("intro");
     setAnswers([]);
@@ -15589,6 +15607,7 @@ const resetForProfileSwitch = () => {
     setLaunchGateMessage(null);
     setOwnerReplayLaunchRequested(false);
     pendingDestinationSurveyVoteRef.current = "none";
+    pendingCrosswordProgressRef.current = "none";
     setUnlockFailedAttempts(0);
     setUnlockLockedUntil(0);
 
@@ -18819,7 +18838,16 @@ const resetForProfileSwitch = () => {
           />
         );
       case "crossword":
-        return <CrosswordScreen onBack={() => goToScreen("jeux")} />;
+        return (
+          <CrosswordScreen
+            onBack={() => goToScreen("jeux")}
+            initialProgress={crosswordProgress}
+            onProgressChange={(nextProgress) => {
+              pendingCrosswordProgressRef.current = stableSerializeForCloudPush(nextProgress);
+              setCrosswordProgress(nextProgress);
+            }}
+          />
+        );
       case "ordalie":
         return <OrdalieScreen onBack={() => goToScreen("jeux")} />;
       case "imposteur":

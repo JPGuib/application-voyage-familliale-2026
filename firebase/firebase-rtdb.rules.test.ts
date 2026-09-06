@@ -125,6 +125,32 @@ suite("firebase rtdb rules owner phase guard", () => {
     await assertFails(ownerDb.ref(`families/${FAMILY_ID}/gameDayOverrides/3`).set("maybe"));
   });
 
+  it("allows a family member to write bounded crossword progress for their profile", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertSucceeds(nonOwnerDb.ref(`families/${FAMILY_ID}/crosswordProgress/${NON_OWNER_PROFILE_ID}`).set({
+      puzzleId: "turquie-general",
+      entries: { "0,6": "A" },
+      results: { "0,6": "correct" },
+      completedPuzzleIds: ["turquie-general"],
+      updatedAt: 1,
+    }));
+  });
+
+  it("denies crossword progress for another profile or malformed crossword values", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertFails(nonOwnerDb.ref(`families/${FAMILY_ID}/crosswordProgress/${OWNER_PROFILE_ID}`).set({
+      puzzleId: "turquie-general", entries: {}, results: {}, completedPuzzleIds: [], updatedAt: 1,
+    }));
+    await assertFails(nonOwnerDb.ref(`families/${FAMILY_ID}/crosswordProgress/${NON_OWNER_PROFILE_ID}`).set({
+      puzzleId: "unknown", entries: {}, results: {}, completedPuzzleIds: [], updatedAt: 1,
+    }));
+    await assertFails(nonOwnerDb.ref(`families/${FAMILY_ID}/crosswordProgress/${NON_OWNER_PROFILE_ID}`).set({
+      puzzleId: "turquie-general", entries: { "not-a-cell": "AA" }, results: {}, completedPuzzleIds: [], updatedAt: 1,
+    }));
+  });
+
   it("allows owner to set hidden visibility for a place", async () => {
     const ownerDb = testEnv.authenticatedContext(OWNER_UID).database();
 
