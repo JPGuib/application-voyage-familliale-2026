@@ -73,7 +73,7 @@ const SCOPED_CSS = `
 .cw-cell, .cw-block { width: var(--cw-cell-size); height: var(--cw-cell-size); }
 .cw-block { visibility: hidden; }
 .cw-cell { position: relative; border: 0; border-right: 1px solid #173b40; border-bottom: 1px solid #173b40; background: #ffffff; color: #10282c; padding: 0; }
-.cw-cell input { width: 100%; height: 100%; border: 0; outline: 0; padding: 0 1px; background: transparent; color: #10282c; text-align: center; text-transform: uppercase; font-size: 15px; font-weight: 800; line-height: 1; }
+.cw-cell input { width: 100%; height: 100%; display: block; appearance: none; -webkit-appearance: none; border: 0; outline: 0; padding: 0; background: transparent; color: #10282c; text-align: center; text-transform: uppercase; font-size: 15px; font-weight: 800; line-height: var(--cw-cell-size); }
 .cw-cell input:focus { box-shadow: inset 0 0 0 3px var(--cw-accent); }
 .cw-cell.cw-highlight { background: #ffe08a; color: #1a1a00; }
 .cw-cell.cw-correct { background: #b9e7c5; color: #0b4a2d; }
