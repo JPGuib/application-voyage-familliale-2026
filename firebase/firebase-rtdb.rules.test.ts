@@ -145,6 +145,19 @@ suite("firebase rtdb rules owner phase guard", () => {
     }));
   });
 
+  it("allows a first crossword entry without result or completion collections", async () => {
+    const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
+
+    await assertSucceeds(nonOwnerDb.ref(`families/${FAMILY_ID}/crosswordProgress/${NON_OWNER_PROFILE_ID}`).set({
+      puzzleId: "turquie-general",
+      entries: { "0,6": "A" },
+      results: {},
+      puzzleProgress: { "turquie-general": { entries: { "0,6": "A" }, results: {} } },
+      completedPuzzleIds: [],
+      updatedAt: 1,
+    }));
+  });
+
   it("denies crossword progress for another profile or malformed crossword values", async () => {
     const nonOwnerDb = testEnv.authenticatedContext(NON_OWNER_UID).database();
 

@@ -626,7 +626,7 @@
           "crosswordProgress": {
             "$profileId": {
               ".write": "auth != null && root.child('familyMembers').child($familyId).child(auth.uid).val() === true && root.child('families').child($familyId).child('profiles').child($profileId).child('memberUids').child(auth.uid).val() === true",
-              ".validate": "newData.val() === null || (newData.hasChildren(['puzzleId','entries','results','completedPuzzleIds','updatedAt']) && newData.child('updatedAt').isNumber())",
+              ".validate": "newData.val() === null || (newData.hasChildren(['puzzleId','updatedAt']) && newData.child('updatedAt').isNumber())",
               "puzzleId": {
                 ".validate": "newData.val() === 'turquie-general' || newData.val() === 'istanbul-quartiers' || newData.val() === 'cappadoce-nature' || newData.val() === 'antiquite-sites' || newData.val() === 'cuisine-turque' || newData.val() === 'douceurs-boissons' || newData.val() === 'empire-ottoman' || newData.val() === 'villes-turquie' || newData.val() === 'cotes-mers' || newData.val() === 'nature-montagnes' || newData.val() === 'faune-flore' || newData.val() === 'bazar-artisanat' || newData.val() === 'religion-architecture' || newData.val() === 'langue-turque' || newData.val() === 'transports-voyage' || newData.val() === 'fetes-traditions' || newData.val() === 'personnages-histoire' || newData.val() === 'anatolie-centrale' || newData.val() === 'mer-noire' || newData.val() === 'iles-peninsules' || newData.val() === 'sport-loisirs'"
               },
@@ -638,7 +638,7 @@
               },
               "puzzleProgress": {
                 "$puzzleId": {
-                  ".validate": "($puzzleId === 'turquie-general' || $puzzleId === 'istanbul-quartiers' || $puzzleId === 'cappadoce-nature' || $puzzleId === 'antiquite-sites' || $puzzleId === 'cuisine-turque' || $puzzleId === 'douceurs-boissons' || $puzzleId === 'empire-ottoman' || $puzzleId === 'villes-turquie' || $puzzleId === 'cotes-mers' || $puzzleId === 'nature-montagnes' || $puzzleId === 'faune-flore' || $puzzleId === 'bazar-artisanat' || $puzzleId === 'religion-architecture' || $puzzleId === 'langue-turque' || $puzzleId === 'transports-voyage' || $puzzleId === 'fetes-traditions' || $puzzleId === 'personnages-histoire' || $puzzleId === 'anatolie-centrale' || $puzzleId === 'mer-noire' || $puzzleId === 'iles-peninsules' || $puzzleId === 'sport-loisirs') && newData.hasChildren(['entries','results'])",
+                  ".validate": "$puzzleId === 'turquie-general' || $puzzleId === 'istanbul-quartiers' || $puzzleId === 'cappadoce-nature' || $puzzleId === 'antiquite-sites' || $puzzleId === 'cuisine-turque' || $puzzleId === 'douceurs-boissons' || $puzzleId === 'empire-ottoman' || $puzzleId === 'villes-turquie' || $puzzleId === 'cotes-mers' || $puzzleId === 'nature-montagnes' || $puzzleId === 'faune-flore' || $puzzleId === 'bazar-artisanat' || $puzzleId === 'religion-architecture' || $puzzleId === 'langue-turque' || $puzzleId === 'transports-voyage' || $puzzleId === 'fetes-traditions' || $puzzleId === 'personnages-histoire' || $puzzleId === 'anatolie-centrale' || $puzzleId === 'mer-noire' || $puzzleId === 'iles-peninsules' || $puzzleId === 'sport-loisirs'",
                   "entries": {
                     "$cellKey": { ".validate": "$cellKey.matches(/^[0-9]+,[0-9]+$/) && newData.isString() && newData.val().matches(/^[A-ZÇĞİÖŞÜ]$/)" }
                   },
