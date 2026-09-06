@@ -67,6 +67,7 @@ import type {
   CloudCarnetContentLog,
   CloudChallengeBestVotesByDay,
   CloudChallengeReactionsByDay,
+  CloudCrosswordProgress,
   CloudChatConversation,
   CloudChatConversationsMap,
   CloudChatMessage,
@@ -149,6 +150,7 @@ type PushSnapshotInput = {
   resetDestinationSurvey?: boolean;
   gameResults: CloudGameHistoryEntry[];
   gameProgress: CloudGameProgress;
+  crosswordProgress?: CloudCrosswordProgress;
   candyCrushChallenge: CloudCandyCrushChallenge;
   phase: TravelPhase;
   tripStartDate?: string | null;
@@ -538,6 +540,7 @@ export function useCloudSync() {
         launchGateCompletedCycleForProfile: snapshot.launchGateCompletedCycleForProfile,
         gameResults: snapshot.gameResults,
         gameProgress: snapshot.gameProgress,
+        crosswordProgress: snapshot.crosswordProgress,
         candyCrushChallenge: snapshot.candyCrushChallenge,
         phase: snapshot.phase,
         tripStartDate: snapshot.tripStartDate,

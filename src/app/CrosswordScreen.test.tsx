@@ -87,6 +87,19 @@ describe("CrosswordScreen", () => {
     expect(screen.getAllByRole("textbox").every((input) => (input as HTMLInputElement).value === "")).toBe(true);
   });
 
+  it("keeps each grid's entries when changing away and back", async () => {
+    const user = userEvent.setup();
+    renderCrossword();
+    const first = screen.getByRole("textbox", { name: "Case ligne 1, colonne 7" });
+    fireEvent.change(first, { target: { value: "A" } });
+
+    const picker = screen.getByRole("combobox", { name: "Grille" });
+    await user.selectOptions(picker, "istanbul-quartiers");
+    await user.selectOptions(picker, "turquie-general");
+
+    expect(screen.getByRole("textbox", { name: "Case ligne 1, colonne 7" })).toHaveValue("A");
+  });
+
   it("restores validated progress and reports durable changes", () => {
     const onProgressChange = vi.fn();
     render(

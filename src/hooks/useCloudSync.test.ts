@@ -36,7 +36,7 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
     pushCloudSnapshotMock.mockClear();
   });
 
-  it("forwards travelerCodeHash/travelerCodePlain, place-day schedule overrides and launch-gate cycle fields", async () => {
+  it("forwards travelerCodeHash/travelerCodePlain, crossword progress, place-day schedule overrides and launch-gate cycle fields", async () => {
     const { result } = renderHook(() => useCloudSync());
 
     await waitFor(() => {
@@ -75,6 +75,14 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
       launchGateCompletedCycleForProfile: 2,
       gameResults: [],
       gameProgress: null,
+      crosswordProgress: {
+        puzzleId: "turquie-general",
+        entries: { "0,6": "A" },
+        results: {},
+        puzzleProgress: { "turquie-general": { entries: { "0,6": "A" }, results: {} } },
+        completedPuzzleIds: [],
+        updatedAt: 1700000000000,
+      },
       candyCrushChallenge: { bestScore: 42, updatedAt: 1700000000000 },
       phase: "before",
     });
@@ -87,6 +95,7 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
       placeDayOrderOverrides?: Record<string, Record<number, number>>;
       launchGateCycle?: number;
       launchGateCompletedCycleForProfile?: number | null;
+      crosswordProgress?: { entries: Record<string, string> } | null;
       candyCrushChallenge?: { bestScore: number; updatedAt: number } | null;
     };
     expect(mutation.travelerCodeHash).toBe(`sha256:${"b".repeat(64)}`);
@@ -102,6 +111,7 @@ describe("useCloudSync pushSnapshot forwards all payload fields", () => {
     });
     expect(mutation.launchGateCycle).toBe(3);
     expect(mutation.launchGateCompletedCycleForProfile).toBe(2);
+    expect(mutation.crosswordProgress).toMatchObject({ entries: { "0,6": "A" } });
     // Regression guard for the exact bug fixed 2026-09-01: candyCrushChallenge
     // was accepted by pushSnapshot's input type but never copied into the
     // rebuilt mutation object, silently becoming `undefined` and making the

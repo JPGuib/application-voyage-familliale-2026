@@ -56,6 +56,10 @@ export type CloudCrosswordProgress = {
   puzzleId: string;
   entries: Record<string, string>;
   results: Record<string, "correct" | "wrong">;
+  puzzleProgress: Record<string, {
+    entries: Record<string, string>;
+    results: Record<string, "correct" | "wrong">;
+  }>;
   completedPuzzleIds: string[];
   updatedAt: number;
 } | null;

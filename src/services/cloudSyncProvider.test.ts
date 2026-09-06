@@ -609,6 +609,12 @@ describe("crosswordProgress parsing and sync", () => {
       ...crosswordProgress,
       entries: { "4,13": "I" },
       results: {},
+      puzzleProgress: {
+        "turquie-general": {
+          entries: { "4,13": "I" },
+          results: {},
+        },
+      },
     });
     expect(snapshot.crosswordProgress["profile-b"]).toBeNull();
   });

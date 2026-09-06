@@ -5,6 +5,7 @@ import {
   normalizeCrosswordProgress,
   type CrosswordCellResult,
   type CrosswordProgressSnapshot,
+  type CrosswordPuzzleProgress,
 } from "./crossword-progress";
 
 type Direction = "across" | "down";
@@ -172,6 +173,9 @@ export function CrosswordScreen({
   const [direction, setDirection] = useState<Direction>("across");
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null);
   const [results, setResults] = useState<Record<string, CellResult>>(() => restoredProgress?.results ?? {});
+  const [puzzleProgress, setPuzzleProgress] = useState<Record<string, CrosswordPuzzleProgress>>(
+    () => restoredProgress?.puzzleProgress ?? {}
+  );
   const [completedPuzzleIds, setCompletedPuzzleIds] = useState<string[]>(() => restoredProgress?.completedPuzzleIds ?? []);
   const [checkSummary, setCheckSummary] = useState("");
   const inputRefs = useRef(new Map<string, HTMLInputElement>());
@@ -186,6 +190,9 @@ export function CrosswordScreen({
     setPuzzle((current) => (current.id === nextPuzzle.id ? current : nextPuzzle));
     setEntries((current) => JSON.stringify(current) === JSON.stringify(next.entries) ? current : next.entries);
     setResults((current) => JSON.stringify(current) === JSON.stringify(next.results) ? current : next.results);
+    setPuzzleProgress((current) =>
+      JSON.stringify(current) === JSON.stringify(next.puzzleProgress) ? current : next.puzzleProgress
+    );
     setCompletedPuzzleIds((current) =>
       JSON.stringify(current) === JSON.stringify(next.completedPuzzleIds) ? current : next.completedPuzzleIds
     );
@@ -211,7 +218,8 @@ export function CrosswordScreen({
     nextPuzzle = puzzle,
     nextEntries = entries,
     nextResults = results,
-    nextCompletedPuzzleIds = completedPuzzleIds
+    nextCompletedPuzzleIds = completedPuzzleIds,
+    nextPuzzleProgress = puzzleProgress
   ) {
     const complete = nextPuzzle.words.every((word) =>
       wordKeys(word).every((key, index) => nextEntries[key] === word.word[index])
@@ -220,10 +228,16 @@ export function CrosswordScreen({
       ? [...nextCompletedPuzzleIds, nextPuzzle.id]
       : nextCompletedPuzzleIds;
     if (completed !== nextCompletedPuzzleIds) setCompletedPuzzleIds(completed);
+    const updatedPuzzleProgress = {
+      ...nextPuzzleProgress,
+      [nextPuzzle.id]: { entries: nextEntries, results: nextResults },
+    };
+    setPuzzleProgress(updatedPuzzleProgress);
     onProgressChange?.({
       puzzleId: nextPuzzle.id,
       entries: nextEntries,
       results: nextResults,
+      puzzleProgress: updatedPuzzleProgress,
       completedPuzzleIds: completed,
       updatedAt: Date.now(),
     });
@@ -315,14 +329,15 @@ export function CrosswordScreen({
 
   function changePuzzle(id: string) {
     const nextPuzzle = findPuzzle(id);
+    const nextProgress = puzzleProgress[nextPuzzle.id] ?? { entries: {}, results: {} };
     setPuzzle(nextPuzzle);
-    setEntries({});
-    setResults({});
+    setEntries(nextProgress.entries);
+    setResults(nextProgress.results);
     setSelectedKey(null);
     setDirection("across");
     setSelectedWordIndex(null);
     setCheckSummary("");
-    publishProgress(nextPuzzle, {}, {});
+    publishProgress(nextPuzzle, nextProgress.entries, nextProgress.results);
   }
 
   function checkGrid() {
