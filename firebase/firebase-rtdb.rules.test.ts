@@ -55,12 +55,14 @@ suite("firebase rtdb rules owner phase guard", () => {
         role: "proprietaire",
         createdAt: 1,
         lastSyncAt: 1,
+        memberUids: { [OWNER_UID]: true },
       });
       await db.ref(`families/${FAMILY_ID}/profiles/${NON_OWNER_PROFILE_ID}`).set({
         surname: "User",
         role: "utilisateur",
         createdAt: 1,
         lastSyncAt: 1,
+        memberUids: { [NON_OWNER_UID]: true },
       });
     });
   });
@@ -132,6 +134,12 @@ suite("firebase rtdb rules owner phase guard", () => {
       puzzleId: "turquie-general",
       entries: { "0,6": "A" },
       results: { "0,6": "correct" },
+      puzzleProgress: {
+        "turquie-general": {
+          entries: { "0,6": "A" },
+          results: { "0,6": "correct" },
+        },
+      },
       completedPuzzleIds: ["turquie-general"],
       updatedAt: 1,
     }));
