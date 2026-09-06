@@ -2437,6 +2437,15 @@ export async function pushDestinationSurveyVoteOnly(
   await update(ref(database, familyPath(familyId)), updates);
 }
 
+export async function saveCrosswordProgress(
+  database: Database,
+  familyId: string,
+  profileId: string,
+  progress: CloudCrosswordProgress
+): Promise<void> {
+  await set(ref(database, `families/${familyId}/crosswordProgress/${profileId}`), progress);
+}
+
 export async function pushPlaceVisibility(
   database: Database,
   familyId: string,

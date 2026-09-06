@@ -96,8 +96,8 @@ describe("App crossword navigation", () => {
     );
   });
 
-  it("restores only the active profile's saved crossword and queues an immediate save", async () => {
-    const pushSnapshot = vi.fn().mockResolvedValue(undefined);
+  it("restores only the active profile's saved crossword and saves its next change directly", async () => {
+    const saveCrosswordProgress = vi.fn().mockResolvedValue(undefined);
     cloudSyncMock.mockReturnValue({
       cloudEnabled: true,
       cloudReady: true,
@@ -119,7 +119,8 @@ describe("App crossword navigation", () => {
           updatedAt: 1,
         },
       }),
-      pushSnapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      saveCrosswordProgress,
       claimRoleForProfile: vi.fn().mockResolvedValue(null),
       familyId: "famille-voyage-2026",
     });
@@ -135,10 +136,10 @@ describe("App crossword navigation", () => {
 
     fireEvent.change(first, { target: { value: "N" } });
     await waitFor(() =>
-      expect(pushSnapshot).toHaveBeenCalledWith(expect.objectContaining({
-        profileId: "p1",
-        crosswordProgress: expect.objectContaining({ entries: { "0,6": "N" } }),
-      }))
+      expect(saveCrosswordProgress).toHaveBeenCalledWith(
+        "p1",
+        expect.objectContaining({ entries: { "0,6": "N" } })
+      )
     );
   });
 });

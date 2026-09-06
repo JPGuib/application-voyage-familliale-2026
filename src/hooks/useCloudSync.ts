@@ -41,6 +41,7 @@ import {
   pushGameScoring,
   pushPlaceVisibility,
   pushPlaceSeen,
+  saveCrosswordProgress,
   pushPlaceDayOverride,
   pushTripStartDate,
   resetGameProgressInCloud,
@@ -806,6 +807,19 @@ export function useCloudSync() {
     [cloudUserUid, database, familyId, isEnabled]
   );
 
+  const saveCrosswordProgressForProfile = useCallback(
+    async (profileId: string, progress: CloudCrosswordProgress): Promise<void> => {
+      if (!isEnabled || !database || !cloudUserUid) {
+        throw new Error("auth-required");
+      }
+
+      await ensureFamilyMembership(database, familyId, cloudUserUid);
+      await ensureProfileMembership(database, familyId, profileId, cloudUserUid);
+      await saveCrosswordProgress(database, familyId, profileId, progress);
+    },
+    [cloudUserUid, database, familyId, isEnabled]
+  );
+
   const setContentOverride = useCallback(
     async (
       source: ContentSource,
@@ -1400,6 +1414,7 @@ export function useCloudSync() {
     setGameDayOverride,
     setPlaceVisibility,
     setPlaceSeen,
+    saveCrosswordProgress: saveCrosswordProgressForProfile,
     subscribeToPlaceVisitLog,
     upsertCarnetVisiteEntry,
     deleteCarnetVisiteEntry,

@@ -12015,6 +12015,7 @@ export default function App() {
     setPlaceDayOverride,
     setPlaceVisibility: setPlaceVisibilityInCloud,
     setPlaceSeen: setPlaceSeenInCloud,
+    saveCrosswordProgress: saveCrosswordProgressInCloud = async () => {},
     // Défauts de secours : ces trois fonctions carnet de visite sont plus
     // récentes que la plupart des mocks useCloudSync des tests d'intégration
     // (qui fournissent un objet réduit à la main). subscribeToPlaceVisitLog
@@ -14044,7 +14045,6 @@ export default function App() {
       gameScoring,
       gameHistory,
       currentGameProgress,
-      crosswordProgress,
       candyCrushBest,
     });
     if (lastCloudPushRef.current === payload) {
@@ -14097,7 +14097,6 @@ export default function App() {
       launchGateCompletedCycleForProfile: launchGateCompletedCycleByProfile[profile.id] ?? null,
       gameResults: gameHistory,
       gameProgress: currentGameProgress,
-      crosswordProgress,
       candyCrushChallenge: candyCrushBest,
       phase,
       tripStartDate,
@@ -14112,7 +14111,6 @@ export default function App() {
     familyState,
     gameHistory,
     candyCrushBest,
-    crosswordProgress,
     gameState,
     currentDay,
     answers,
@@ -18845,6 +18843,9 @@ const resetForProfileSwitch = () => {
             onProgressChange={(nextProgress) => {
               pendingCrosswordProgressRef.current = stableSerializeForCloudPush(nextProgress);
               setCrosswordProgress(nextProgress);
+              void saveCrosswordProgressInCloud(profile.id, nextProgress).catch(() => {
+                // The local state stays usable; the next player edit retries the isolated cloud write.
+              });
             }}
           />
         );
