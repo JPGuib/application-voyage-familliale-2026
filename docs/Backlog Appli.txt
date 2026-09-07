@@ -11,10 +11,7 @@ déploiement il y a fusion entre les données de Firebase et ce qui vient
 de place.ts (/ document.ts)
 
 
-* JEU - J4 - Jeu du jour - vérifier le fonctionnement de la remise à 0 pour un utilisateur de son jeu du jour (uniquement les points ? Peut-il le repasser ?)
 * JEU - J5 - Jeu du jour - Un joueur qui a oublié de faire le jeu de la veille pourrait-il le passer quand même ? (paramètre possible ? Paramètre admin ? ...)
-* JEU - J6 - Jeu du jour - revoir l'affichage avec les émoticones, qui prennent trop de place
-* JEU - J10 - Jeu du jour - limite en carractère du défi à augmenter
 * JEU - J2 - Jeu du jour - notification quiz du jour
 * JEU - J1 - Jeu du jour - pouvoir revoir les questions (quiz / enigmes) pour qu'elle ne se basent que sur ce qui a été réellement visité (en lien avec Backlog C2), pas prevu => associer une question à un jour / un id de places
 * JEU - J3 - Jeu du jour - défi photos
@@ -22,7 +19,7 @@ de place.ts (/ document.ts)
 * UI - UI1 - retour l'UI ? S'inspire de wechat
 
 * POST-SEJOUR - PSJ1 - récupérer polarstep ?
-* POST-SEJOUR - PSJ2 - créer un album souvenir
+* POST-SEJOUR - PSJ2 - créer un album souvenir => Epic 30 préparée : album personnel PDF, puis édition familiale privée publiée par le propriétaire (spécifications : docs/specs-stories/epic-30/)
 * POST-SEJOUR - PSJ3 - Pouvoir visionner les vidéos voyage mystere
 
 Abandonnés
