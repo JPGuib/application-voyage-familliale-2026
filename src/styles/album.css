@@ -501,6 +501,20 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+/* Mention informative non bloquante (story 30.5, export adaptatif) :
+   affichée quand le budget de photos par lieu ou la qualité des photos est
+   automatiquement réduit(e) pour un voyage riche en lieux, afin de rester
+   fidèle à ce que produira réellement l'export PDF. */
+.album-preview-adaptive-notice {
+  margin: 0.5rem 0 0;
+  color: #8a6d00;
+  background-color: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 4px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.85rem;
+}
+
 /* Responsive Design */
 
 @media (max-width: 768px) {

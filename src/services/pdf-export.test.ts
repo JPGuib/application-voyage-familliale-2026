@@ -4,10 +4,18 @@ import {
   preparePdfImages,
   collectPdfImages,
   convertEditorialAssetToJpegDataUrl,
+  recompressCarnetPhotoForExport,
   exportAlbumAsPdf,
   EDITORIAL_PHOTO_MAX_DIMENSION_PX,
 } from "./pdf-export";
-import { ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE } from "../app/albumUtils";
+import {
+  ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE,
+  PHOTO_QUALITY_TIER_DEFAULT,
+  PHOTO_QUALITY_TIER_REDUCED,
+  PHOTO_QUALITY_TIER_MINIMAL,
+  resolvePhotoBudgetPerPlace,
+  resolvePhotoQualityTier,
+} from "../app/albumUtils";
 import type { FilteredAlbumContent } from "../app/albumUtils";
 import type { AlbumDraft, AlbumSource } from "../types/cloud";
 
@@ -37,24 +45,41 @@ vi.mock("jspdf", async (importOriginal) => {
 });
 
 describe("pdf export limits", () => {
-  it("blocks export when image count exceeds the browser-safe limit", () => {
+  // Depuis l'ajout de l'export adaptatif (story 30.5), ce plafond n'est plus
+  // qu'un garde-fou extrême (cf. commentaire de HARD_MAX_IMAGES dans
+  // pdf-export.ts) : il ne doit être atteint que pour un volume de photos
+  // délirant, bien au-delà de ce qu'un album normal produit même après
+  // dégradation qualité et réduction du budget par lieu.
+  it("blocks export when image count exceeds the extreme hard-safety limit", () => {
     const result = calculateExportLimit({
-      imageCount: 61,
+      imageCount: 251,
       preparedBytes: 1024,
     });
 
     expect(result.allowed).toBe(false);
-    expect(result.reason).toContain("60");
+    expect(result.reason).toContain("250");
+    // Le message ne doit plus suggérer de retirer des lieux (rôle de dernier
+    // filet extrême, plus un usage normal).
+    expect(result.reason).not.toMatch(/retirer|réduisez le nombre de lieux/i);
   });
 
-  it("blocks export when prepared payload is too large", () => {
+  it("blocks export when prepared payload is too large (extreme hard-safety limit)", () => {
     const result = calculateExportLimit({
       imageCount: 10,
-      preparedBytes: 21 * 1024 * 1024,
+      preparedBytes: 61 * 1024 * 1024,
     });
 
     expect(result.allowed).toBe(false);
-    expect(result.reason).toMatch(/20\s*MiB|20 MiB|20MB/i);
+    expect(result.reason).toMatch(/60\s*MiB|60 MiB|60MB/i);
+  });
+
+  it("allows a large but reasonable album (well under the extreme hard-safety limit)", () => {
+    const result = calculateExportLimit({
+      imageCount: 200,
+      preparedBytes: 45 * 1024 * 1024,
+    });
+
+    expect(result.allowed).toBe(true);
   });
 
   it("keeps valid JPEG images and ignores unreadable data", () => {
@@ -83,6 +108,7 @@ describe("pdf export limits", () => {
 
 describe("collectPdfImages > editorial photos (story 30.5)", () => {
   function baseContent(overrides: Partial<FilteredAlbumContent> = {}): FilteredAlbumContent {
+    const placeCount = Object.keys(overrides.places ?? {}).length;
     return {
       places: {},
       entries: {},
@@ -91,6 +117,10 @@ describe("collectPdfImages > editorial photos (story 30.5)", () => {
       coverPhotoMissing: false,
       estimatedPageCount: 1,
       estimatedImageCount: 0,
+      // Peu de lieux dans ces tests : le budget adaptatif revient au
+      // comportement historique (3 éditoriales / 5 carnet, palier par défaut).
+      photoBudgetPerPlace: resolvePhotoBudgetPerPlace(placeCount),
+      photoQualityTier: PHOTO_QUALITY_TIER_DEFAULT,
       ...overrides,
     };
   }
@@ -240,6 +270,10 @@ describe("exportAlbumAsPdf > rich editorial content (story 30.5)", () => {
     coverPhotoMissing: false,
     estimatedPageCount: 4,
     estimatedImageCount: 3,
+    // 2 lieux inclus : bien en dessous du seuil de dégradation (15 lieux),
+    // comportement historique inchangé.
+    photoBudgetPerPlace: resolvePhotoBudgetPerPlace(2),
+    photoQualityTier: PHOTO_QUALITY_TIER_DEFAULT,
   };
 
   const source: AlbumSource = {
@@ -276,5 +310,129 @@ describe("exportAlbumAsPdf > rich editorial content (story 30.5)", () => {
     ).resolves.toBeUndefined();
 
     expect(progressPhases).toEqual(["preparing", "rendering", "download"]);
+  });
+});
+
+describe("recompressCarnetPhotoForExport (export adaptatif, ajout story 30.5)", () => {
+  it("does not reprocess a carnet photo when the default (non-degraded) quality tier applies", async () => {
+    const loadImageElement = vi.fn();
+    const drawResizedJpeg = vi.fn();
+
+    const result = await recompressCarnetPhotoForExport(
+      "data:image/jpeg;base64,original",
+      PHOTO_QUALITY_TIER_DEFAULT,
+      { loadImageElement, drawResizedJpeg }
+    );
+
+    expect(result).toBe("data:image/jpeg;base64,original");
+    expect(loadImageElement).not.toHaveBeenCalled();
+    expect(drawResizedJpeg).not.toHaveBeenCalled();
+  });
+
+  it("recompresses a carnet photo when a more aggressive quality tier is selected", async () => {
+    const result = await recompressCarnetPhotoForExport(
+      "data:image/jpeg;base64,original",
+      PHOTO_QUALITY_TIER_MINIMAL,
+      {
+        loadImageElement: vi.fn().mockResolvedValue({ naturalWidth: 1200, naturalHeight: 800 }),
+        drawResizedJpeg: vi.fn(
+          (_, width, height, quality) => `data:image/jpeg;base64,recompressed-${width}x${height}-${quality}`
+        ),
+      }
+    );
+
+    expect(result).toBe(
+      `data:image/jpeg;base64,recompressed-${PHOTO_QUALITY_TIER_MINIMAL.maxDimensionPx}x333-${PHOTO_QUALITY_TIER_MINIMAL.jpegQuality}`
+    );
+  });
+
+  it("falls back silently to the original photo when recompression fails (decode error, cas limite)", async () => {
+    const result = await recompressCarnetPhotoForExport(
+      "data:image/jpeg;base64,original",
+      PHOTO_QUALITY_TIER_REDUCED,
+      { loadImageElement: vi.fn().mockRejectedValue(new Error("decode failed")) }
+    );
+
+    expect(result).toBe("data:image/jpeg;base64,original");
+  });
+
+  it("falls back silently to the original photo when canvas rendering is unavailable", async () => {
+    const result = await recompressCarnetPhotoForExport(
+      "data:image/jpeg;base64,original",
+      PHOTO_QUALITY_TIER_REDUCED,
+      {
+        loadImageElement: vi.fn().mockResolvedValue({ naturalWidth: 900, naturalHeight: 600 }),
+        drawResizedJpeg: vi.fn(() => {
+          throw new Error("Traitement de l'image impossible sur cet appareil.");
+        }),
+      }
+    );
+
+    expect(result).toBe("data:image/jpeg;base64,original");
+  });
+});
+
+describe("exportAlbumAsPdf > voyage très illustré (nombreux lieux, export adaptatif)", () => {
+  it("never throws for a trip with many places, using a reduced photo budget and a degraded quality tier", async () => {
+    const placeCount = 40; // > 30 lieux : palier de dégradation maximal.
+    const places: FilteredAlbumContent["places"] = {};
+    const entries: FilteredAlbumContent["entries"] = {};
+    for (let i = 0; i < placeCount; i += 1) {
+      const placeId = `place-${i}`;
+      places[placeId] = { name: `Lieu ${i}`, shortDesc: "" };
+      entries[placeId] = {
+        "entry-1": {
+          entryId: "entry-1",
+          updatedAt: i,
+          text: `Souvenir du lieu ${i}`,
+          photos: { [`photo-${i}`]: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD" },
+        },
+      };
+    }
+
+    const largeDraft: AlbumDraft = {
+      profileId: "profile-1",
+      title: "Grand tour",
+      subtitle: "",
+      coverPhotoId: "",
+      includedLocationIds: new Set(Object.keys(places)),
+      includeGameSummary: false,
+      theme: "default",
+      createdAt: 1,
+      updatedAt: 1,
+    };
+
+    const photoBudgetPerPlace = resolvePhotoBudgetPerPlace(placeCount);
+    const photoQualityTier = resolvePhotoQualityTier(placeCount);
+    expect(photoQualityTier).toBe(PHOTO_QUALITY_TIER_MINIMAL);
+
+    const largeContent: FilteredAlbumContent = {
+      places,
+      entries,
+      profiles: {},
+      gameSummary: null,
+      coverPhotoMissing: false,
+      estimatedPageCount: placeCount + 2,
+      estimatedImageCount: placeCount * photoBudgetPerPlace.carnet,
+      photoBudgetPerPlace,
+      photoQualityTier,
+    };
+
+    const largeSource: AlbumSource = {
+      tripStartDate: "2026-01-01",
+      phase: "after",
+      generatedAt: Date.now(),
+      eligiblePlaces: {},
+      placeVisitLogs: {},
+      requiredProfiles: {},
+      gameResults: {},
+    };
+
+    await expect(
+      exportAlbumAsPdf(largeDraft, largeContent, largeSource, undefined, undefined, {
+        loadImageElement: vi.fn().mockResolvedValue({ naturalWidth: 900, naturalHeight: 600 }),
+        drawResizedJpeg: vi.fn(() => "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD"),
+      })
+    ).resolves.toBeUndefined();
   });
 });

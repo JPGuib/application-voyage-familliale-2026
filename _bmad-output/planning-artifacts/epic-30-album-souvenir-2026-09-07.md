@@ -37,6 +37,16 @@ Le retour utilisateur après les stories 30.1-30.4 a montré un album trop pauvr
 - Cette règle s'applique identiquement à l'album personnel (30.2/30.3) et à la source partagée de l'édition familiale (30.4), pour que les deux parcours en bénéficient sans dupliquer la logique de filtrage.
 - Le rendu (aperçu HTML et export PDF) est refondu visuellement pour se rapprocher de la charte de l'appli (accent #1976d2, bandeaux de titre colorés, dégradé de couverture façon `.album-page--cover`), au lieu d'un texte brut noir/blanc.
 
+### Export adaptatif (ajout story 30.5)
+
+Un premier retour d'usage a montré qu'un voyage riche en lieux (donc en photos) pouvait déclencher un blocage de l'export PDF demandant de retirer des lieux de la sélection — inacceptable, puisque chaque lieu marqué vu doit pouvoir apparaître dans l'album (règle produit constante de l'epic). La story 30.5 corrige ce comportement par ordre de priorité :
+
+1. Le plafond de sécurité de l'export (`calculateExportLimit`) est relevé très fortement (250 images / 60 Mio) et redevient un garde-fou extrême, plus une limite visée en usage normal.
+2. La qualité/dimension des photos (éditoriales et carnet) est automatiquement dégradée par paliers à l'export selon le nombre de lieux inclus dans l'album (900px/qualité 0.72 jusqu'à 15 lieux, 700px/0.6 jusqu'à 30 lieux, 500px/0.45 au-delà), sans jamais modifier le stockage cloud d'origine des photos.
+3. Le nombre de photos par lieu (éditoriales + carnet) est réparti par un budget adaptatif selon le nombre de lieux inclus, avec un minimum garanti par lieu : un voyage à beaucoup de lieux ne montre plus qu'un nombre réduit de photos par lieu plutôt que d'exclure des lieux entiers.
+
+L'aperçu (composition/prévisualisation) affiche une mention informative non bloquante quand ce mécanisme réduit la qualité ou le nombre de photos, pour rester fidèle à ce que produira l'export PDF.
+
 ## Données explicitement exclues
 
 - Documents, scans, billets, réservations, assurances, coordonnées et liens externes.
@@ -61,7 +71,7 @@ Les trois premières stories livrent un album personnel complet. La quatrième a
 ## Contraintes techniques
 
 - Les carnets de visite sont aujourd'hui lus lieu par lieu depuis `placeVisitLogs/$familyId/$placeId`; l'export doit ajouter une lecture ponctuelle au niveau de la famille, sans transformer le flux d'affichage normal en chargement intégral.
-- Les photos sont des data URI JPEG déjà compressés et plafonnés. L'export doit imposer un nombre maximal d'images et les recomprimer/dimensionner pour garder une génération viable sur mobile.
+- Les photos sont des data URI JPEG déjà compressés et plafonnés. L'export recompresse/dimensionne automatiquement les photos (éditoriales et carnet) selon un palier de qualité adaptatif et répartit un budget de photos par lieu, pour garder une génération viable sur mobile sans jamais retirer un lieu entier de la sélection (story 30.5, export adaptatif) ; un plafond global ne subsiste qu'en tout dernier recours, pour un volume réellement extrême.
 - Le lecteur ne doit récupérer que des données accessibles à son profil Firebase. Les règles RTDB doivent protéger toute nouvelle donnée d'édition familiale.
 - La sortie doit être un vrai PDF local et ne jamais envoyer les photos à un service tiers de conversion.
 
@@ -70,7 +80,7 @@ Les trois premières stories livrent un album personnel complet. La quatrième a
 1. Un utilisateur peut télécharger un PDF personnel sans révéler les souvenirs d'un autre utilisateur.
 2. Un propriétaire peut publier une édition familiale qui n'utilise que les contenus de lieux visibles et réellement visités.
 3. Aucun document ou scan de voyage n'est présent dans le PDF, quel que soit le mode d'album.
-4. Le parcours est utilisable sur mobile et ne bloque pas silencieusement quand le volume de photos dépasse les limites prévues.
+4. Le parcours est utilisable sur mobile et ne bloque jamais l'export en usage normal en demandant de retirer des lieux : le volume de photos est absorbé par dégradation qualité et budget adaptatif par lieu (story 30.5, export adaptatif), un blocage ne subsistant qu'en dernier recours extrême.
 5. L'export ne requiert ni backend applicatif ni stockage persistant de PDF pour la V1.
 
 ## Hors périmètre

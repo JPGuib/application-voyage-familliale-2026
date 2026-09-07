@@ -167,4 +167,27 @@ describe("AlbumScreen preview", () => {
 
     expect(screen.getByText("Aucun souvenir détaillé pour ce lieu.")).toBeInTheDocument();
   });
+
+  it("does not show the adaptive-export notice for a trip with few places (story 30.5, export adaptatif)", () => {
+    renderAlbum(sourceWithPhoto);
+    fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
+
+    expect(screen.queryByText(/Voyage riche en lieux/)).not.toBeInTheDocument();
+  });
+
+  it("shows a non-blocking adaptive-export notice when many places are included (story 30.5, export adaptatif)", () => {
+    const manyPlaces: AlbumSource["eligiblePlaces"] = {};
+    for (let i = 0; i < 40; i += 1) {
+      const placeId = `place-${i}`;
+      manyPlaces[placeId] = { placeId, name: `Lieu ${i}`, shortDesc: "" };
+    }
+    const bigSource: AlbumSource = { ...emptySource, eligiblePlaces: manyPlaces, placeVisitLogs: {} };
+
+    renderAlbum(bigSource);
+    fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
+
+    expect(screen.getByText(/Voyage riche en lieux/)).toBeInTheDocument();
+    // Le message reste informatif : l'aperçu continue de s'afficher normalement.
+    expect(screen.getByText("Itinéraire du voyage")).toBeInTheDocument();
+  });
 });

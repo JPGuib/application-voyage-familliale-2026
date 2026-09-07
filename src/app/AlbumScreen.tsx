@@ -7,7 +7,9 @@ import {
   findFallbackCoverPhoto,
   findPhotoSource,
   escapeAndLimitText,
-  ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE,
+  isPhotoBudgetReduced,
+  isPhotoQualityDegraded,
+  selectBudgetedCarnetPhotos,
 } from "./albumUtils";
 import {
   calculateExportLimit,
@@ -331,6 +333,12 @@ interface AlbumPreviewProps {
 function AlbumPreview({ content, draft }: AlbumPreviewProps) {
   const selectedCoverSource = findPhotoSource(content.entries, draft.coverPhotoId);
   const hasLocations = Object.keys(content.places).length > 0;
+  // Voyage riche en lieux : le budget de photos par lieu est réduit et/ou la
+  // qualité des photos est dégradée à l'export (story 30.5, export
+  // adaptatif). L'aperçu doit annoncer fidèlement ce qui sera dans le PDF,
+  // sans jamais bloquer l'affichage (mention informative non bloquante).
+  const showAdaptiveExportNotice =
+    isPhotoBudgetReduced(content.photoBudgetPerPlace) || isPhotoQualityDegraded(content.photoQualityTier);
 
   return (
     <div className="album-preview-container">
@@ -382,15 +390,8 @@ function AlbumPreview({ content, draft }: AlbumPreviewProps) {
         const hasNotes = Object.keys(placeEntries).length > 0;
         const hasPresentation = Boolean(place.history && place.history.trim());
         const hasAnecdotes = Boolean(place.anecdotes && place.anecdotes.length > 0);
-        const editorialPhotos = (place.photos ?? []).slice(0, ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE);
-        const carnetPhotos: Array<{ id: string; src: string }> = [];
-        for (const entry of Object.values(placeEntries)) {
-          if (typeof entry !== "object" || entry === null || !("photos" in entry)) continue;
-          const photos = (entry as { photos?: Record<string, string> }).photos ?? {};
-          for (const [photoId, src] of Object.entries(photos)) {
-            if (typeof src === "string") carnetPhotos.push({ id: photoId, src });
-          }
-        }
+        const editorialPhotos = (place.photos ?? []).slice(0, content.photoBudgetPerPlace.editorial);
+        const carnetPhotos = selectBudgetedCarnetPhotos(placeEntries, content.photoBudgetPerPlace.carnet);
         const hasGallery = editorialPhotos.length > 0 || carnetPhotos.length > 0;
 
         return (
@@ -500,6 +501,12 @@ function AlbumPreview({ content, draft }: AlbumPreviewProps) {
           Estimation : <strong>{content.estimatedPageCount} pages A4</strong>,{" "}
           <strong>{content.estimatedImageCount} images</strong>
         </p>
+        {showAdaptiveExportNotice && (
+          <p className="album-preview-adaptive-notice">
+            Voyage riche en lieux : certaines photos sont réduites en qualité/nombre pour garder un
+            PDF téléchargeable, tous les lieux restent inclus.
+          </p>
+        )}
       </div>
     </div>
   );

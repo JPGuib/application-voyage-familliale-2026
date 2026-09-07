@@ -8,6 +8,18 @@ import {
   pageCountEstimate,
   imageCountEstimate,
   ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE,
+  ALBUM_MAX_PHOTOS_PER_PLACE,
+  ALBUM_MIN_PHOTOS_PER_PLACE,
+  PHOTO_QUALITY_TIER_DEFAULT,
+  PHOTO_QUALITY_TIER_REDUCED,
+  PHOTO_QUALITY_TIER_MINIMAL,
+  PHOTO_QUALITY_TIER_PLACES_THRESHOLD_REDUCED,
+  PHOTO_QUALITY_TIER_PLACES_THRESHOLD_MINIMAL,
+  resolvePhotoBudgetPerPlace,
+  resolvePhotoQualityTier,
+  isPhotoBudgetReduced,
+  isPhotoQualityDegraded,
+  selectBudgetedCarnetPhotos,
 } from "./albumUtils";
 import type { AlbumDraft, AlbumSource } from "../types/cloud";
 
@@ -329,6 +341,147 @@ describe("Album Utilities", () => {
     it("exposes imageCountEstimate for the album preview", () => {
       const images = imageCountEstimate(mockSource, mockDraft);
       expect(images).toBe(1);
+    });
+  });
+
+  describe("resolvePhotoQualityTier (export adaptatif, ajout story 30.5)", () => {
+    it("keeps the default (non-degraded) tier for a trip with few places", () => {
+      expect(resolvePhotoQualityTier(1)).toEqual(PHOTO_QUALITY_TIER_DEFAULT);
+      expect(resolvePhotoQualityTier(PHOTO_QUALITY_TIER_PLACES_THRESHOLD_REDUCED)).toEqual(
+        PHOTO_QUALITY_TIER_DEFAULT
+      );
+    });
+
+    it("switches to the reduced tier just above the first threshold", () => {
+      expect(resolvePhotoQualityTier(PHOTO_QUALITY_TIER_PLACES_THRESHOLD_REDUCED + 1)).toEqual(
+        PHOTO_QUALITY_TIER_REDUCED
+      );
+      expect(resolvePhotoQualityTier(PHOTO_QUALITY_TIER_PLACES_THRESHOLD_MINIMAL)).toEqual(
+        PHOTO_QUALITY_TIER_REDUCED
+      );
+    });
+
+    it("switches to the minimal tier just above the second threshold", () => {
+      expect(resolvePhotoQualityTier(PHOTO_QUALITY_TIER_PLACES_THRESHOLD_MINIMAL + 1)).toEqual(
+        PHOTO_QUALITY_TIER_MINIMAL
+      );
+      expect(resolvePhotoQualityTier(200)).toEqual(PHOTO_QUALITY_TIER_MINIMAL);
+    });
+
+    it("exposes isPhotoQualityDegraded consistent with the resolved tier", () => {
+      expect(isPhotoQualityDegraded(resolvePhotoQualityTier(1))).toBe(false);
+      expect(isPhotoQualityDegraded(resolvePhotoQualityTier(50))).toBe(true);
+    });
+  });
+
+  describe("resolvePhotoBudgetPerPlace (export adaptatif, ajout story 30.5)", () => {
+    it("grants the maximum historical budget (3 editorial + 5 carnet) for a trip with few places", () => {
+      const budget = resolvePhotoBudgetPerPlace(1);
+      expect(budget.total).toBe(ALBUM_MAX_PHOTOS_PER_PLACE);
+      expect(budget.editorial).toBe(ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE);
+      expect(budget.carnet).toBe(ALBUM_MAX_PHOTOS_PER_PLACE - ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE);
+      expect(isPhotoBudgetReduced(budget)).toBe(false);
+    });
+
+    it("reduces the per-place budget as the number of included places grows", () => {
+      const smallTripBudget = resolvePhotoBudgetPerPlace(5);
+      const bigTripBudget = resolvePhotoBudgetPerPlace(60);
+
+      expect(bigTripBudget.total).toBeLessThan(smallTripBudget.total);
+      expect(isPhotoBudgetReduced(bigTripBudget)).toBe(true);
+    });
+
+    it("never goes below the minimum guaranteed budget per place, even for a huge number of places", () => {
+      const budget = resolvePhotoBudgetPerPlace(1000);
+      expect(budget.total).toBe(ALBUM_MIN_PHOTOS_PER_PLACE);
+      expect(budget.editorial).toBeGreaterThanOrEqual(1);
+      expect(budget.carnet).toBeGreaterThanOrEqual(0);
+      expect(budget.editorial + budget.carnet).toBe(budget.total);
+    });
+
+    it("always keeps editorial + carnet parts summing to the total budget", () => {
+      for (const placeCount of [1, 5, 10, 15, 16, 30, 31, 50, 100]) {
+        const budget = resolvePhotoBudgetPerPlace(placeCount);
+        expect(budget.editorial + budget.carnet).toBe(budget.total);
+        expect(budget.total).toBeGreaterThanOrEqual(ALBUM_MIN_PHOTOS_PER_PLACE);
+        expect(budget.total).toBeLessThanOrEqual(ALBUM_MAX_PHOTOS_PER_PLACE);
+      }
+    });
+  });
+
+  describe("selectBudgetedCarnetPhotos (export adaptatif, ajout story 30.5)", () => {
+    it("keeps the most recently updated entries' photos first when the budget is smaller than the total", () => {
+      const placeEntries = {
+        "entry-old": { entryId: "entry-old", updatedAt: 1000, photos: { "photo-old": "data:old" } },
+        "entry-new": { entryId: "entry-new", updatedAt: 5000, photos: { "photo-new": "data:new" } },
+      };
+
+      const selected = selectBudgetedCarnetPhotos(placeEntries, 1);
+      expect(selected).toHaveLength(1);
+      expect(selected[0].id).toBe("photo-new");
+    });
+
+    it("returns all photos when the budget is large enough", () => {
+      const placeEntries = {
+        "entry-1": { entryId: "entry-1", updatedAt: 1, photos: { "photo-1": "data:1", "photo-2": "data:2" } },
+      };
+
+      const selected = selectBudgetedCarnetPhotos(placeEntries, 5);
+      expect(selected).toHaveLength(2);
+    });
+
+    it("returns an empty array when the budget is zero or negative", () => {
+      const placeEntries = {
+        "entry-1": { entryId: "entry-1", updatedAt: 1, photos: { "photo-1": "data:1" } },
+      };
+
+      expect(selectBudgetedCarnetPhotos(placeEntries, 0)).toHaveLength(0);
+      expect(selectBudgetedCarnetPhotos(placeEntries, -3)).toHaveLength(0);
+    });
+  });
+
+  describe("filterAlbumContent > export adaptatif pour un voyage très illustré (ajout story 30.5)", () => {
+    it("exposes the resolved photo budget and quality tier for a small trip (unchanged historical behavior)", () => {
+      const result = filterAlbumContent(mockSource, mockDraft);
+      expect(result.photoBudgetPerPlace.total).toBe(ALBUM_MAX_PHOTOS_PER_PLACE);
+      expect(result.photoQualityTier).toEqual(PHOTO_QUALITY_TIER_DEFAULT);
+    });
+
+    it("reduces the photo budget and degrades quality for an album with many included places, without throwing", () => {
+      const manyPlaces: AlbumSource["eligiblePlaces"] = {};
+      const manyLogs: AlbumSource["placeVisitLogs"] = {};
+      const includedIds = new Set<string>();
+      for (let i = 0; i < 40; i += 1) {
+        const placeId = `place-${i}`;
+        manyPlaces[placeId] = { placeId, name: `Lieu ${i}`, shortDesc: "" };
+        manyLogs[placeId] = {
+          "entry-1": {
+            entryId: "entry-1",
+            placeId,
+            authorProfileId: "profile-1",
+            authorSurnameSnapshot: "John",
+            text: "Souvenir",
+            photos: { [`photo-${i}`]: "data:image/jpeg;base64,abc" },
+            createdAt: i,
+            updatedAt: i,
+          },
+        };
+        includedIds.add(placeId);
+      }
+
+      const bigSource: AlbumSource = {
+        ...mockSource,
+        eligiblePlaces: manyPlaces,
+        placeVisitLogs: manyLogs,
+      };
+      const bigDraft: AlbumDraft = { ...mockDraft, includedLocationIds: includedIds };
+
+      const result = filterAlbumContent(bigSource, bigDraft);
+
+      expect(result.photoBudgetPerPlace.total).toBeLessThan(ALBUM_MAX_PHOTOS_PER_PLACE);
+      expect(result.photoQualityTier).toEqual(PHOTO_QUALITY_TIER_MINIMAL);
+      // Chaque lieu reste inclus : aucun lieu n'est retiré pour respecter le budget.
+      expect(Object.keys(result.places)).toHaveLength(40);
     });
   });
 });
