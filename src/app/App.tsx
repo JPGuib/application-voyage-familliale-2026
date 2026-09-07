@@ -12002,19 +12002,20 @@ export default function App() {
     }
   };
 
+  const cloudSyncState = useCloudSync?.() ?? {};
   const {
-    cloudEnabled,
-    cloudReady,
-    cloudAuthError,
-    cloudActorUid,
-    cloudSnapshot,
-    pushSnapshot,
-    claimRoleForProfile,
-    deleteProfile,
-    setGameDayOverride,
-    setPlaceDayOverride,
-    setPlaceVisibility: setPlaceVisibilityInCloud,
-    setPlaceSeen: setPlaceSeenInCloud,
+    cloudEnabled = false,
+    cloudReady = true,
+    cloudAuthError = null,
+    cloudActorUid = null,
+    cloudSnapshot = null,
+    pushSnapshot = async () => false,
+    claimRoleForProfile = async () => null,
+    deleteProfile = async () => false,
+    setGameDayOverride = async () => ({ ok: false, message: "Cloud indisponible." }),
+    setPlaceDayOverride = async () => ({ ok: false, message: "Cloud indisponible." }),
+    setPlaceVisibility: setPlaceVisibilityInCloud = async () => ({ ok: false, message: "Cloud indisponible." }),
+    setPlaceSeen: setPlaceSeenInCloud = async () => ({ ok: false, message: "Cloud indisponible." }),
     saveCrosswordProgress: saveCrosswordProgressInCloud = async () => {},
     // Défauts de secours : ces trois fonctions carnet de visite sont plus
     // récentes que la plupart des mocks useCloudSync des tests d'intégration
@@ -12077,15 +12078,15 @@ export default function App() {
     setGroupInfoItemDone: setGroupInfoItemDoneInCloud = async () => {},
     subscribeToGroupInfoReadState = () => () => {},
     markGroupInfoRead: markGroupInfoReadInCloud = async () => {},
-    setContentOverride: setContentOverrideInCloud,
-    setTripStartDate: setTripStartDateInCloud,
-    setGameScoring: setGameScoringInCloud,
-    resetGameResults,
-    resetGameProgress,
-    registerAsOwnerDevice,
-    pushOwnerPhaseChange,
-    retryCloudAccess,
-  } = useCloudSync();
+    setContentOverride: setContentOverrideInCloud = async () => ({ ok: false, message: "Cloud indisponible." }),
+    setTripStartDate: setTripStartDateInCloud = async () => ({ ok: false, message: "Cloud indisponible." }),
+    setGameScoring: setGameScoringInCloud = async () => ({ ok: false, message: "Cloud indisponible." }),
+    resetGameResults = async () => ({ ok: false, message: "Cloud indisponible." }),
+    resetGameProgress = async () => ({ ok: false, message: "Cloud indisponible." }),
+    registerAsOwnerDevice = async () => {},
+    pushOwnerPhaseChange = async () => {},
+    retryCloudAccess = async () => {},
+  } = cloudSyncState;
   const [isOnline, setIsOnline] = useState(() => {
     if (typeof navigator === "undefined") {
       return true;
