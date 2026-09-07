@@ -156,6 +156,35 @@ describe("App access-control integration", () => {
     expect(screen.getByText(/Code propriétaire/i)).toBeInTheDocument();
   });
 
+  it("opens Album souvenir from the navigation for the owner", async () => {
+    localStorage.setItem("jp-active-profile-id", "p1");
+
+    const snapshot = makeSnapshot("before");
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-1",
+      cloudSnapshot: snapshot,
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Préparation des bagages/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Album souvenir" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Album Souvenir" })).toBeInTheDocument();
+    });
+    expect(screen.getByLabelText("Titre *")).toBeInTheDocument();
+  });
+
   it("keeps user on checklist flow before unlock while owner keeps full access", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 

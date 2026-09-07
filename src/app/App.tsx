@@ -18057,41 +18057,6 @@ const resetForProfileSwitch = () => {
           />;
       }
 
-      if (effectiveScreen === "album") {
-        if (albumSourceLoading) {
-          return (
-            <div className="flex h-full items-center justify-center p-6 text-center">
-              <p>Chargement des souvenirs de l'album...</p>
-            </div>
-          );
-        }
-
-        if (albumSourceError || !albumSource) {
-          return (
-            <div className="flex h-full items-center justify-center p-6 text-center">
-              <div>
-                <h2 className="text-xl font-semibold">Album souvenir</h2>
-                <p className="mt-2">{albumSourceError ?? "La source de l'album est indisponible."}</p>
-                <button className="mt-4 rounded border px-4 py-2" onClick={() => goToScreen("dashboard")}>
-                  Retour à l'accueil
-                </button>
-              </div>
-            </div>
-          );
-        }
-
-        return (
-          <AlbumScreen
-            profileId={profile.id}
-            currentDay={rawCurrentDay}
-            lastDefinedDay={lastDefinedDay}
-            role={profile.role}
-            albumSource={albumSource}
-            onClose={() => goToScreen("dashboard")}
-          />
-        );
-      }
-
       if (effectiveScreen === "guide") {
         return (
           <GuideScreen
@@ -18524,6 +18489,41 @@ const resetForProfileSwitch = () => {
         />
       );
     }
+    if (effectiveScreen === "album") {
+      if (albumSourceLoading) {
+        return (
+          <div className="flex h-full items-center justify-center p-6 text-center">
+            <p>Chargement des souvenirs de l'album...</p>
+          </div>
+        );
+      }
+
+      if (albumSourceError || !albumSource) {
+        return (
+          <div className="flex h-full items-center justify-center p-6 text-center">
+            <div>
+              <h2 className="text-xl font-semibold">Album souvenir</h2>
+              <p className="mt-2">{albumSourceError ?? "La source de l'album est indisponible."}</p>
+              <button className="mt-4 rounded border px-4 py-2" onClick={() => goToScreen("dashboard")}>
+                Retour à l'accueil
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <AlbumScreen
+          profileId={profile.id}
+          currentDay={rawCurrentDay}
+          lastDefinedDay={lastDefinedDay}
+          role={profile.role}
+          albumSource={albumSource}
+          onClose={() => goToScreen("dashboard")}
+        />
+      );
+    }
+
     switch (effectiveScreen) {
       case "checklist":
         return (
