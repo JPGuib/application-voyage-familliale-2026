@@ -47,7 +47,7 @@ export function useGroupInfoUnreadBadge({
     }
     return subscribeToGroupInfoItems((next) => setItems(next));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eligible, subscribeToGroupInfoItems]);
+  }, [eligible]);
 
   useEffect(() => {
     if (!eligible) {
@@ -56,7 +56,7 @@ export function useGroupInfoUnreadBadge({
     }
     return subscribeToGroupInfoReadState((next) => setReadState(next));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eligible, subscribeToGroupInfoReadState]);
+  }, [eligible]);
 
   const hasUnreadGroupInfo = useMemo(
     () => computeHasUnreadGroupInfo(Object.values(items), readState[currentProfileId]?.lastReadAt),

@@ -10,7 +10,8 @@
     "generate:tutorials": "python tools/tutorial_generator/cli.py",
     "build": "vite build",
     "dev": "vite",
-    "test": "vitest run",
+    "test": "node scripts/run-vitest-batches.mjs",
+    "test:single": "vitest run",
     "test:rules": "vitest run src/services/firebase-rtdb.rules.test.ts"
   },
   "dependencies": {

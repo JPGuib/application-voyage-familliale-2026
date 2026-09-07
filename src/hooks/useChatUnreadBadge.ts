@@ -69,7 +69,7 @@ export function useChatUnreadBadge({
     }
     return subscribeToChatConversations((next) => setConversations(next));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eligible, subscribeToChatConversations]);
+  }, [eligible]);
 
   useEffect(() => {
     if (!eligible) {
@@ -78,7 +78,7 @@ export function useChatUnreadBadge({
     }
     return subscribeToChatReadState((next) => setReadState(next));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eligible, subscribeToChatReadState]);
+  }, [eligible]);
 
   const joinedConversationIds = useMemo(
     () =>
@@ -106,7 +106,7 @@ export function useChatUnreadBadge({
       for (const unsubscribe of unsubscribes) unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eligible, joinedConversationIdsKey, subscribeToChatMessages]);
+  }, [eligible, joinedConversationIdsKey]);
 
   const hasUnreadChat = useMemo(
     () =>
