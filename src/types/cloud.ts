@@ -478,3 +478,54 @@ export type ClaimRoleResult = {
   assignedRole: Role;
   familyState: SharedFamilyState;
 };
+
+// --- Album Source (story 30) ------------------------------------------
+//
+// Données préparées pour l'export d'album familial : contient uniquement
+// les souvenirs du carnet de visite associés à des lieux admissibles
+// (visibles et marqués "seen" par le propriétaire), sans documents ni chats.
+// Chargé à la demande lors d'une demande d'export, jamais en abonnement
+// temps réel global.
+
+export type AlbumSourcePlaceEntry = {
+  placeId: string;
+  name: string;
+  shortDesc: string;
+};
+
+export type AlbumSourceVisitLogEntry = {
+  entryId: string;
+  placeId: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  text: string;
+  photos: Record<string, string>; // photoId -> data URI JPEG compressée
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type AlbumSourceProfileEntry = {
+  profileId: string;
+  surname: string;
+  gender?: ProfileGender;
+  householdRole?: ProfileHouseholdRole;
+};
+
+export type AlbumSource = {
+  // Métadonnées du voyage
+  tripStartDate: string | null;
+  phase: TravelPhase;
+  generatedAt: number;
+  
+  // Lieux admissibles (visibles et marqués "seen")
+  eligiblePlaces: Record<string, AlbumSourcePlaceEntry>;
+  
+  // Souvenirs du carnet de ces seuls lieux, regroupés par lieu puis par entryId
+  placeVisitLogs: Record<string, Record<string, AlbumSourceVisitLogEntry>>;
+  
+  // Profils nécessaires à l'affichage des auteurs (ceux ayant au moins une entrée)
+  requiredProfiles: Record<string, AlbumSourceProfileEntry>;
+  
+  // Résultats de jeu du jour depuis le snapshot familial
+  gameResults: Record<string, CloudGameHistoryEntry[]>; // profileId -> résultats
+};

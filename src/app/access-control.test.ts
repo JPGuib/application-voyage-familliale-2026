@@ -21,6 +21,7 @@ const ALL_SECTIONS: AccessSection[] = [
   "groupInfo",
   "tips",
   "results",
+  "album",
   "settings",
   "owner-code-actions",
 ];
@@ -71,9 +72,11 @@ describe("access-control policy", () => {
       "groupInfo",
       "tips",
       "results",
+      "album",
       "settings",
     ]);
     expect(canAccessSection("utilisateur", "during", "owner-code-actions")).toBe(false);
+    expect(canAccessSection("utilisateur", "during", "album")).toBe(true);
   });
 
   it("keeps null role restricted even during phase", () => {
@@ -99,6 +102,8 @@ describe("access-control policy", () => {
     expect(canAccessSection("visiteur", "before", "checklist")).toBe(false);
     expect(canAccessSection("visiteur", "before", "game")).toBe(false);
     expect(canAccessSection("visiteur", "before", "results")).toBe(false);
+    expect(canAccessSection("visiteur", "before", "album")).toBe(false);
+    expect(canAccessSection("visiteur", "during", "album")).toBe(false);
     expect(canAccessSection("visiteur", "before", "owner-code-actions")).toBe(false);
   });
 

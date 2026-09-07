@@ -17,6 +17,7 @@ export type AccessSection =
   | "tips"
   | "results"
   | "settings"
+  | "album"
   | "owner-code-actions";
 
 export type AppScreen =
@@ -62,6 +63,7 @@ const OWNER_ALLOWED: ReadonlyArray<AccessSection> = [
   "groupInfo",
   "tips",
   "results",
+  "album",
   "settings",
   "owner-code-actions",
 ];
@@ -90,16 +92,10 @@ const USER_AFTER_ALLOWED: ReadonlyArray<AccessSection> = [
   "groupInfo",
   "tips",
   "results",
+  "album",
   "settings",
 ];
 
-// Le visiteur (story 24.3, restreint le 2026-08-01) suit le voyage sans
-// checklist ni jeu/résultats ni action code propriétaire, et n'est jamais
-// bloqué par la phase avant/pendant : il suit dès sa création, contrairement
-// à l'utilisateur qui attend le déblocage. Il n'a non plus jamais accès au
-// Chat (story 28.1) : il n'est jamais membre de la conversation "Voyage" ni
-// d'aucune conversation personnalisée (story 28.2). Même exclusion pour
-// "Infos du groupe" (epic 29, décision actée avec Jean-Philippe).
 const VISITOR_ALLOWED: ReadonlyArray<AccessSection> = [
   "dashboard",
   "guide",
@@ -219,6 +215,7 @@ export function getAccessDeniedMessage(
     (section === "checklist" ||
       section === "game" ||
       section === "results" ||
+      section === "album" ||
       section === "chat" ||
       section === "groupInfo")
   ) {
