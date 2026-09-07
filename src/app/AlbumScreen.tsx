@@ -7,6 +7,7 @@ import {
   findFallbackCoverPhoto,
   findPhotoSource,
   escapeAndLimitText,
+  ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE,
 } from "./albumUtils";
 import {
   calculateExportLimit,
@@ -330,7 +331,6 @@ interface AlbumPreviewProps {
 function AlbumPreview({ content, draft }: AlbumPreviewProps) {
   const selectedCoverSource = findPhotoSource(content.entries, draft.coverPhotoId);
   const hasLocations = Object.keys(content.places).length > 0;
-  const hasEntries = Object.keys(content.entries).length > 0;
 
   return (
     <div className="album-preview-container">
@@ -354,7 +354,7 @@ function AlbumPreview({ content, draft }: AlbumPreviewProps) {
       {/* Page d'itinéraire, conservée même lorsque le carnet est vide */}
       <div className="album-page album-page--itinerary">
         <div className="page-content">
-          <h3 className="place-title">Itinéraire du voyage</h3>
+          <h3 className="place-title chapter-band">Itinéraire du voyage</h3>
           {hasLocations ? (
             <ul className="itinerary-list">
               {Object.entries(content.places).map(([placeId, place]) => (
@@ -373,35 +373,89 @@ function AlbumPreview({ content, draft }: AlbumPreviewProps) {
         </div>
       </div>
 
-      {/* Pages de contenu */}
-      {hasEntries && Object.entries(content.entries).map(([placeId, entries]) => (
-        <div key={placeId} className="album-page">
-          <div className="page-content">
-            <h3 className="place-title">
-              {escapeAndLimitText(content.places[placeId]?.name || placeId, 100)}
-            </h3>
-            <div className="entries-list">
-              {Object.entries(entries).map(([entryId, entry]) => {
-                if (typeof entry !== "object" || entry === null) return null;
-                const e = entry as Record<string, unknown>;
-                return (
-                  <div key={entryId} className="entry-item">
-                    {e.text && (
-                      <p className="entry-text">{escapeAndLimitText(String(e.text), 500)}</p>
-                    )}
-                  </div>
-                );
-              })}
+      {/* Chapitres par lieu : le socle éditorial (présentation, anecdotes,
+          photos officielles) est toujours affiché pour un lieu inclus, même
+          sans note de carnet associée (règle métier story 30.5). Les
+          souvenirs personnels s'ajoutent par-dessus quand ils existent. */}
+      {hasLocations && Object.entries(content.places).map(([placeId, place]) => {
+        const placeEntries = content.entries[placeId] ?? {};
+        const hasNotes = Object.keys(placeEntries).length > 0;
+        const hasPresentation = Boolean(place.history && place.history.trim());
+        const hasAnecdotes = Boolean(place.anecdotes && place.anecdotes.length > 0);
+        const editorialPhotos = (place.photos ?? []).slice(0, ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE);
+        const carnetPhotos: Array<{ id: string; src: string }> = [];
+        for (const entry of Object.values(placeEntries)) {
+          if (typeof entry !== "object" || entry === null || !("photos" in entry)) continue;
+          const photos = (entry as { photos?: Record<string, string> }).photos ?? {};
+          for (const [photoId, src] of Object.entries(photos)) {
+            if (typeof src === "string") carnetPhotos.push({ id: photoId, src });
+          }
+        }
+        const hasGallery = editorialPhotos.length > 0 || carnetPhotos.length > 0;
+
+        return (
+          <div key={placeId} className="album-page">
+            <div className="page-content">
+              <h3 className="place-title chapter-band">{escapeAndLimitText(place.name, 100)}</h3>
+
+              {hasPresentation && (
+                <div className="place-presentation">
+                  {place.historyLabel && <h4>{escapeAndLimitText(place.historyLabel, 100)}</h4>}
+                  <p>{escapeAndLimitText(place.history || "", 1000)}</p>
+                </div>
+              )}
+
+              {hasAnecdotes && (
+                <div className="place-anecdotes">
+                  <h4>{escapeAndLimitText(place.anecdotesLabel || "Anecdotes", 100)}</h4>
+                  <ul>
+                    {(place.anecdotes ?? []).map((anecdote, index) => (
+                      <li key={index}>{escapeAndLimitText(anecdote, 300)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {hasGallery && (
+                <div className="photo-gallery">
+                  {editorialPhotos.map((src, index) => (
+                    <img key={`editorial-${index}`} src={src} alt="" />
+                  ))}
+                  {carnetPhotos.map((photo) => (
+                    <img key={photo.id} src={photo.src} alt="" />
+                  ))}
+                </div>
+              )}
+
+              {hasNotes && (
+                <div className="entries-list">
+                  {Object.entries(placeEntries).map(([entryId, entry]) => {
+                    if (typeof entry !== "object" || entry === null) return null;
+                    const e = entry as Record<string, unknown>;
+                    return (
+                      <div key={entryId} className="entry-item">
+                        {e.text && (
+                          <p className="entry-text">{escapeAndLimitText(String(e.text), 500)}</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {!hasPresentation && !hasAnecdotes && !hasGallery && !hasNotes && (
+                <p className="album-empty-message">Aucun souvenir détaillé pour ce lieu.</p>
+              )}
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Page des résultats de jeu */}
       {content.gameSummary && (
         <div className="album-page">
           <div className="page-content">
-            <h3 className="game-title">Résultats de Jeu</h3>
+            <h3 className="game-title chapter-band">Résultats de Jeu</h3>
             <p className="game-summary">
               Score total : <strong>{content.gameSummary.totalScore}</strong>
             </p>
@@ -428,7 +482,7 @@ function AlbumPreview({ content, draft }: AlbumPreviewProps) {
         </div>
       )}
 
-      {!hasEntries && !content.gameSummary && (
+      {!hasLocations && !content.gameSummary && (
         <div className="album-page album-page--empty-content">
           <div className="page-content">
             <h3 className="place-title">Souvenirs personnels</h3>

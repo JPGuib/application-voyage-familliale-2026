@@ -173,6 +173,60 @@ describe("Album Source - Eligibility Filter", () => {
       );
       expect(result).toEqual({});
     });
+
+    it("copies the editorial content (story 30.5) from Place onto the eligible entry", () => {
+      const placesWithEditorial: Place[] = [
+        {
+          id: "place-editorial",
+          name: "Istanbul",
+          shortDesc: "La ville-pont",
+          tag: "Ville",
+          jour: [2],
+          image: "/images/guide/Istanbul photo 1.webp",
+          photos: [
+            "/images/guide/Istanbul photo 1.webp",
+            "/images/places/Mosquée bleue.webp",
+          ],
+          historyLabel: "Présentation",
+          history: "Istanbul est la plus grande ville de Turquie.",
+          anecdotesLabel: "Le saviez-vous ?",
+          anecdotes: ["Le Bosphore coupe la ville en deux."],
+        },
+      ];
+
+      const result = buildEligiblePlaces(
+        placesWithEditorial,
+        [],
+        { "place-editorial": "visible" },
+        { "place-editorial": "seen" }
+      );
+
+      expect(result["place-editorial"]).toEqual({
+        placeId: "place-editorial",
+        name: "Istanbul",
+        shortDesc: "La ville-pont",
+        image: "/images/guide/Istanbul photo 1.webp",
+        photos: [
+          "/images/guide/Istanbul photo 1.webp",
+          "/images/places/Mosquée bleue.webp",
+        ],
+        historyLabel: "Présentation",
+        history: "Istanbul est la plus grande ville de Turquie.",
+        anecdotesLabel: "Le saviez-vous ?",
+        anecdotes: ["Le Bosphore coupe la ville en deux."],
+      });
+    });
+
+    it("omits editorial fields entirely when the source Place has none (no undefined keys leaking in)", () => {
+      const result = buildEligiblePlaces(
+        defaultPlaces,
+        [],
+        { "place-1": "visible" },
+        { "place-1": "seen" }
+      );
+
+      expect(Object.keys(result["place-1"]!).sort()).toEqual(["name", "placeId", "shortDesc"]);
+    });
   });
 
   describe("filterCarnetVisiteByEligibility", () => {

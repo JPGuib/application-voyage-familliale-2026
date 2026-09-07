@@ -487,10 +487,22 @@ export type ClaimRoleResult = {
 // Chargé à la demande lors d'une demande d'export, jamais en abonnement
 // temps réel global.
 
+// Champs éditoriaux (story 30.5) : recopiés depuis Place (src/content/places.ts)
+// pour que l'album personnel ET l'édition familiale portent toujours la
+// présentation, les anecdotes et les photos officielles d'un lieu, même
+// quand aucun voyageur n'a écrit de note de carnet pour ce lieu. Optionnels
+// car toutes les visites du programme n'ont pas ce contenu (ex. simples
+// vols ajoutés au programme sans historyLabel/anecdotesLabel).
 export type AlbumSourcePlaceEntry = {
   placeId: string;
   name: string;
   shortDesc: string;
+  image?: string;
+  photos?: string[];
+  historyLabel?: string;
+  history?: string;
+  anecdotesLabel?: string;
+  anecdotes?: string[];
 };
 
 export type AlbumSourceVisitLogEntry = {

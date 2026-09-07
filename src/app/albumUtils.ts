@@ -15,6 +15,29 @@ export type AlbumGameSummary = {
 };
 
 /**
+ * Nombre maximal de photos éditoriales (galerie officielle d'un lieu, cf.
+ * `Place.photos` dans src/content/places.ts) incluses par lieu dans l'album
+ * (aperçu ET export PDF). Ce plafond maîtrise le poids/nombre d'images de
+ * l'export, cohérent avec les limites déjà existantes de 30.3
+ * (MAX_IMAGES/MAX_PREPARED_BYTES dans pdf-export.ts) : un lieu très illustré
+ * dans le Guide du séjour (ex. Istanbul, 4 photos) ne doit pas à lui seul
+ * saturer le budget d'images d'un album multi-lieux. Les photos du carnet de
+ * voyage (souvenirs personnels) ne sont pas plafonnées ici.
+ */
+export const ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE = 3;
+
+export type FilteredAlbumPlace = {
+  name: string;
+  shortDesc: string;
+  image?: string;
+  photos?: string[];
+  historyLabel?: string;
+  history?: string;
+  anecdotesLabel?: string;
+  anecdotes?: string[];
+};
+
+/**
  * Filtre les sources de l'album en fonction de la sélection du brouillon.
  *
  * Applique les filtres :
@@ -23,7 +46,7 @@ export type AlbumGameSummary = {
  * - Résultats de jeu si activés
  */
 export interface FilteredAlbumContent {
-  places: Record<string, { name: string; shortDesc: string }>;
+  places: Record<string, FilteredAlbumPlace>;
   entries: Record<string, Record<string, unknown>>;
   profiles: Record<string, unknown>;
   gameSummary: AlbumGameSummary | null;
@@ -39,13 +62,22 @@ export function filterAlbumContent(
   source: AlbumSource,
   draft: AlbumDraft
 ): FilteredAlbumContent {
-  // Filtrer les lieux selon la sélection du brouillon
-  const filteredPlaces: Record<string, { name: string; shortDesc: string }> = {};
+  // Filtrer les lieux selon la sélection du brouillon. Le socle éditorial
+  // (présentation, anecdotes, photos officielles) est toujours recopié pour
+  // un lieu inclus : il doit apparaître même sans note de carnet (règle
+  // produit story 30.5).
+  const filteredPlaces: Record<string, FilteredAlbumPlace> = {};
   for (const [placeId, place] of Object.entries(source.eligiblePlaces)) {
     if (draft.includedLocationIds.has(placeId)) {
       filteredPlaces[placeId] = {
         name: place.name,
         shortDesc: place.shortDesc,
+        image: place.image,
+        photos: place.photos,
+        historyLabel: place.historyLabel,
+        history: place.history,
+        anecdotesLabel: place.anecdotesLabel,
+        anecdotes: place.anecdotes,
       };
     }
   }
@@ -94,8 +126,16 @@ export function filterAlbumContent(
     gameSummary
   );
 
-  // Estimer le nombre d'images
+  // Estimer le nombre d'images : photos éditoriales des lieux inclus
+  // (plafonnées par lieu, cf. ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE) + photos
+  // du carnet de voyage (non plafonnées ici, déjà limitées côté source par
+  // CARNET_VISITE_MAX_PHOTOS_PER_ENTRY).
   let estimatedImageCount = 0;
+  for (const place of Object.values(filteredPlaces)) {
+    if (place.photos && place.photos.length > 0) {
+      estimatedImageCount += Math.min(place.photos.length, ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE);
+    }
+  }
   for (const entries of Object.values(filteredEntries)) {
     for (const entry of Object.values(entries)) {
       if (typeof entry === "object" && entry !== null && "photos" in entry) {
@@ -184,6 +224,12 @@ export function extractGameSummary(
 /**
  * Estime le nombre de pages A4 pour le futur album.
  * Estimation approximative basée sur le nombre de contenus.
+ *
+ * Depuis la story 30.5, chaque lieu inclus forme un "chapitre" (bandeau,
+ * présentation, anecdotes, galerie éditoriale) qui occupe au moins une page,
+ * même sans note de carnet associée (le socle éditorial est toujours
+ * affiché). Les notes de carnet au-delà de la première du chapitre
+ * débordent sur des pages supplémentaires, par lot de 3 (comme avant 30.5).
  */
 function estimatePageCount(
   _title: string,
@@ -193,14 +239,19 @@ function estimatePageCount(
 ): number {
   let pages = 2; // Cover and itinerary pages
 
-  // Add content pages for journal entries.
-  for (const placeEntries of Object.values(entries)) {
-    pages += Math.ceil(Object.keys(placeEntries).length / 3);
-  }
-
-  // Keep a stable minimal content page for an album without journal entries.
-  if (Object.keys(places).length === 0 || Object.keys(entries).length === 0) {
+  const placeIds = Object.keys(places);
+  if (placeIds.length === 0) {
+    // Keep a stable minimal content page for an album without any place.
     pages += 1;
+  } else {
+    for (const placeId of placeIds) {
+      pages += 1; // Chapitre du lieu (bandeau + présentation + anecdotes + galerie).
+      const entryCount = Object.keys(entries[placeId] ?? {}).length;
+      if (entryCount > 1) {
+        // La première note tient dans la page de chapitre, les suivantes débordent.
+        pages += Math.ceil((entryCount - 1) / 3);
+      }
+    }
   }
 
   // Add page for game summary if present

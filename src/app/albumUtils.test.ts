@@ -7,6 +7,7 @@ import {
   validateDraftForPreview,
   pageCountEstimate,
   imageCountEstimate,
+  ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE,
 } from "./albumUtils";
 import type { AlbumDraft, AlbumSource } from "../types/cloud";
 
@@ -124,6 +125,87 @@ describe("Album Utilities", () => {
       };
       const result = filterAlbumContent(mockSource, draftWithMissingCover);
       expect(result.coverPhotoMissing).toBe(true);
+    });
+  });
+
+  describe("filterAlbumContent > editorial content (story 30.5)", () => {
+    const sourceWithEditorial: AlbumSource = {
+      ...mockSource,
+      eligiblePlaces: {
+        "place-1": {
+          placeId: "place-1",
+          name: "Istanbul",
+          shortDesc: "Historic city",
+          image: "/images/guide/Istanbul photo 1.webp",
+          photos: [
+            "/images/guide/Istanbul photo 1.webp",
+            "/images/places/Mosquée bleue.webp",
+            "/images/places/Sainte Sophie.webp",
+            "/images/places/Bosphore.webp",
+          ],
+          historyLabel: "Présentation",
+          history: "Istanbul est la plus grande ville de Turquie.",
+          anecdotesLabel: "Le saviez-vous ?",
+          anecdotes: ["Le Bosphore coupe la ville en deux."],
+        },
+        "place-2": {
+          placeId: "place-2",
+          name: "Cappadocia",
+          shortDesc: "Rock formations",
+          // Pas de contenu éditorial pour ce lieu (ex. simple vol du programme).
+        },
+      },
+    };
+
+    it("carries the editorial content through for an included place, even without a journal entry", () => {
+      const draftWithoutEntries: AlbumDraft = {
+        ...mockDraft,
+        includedLocationIds: new Set(["place-1"]),
+      };
+      const sourceWithoutEntries: AlbumSource = { ...sourceWithEditorial, placeVisitLogs: {} };
+
+      const result = filterAlbumContent(sourceWithoutEntries, draftWithoutEntries);
+
+      expect(result.places["place-1"]).toMatchObject({
+        name: "Istanbul",
+        historyLabel: "Présentation",
+        history: "Istanbul est la plus grande ville de Turquie.",
+        anecdotesLabel: "Le saviez-vous ?",
+        anecdotes: ["Le Bosphore coupe la ville en deux."],
+      });
+      expect(result.places["place-1"]!.photos).toHaveLength(4);
+    });
+
+    it("keeps a place with no editorial content at all without crashing (place-2 has no history/anecdotes/photos)", () => {
+      const draft: AlbumDraft = { ...mockDraft, includedLocationIds: new Set(["place-2"]) };
+      const result = filterAlbumContent(sourceWithEditorial, draft);
+
+      expect(result.places["place-2"]).toMatchObject({ name: "Cappadocia" });
+      expect(result.places["place-2"]!.history).toBeUndefined();
+      expect(result.places["place-2"]!.anecdotes).toBeUndefined();
+      expect(result.places["place-2"]!.photos).toBeUndefined();
+    });
+
+    it("caps the editorial photo count per place at ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE for the image estimate", () => {
+      const draft: AlbumDraft = {
+        ...mockDraft,
+        includedLocationIds: new Set(["place-1"]),
+        coverPhotoId: "",
+      };
+      const sourceWithoutEntries: AlbumSource = { ...sourceWithEditorial, placeVisitLogs: {} };
+
+      const result = filterAlbumContent(sourceWithoutEntries, draft);
+
+      // Le lieu a 4 photos éditoriales en source, mais le plafond est appliqué.
+      expect(result.estimatedImageCount).toBe(ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE);
+    });
+
+    it("combines editorial photos (capped) and carnet photos in the image estimate", () => {
+      const draft: AlbumDraft = { ...mockDraft, includedLocationIds: new Set(["place-1"]) };
+      const result = filterAlbumContent(sourceWithEditorial, draft);
+
+      // 3 photos éditoriales plafonnées (sur 4) + 1 photo de carnet (entry-1).
+      expect(result.estimatedImageCount).toBe(ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE + 1);
     });
   });
 

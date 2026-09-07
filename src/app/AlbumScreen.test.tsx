@@ -34,6 +34,25 @@ const sourceWithPhoto: AlbumSource = {
   },
 };
 
+const sourceWithEditorialOnly: AlbumSource = {
+  ...emptySource,
+  eligiblePlaces: {
+    "place-1": {
+      placeId: "place-1",
+      name: "Istanbul",
+      shortDesc: "Ville historique",
+      image: "/images/guide/Istanbul photo 1.webp",
+      photos: ["/images/guide/Istanbul photo 1.webp", "/images/places/Bosphore.webp"],
+      historyLabel: "Présentation",
+      history: "Istanbul est la plus grande ville de Turquie.",
+      anecdotesLabel: "Le saviez-vous ?",
+      anecdotes: ["Le Bosphore coupe la ville en deux."],
+    },
+  },
+  // Aucune entrée de carnet pour ce lieu : seul le socle éditorial est disponible.
+  placeVisitLogs: {},
+};
+
 describe("AlbumScreen preview", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -118,5 +137,34 @@ describe("AlbumScreen preview", () => {
     fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
 
     expect(screen.getByRole("button", { name: /Télécharger le PDF/i })).toBeInTheDocument();
+  });
+
+  it("shows the editorial content (présentation, anecdotes, galerie) for a place without any journal entry (story 30.5)", () => {
+    renderAlbum(sourceWithEditorialOnly);
+
+    fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
+
+    expect(screen.getByText("Présentation")).toBeInTheDocument();
+    expect(screen.getByText("Istanbul est la plus grande ville de Turquie.")).toBeInTheDocument();
+    expect(screen.getByText("Le saviez-vous ?")).toBeInTheDocument();
+    expect(screen.getByText("Le Bosphore coupe la ville en deux.")).toBeInTheDocument();
+    // Ne doit pas afficher le message de repli "aucun souvenir" puisque le
+    // socle éditorial est disponible même sans note de carnet.
+    expect(screen.queryByText("Aucun souvenir détaillé pour ce lieu.")).not.toBeInTheDocument();
+  });
+
+  it("shows a graceful empty message for a place with no editorial content and no journal entry", () => {
+    const bareSource: AlbumSource = {
+      ...emptySource,
+      eligiblePlaces: {
+        "place-1": { placeId: "place-1", name: "Nantes - Paris", shortDesc: "Vol" },
+      },
+      placeVisitLogs: {},
+    };
+
+    renderAlbum(bareSource);
+    fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
+
+    expect(screen.getByText("Aucun souvenir détaillé pour ce lieu.")).toBeInTheDocument();
   });
 });

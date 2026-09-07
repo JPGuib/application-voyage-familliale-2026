@@ -131,10 +131,19 @@ export function buildEligiblePlaces(
 
   for (const place of allPossiblePlaces) {
     if (isLocationEligible(place.id, placeVisibilityMap, placeSeenMap)) {
+      // Socle éditorial (story 30.5) : recopié tel quel depuis Place, uniquement
+      // quand renseigné, pour ne jamais introduire de champ vide/undefined dans
+      // l'objet (garde les tests d'égalité stricte existants stables).
       eligible[place.id] = {
         placeId: place.id,
         name: place.name,
         shortDesc: place.shortDesc,
+        ...(place.image ? { image: place.image } : {}),
+        ...(place.photos && place.photos.length > 0 ? { photos: place.photos } : {}),
+        ...(place.historyLabel ? { historyLabel: place.historyLabel } : {}),
+        ...(place.history ? { history: place.history } : {}),
+        ...(place.anecdotesLabel ? { anecdotesLabel: place.anecdotesLabel } : {}),
+        ...(place.anecdotes && place.anecdotes.length > 0 ? { anecdotes: place.anecdotes } : {}),
       };
     }
   }

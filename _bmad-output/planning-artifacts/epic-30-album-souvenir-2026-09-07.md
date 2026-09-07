@@ -29,6 +29,14 @@ L'album doit raconter le séjour, pas archiver l'application : itinéraire, lieu
 5. Page facultative Jeux : podium, badges et défis sélectionnés, sans réponses de quiz détaillées.
 6. Dernière page : participants et statistiques simples (jours, lieux vus, souvenirs, photos).
 
+### Socle éditorial par lieu (ajout story 30.5)
+
+Le retour utilisateur après les stories 30.1-30.4 a montré un album trop pauvre : seules les notes de carnet perso apparaissaient, sans les photos officielles, sans la présentation/histoire du lieu, ni les anecdotes déjà rédigées dans l'application, avec un rendu PDF texte brut sans rapport visuel avec l'appli. La story 30.5 corrige ce constat :
+
+- Le contenu éditorial déjà présent par lieu dans `src/content/places.ts` (`image`, `photos`, `historyLabel`, `history`, `anecdotesLabel`, `anecdotes`) apparaît désormais **toujours** pour un lieu inclus dans l'album, même si aucun voyageur n'a écrit de note de carnet pour ce lieu. Les notes/photos de carnet s'ajoutent par-dessus ce socle, elles ne le remplacent jamais.
+- Cette règle s'applique identiquement à l'album personnel (30.2/30.3) et à la source partagée de l'édition familiale (30.4), pour que les deux parcours en bénéficient sans dupliquer la logique de filtrage.
+- Le rendu (aperçu HTML et export PDF) est refondu visuellement pour se rapprocher de la charte de l'appli (accent #1976d2, bandeaux de titre colorés, dégradé de couverture façon `.album-page--cover`), au lieu d'un texte brut noir/blanc.
+
 ## Données explicitement exclues
 
 - Documents, scans, billets, réservations, assurances, coordonnées et liens externes.
@@ -42,12 +50,13 @@ L'album doit raconter le séjour, pas archiver l'application : itinéraire, lieu
 2. **30.2 - Préparation de l'album personnel** : nouvelle rubrique post-séjour, sélection éditoriale, couverture et aperçu HTML imprimable.
 3. **30.3 - Génération locale d'un PDF personnel** : composition A4, export téléchargeable, limites de poids et traitement des erreurs.
 4. **30.4 - Édition familiale publiée par le propriétaire** : sélection des contenus admissibles, publication d'une configuration versionnée et téléchargement par les membres authentifiés.
+5. **30.5 - Contenu éditorial et habillage visuel** : socle éditorial (présentation, anecdotes, photos officielles) toujours présent par lieu dans la source partagée, et refonte visuelle de l'aperçu HTML et du PDF pour se rapprocher de la charte de l'appli.
 
 ## Ordre recommandé
 
-`30.1 -> 30.2 -> 30.3 -> 30.4`
+`30.1 -> 30.2 -> 30.3 -> 30.4 -> 30.5`
 
-Les trois premières stories livrent un album personnel complet. La quatrième apporte la diffusion familiale sans créer de partage public ni de dépendance à un stockage de fichiers.
+Les trois premières stories livrent un album personnel complet. La quatrième apporte la diffusion familiale sans créer de partage public ni de dépendance à un stockage de fichiers. La cinquième enrichit le contenu et l'habillage visuel des deux parcours (personnel et familial) sans changer leur périmètre fonctionnel.
 
 ## Contraintes techniques
 
