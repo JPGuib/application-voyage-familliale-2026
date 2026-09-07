@@ -3141,9 +3141,13 @@ function BottomNav({
   // dessous (même piège que n'importe quel carrousel "drag to scroll").
   const handleNavClickCapture = (event: React.MouseEvent<HTMLElement>) => {
     if (dragStateRef.current.moved) {
+      const clickedButton = event.target instanceof Element && event.target.closest("button");
+      dragStateRef.current.moved = false;
+      if (clickedButton) {
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
-      dragStateRef.current.moved = false;
     }
   };
 
