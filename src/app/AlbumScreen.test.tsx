@@ -92,4 +92,23 @@ describe("AlbumScreen preview", () => {
 
     expect(screen.getByRole("checkbox", { name: "Istanbul" })).toBeChecked();
   });
+
+  it("keeps an unchecked eligible location available to add again", () => {
+    renderAlbum(sourceWithPhoto);
+
+    const location = screen.getByRole("checkbox", { name: "Istanbul" });
+    fireEvent.click(location);
+
+    expect(screen.getByRole("checkbox", { name: "Istanbul" })).not.toBeChecked();
+    expect(screen.getByText("Istanbul")).toBeInTheDocument();
+  });
+
+  it("restores the default location selection when resetting the draft", () => {
+    renderAlbum(sourceWithPhoto);
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Istanbul" }));
+    fireEvent.click(screen.getByRole("button", { name: "Réinitialiser" }));
+
+    expect(screen.getByRole("checkbox", { name: "Istanbul" })).toBeChecked();
+  });
 });

@@ -185,12 +185,12 @@ export function AlbumScreen({
             <div className="form-group">
               <label>Lieux à inclure</label>
               <div className="locations-list">
-                {Object.entries(filteredContent.places).length === 0 ? (
+                {Object.entries(albumSource.eligiblePlaces).length === 0 ? (
                   <p className="empty-state">
                     Aucun lieu marqué comme visité. Sélectionnez un itinéraire pour continuer.
                   </p>
                 ) : (
-                  Object.entries(filteredContent.places).map(([placeId, place]) => (
+                  Object.entries(albumSource.eligiblePlaces).map(([placeId, place]) => (
                     <div key={placeId} className="location-item">
                       <label>
                         <input

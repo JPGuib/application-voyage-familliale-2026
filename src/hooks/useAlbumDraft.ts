@@ -223,8 +223,8 @@ export function useAlbumDraft(profileId: string, initialLocationIds: string[] = 
     } catch {
       // Ignore removal errors
     }
-    setDraft(createEmptyDraft(profileId));
-  }, [profileId]);
+    setDraft(createEmptyDraft(profileId, initialLocationIds));
+  }, [initialLocationIds, profileId]);
 
   return {
     draft,
