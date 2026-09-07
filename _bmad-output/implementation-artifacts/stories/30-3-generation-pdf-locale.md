@@ -9,7 +9,7 @@ story_key: 30-3-generation-pdf-locale
 
 **Priorité** : P1
 
-**Statut** : review
+**Statut** : tested
 
 **Epic** : 30 - Album souvenir de voyage
 
@@ -163,4 +163,4 @@ MAI-Code-1.1-Flash
 
 - **2026-09-07**: Story 30.3 initialized from epic 30 requirements and 30.2 composition model.
 - **2026-09-07**: Story status set to `ready-for-dev` and sprint tracking updated for implementation handoff.
-- **2026-09-07**: Local PDF export flow implemented and validated; story moved to `review` for final handoff.
+- **2026-09-07**: Local PDF export flow implemented and validated; story moved to `tested` after successful regression verification.

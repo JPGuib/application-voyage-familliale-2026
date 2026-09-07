@@ -21,6 +21,7 @@ de place.ts (/ document.ts)
 * POST-SEJOUR - PSJ1 - récupérer polarstep ?
 * POST-SEJOUR - PSJ2 - créer un album souvenir => Epic 30 préparée : album personnel PDF, puis édition familiale privée publiée par le propriétaire (spécifications : docs/specs-stories/epic-30/)
 * POST-SEJOUR - PSJ3 - Pouvoir visionner les vidéos voyage mystere
+=> voir si on se créer un écran post séjour avec l'album et les vidéos par exemple ?
 
 Abandonnés
 * CONTENU - C6 - pouvoir stocker des photos (=>attention cela a un coût)
