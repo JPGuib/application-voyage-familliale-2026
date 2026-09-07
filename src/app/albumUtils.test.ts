@@ -2,8 +2,11 @@ import { describe, it, expect } from "vitest";
 import {
   filterAlbumContent,
   findFallbackCoverPhoto,
+  findPhotoSource,
   escapeAndLimitText,
   validateDraftForPreview,
+  pageCountEstimate,
+  imageCountEstimate,
 } from "./albumUtils";
 import type { AlbumDraft, AlbumSource } from "../types/cloud";
 
@@ -94,6 +97,9 @@ describe("Album Utilities", () => {
       const result = filterAlbumContent(mockSource, draftWithGames);
 
       expect(result.gameSummary).not.toBeNull();
+      expect(result.gameSummary?.totalScore).toBe(100);
+      expect(result.gameSummary?.bestDay).toBe(1);
+      expect(result.gameSummary?.podium[0]?.rank).toBe(1);
     });
 
     it("excludes game summary when disabled in draft", () => {
@@ -151,6 +157,16 @@ describe("Album Utilities", () => {
     it("returns empty string for empty entries", () => {
       const fallback = findFallbackCoverPhoto({});
       expect(fallback).toBe("");
+    });
+
+    it("resolves the stored source for a selected photo", () => {
+      const source = findPhotoSource(mockSource.placeVisitLogs, "photo-1");
+      expect(source).toBe("data:image/jpeg;base64,...");
+    });
+
+    it("returns empty string when a selected photo is unavailable", () => {
+      const source = findPhotoSource(mockSource.placeVisitLogs, "missing-photo");
+      expect(source).toBe("");
     });
   });
 
@@ -218,6 +234,19 @@ describe("Album Utilities", () => {
       };
       const isValid = validateDraftForPreview(multiDraft, mockSource);
       expect(isValid).toBe(true);
+    });
+  });
+
+  describe("preview estimate helpers", () => {
+    it("exposes pageCountEstimate for the album preview", () => {
+      const pages = pageCountEstimate(mockSource, mockDraft);
+      expect(pages).toBeGreaterThan(0);
+      expect(pages).toBeGreaterThanOrEqual(1);
+    });
+
+    it("exposes imageCountEstimate for the album preview", () => {
+      const images = imageCountEstimate(mockSource, mockDraft);
+      expect(images).toBe(1);
     });
   });
 });

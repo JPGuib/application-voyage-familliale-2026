@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import type { AlbumSource } from "../types/cloud";
 import { useAlbumDraft } from "../hooks/useAlbumDraft";
 import { canAccessAlbumComposition, getAlbumAccessDeniedMessage } from "./album-access";
-import { filterAlbumContent, findFallbackCoverPhoto, escapeAndLimitText } from "./albumUtils";
+import {
+  filterAlbumContent,
+  findFallbackCoverPhoto,
+  findPhotoSource,
+  escapeAndLimitText,
+} from "./albumUtils";
 
 export interface AlbumScreenProps {
   profileId: string;
@@ -44,22 +49,9 @@ export function AlbumScreen({
     updateGameSummary,
     updateTheme,
     clearDraft,
-  } = useAlbumDraft(profileId);
+  } = useAlbumDraft(profileId, Object.keys(albumSource.eligiblePlaces));
 
   const [activeTab, setActiveTab] = useState<"composition" | "preview">("composition");
-
-  if (!hasAccess) {
-    const errorMessage = getAlbumAccessDeniedMessage(role, currentDay, lastDefinedDay);
-    return (
-      <div className="album-screen album-screen--denied">
-        <div className="album-denied-container">
-          <h2>Accès refusé</h2>
-          <p>{errorMessage}</p>
-          {onClose && <button onClick={onClose}>Fermer</button>}
-        </div>
-      </div>
-    );
-  }
 
   // Filtrer le contenu selon la sélection du brouillon
   const filteredContent = filterAlbumContent(albumSource, draft);
@@ -95,6 +87,19 @@ export function AlbumScreen({
         }
       }
     }
+  }
+
+  if (!hasAccess) {
+    const errorMessage = getAlbumAccessDeniedMessage(role, currentDay, lastDefinedDay);
+    return (
+      <div className="album-screen album-screen--denied">
+        <div className="album-denied-container">
+          <h2>Accès refusé</h2>
+          <p>{errorMessage}</p>
+          {onClose && <button onClick={onClose}>Fermer</button>}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -232,7 +237,7 @@ export function AlbumScreen({
         {/* Preview Tab */}
         {activeTab === "preview" && (
           <div className="album-preview">
-            <AlbumPreview content={filteredContent} draft={draft} profileId={profileId} />
+            <AlbumPreview content={filteredContent} draft={draft} />
           </div>
         )}
       </div>
@@ -246,33 +251,21 @@ export function AlbumScreen({
 interface AlbumPreviewProps {
   content: ReturnType<typeof filterAlbumContent>;
   draft: ReturnType<typeof useAlbumDraft>["draft"];
-  profileId: string;
 }
 
-function AlbumPreview({ content, draft, profileId }: AlbumPreviewProps) {
-  if (
-    Object.keys(content.places).length === 0 &&
-    Object.keys(content.entries).length === 0 &&
-    !content.gameSummary
-  ) {
-    return (
-      <div className="album-preview-empty">
-        <p>
-          Aucun contenu à afficher. Sélectionnez des lieux et ajoutez du contenu pour voir
-          l'aperçu.
-        </p>
-      </div>
-    );
-  }
+function AlbumPreview({ content, draft }: AlbumPreviewProps) {
+  const selectedCoverSource = findPhotoSource(content.entries, draft.coverPhotoId);
+  const hasLocations = Object.keys(content.places).length > 0;
+  const hasEntries = Object.keys(content.entries).length > 0;
 
   return (
     <div className="album-preview-container">
       {/* Page de couverture */}
       <div className="album-page album-page--cover">
         <div className="album-cover">
-          {draft.coverPhotoId && (
+          {selectedCoverSource && (
             <div className="cover-image">
-              <img src={draft.coverPhotoId} alt="Couverture" />
+              <img src={selectedCoverSource} alt="Couverture" />
             </div>
           )}
           <div className="cover-text">
@@ -284,8 +277,30 @@ function AlbumPreview({ content, draft, profileId }: AlbumPreviewProps) {
         </div>
       </div>
 
+      {/* Page d'itinéraire, conservée même lorsque le carnet est vide */}
+      <div className="album-page album-page--itinerary">
+        <div className="page-content">
+          <h3 className="place-title">Itinéraire du voyage</h3>
+          {hasLocations ? (
+            <ul className="itinerary-list">
+              {Object.entries(content.places).map(([placeId, place]) => (
+                <li key={placeId}>
+                  <strong>{escapeAndLimitText(place.name, 100)}</strong>
+                  {place.shortDesc && <span>{escapeAndLimitText(place.shortDesc, 200)}</span>}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="album-empty-message">
+              Aucun lieu marqué comme visité n'est sélectionné. Vous pouvez conserver cet album
+              minimal et ajouter l'itinéraire plus tard.
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* Pages de contenu */}
-      {Object.entries(content.entries).map(([placeId, entries]) => (
+      {hasEntries && Object.entries(content.entries).map(([placeId, entries]) => (
         <div key={placeId} className="album-page">
           <div className="page-content">
             <h3 className="place-title">
@@ -313,7 +328,40 @@ function AlbumPreview({ content, draft, profileId }: AlbumPreviewProps) {
         <div className="album-page">
           <div className="page-content">
             <h3 className="game-title">Résultats de Jeu</h3>
-            <p className="game-summary">(Synthèse des performances et badges)</p>
+            <p className="game-summary">
+              Score total : <strong>{content.gameSummary.totalScore}</strong>
+            </p>
+            {content.gameSummary.badges.length > 0 && (
+              <ul className="game-badges">
+                {content.gameSummary.badges.map((badge) => (
+                  <li key={badge}>{badge}</li>
+                ))}
+              </ul>
+            )}
+            {content.gameSummary.podium.length > 0 && (
+              <div className="game-podium">
+                <h4>Podium familial</h4>
+                <ol>
+                  {content.gameSummary.podium.map((entry) => (
+                    <li key={`${entry.profileId}-${entry.rank}`}>
+                      {entry.surname} : {entry.totalScore} pts
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!hasEntries && !content.gameSummary && (
+        <div className="album-page album-page--empty-content">
+          <div className="page-content">
+            <h3 className="place-title">Souvenirs personnels</h3>
+            <p className="album-empty-message">
+              Aucun souvenir n'est encore disponible pour les lieux sélectionnés. La couverture
+              et l'itinéraire restent prêts pour votre album.
+            </p>
           </div>
         </div>
       )}

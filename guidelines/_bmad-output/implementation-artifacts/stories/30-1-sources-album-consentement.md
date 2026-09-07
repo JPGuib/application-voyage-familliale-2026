@@ -202,6 +202,9 @@ So that only memories from places the owner has marked as visited and visible ar
 - No Album UI screen. This story delivers the data source only; the `album` access section is registered but no screen consumes it yet.
 - Integration/E2E tests deferred until that screen exists.
 
+**Risk carried forward to the Album UI story:**
+- `album-source.ts` has zero production callers and has never run against real RTDB data. The mocked tests prove the filtering logic, not that real payload shapes match the strict parser's assumptions (e.g. a legacy entry without `authorUid`, or `createdAt` stored as a string, would be silently dropped). First real validation happens when the Album screen calls `loadFamilyPlaceVisitLogs` on live data — check the collected count against the expected number of visit log entries at that point.
+
 ---
 
 ## File List

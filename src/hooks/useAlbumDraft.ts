@@ -20,14 +20,14 @@ function getStorageKey(profileId: string): string {
 /**
  * Initialise un brouillon vide avec les valeurs par défaut.
  */
-function createEmptyDraft(profileId: string): AlbumDraft {
+function createEmptyDraft(profileId: string, initialLocationIds: string[] = []): AlbumDraft {
   const now = Date.now();
   return {
     profileId,
     title: "",
     subtitle: "",
     coverPhotoId: "",
-    includedLocationIds: new Set(),
+    includedLocationIds: new Set(initialLocationIds),
     includeGameSummary: false,
     theme: "default",
     createdAt: now,
@@ -106,7 +106,7 @@ function deserializeDraft(data: unknown): AlbumDraft | null {
  * @returns Objet { draft, updateTitle, updateSubtitle, updateCoverPhoto, 
  *                  toggleLocation, updateGameSummary, updateTheme, clearDraft }
  */
-export function useAlbumDraft(profileId: string) {
+export function useAlbumDraft(profileId: string, initialLocationIds: string[] = []) {
   const [draft, setDraft] = useState<AlbumDraft>(() => {
     try {
       const storageKey = getStorageKey(profileId);
@@ -121,7 +121,7 @@ export function useAlbumDraft(profileId: string) {
     } catch {
       // Ignore parsing errors, fall through to empty draft
     }
-    return createEmptyDraft(profileId);
+    return createEmptyDraft(profileId, initialLocationIds);
   });
 
   /**

@@ -213,7 +213,10 @@ import {
 } from "./chat";
 import { buildGroupInfoItem } from "./groupInfo";
 import { GroupInfoScreen } from "./GroupInfoScreen";
-import type { ChatPollType, CloudChatMessage } from "../types/cloud";
+import { AlbumScreen } from "./AlbumScreen";
+import { canAccessAlbumComposition, getAlbumAccessDeniedMessage } from "./album-access";
+import { assembleAlbumSource, loadFamilyPlaceVisitLogs } from "../services/album-source";
+import type { AlbumSource, ChatPollType, CloudChatMessage } from "../types/cloud";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
 
@@ -582,8 +585,8 @@ function readStoredCarnetContentDraft(
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "chat" | "groupInfo" | "trivial" | "jeux" | "candy-crush" | "crossword" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
-const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "chat", "groupInfo", "trivial", "jeux", "candy-crush", "crossword", "ordalie", "imposteur", "results", "tips", "settings"];
+type Screen = "checklist" | "dashboard" | "guide" | "planning" | "documents" | "offline-media" | "map" | "place" | "album" | "histoire" | "histoire-topic" | "geographie" | "geographie-topic" | "culture" | "culture-topic" | "visite-guidee" | "game" | "chat" | "groupInfo" | "trivial" | "jeux" | "candy-crush" | "crossword" | "ordalie" | "imposteur" | "results" | "tips" | "settings";
+const SCREEN_VALUES: readonly Screen[] = ["checklist", "dashboard", "guide", "planning", "documents", "offline-media", "map", "place", "album", "histoire", "histoire-topic", "geographie", "geographie-topic", "culture", "culture-topic", "visite-guidee", "game", "chat", "groupInfo", "trivial", "jeux", "candy-crush", "crossword", "ordalie", "imposteur", "results", "tips", "settings"];
 type QuickScreen = "guide" | "documents" | "histoire" | "geographie" | "culture" | "tips" | "game" | "results";
 
 const INTERNAL_DOCUMENT_LINK_PREFIX = "app://document/";
@@ -957,6 +960,7 @@ const BOTTOM_NAV_ITEMS: Array<{ id: Screen; icon: LucideIcon; label: string }> =
   { id: "geographie", icon: Globe, label: "Géographie" },
   { id: "culture", icon: Theater, label: "Culture" },
   { id: "results", icon: Trophy, label: "Résultats" },
+  { id: "album", icon: BookOpen, label: "Album souvenir" },
   { id: "offline-media", icon: Download, label: "Offline" },
 ];
 
@@ -12004,6 +12008,8 @@ export default function App() {
   const {
     cloudEnabled = false,
     cloudReady = true,
+    database = null,
+    familyId = "famille-voyage-2026",
     cloudAuthError = null,
     cloudActorUid = null,
     cloudSnapshot = null,
@@ -12220,6 +12226,9 @@ export default function App() {
       return "checklist";
     }
   });
+  const [albumSource, setAlbumSource] = useState<AlbumSource | null>(null);
+  const [albumSourceLoading, setAlbumSourceLoading] = useState(false);
+  const [albumSourceError, setAlbumSourceError] = useState<string | null>(null);
   const [pendingScreen, setPendingScreen] = useState<Screen | null>(null);
   const [accessDeniedMessage, setAccessDeniedMessage] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
@@ -12786,6 +12795,72 @@ export default function App() {
   const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
   const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
   const postTripReplayEnabled = tripFinished && phase === "during";
+
+  useEffect(() => {
+    if (screen !== "album") {
+      return;
+    }
+
+    let cancelled = false;
+    setAlbumSourceLoading(true);
+    setAlbumSourceError(null);
+
+    const loadSource = async () => {
+      try {
+        if (!cloudSnapshot) {
+          if (!cancelled) {
+            setAlbumSource({
+              tripStartDate,
+              phase,
+              generatedAt: Date.now(),
+              eligiblePlaces: {},
+              placeVisitLogs: {},
+              requiredProfiles: {},
+              gameResults: {},
+            });
+          }
+          return;
+        }
+
+        const placeVisitLogs = database
+          ? await loadFamilyPlaceVisitLogs(database, familyId)
+          : {};
+        if (!cancelled) {
+          setAlbumSource(
+            assembleAlbumSource(
+              cloudSnapshot,
+              placeVisitLogs,
+              PLACES,
+              ownerGlobalPlaceAdditions
+            )
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setAlbumSourceError("Les souvenirs de l'album sont momentanément indisponibles.");
+          setAlbumSource(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setAlbumSourceLoading(false);
+        }
+      }
+    };
+
+    void loadSource();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    cloudSnapshot,
+    database,
+    familyId,
+    ownerGlobalPlaceAdditions,
+    phase,
+    screen,
+    tripStartDate,
+  ]);
+
   const replayDayChoices =
     GAME_REPLAY_DAYS_FROM_PLACES.length > 0
       ? GAME_REPLAY_DAYS_FROM_PLACES
@@ -12803,7 +12878,9 @@ export default function App() {
       target === "ordalie" ||
       target === "imposteur");
   const canAccessCurrentScreen =
-    canAccessScreen(profile.role, phase, screen) ||
+    (screen === "album"
+      ? canAccessAlbumComposition(profile.role, currentDay, lastDefinedDay)
+      : canAccessScreen(profile.role, phase, screen)) ||
     isPostTripReplayOpenScreen(screen);
 
   useEffect(() => {
@@ -14743,8 +14820,15 @@ export default function App() {
       return;
     }
 
-    if (!isPostTripReplayOpenScreen(s) && !canAccessScreen(profile.role, phase, s)) {
-      setAccessDeniedMessage(getAccessDeniedMessage(profile.role, phase, s));
+    const canAccessTarget = s === "album"
+      ? canAccessAlbumComposition(profile.role, currentDay, lastDefinedDay)
+      : canAccessScreen(profile.role, phase, s);
+    if (!isPostTripReplayOpenScreen(s) && !canAccessTarget) {
+      setAccessDeniedMessage(
+        s === "album"
+          ? getAlbumAccessDeniedMessage(profile.role, currentDay, lastDefinedDay)
+          : getAccessDeniedMessage(profile.role, phase, s)
+      );
       setScreen(getSafeScreen(profile.role, phase));
       return;
     }
@@ -16585,11 +16669,15 @@ const resetForProfileSwitch = () => {
   const visibleQuickActions = profile.role === "visiteur"
     ? QUICK_ACTIONS
     : QUICK_ACTIONS.filter((item) => canAccessScreen(profile.role, phase, item.id));
-  const visibleBottomNavItems = BOTTOM_NAV_ITEMS.filter(
-    (item) =>
+  const visibleBottomNavItems = BOTTOM_NAV_ITEMS.filter((item) => {
+    if (item.id === "album") {
+      return canAccessAlbumComposition(profile.role, currentDay, lastDefinedDay);
+    }
+    return (
       canAccessScreen(profile.role, phase, item.id) ||
       (postTripReplayEnabled && profile.role === "visiteur" && (item.id === "game" || item.id === "jeux"))
-  );
+    );
+  });
   const daysUntilStart = computeDaysUntilStart(tripStartDate);
   const todayFormatted = new Intl.DateTimeFormat("fr-FR", {
     weekday: "long",
@@ -17963,6 +18051,41 @@ const resetForProfileSwitch = () => {
             todayFormatted={todayFormatted}
             profileSurname={profile.surname}
           />;
+      }
+
+      if (effectiveScreen === "album") {
+        if (albumSourceLoading) {
+          return (
+            <div className="flex h-full items-center justify-center p-6 text-center">
+              <p>Chargement des souvenirs de l'album...</p>
+            </div>
+          );
+        }
+
+        if (albumSourceError || !albumSource) {
+          return (
+            <div className="flex h-full items-center justify-center p-6 text-center">
+              <div>
+                <h2 className="text-xl font-semibold">Album souvenir</h2>
+                <p className="mt-2">{albumSourceError ?? "La source de l'album est indisponible."}</p>
+                <button className="mt-4 rounded border px-4 py-2" onClick={() => goToScreen("dashboard")}>
+                  Retour à l'accueil
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <AlbumScreen
+            profileId={profile.id}
+            currentDay={currentDay}
+            lastDefinedDay={lastDefinedDay}
+            role={profile.role}
+            albumSource={albumSource}
+            onClose={() => goToScreen("dashboard")}
+          />
+        );
       }
 
       if (effectiveScreen === "guide") {

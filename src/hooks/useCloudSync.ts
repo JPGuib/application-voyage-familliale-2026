@@ -1405,6 +1405,7 @@ export function useCloudSync() {
   return {
     cloudEnabled: cloudRuntimeAvailable,
     cloudReady: isReady,
+    database,
     cloudAuthError,
     cloudActorUid: cloudUserUid,
     cloudSnapshot,

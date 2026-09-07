@@ -1,4 +1,18 @@
-import type { AlbumDraft, AlbumSource } from "../types/cloud";
+import type { AlbumDraft, AlbumSource, CloudGameHistoryEntry } from "../types/cloud";
+
+export type AlbumGameSummary = {
+  profileId: string;
+  totalScore: number;
+  totalDaysPlayed: number;
+  bestDay: number | null;
+  badges: string[];
+  podium: Array<{
+    profileId: string;
+    surname: string;
+    totalScore: number;
+    rank: number;
+  }>;
+};
 
 /**
  * Filtre les sources de l'album en fonction de la sélection du brouillon.
@@ -12,7 +26,7 @@ export interface FilteredAlbumContent {
   places: Record<string, { name: string; shortDesc: string }>;
   entries: Record<string, Record<string, unknown>>;
   profiles: Record<string, unknown>;
-  gameSummary: unknown | null;
+  gameSummary: AlbumGameSummary | null;
   coverPhotoMissing: boolean;
   estimatedPageCount: number;
   estimatedImageCount: number;
@@ -45,9 +59,9 @@ export function filterAlbumContent(
   }
 
   // Game summary (si activé)
-  let gameSummary: unknown = null;
-  if (draft.includeGameSummary && source.gameResults[draft.profileId]) {
-    gameSummary = extractGameSummary(source.gameResults[draft.profileId]);
+  let gameSummary: AlbumGameSummary | null = null;
+  if (draft.includeGameSummary) {
+    gameSummary = extractGameSummary(source.gameResults, draft.profileId, source.requiredProfiles);
   }
 
   // Vérifier si la photo de couverture est valide
@@ -108,10 +122,63 @@ export function filterAlbumContent(
  * Extrait une synthèse des résultats de jeu (score, badges, podium familial).
  * Exclut les réponses détaillées de quiz et les défis d'autres joueurs.
  */
-function extractGameSummary(gameResults: unknown[]): unknown {
-  // Placeholder: retourner les résultats tels quels pour l'instant
-  // La vraie implémentation dépendra de la structure complète des résultats de jeu
-  return gameResults;
+export function extractGameSummary(
+  gameResultsByProfile: Record<string, CloudGameHistoryEntry[]>,
+  profileId: string,
+  profiles: Record<string, { profileId: string; surname: string }> = {}
+): AlbumGameSummary | null {
+  const personalResults = gameResultsByProfile[profileId] ?? [];
+  if (personalResults.length === 0) {
+    return null;
+  }
+
+  const totalScore = personalResults.reduce((sum, entry) => sum + (entry.totalScore ?? 0), 0);
+  const bestResult = personalResults.reduce<CloudGameHistoryEntry | null>((best, entry) => {
+    if (!best || (entry.totalScore ?? 0) > (best.totalScore ?? 0)) {
+      return entry;
+    }
+    return best;
+  }, null);
+  const bestDay = bestResult ? bestResult.day : null;
+
+  const badges: string[] = [];
+  if (personalResults.some((entry) => entry.riddleSolved)) {
+    badges.push("Mystère résolu");
+  }
+  if (personalResults.some((entry) => entry.challengeDone)) {
+    badges.push("Défi accompli");
+  }
+  if (personalResults.some((entry) => entry.correctCount >= 8)) {
+    badges.push("Quiz maîtrisé");
+  }
+  if (badges.length === 0) {
+    badges.push("Voyageur engagé");
+  }
+
+  const podium = Object.entries(gameResultsByProfile)
+    .map(([memberProfileId, entries]) => {
+      const total = entries.reduce((sum, entry) => sum + (entry.totalScore ?? 0), 0);
+      return {
+        profileId: memberProfileId,
+        surname: profiles[memberProfileId]?.surname ?? memberProfileId,
+        totalScore: total,
+      };
+    })
+    .sort((a, b) => b.totalScore - a.totalScore)
+    .slice(0, 3)
+    .map((entry, index) => ({
+      ...entry,
+      rank: index + 1,
+    }));
+
+  return {
+    profileId,
+    totalScore,
+    totalDaysPlayed: personalResults.length,
+    bestDay,
+    badges,
+    podium,
+  };
 }
 
 /**
@@ -119,17 +186,21 @@ function extractGameSummary(gameResults: unknown[]): unknown {
  * Estimation approximative basée sur le nombre de contenus.
  */
 function estimatePageCount(
-  title: string,
+  _title: string,
   places: Record<string, unknown>,
   entries: Record<string, Record<string, unknown>>,
   gameSummary: unknown
 ): number {
-  let pages = 1; // Cover page
+  let pages = 2; // Cover and itinerary pages
 
-  // Add pages for places and entries
-  pages += Object.keys(places).length * 0.5; // 2 places per page average
+  // Add content pages for journal entries.
   for (const placeEntries of Object.values(entries)) {
-    pages += Math.ceil(Object.keys(placeEntries).length / 3); // 3 entries per page average
+    pages += Math.ceil(Object.keys(placeEntries).length / 3);
+  }
+
+  // Keep a stable minimal content page for an album without journal entries.
+  if (Object.keys(places).length === 0 || Object.keys(entries).length === 0) {
+    pages += 1;
   }
 
   // Add page for game summary if present
@@ -161,6 +232,32 @@ export function findFallbackCoverPhoto(
 }
 
 /**
+ * Résout l'identifiant d'une photo vers sa source stockée dans les entrées.
+ */
+export function findPhotoSource(
+  entries: Record<string, Record<string, unknown>>,
+  photoId: string
+): string {
+  if (!photoId) return "";
+
+  for (const placeEntries of Object.values(entries)) {
+    for (const entry of Object.values(placeEntries)) {
+      if (typeof entry !== "object" || entry === null || !("photos" in entry)) {
+        continue;
+      }
+
+      const photos = (entry as { photos?: Record<string, unknown> }).photos;
+      const source = photos?.[photoId];
+      if (typeof source === "string") {
+        return source;
+      }
+    }
+  }
+
+  return "";
+}
+
+/**
  * Échappe le contenu HTML/markdown pour éviter les bris de mise en page.
  * Éscape les caractères spéciaux HTML et limite la longueur.
  */
@@ -172,6 +269,22 @@ export function escapeAndLimitText(text: string, maxLength: number = 200): strin
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+/**
+ * Calcule le nombre estimé de pages A4 pour une composition donnée.
+ * Expose une API publique utilisable par le composant d'aperçu.
+ */
+export function pageCountEstimate(source: AlbumSource, draft: AlbumDraft): number {
+  return filterAlbumContent(source, draft).estimatedPageCount;
+}
+
+/**
+ * Calcule le nombre estimé d'images incluses dans la composition finale.
+ * Expose une API publique utilisable par le composant d'aperçu.
+ */
+export function imageCountEstimate(source: AlbumSource, draft: AlbumDraft): number {
+  return filterAlbumContent(source, draft).estimatedImageCount;
 }
 
 /**
