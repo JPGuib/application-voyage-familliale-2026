@@ -1,0 +1,193 @@
+import type { AlbumDraft, AlbumSource } from "../types/cloud";
+
+/**
+ * Filtre les sources de l'album en fonction de la sélection du brouillon.
+ *
+ * Applique les filtres :
+ * - Lieux inclus selon le brouillon (includedLocationIds)
+ * - Photos de couverture valides
+ * - Résultats de jeu si activés
+ */
+export interface FilteredAlbumContent {
+  places: Record<string, { name: string; shortDesc: string }>;
+  entries: Record<string, Record<string, unknown>>;
+  profiles: Record<string, unknown>;
+  gameSummary: unknown | null;
+  coverPhotoMissing: boolean;
+  estimatedPageCount: number;
+  estimatedImageCount: number;
+}
+
+/**
+ * Applique les filtres du brouillon aux sources de l'album.
+ */
+export function filterAlbumContent(
+  source: AlbumSource,
+  draft: AlbumDraft
+): FilteredAlbumContent {
+  // Filtrer les lieux selon la sélection du brouillon
+  const filteredPlaces: Record<string, { name: string; shortDesc: string }> = {};
+  for (const [placeId, place] of Object.entries(source.eligiblePlaces)) {
+    if (draft.includedLocationIds.has(placeId)) {
+      filteredPlaces[placeId] = {
+        name: place.name,
+        shortDesc: place.shortDesc,
+      };
+    }
+  }
+
+  // Filtrer les entrées du carnet pour les lieux sélectionnés
+  const filteredEntries: Record<string, Record<string, unknown>> = {};
+  for (const [placeId, entries] of Object.entries(source.placeVisitLogs)) {
+    if (draft.includedLocationIds.has(placeId)) {
+      filteredEntries[placeId] = entries;
+    }
+  }
+
+  // Game summary (si activé)
+  let gameSummary: unknown = null;
+  if (draft.includeGameSummary && source.gameResults[draft.profileId]) {
+    gameSummary = extractGameSummary(source.gameResults[draft.profileId]);
+  }
+
+  // Vérifier si la photo de couverture est valide
+  let coverPhotoMissing = false;
+  if (draft.coverPhotoId) {
+    // Vérifier que la photo existe toujours dans les sources filtrées
+    let found = false;
+    for (const placeEntries of Object.values(filteredEntries)) {
+      for (const entry of Object.values(placeEntries)) {
+        if (typeof entry === "object" && entry !== null && "photos" in entry) {
+          const e = entry as { photos?: Record<string, unknown> };
+          if (e.photos && draft.coverPhotoId in e.photos) {
+            found = true;
+            break;
+          }
+        }
+      }
+      if (found) break;
+    }
+    if (!found) {
+      coverPhotoMissing = true;
+    }
+  }
+
+  // Estimer le nombre de pages (A4)
+  const estimatedPageCount = estimatePageCount(
+    draft.title,
+    filteredPlaces,
+    filteredEntries,
+    gameSummary
+  );
+
+  // Estimer le nombre d'images
+  let estimatedImageCount = 0;
+  for (const entries of Object.values(filteredEntries)) {
+    for (const entry of Object.values(entries)) {
+      if (typeof entry === "object" && entry !== null && "photos" in entry) {
+        const e = entry as { photos?: Record<string, unknown> };
+        if (e.photos) {
+          estimatedImageCount += Object.keys(e.photos).length;
+        }
+      }
+    }
+  }
+
+  return {
+    places: filteredPlaces,
+    entries: filteredEntries,
+    profiles: source.requiredProfiles,
+    gameSummary,
+    coverPhotoMissing,
+    estimatedPageCount,
+    estimatedImageCount,
+  };
+}
+
+/**
+ * Extrait une synthèse des résultats de jeu (score, badges, podium familial).
+ * Exclut les réponses détaillées de quiz et les défis d'autres joueurs.
+ */
+function extractGameSummary(gameResults: unknown[]): unknown {
+  // Placeholder: retourner les résultats tels quels pour l'instant
+  // La vraie implémentation dépendra de la structure complète des résultats de jeu
+  return gameResults;
+}
+
+/**
+ * Estime le nombre de pages A4 pour le futur album.
+ * Estimation approximative basée sur le nombre de contenus.
+ */
+function estimatePageCount(
+  title: string,
+  places: Record<string, unknown>,
+  entries: Record<string, Record<string, unknown>>,
+  gameSummary: unknown
+): number {
+  let pages = 1; // Cover page
+
+  // Add pages for places and entries
+  pages += Object.keys(places).length * 0.5; // 2 places per page average
+  for (const placeEntries of Object.values(entries)) {
+    pages += Math.ceil(Object.keys(placeEntries).length / 3); // 3 entries per page average
+  }
+
+  // Add page for game summary if present
+  if (gameSummary) {
+    pages += 1;
+  }
+
+  return Math.max(1, Math.ceil(pages));
+}
+
+/**
+ * Remplace la photo de couverture par la première photo disponible dans les entrées.
+ * Si aucune photo disponible, retourne une chaîne vide (pas de couverture).
+ */
+export function findFallbackCoverPhoto(
+  entries: Record<string, Record<string, unknown>>
+): string {
+  for (const placeEntries of Object.values(entries)) {
+    for (const entry of Object.values(placeEntries)) {
+      if (typeof entry === "object" && entry !== null && "photos" in entry) {
+        const e = entry as { photos?: Record<string, unknown> };
+        if (e.photos && Object.keys(e.photos).length > 0) {
+          return Object.keys(e.photos)[0];
+        }
+      }
+    }
+  }
+  return "";
+}
+
+/**
+ * Échappe le contenu HTML/markdown pour éviter les bris de mise en page.
+ * Éscape les caractères spéciaux HTML et limite la longueur.
+ */
+export function escapeAndLimitText(text: string, maxLength: number = 200): string {
+  return text
+    .slice(0, maxLength)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
+ * Valide qu'un brouillon est prêt pour la prévisualisation.
+ * Vérifie que les lieux sélectionnés correspondent aux lieux admissibles.
+ */
+export function validateDraftForPreview(draft: AlbumDraft, source: AlbumSource): boolean {
+  // Vérifier que les lieux inclus sont dans les lieux admissibles
+  for (const locationId of draft.includedLocationIds) {
+    if (!(locationId in source.eligiblePlaces)) {
+      return false;
+    }
+  }
+
+  // Vérifier que le titre est non-vide (optionnel mais recommandé)
+  // Titre peut être vide pour l'aperçu
+
+  return true;
+}

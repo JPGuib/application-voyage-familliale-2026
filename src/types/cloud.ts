@@ -529,3 +529,40 @@ export type AlbumSource = {
   // Résultats de jeu du jour depuis le snapshot familial
   gameResults: Record<string, CloudGameHistoryEntry[]>; // profileId -> résultats
 };
+
+/**
+ * Brouillon de composition d'album personnel pour un profil.
+ * Stocké localement (localStorage), non partagé avec le cloud.
+ * 
+ * Détermine la sélection d'un voyageur :
+ * - titre et sous-titre
+ * - photo de couverture à inclure
+ * - lieux à inclure (filtrage des lieux admissibles)
+ * - option pour inclure les résultats de jeu (synthèse uniquement)
+ * - thème visuel prédéfini
+ */
+export type AlbumDraft = {
+  // Identifiant du profil propriétaire du brouillon
+  profileId: string;
+  
+  // Contenu de composition
+  title: string;
+  subtitle: string;
+  
+  // Photo de couverture à inclure (entryId d'une photo, ou vide si pas de couverture)
+  coverPhotoId: string;
+  
+  // Lieux à inclure (IDs des places marquées "seen" que le voyageur a sélectionnées)
+  includedLocationIds: Set<string>;
+  
+  // Options d'inclusion
+  includeGameSummary: boolean;
+  
+  // Thème visuel prédéfini (identifiant du thème ; ex: "default", "dark", "sepia")
+  theme: string;
+  
+  // Métadonnées
+  createdAt: number;
+  updatedAt: number;
+};
+
