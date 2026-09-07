@@ -470,7 +470,6 @@ const LAUNCH_GATE_CYCLE_STORAGE_KEY = "jp-launch-gate-cycle";
 const LAUNCH_GATE_COMPLETED_CYCLE_STORAGE_KEY = "jp-launch-gate-completed-cycle-by-profile";
 const LAUNCH_GATE_PENDING_COMPLETION_STORAGE_KEY = "jp-launch-gate-pending-completion-by-profile";
 const MAX_PLACE_COMMENT_LENGTH = 500;
-const MAX_CHALLENGE_RESPONSE_LENGTH = 280;
 // Carnet de visite : pas de limite gênante en usage réel ("sans limite de
 // caractères" demandé), juste un garde-fou anti-abus/anti-noeud géant côté
 // Realtime Database (même plafond que la règle Firebase, cf. database.rules.*.json).
@@ -9127,14 +9126,13 @@ function GameScreen({
             </p>
             <textarea
               value={challengeResponse}
-              onChange={(e) => onChallengeResponseChange(e.target.value.slice(0, MAX_CHALLENGE_RESPONSE_LENGTH))}
+              onChange={(e) => onChallengeResponseChange(e.target.value)}
               placeholder="Écrivez ici votre réponse au défi du jour"
               className="mt-4 min-h-28 w-full rounded-xl bg-input-background px-3 py-3 text-sm font-semibold text-foreground outline-none ring-2 ring-transparent focus:ring-primary/30"
               disabled={challengeDone}
             />
             <div className="mt-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
               <span>Cette réponse sera partagée avec les autres une fois tout le monde passé.</span>
-              <span>{challengeResponse.length}/{MAX_CHALLENGE_RESPONSE_LENGTH}</span>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
               Une fois le défi terminé, le jeu du jour se termine : impossible d&apos;y revenir ensuite.
