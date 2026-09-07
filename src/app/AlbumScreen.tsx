@@ -8,6 +8,7 @@ import {
   findPhotoSource,
   escapeAndLimitText,
 } from "./albumUtils";
+import "../styles/album.css";
 
 export interface AlbumScreenProps {
   profileId: string;
