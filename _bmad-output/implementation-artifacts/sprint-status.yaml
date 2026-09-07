@@ -206,3 +206,9 @@ development_status:
   26-2-visibilite-lieux-proprietaire: done
   26-3-visibilite-documents-et-modes-affichage-sejour: backlog
   epic-26-retrospective: optional
+
+  epic-30: in-progress
+    30-1-sources-album-consentement: review
+    30-2-preparation-album-personnel: in-progress
+    30-3-generation-pdf-locale: review
+  epic-30-retrospective: optional

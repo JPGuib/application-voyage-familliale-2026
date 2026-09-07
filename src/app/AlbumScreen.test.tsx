@@ -111,4 +111,12 @@ describe("AlbumScreen preview", () => {
 
     expect(screen.getByRole("checkbox", { name: "Istanbul" })).toBeChecked();
   });
+
+  it("offers a local PDF export action from the album screen", () => {
+    renderAlbum(sourceWithPhoto);
+
+    fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
+
+    expect(screen.getByRole("button", { name: /Télécharger le PDF/i })).toBeInTheDocument();
+  });
 });

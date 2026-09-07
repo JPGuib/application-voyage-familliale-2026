@@ -8,6 +8,12 @@ import {
   findPhotoSource,
   escapeAndLimitText,
 } from "./albumUtils";
+import {
+  calculateExportLimit,
+  collectPdfImages,
+  exportAlbumAsPdf,
+  preparePdfImages,
+} from "../services/pdf-export";
 import "../styles/album.css";
 
 export interface AlbumScreenProps {
@@ -53,6 +59,9 @@ export function AlbumScreen({
   } = useAlbumDraft(profileId, Object.keys(albumSource.eligiblePlaces));
 
   const [activeTab, setActiveTab] = useState<"composition" | "preview">("composition");
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportProgress, setExportProgress] = useState<string>("");
 
   // Filtrer le contenu selon la sélection du brouillon
   const filteredContent = filterAlbumContent(albumSource, draft);
@@ -89,6 +98,45 @@ export function AlbumScreen({
       }
     }
   }
+
+  const handleExportPdf = async () => {
+    setExportError(null);
+    setIsExporting(true);
+    setExportProgress("Préparation des images...");
+
+    try {
+      const imageList = collectPdfImages(filteredContent);
+      const preparedImages = preparePdfImages(imageList);
+      const limitCheck = calculateExportLimit({
+        imageCount: preparedImages.valid.length,
+        preparedBytes: preparedImages.valid.reduce(
+          (sum, image) => sum + (image.fileSize ?? image.src.length),
+          0
+        ),
+      });
+
+      if (!limitCheck.allowed) {
+        throw new Error(limitCheck.reason);
+      }
+
+      await exportAlbumAsPdf(draft, filteredContent, albumSource, (phase) => {
+        const messages: Record<string, string> = {
+          preparing: "Préparation des images...",
+          rendering: "Composition des pages PDF...",
+          download: "Téléchargement en cours...",
+        };
+        setExportProgress(messages[phase] ?? "Traitement en cours...");
+      });
+
+      setExportProgress("Téléchargement terminé.");
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "Une erreur inconnue est survenue.";
+      setExportError(reason);
+      setExportProgress("");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   if (!hasAccess) {
     const errorMessage = getAlbumAccessDeniedMessage(role, currentDay, lastDefinedDay);
@@ -228,10 +276,20 @@ export function AlbumScreen({
               <button className="btn-primary" onClick={() => setActiveTab("preview")}>
                 Voir l'aperçu
               </button>
+              <button
+                className="btn-primary"
+                onClick={handleExportPdf}
+                disabled={isExporting}
+                aria-label="Télécharger le PDF"
+              >
+                {isExporting ? "Export en cours..." : "Télécharger le PDF"}
+              </button>
               <button className="btn-secondary" onClick={clearDraft}>
                 Réinitialiser
               </button>
             </div>
+            {exportError && <p className="album-export-error">{exportError}</p>}
+            {exportProgress && <p className="album-export-progress">{exportProgress}</p>}
           </div>
         )}
 
@@ -239,6 +297,21 @@ export function AlbumScreen({
         {activeTab === "preview" && (
           <div className="album-preview">
             <AlbumPreview content={filteredContent} draft={draft} />
+            <div className="album-actions album-actions--preview">
+              <button
+                className="btn-primary"
+                onClick={handleExportPdf}
+                disabled={isExporting}
+                aria-label="Télécharger le PDF"
+              >
+                {isExporting ? "Export en cours..." : "Télécharger le PDF"}
+              </button>
+              <button className="btn-secondary" onClick={() => setActiveTab("composition")}>
+                Modifier l'album
+              </button>
+            </div>
+            {exportError && <p className="album-export-error">{exportError}</p>}
+            {exportProgress && <p className="album-export-progress">{exportProgress}</p>}
           </div>
         )}
       </div>
