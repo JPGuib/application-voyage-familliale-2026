@@ -12879,7 +12879,7 @@ export default function App() {
       target === "imposteur");
   const canAccessCurrentScreen =
     (screen === "album"
-      ? canAccessAlbumComposition(profile.role, currentDay, lastDefinedDay)
+      ? canAccessAlbumComposition(profile.role, rawCurrentDay, lastDefinedDay)
       : canAccessScreen(profile.role, phase, screen)) ||
     isPostTripReplayOpenScreen(screen);
 
@@ -14821,7 +14821,7 @@ export default function App() {
     }
 
     const canAccessTarget = s === "album"
-      ? canAccessAlbumComposition(profile.role, currentDay, lastDefinedDay)
+      ? canAccessAlbumComposition(profile.role, rawCurrentDay, lastDefinedDay)
       : canAccessScreen(profile.role, phase, s);
     if (!isPostTripReplayOpenScreen(s) && !canAccessTarget) {
       setAccessDeniedMessage(
@@ -16671,7 +16671,7 @@ const resetForProfileSwitch = () => {
     : QUICK_ACTIONS.filter((item) => canAccessScreen(profile.role, phase, item.id));
   const visibleBottomNavItems = BOTTOM_NAV_ITEMS.filter((item) => {
     if (item.id === "album") {
-      return canAccessAlbumComposition(profile.role, currentDay, lastDefinedDay);
+      return canAccessAlbumComposition(profile.role, rawCurrentDay, lastDefinedDay);
     }
     return (
       canAccessScreen(profile.role, phase, item.id) ||
@@ -18079,7 +18079,7 @@ const resetForProfileSwitch = () => {
         return (
           <AlbumScreen
             profileId={profile.id}
-            currentDay={currentDay}
+            currentDay={rawCurrentDay}
             lastDefinedDay={lastDefinedDay}
             role={profile.role}
             albumSource={albumSource}
