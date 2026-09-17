@@ -17,7 +17,29 @@ import {
   exportAlbumAsPdf,
   preparePdfImages,
 } from "../services/pdf-export";
+import { formatTripDayLabel } from "./trip-day-format";
+import { isValidTripStartDate } from "./trip-day";
+import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
+import { TRIP_MAP_IMAGE_PATH } from "../content/trip";
 import "../styles/album.css";
+
+/**
+ * Formate la plage de dates du voyage (1er jour -> dernier jour défini,
+ * story 30.6) pour la couverture de l'aperçu, même logique que
+ * `formatTripDateRangeLabel` dans src/services/pdf-export.ts (aperçu HTML et
+ * PDF doivent rester cohérents).
+ */
+function formatTripDateRangeLabel(tripStartDate: string | null, lastTripDay: number | null): string | null {
+  if (!isValidTripStartDate(tripStartDate)) {
+    return null;
+  }
+  const startLabel = formatTripDayLabel(1, tripStartDate, { format: "long" });
+  if (!lastTripDay || lastTripDay <= 1) {
+    return startLabel;
+  }
+  const endLabel = formatTripDayLabel(lastTripDay, tripStartDate, { format: "long" });
+  return `${startLabel} — ${endLabel}`;
+}
 
 export interface AlbumScreenProps {
   profileId: string;
@@ -299,7 +321,7 @@ export function AlbumScreen({
         {/* Preview Tab */}
         {activeTab === "preview" && (
           <div className="album-preview">
-            <AlbumPreview content={filteredContent} draft={draft} />
+            <AlbumPreview content={filteredContent} draft={draft} source={albumSource} />
             <div className="album-actions album-actions--preview">
               <button
                 className="btn-primary"
@@ -328,9 +350,10 @@ export function AlbumScreen({
 interface AlbumPreviewProps {
   content: ReturnType<typeof filterAlbumContent>;
   draft: ReturnType<typeof useAlbumDraft>["draft"];
+  source: AlbumSource;
 }
 
-function AlbumPreview({ content, draft }: AlbumPreviewProps) {
+function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
   const selectedCoverSource = findPhotoSource(content.entries, draft.coverPhotoId);
   const hasLocations = Object.keys(content.places).length > 0;
   // Voyage riche en lieux : le budget de photos par lieu est réduit et/ou la
@@ -339,6 +362,16 @@ function AlbumPreview({ content, draft }: AlbumPreviewProps) {
   // sans jamais bloquer l'affichage (mention informative non bloquante).
   const showAdaptiveExportNotice =
     isPhotoBudgetReduced(content.photoBudgetPerPlace) || isPhotoQualityDegraded(content.photoQualityTier);
+
+  const tripDateRangeLabel = formatTripDateRangeLabel(source.tripStartDate, source.lastTripDay);
+
+  // Planning jour par jour (story 30.6) : un jour n'est affiché que s'il
+  // contient au moins un lieu inclus dans l'album, pour rester compact (même
+  // logique que la page planning du PDF, cf. pdf-export.ts).
+  const includedPlaceEntries = Object.entries(content.places);
+  const daysWithIncludedPlaces = JOURS_DESTINATIONS.filter((dayEntry) =>
+    includedPlaceEntries.some(([, place]) => place.jour.includes(dayEntry.jour))
+  );
 
   return (
     <div className="album-preview-container">
@@ -355,22 +388,43 @@ function AlbumPreview({ content, draft }: AlbumPreviewProps) {
             {draft.subtitle && (
               <p className="cover-subtitle">{escapeAndLimitText(draft.subtitle, 100)}</p>
             )}
+            {tripDateRangeLabel && <p className="cover-dates">{tripDateRangeLabel}</p>}
           </div>
         </div>
       </div>
 
-      {/* Page d'itinéraire, conservée même lorsque le carnet est vide */}
+      {/* Circuit du voyage (story 30.6) : même photo que le tableau de bord. */}
+      <div className="album-page">
+        <div className="page-content">
+          <h3 className="place-title chapter-band">Circuit du voyage</h3>
+          <div className="trip-map-image">
+            <img src={TRIP_MAP_IMAGE_PATH} alt="Circuit du voyage" />
+          </div>
+        </div>
+      </div>
+
+      {/* Planning jour par jour, conservé même lorsque le carnet est vide */}
       <div className="album-page album-page--itinerary">
         <div className="page-content">
-          <h3 className="place-title chapter-band">Itinéraire du voyage</h3>
-          {hasLocations ? (
+          <h3 className="place-title chapter-band">Planning du voyage</h3>
+          {daysWithIncludedPlaces.length > 0 ? (
             <ul className="itinerary-list">
-              {Object.entries(content.places).map(([placeId, place]) => (
-                <li key={placeId}>
-                  <strong>{escapeAndLimitText(place.name, 100)}</strong>
-                  {place.shortDesc && <span>{escapeAndLimitText(place.shortDesc, 200)}</span>}
-                </li>
-              ))}
+              {daysWithIncludedPlaces.map((dayEntry) => {
+                const placeNames = includedPlaceEntries
+                  .filter(([, place]) => place.jour.includes(dayEntry.jour))
+                  .map(([, place]) => place.name);
+                return (
+                  <li key={dayEntry.jour}>
+                    <span className="itinerary-day-label">
+                      {formatTripDayLabel(dayEntry.jour, source.tripStartDate).toUpperCase()}
+                    </span>
+                    <strong>{escapeAndLimitText(dayEntry.destination, 100)}</strong>
+                    {placeNames.length > 0 && (
+                      <span>{escapeAndLimitText(placeNames.join(" · "), 300)}</span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="album-empty-message">
@@ -393,6 +447,10 @@ function AlbumPreview({ content, draft }: AlbumPreviewProps) {
         const editorialPhotos = (place.photos ?? []).slice(0, content.photoBudgetPerPlace.editorial);
         const carnetPhotos = selectBudgetedCarnetPhotos(placeEntries, content.photoBudgetPerPlace.carnet);
         const hasGallery = editorialPhotos.length > 0 || carnetPhotos.length > 0;
+        const placeComments = Object.values(content.comments[placeId] ?? {});
+        const hasComments = placeComments.length > 0;
+        const guideSections = place.guideSections ?? [];
+        const hasGuide = guideSections.length > 0;
 
         return (
           <div key={placeId} className="album-page">
@@ -444,7 +502,55 @@ function AlbumPreview({ content, draft }: AlbumPreviewProps) {
                 </div>
               )}
 
-              {!hasPresentation && !hasAnecdotes && !hasGallery && !hasNotes && (
+              {hasComments && (
+                <div className="place-comments">
+                  <h4>Avis de la famille</h4>
+                  {placeComments.map((comment) => {
+                    const reactionLabel =
+                      comment.reaction === "like"
+                        ? "J'aime"
+                        : comment.reaction === "dislike"
+                          ? "J'aime pas"
+                          : "Commentaire";
+                    return (
+                      <div key={comment.commentId} className="comment-item">
+                        <div className="comment-item-header">
+                          <strong>{escapeAndLimitText(comment.authorSurnameSnapshot || "Anonyme", 60)}</strong>
+                          <span>{reactionLabel}</span>
+                        </div>
+                        {comment.text ? (
+                          <p>{escapeAndLimitText(comment.text, 500)}</p>
+                        ) : (
+                          <p className="comment-item-empty">Réaction sans commentaire.</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {hasGuide && (
+                <div className="place-guide">
+                  <h4>Guide de visite détaillé</h4>
+                  {guideSections.map((section, index) => (
+                    <div key={index} className="place-guide-section">
+                      {section.title && <h5>{escapeAndLimitText(section.title, 150)}</h5>}
+                      {section.paragraphs.map((paragraph, paragraphIndex) => (
+                        <p key={paragraphIndex}>{escapeAndLimitText(paragraph, 2000)}</p>
+                      ))}
+                      {section.bullets.length > 0 && (
+                        <ul>
+                          {section.bullets.map((bullet, bulletIndex) => (
+                            <li key={bulletIndex}>{escapeAndLimitText(bullet, 500)}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!hasPresentation && !hasAnecdotes && !hasGallery && !hasNotes && !hasComments && !hasGuide && (
                 <p className="album-empty-message">Aucun souvenir détaillé pour ce lieu.</p>
               )}
             </div>

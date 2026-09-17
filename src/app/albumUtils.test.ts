@@ -56,11 +56,12 @@ describe("fitWithinBox (cadre photo façon polaroid de l'export PDF)", () => {
 describe("Album Utilities", () => {
   const mockSource: AlbumSource = {
     tripStartDate: "2026-08-16",
+    lastTripDay: null,
     phase: "during",
     generatedAt: Date.now(),
     eligiblePlaces: {
-      "place-1": { placeId: "place-1", name: "Istanbul", shortDesc: "Historic city" },
-      "place-2": { placeId: "place-2", name: "Cappadocia", shortDesc: "Rock formations" },
+      "place-1": { placeId: "place-1", name: "Istanbul", shortDesc: "Historic city", jour: [1] },
+      "place-2": { placeId: "place-2", name: "Cappadocia", shortDesc: "Rock formations", jour: [2] },
     },
     placeVisitLogs: {
       "place-1": {
@@ -88,6 +89,7 @@ describe("Album Utilities", () => {
         },
       },
     },
+    placeComments: {},
     requiredProfiles: {
       "profile-1": { profileId: "profile-1", surname: "John" },
     },
@@ -160,6 +162,48 @@ describe("Album Utilities", () => {
       expect(result.estimatedImageCount).toBe(1); // One photo in place-1
     });
 
+    it("filters family comments (avis) for selected locations only (story 30.6)", () => {
+      const sourceWithComments: AlbumSource = {
+        ...mockSource,
+        placeComments: {
+          "place-1": {
+            "comment-1": {
+              commentId: "comment-1",
+              placeId: "place-1",
+              authorProfileId: "profile-1",
+              authorSurnameSnapshot: "John",
+              reaction: "like",
+              text: "Super !",
+              createdAt: 1000,
+              updatedAt: 1000,
+            },
+          },
+          "place-2": {
+            "comment-2": {
+              commentId: "comment-2",
+              placeId: "place-2",
+              authorProfileId: "profile-1",
+              authorSurnameSnapshot: "John",
+              reaction: null,
+              text: "Bof",
+              createdAt: 2000,
+              updatedAt: 2000,
+            },
+          },
+        },
+      };
+
+      const result = filterAlbumContent(sourceWithComments, mockDraft);
+
+      expect(Object.keys(result.comments)).toContain("place-1");
+      expect(Object.keys(result.comments)).not.toContain("place-2");
+    });
+
+    it("carries the place's jour field through to the filtered place (story 30.6)", () => {
+      const result = filterAlbumContent(mockSource, mockDraft);
+      expect(result.places["place-1"]!.jour).toEqual([1]);
+    });
+
     it("detects missing cover photo", () => {
       const draftWithMissingCover = {
         ...mockDraft,
@@ -178,13 +222,12 @@ describe("Album Utilities", () => {
           placeId: "place-1",
           name: "Istanbul",
           shortDesc: "Historic city",
+          jour: [1],
           image: "/images/guide/Istanbul photo 1.webp",
-          photos: [
-            "/images/guide/Istanbul photo 1.webp",
-            "/images/places/Mosquée bleue.webp",
-            "/images/places/Sainte Sophie.webp",
-            "/images/places/Bosphore.webp",
-          ],
+          // 20 photos éditoriales : volontairement au-dessus du plafond
+          // (ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE = 15, story 30.6) pour
+          // exercer réellement le comportement de plafonnement ci-dessous.
+          photos: Array.from({ length: 20 }, (_, index) => `/images/places/photo-${index}.webp`),
           historyLabel: "Présentation",
           history: "Istanbul est la plus grande ville de Turquie.",
           anecdotesLabel: "Le saviez-vous ?",
@@ -194,6 +237,7 @@ describe("Album Utilities", () => {
           placeId: "place-2",
           name: "Cappadocia",
           shortDesc: "Rock formations",
+          jour: [2],
           // Pas de contenu éditorial pour ce lieu (ex. simple vol du programme).
         },
       },
@@ -215,7 +259,7 @@ describe("Album Utilities", () => {
         anecdotesLabel: "Le saviez-vous ?",
         anecdotes: ["Le Bosphore coupe la ville en deux."],
       });
-      expect(result.places["place-1"]!.photos).toHaveLength(4);
+      expect(result.places["place-1"]!.photos).toHaveLength(20);
     });
 
     it("keeps a place with no editorial content at all without crashing (place-2 has no history/anecdotes/photos)", () => {
@@ -238,7 +282,7 @@ describe("Album Utilities", () => {
 
       const result = filterAlbumContent(sourceWithoutEntries, draft);
 
-      // Le lieu a 4 photos éditoriales en source, mais le plafond est appliqué.
+      // Le lieu a 20 photos éditoriales en source, mais le plafond est appliqué.
       expect(result.estimatedImageCount).toBe(ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE);
     });
 
@@ -246,7 +290,7 @@ describe("Album Utilities", () => {
       const draft: AlbumDraft = { ...mockDraft, includedLocationIds: new Set(["place-1"]) };
       const result = filterAlbumContent(sourceWithEditorial, draft);
 
-      // 3 photos éditoriales plafonnées (sur 4) + 1 photo de carnet (entry-1).
+      // Photos éditoriales plafonnées (sur 20) + 1 photo de carnet (entry-1).
       expect(result.estimatedImageCount).toBe(ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE + 1);
     });
   });
@@ -483,7 +527,7 @@ describe("Album Utilities", () => {
       const includedIds = new Set<string>();
       for (let i = 0; i < 40; i += 1) {
         const placeId = `place-${i}`;
-        manyPlaces[placeId] = { placeId, name: `Lieu ${i}`, shortDesc: "" };
+        manyPlaces[placeId] = { placeId, name: `Lieu ${i}`, shortDesc: "", jour: [] };
         manyLogs[placeId] = {
           "entry-1": {
             entryId: "entry-1",

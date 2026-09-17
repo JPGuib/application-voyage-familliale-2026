@@ -5,10 +5,12 @@ import type { AlbumSource } from "../types/cloud";
 
 const emptySource: AlbumSource = {
   tripStartDate: null,
+  lastTripDay: null,
   phase: "after",
   generatedAt: 1,
   eligiblePlaces: {},
   placeVisitLogs: {},
+  placeComments: {},
   requiredProfiles: {},
   gameResults: {},
 };
@@ -16,7 +18,7 @@ const emptySource: AlbumSource = {
 const sourceWithPhoto: AlbumSource = {
   ...emptySource,
   eligiblePlaces: {
-    "place-1": { placeId: "place-1", name: "Istanbul", shortDesc: "Ville historique" },
+    "place-1": { placeId: "place-1", name: "Istanbul", shortDesc: "Ville historique", jour: [1] },
   },
   placeVisitLogs: {
     "place-1": {
@@ -41,6 +43,7 @@ const sourceWithEditorialOnly: AlbumSource = {
       placeId: "place-1",
       name: "Istanbul",
       shortDesc: "Ville historique",
+      jour: [1],
       image: "/images/guide/Istanbul photo 1.webp",
       photos: ["/images/guide/Istanbul photo 1.webp", "/images/places/Bosphore.webp"],
       historyLabel: "Présentation",
@@ -75,7 +78,7 @@ describe("AlbumScreen preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
 
-    expect(screen.getByText("Itinéraire du voyage")).toBeInTheDocument();
+    expect(screen.getByText("Planning du voyage")).toBeInTheDocument();
     expect(screen.getByText(/Aucun lieu marqué comme visité/)).toBeInTheDocument();
     expect(screen.getByText("Souvenirs personnels")).toBeInTheDocument();
     expect(screen.getByText(/Aucun souvenir n'est encore disponible/)).toBeInTheDocument();
@@ -157,7 +160,7 @@ describe("AlbumScreen preview", () => {
     const bareSource: AlbumSource = {
       ...emptySource,
       eligiblePlaces: {
-        "place-1": { placeId: "place-1", name: "Nantes - Paris", shortDesc: "Vol" },
+        "place-1": { placeId: "place-1", name: "Nantes - Paris", shortDesc: "Vol", jour: [1] },
       },
       placeVisitLogs: {},
     };
@@ -179,7 +182,7 @@ describe("AlbumScreen preview", () => {
     const manyPlaces: AlbumSource["eligiblePlaces"] = {};
     for (let i = 0; i < 40; i += 1) {
       const placeId = `place-${i}`;
-      manyPlaces[placeId] = { placeId, name: `Lieu ${i}`, shortDesc: "" };
+      manyPlaces[placeId] = { placeId, name: `Lieu ${i}`, shortDesc: "", jour: [] };
     }
     const bigSource: AlbumSource = { ...emptySource, eligiblePlaces: manyPlaces, placeVisitLogs: {} };
 
@@ -188,6 +191,6 @@ describe("AlbumScreen preview", () => {
 
     expect(screen.getByText(/Voyage riche en lieux/)).toBeInTheDocument();
     // Le message reste informatif : l'aperçu continue de s'afficher normalement.
-    expect(screen.getByText("Itinéraire du voyage")).toBeInTheDocument();
+    expect(screen.getByText("Planning du voyage")).toBeInTheDocument();
   });
 });

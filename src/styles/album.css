@@ -370,6 +370,33 @@
   word-wrap: break-word;
 }
 
+/* Dates du voyage (story 30.6), sous le sous-titre de couverture. */
+.cover-dates {
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+  opacity: 0.85;
+}
+
+/* Circuit du voyage (story 30.6) : même photo que le tableau de bord. */
+.trip-map-image {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.trip-map-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.itinerary-day-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
 .page-content {
   padding: 2rem;
   overflow-y: auto;
@@ -502,6 +529,79 @@
 }
 
 .place-anecdotes ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #444;
+  line-height: 1.5;
+}
+
+/* Avis de la famille (story 30.6) : like/dislike + commentaire libre par
+   lieu, même wording que la fiche lieu de l'appli. */
+.place-comments {
+  margin-bottom: 1rem;
+}
+
+.place-comments h4 {
+  margin: 0 0 0.5rem;
+  color: var(--primary);
+  font-size: 1rem;
+}
+
+.comment-item {
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.comment-item-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.comment-item p {
+  margin: 0.35rem 0 0;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.comment-item-empty {
+  color: #888;
+  font-style: italic;
+}
+
+/* Guide de visite détaillé (story 30.6), texte seul (sans les classes
+   riches "visite-guidee-content" de l'appli : photos/audio non repris ici,
+   déjà couverts par la galerie du lieu). */
+.place-guide {
+  margin-bottom: 1rem;
+}
+
+.place-guide > h4 {
+  margin: 0 0 0.5rem;
+  color: var(--primary);
+  font-size: 1rem;
+}
+
+.place-guide-section {
+  margin-bottom: 0.75rem;
+}
+
+.place-guide-section h5 {
+  margin: 0 0 0.35rem;
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
+.place-guide-section p {
+  margin: 0 0 0.35rem;
+  color: #333;
+  line-height: 1.5;
+}
+
+.place-guide-section ul {
   margin: 0;
   padding-left: 1.25rem;
   color: #444;

@@ -12,6 +12,7 @@ vi.mock("../hooks/useCloudSync", () => ({
 }));
 
 vi.mock("../content/trip", () => ({
+  TRIP_MAP_IMAGE_PATH: "/images/Carte du voyage.webp",
   TRIP: {
     currentDay: 1,
     todayDestination: "Istanbul",

@@ -1,4 +1,10 @@
-import type { AlbumDraft, AlbumSource, CloudGameHistoryEntry } from "../types/cloud";
+import type {
+  AlbumDraft,
+  AlbumSource,
+  AlbumSourceCommentEntry,
+  CloudGameHistoryEntry,
+  GuideSection,
+} from "../types/cloud";
 
 export type AlbumGameSummary = {
   profileId: string;
@@ -24,8 +30,14 @@ export type AlbumGameSummary = {
  * calculé revient exactement à ce plafond historique (voir
  * `ALBUM_MAX_PHOTOS_PER_PLACE`). Conservé exporté car encore utilisé par les
  * tests pour vérifier ce cas de référence.
+ *
+ * Relevé à 15 (story 30.6, retour de test utilisateur "mettre toutes les
+ * photos") : certains lieux de `content/places.ts` ont jusqu'à 15 photos
+ * éditoriales ; l'ancien plafond de 3 en tronquait donc la plupart. Décision
+ * produit actée : assouplir fortement plutôt que supprimer le garde-fou
+ * (cf. `ALBUM_MAX_PHOTOS_PER_PLACE`/`ALBUM_PHOTO_BUDGET_TOTAL` ci-dessous).
  */
-export const ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE = 3;
+export const ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE = 15;
 
 // --- Budget de photos et dégradation qualité adaptatifs ------------------
 //
@@ -102,19 +114,24 @@ export type PhotoBudgetPerPlace = {
 /**
  * Budget total de photos (toutes catégories confondues) visé pour un album,
  * réparti entre tous les lieux inclus. Choisi comme un compromis entre
- * richesse visuelle et poids/temps de génération du PDF sur mobile,
- * cohérent avec l'ancien plafond historique (un voyage de 15 lieux à 8
- * photos chacun, cf. ALBUM_MAX_PHOTOS_PER_PLACE, atteint déjà 120 photos).
+ * richesse visuelle et poids/temps de génération du PDF sur mobile.
+ *
+ * Relevé à 480 (story 30.6, retour de test utilisateur) en cohérence avec le
+ * nouveau plafond par lieu (un voyage de 12 lieux à 40 photos chacun, cf.
+ * ALBUM_MAX_PHOTOS_PER_PLACE, atteint déjà 480 photos) : valeur de départ,
+ * ajustable après un usage réel comme le mécanisme de dégradation qualité
+ * ci-dessus.
  */
-export const ALBUM_PHOTO_BUDGET_TOTAL = 120;
+export const ALBUM_PHOTO_BUDGET_TOTAL = 480;
 /** Budget minimal garanti par lieu, quel que soit le nombre de lieux inclus. */
 export const ALBUM_MIN_PHOTOS_PER_PLACE = 2;
 /**
- * Budget maximal par lieu : 3 photos éditoriales (ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE)
- * + 5 photos de carnet, soit le comportement inchangé pour un voyage peu
- * illustré (peu de lieux inclus).
+ * Budget maximal par lieu : 15 photos éditoriales (ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE)
+ * + 25 photos de carnet (story 30.6, assoupli mais toujours plafonné — décision
+ * produit actée avec l'utilisateur plutôt que de supprimer entièrement le
+ * garde-fou).
  */
-export const ALBUM_MAX_PHOTOS_PER_PLACE = 8;
+export const ALBUM_MAX_PHOTOS_PER_PLACE = 40;
 
 // Ratio historique éditorial/total (3 éditoriales sur 8 photos au total),
 // réutilisé pour répartir proportionnellement le budget réduit entre
@@ -231,6 +248,11 @@ export type FilteredAlbumPlace = {
   history?: string;
   anecdotesLabel?: string;
   anecdotes?: string[];
+  // Jour(s) effectif(s) du voyage (story 30.6), pour le regroupement par jour
+  // de la page planning de l'album (cf. AlbumSourcePlaceEntry.jour).
+  jour: number[];
+  // Guide de visite détaillé (story 30.6), seulement si ce lieu en a un.
+  guideSections?: GuideSection[];
 };
 
 /**
@@ -244,6 +266,9 @@ export type FilteredAlbumPlace = {
 export interface FilteredAlbumContent {
   places: Record<string, FilteredAlbumPlace>;
   entries: Record<string, Record<string, unknown>>;
+  // Avis de la famille (story 30.6, like/dislike + commentaire), filtrés sur
+  // les lieux inclus — même schéma que `entries` pour le carnet de visite.
+  comments: Record<string, Record<string, AlbumSourceCommentEntry>>;
   profiles: Record<string, unknown>;
   gameSummary: AlbumGameSummary | null;
   coverPhotoMissing: boolean;
@@ -287,6 +312,8 @@ export function filterAlbumContent(
         history: place.history,
         anecdotesLabel: place.anecdotesLabel,
         anecdotes: place.anecdotes,
+        jour: place.jour,
+        guideSections: place.guideSections,
       };
     }
   }
@@ -296,6 +323,14 @@ export function filterAlbumContent(
   for (const [placeId, entries] of Object.entries(source.placeVisitLogs)) {
     if (draft.includedLocationIds.has(placeId)) {
       filteredEntries[placeId] = entries;
+    }
+  }
+
+  // Filtrer les avis de la famille pour les lieux sélectionnés (story 30.6)
+  const filteredComments: Record<string, Record<string, AlbumSourceCommentEntry>> = {};
+  for (const [placeId, comments] of Object.entries(source.placeComments)) {
+    if (draft.includedLocationIds.has(placeId)) {
+      filteredComments[placeId] = comments;
     }
   }
 
@@ -360,6 +395,7 @@ export function filterAlbumContent(
   return {
     places: filteredPlaces,
     entries: filteredEntries,
+    comments: filteredComments,
     profiles: source.requiredProfiles,
     gameSummary,
     coverPhotoMissing,

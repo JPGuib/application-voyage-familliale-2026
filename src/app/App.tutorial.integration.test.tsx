@@ -14,6 +14,7 @@ vi.mock("./tutorials/driver-runtime", () => ({
 }));
 
 vi.mock("../content/trip", () => ({
+  TRIP_MAP_IMAGE_PATH: "/images/Carte du voyage.webp",
   TRIP: {
     name: "Voyage Famille",
     currentDay: 1,

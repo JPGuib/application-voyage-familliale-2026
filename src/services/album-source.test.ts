@@ -12,11 +12,32 @@ vi.mock("firebase/database", async (importOriginal) => {
   };
 });
 
+// Contenu statique généré au build (story 30.6) : mocké pour des assertions
+// déterministes, indépendantes des vrais fichiers docx/CSV du dépôt.
+vi.mock("../content/generated/visites-guidees", () => ({
+  VISITES_GUIDEES: {
+    "place-with-guide": {
+      id: "place-with-guide",
+      html: "<h2>Histoire</h2><p>Un texte de guide.</p>",
+      toc: [{ id: "section-0", title: "Histoire" }],
+    },
+  },
+}));
+
+vi.mock("../content/generated/jours-destinations", () => ({
+  JOURS_DESTINATIONS: [
+    { jour: 1, destination: "Istanbul", visites_prevues: [] },
+    { jour: 2, destination: "Cappadoce", visites_prevues: [] },
+    { jour: 3, destination: "Pamukkale", visites_prevues: [] },
+  ],
+}));
+
 import {
   assembleAlbumSource,
   buildEligiblePlaces,
   canAccessAlbumExport,
   filterCarnetVisiteByEligibility,
+  filterPlaceCommentsByEligibility,
   isLocationEligible,
   loadFamilyPlaceVisitLogs,
   validateAlbumSourceContent,
@@ -129,6 +150,7 @@ describe("Album Source - Eligibility Filter", () => {
         placeId: "place-1",
         name: "Place 1",
         shortDesc: "Description 1",
+        jour: [1],
       });
     });
 
@@ -205,6 +227,7 @@ describe("Album Source - Eligibility Filter", () => {
         placeId: "place-editorial",
         name: "Istanbul",
         shortDesc: "La ville-pont",
+        jour: [2],
         image: "/images/guide/Istanbul photo 1.webp",
         photos: [
           "/images/guide/Istanbul photo 1.webp",
@@ -225,7 +248,110 @@ describe("Album Source - Eligibility Filter", () => {
         { "place-1": "seen" }
       );
 
-      expect(Object.keys(result["place-1"]!).sort()).toEqual(["name", "placeId", "shortDesc"]);
+      expect(Object.keys(result["place-1"]!).sort()).toEqual(["jour", "name", "placeId", "shortDesc"]);
+    });
+
+    it("uses the base Place.jour when no day override is provided (story 30.6)", () => {
+      const result = buildEligiblePlaces(
+        defaultPlaces,
+        [],
+        { "place-1": "visible" },
+        { "place-1": "seen" }
+      );
+      expect(result["place-1"]!.jour).toEqual([1]);
+    });
+
+    it("uses the owner day override instead of the base Place.jour when provided (story 30.6)", () => {
+      const result = buildEligiblePlaces(
+        defaultPlaces,
+        [],
+        { "place-1": "visible" },
+        { "place-1": "seen" },
+        { "place-1": [3, 4] }
+      );
+      expect(result["place-1"]!.jour).toEqual([3, 4]);
+    });
+
+    it("populates guideSections only for a place with a matching VISITES_GUIDEES entry (story 30.6)", () => {
+      const placesWithGuide: Place[] = [
+        { id: "place-with-guide", name: "Guidé", shortDesc: "Desc", tag: "tag", jour: [1] },
+        { id: "place-1", name: "Place 1", shortDesc: "Description 1", tag: "tag1", jour: [1] },
+      ];
+
+      const result = buildEligiblePlaces(
+        placesWithGuide,
+        [],
+        { "place-with-guide": "visible", "place-1": "visible" },
+        { "place-with-guide": "seen", "place-1": "seen" }
+      );
+
+      expect(result["place-with-guide"]!.guideSections).toEqual([
+        { title: "Histoire", paragraphs: ["Un texte de guide."], bullets: [] },
+      ]);
+      expect(result["place-1"]!.guideSections).toBeUndefined();
+    });
+  });
+
+  describe("filterPlaceCommentsByEligibility (avis de la famille, story 30.6)", () => {
+    const placeComments = {
+      "place-1": {
+        "comment-1": {
+          commentId: "comment-1",
+          placeId: "place-1",
+          authorProfileId: "profile-1",
+          authorSurnameSnapshot: "Alice",
+          reaction: "like" as const,
+          text: "Super lieu !",
+          createdAt: 1000,
+          updatedAt: 1000,
+          authorUid: "uid-1",
+        },
+      },
+      "place-2": {
+        "comment-2": {
+          commentId: "comment-2",
+          placeId: "place-2",
+          authorProfileId: "profile-2",
+          authorSurnameSnapshot: "Bob",
+          reaction: null,
+          text: "Bof",
+          createdAt: 2000,
+          updatedAt: 2000,
+        },
+      },
+    };
+
+    it("includes comments from eligible locations only, dropping the internal authorUid field", () => {
+      const result = filterPlaceCommentsByEligibility(
+        placeComments,
+        { "place-1": "visible" },
+        { "place-1": "seen" }
+      );
+      expect(result).toHaveProperty("place-1");
+      expect(result).not.toHaveProperty("place-2");
+      expect(result["place-1"]!["comment-1"]).toEqual({
+        commentId: "comment-1",
+        placeId: "place-1",
+        authorProfileId: "profile-1",
+        authorSurnameSnapshot: "Alice",
+        reaction: "like",
+        text: "Super lieu !",
+        createdAt: 1000,
+        updatedAt: 1000,
+      });
+    });
+
+    it("excludes comments from hidden or unseen locations", () => {
+      expect(
+        filterPlaceCommentsByEligibility(placeComments, { "place-1": "hiddenByOwner" }, { "place-1": "seen" })
+      ).not.toHaveProperty("place-1");
+      expect(
+        filterPlaceCommentsByEligibility(placeComments, { "place-1": "visible" }, { "place-1": "unseen" })
+      ).not.toHaveProperty("place-1");
+    });
+
+    it("returns an empty object when no comment is eligible", () => {
+      expect(filterPlaceCommentsByEligibility({}, {}, {})).toEqual({});
     });
   });
 
@@ -536,16 +662,81 @@ describe("Album Source - Assembly", () => {
       expect(result.placeVisitLogs).toEqual({});
       expect(result.requiredProfiles).toEqual({});
     });
+
+    it("computes lastTripDay from the last JOURS_DESTINATIONS entry (story 30.6)", () => {
+      const snapshot = mockSnapshot();
+      const result = assembleAlbumSource(snapshot, {}, [], []);
+      // Mocké en tête de fichier : 3 jours, le dernier étant jour 3.
+      expect(result.lastTripDay).toBe(3);
+    });
+
+    it("includes eligible place comments (avis de la famille, story 30.6)", () => {
+      const snapshot = mockSnapshot();
+      snapshot.placeVisibilityMap = { "place-1": "visible" };
+      snapshot.placeSeenMap = { "place-1": "seen" };
+      snapshot.placeComments = {
+        "place-1": {
+          "comment-1": {
+            commentId: "comment-1",
+            placeId: "place-1",
+            authorProfileId: "profile-1",
+            authorSurnameSnapshot: "Alice",
+            reaction: "like",
+            text: "Génial",
+            createdAt: 1000,
+            updatedAt: 1000,
+          },
+        },
+        "place-2": {
+          "comment-2": {
+            commentId: "comment-2",
+            placeId: "place-2",
+            authorProfileId: "profile-2",
+            authorSurnameSnapshot: "Bob",
+            reaction: null,
+            text: "",
+            createdAt: 2000,
+            updatedAt: 2000,
+          },
+        },
+      };
+
+      const places: Place[] = [
+        { id: "place-1", name: "Place 1", shortDesc: "Description 1", tag: "tag1", jour: [1] },
+      ];
+
+      const result = assembleAlbumSource(snapshot, {}, places, []);
+
+      expect(result.placeComments).toHaveProperty("place-1");
+      expect(result.placeComments).not.toHaveProperty("place-2"); // place-2 non éligible (pas visible/seen)
+    });
+
+    it("applies the owner day override to eligiblePlaces[...].jour (story 30.6)", () => {
+      const snapshot = mockSnapshot();
+      snapshot.placeVisibilityMap = { "place-1": "visible" };
+      snapshot.placeSeenMap = { "place-1": "seen" };
+      snapshot.placeDayOverrides = { "place-1": [5] };
+
+      const places: Place[] = [
+        { id: "place-1", name: "Place 1", shortDesc: "Description 1", tag: "tag1", jour: [1] },
+      ];
+
+      const result = assembleAlbumSource(snapshot, {}, places, []);
+
+      expect(result.eligiblePlaces["place-1"]!.jour).toEqual([5]);
+    });
   });
 
   describe("validateAlbumSourceContent", () => {
     it("validates a correct album source", () => {
       const validSource: AlbumSource = {
         tripStartDate: "2026-09-01",
+        lastTripDay: null,
         phase: "during",
         generatedAt: Date.now(),
-        eligiblePlaces: { "place-1": { placeId: "place-1", name: "Place 1", shortDesc: "Desc" } },
+        eligiblePlaces: { "place-1": { placeId: "place-1", name: "Place 1", shortDesc: "Desc", jour: [] } },
         placeVisitLogs: {},
+        placeComments: {},
         requiredProfiles: {},
         gameResults: {},
       };
@@ -559,6 +750,7 @@ describe("Album Source - Assembly", () => {
         phase: "during",
         generatedAt: Date.now(),
         placeVisitLogs: {},
+        placeComments: {},
         requiredProfiles: {},
         gameResults: {},
       } as unknown as AlbumSource;
@@ -572,6 +764,21 @@ describe("Album Source - Assembly", () => {
         phase: "during",
         generatedAt: Date.now(),
         eligiblePlaces: {},
+        placeComments: {},
+        requiredProfiles: {},
+        gameResults: {},
+      } as unknown as AlbumSource;
+
+      expect(validateAlbumSourceContent(invalidSource)).toBe(false);
+    });
+
+    it("rejects source with missing placeComments", () => {
+      const invalidSource = {
+        tripStartDate: "2026-09-01",
+        phase: "during",
+        generatedAt: Date.now(),
+        eligiblePlaces: {},
+        placeVisitLogs: {},
         requiredProfiles: {},
         gameResults: {},
       } as unknown as AlbumSource;
@@ -586,6 +793,7 @@ describe("Album Source - Assembly", () => {
         generatedAt: Date.now(),
         eligiblePlaces: {},
         placeVisitLogs: {},
+        placeComments: {},
         requiredProfiles: {},
         gameResults: {},
         documents: {}, // Forbidden!
@@ -601,6 +809,7 @@ describe("Album Source - Assembly", () => {
         generatedAt: Date.now(),
         eligiblePlaces: {},
         placeVisitLogs: {},
+        placeComments: {},
         requiredProfiles: {},
         gameResults: {},
         chatMessages: {}, // Forbidden!
@@ -667,6 +876,29 @@ describe("Album Source - Assembly", () => {
 
     it("isLocationEligible > defaults to unseen when placeSeenMap is undefined", () => {
       expect(isLocationEligible("place-1", { "place-1": "visible" }, undefined)).toBe(false);
+    });
+  });
+
+  describe("Retrocompatibility > Missing placeComments (story 30.6)", () => {
+    it("assembleAlbumSource > handles a snapshot with a missing placeComments field without throwing", () => {
+      const snapshot = mockSnapshot();
+      snapshot.profiles = { "profile-1": mockProfile("profile-1", "Alice") };
+      snapshot.placeVisibilityMap = { "place-1": "visible" };
+      snapshot.placeSeenMap = { "place-1": "seen" };
+
+      // Supprime placeComments pour simuler un ancien snapshot cloud, comme
+      // le fait déjà ce fichier plus haut pour placeSeenMap (repli attendu :
+      // aucun avis, sans faire échouer tout l'assemblage de l'album).
+      delete (snapshot as any).placeComments;
+
+      const places: Place[] = [
+        { id: "place-1", name: "Place 1", shortDesc: "Description 1", tag: "tag1", jour: [1] },
+      ];
+
+      const result = assembleAlbumSource(snapshot, {}, places, []);
+
+      expect(result.eligiblePlaces).toHaveProperty("place-1");
+      expect(result.placeComments).toEqual({});
     });
   });
 

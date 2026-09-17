@@ -52,12 +52,12 @@ describe("pdf export limits", () => {
   // dégradation qualité et réduction du budget par lieu.
   it("blocks export when image count exceeds the extreme hard-safety limit", () => {
     const result = calculateExportLimit({
-      imageCount: 251,
+      imageCount: 601,
       preparedBytes: 1024,
     });
 
     expect(result.allowed).toBe(false);
-    expect(result.reason).toContain("250");
+    expect(result.reason).toContain("600");
     // Le message ne doit plus suggérer de retirer des lieux (rôle de dernier
     // filet extrême, plus un usage normal).
     expect(result.reason).not.toMatch(/retirer|réduisez le nombre de lieux/i);
@@ -66,17 +66,17 @@ describe("pdf export limits", () => {
   it("blocks export when prepared payload is too large (extreme hard-safety limit)", () => {
     const result = calculateExportLimit({
       imageCount: 10,
-      preparedBytes: 61 * 1024 * 1024,
+      preparedBytes: 151 * 1024 * 1024,
     });
 
     expect(result.allowed).toBe(false);
-    expect(result.reason).toMatch(/60\s*MiB|60 MiB|60MB/i);
+    expect(result.reason).toMatch(/150\s*MiB|150 MiB|150MB/i);
   });
 
   it("allows a large but reasonable album (well under the extreme hard-safety limit)", () => {
     const result = calculateExportLimit({
-      imageCount: 200,
-      preparedBytes: 45 * 1024 * 1024,
+      imageCount: 500,
+      preparedBytes: 120 * 1024 * 1024,
     });
 
     expect(result.allowed).toBe(true);
@@ -131,12 +131,10 @@ describe("collectPdfImages > editorial photos (story 30.5)", () => {
         "place-1": {
           name: "Istanbul",
           shortDesc: "",
-          photos: [
-            "/images/a.webp",
-            "/images/b.webp",
-            "/images/c.webp",
-            "/images/d.webp",
-          ],
+          // 20 photos : volontairement au-dessus du plafond
+          // (ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE = 15, story 30.6) pour
+          // exercer réellement le comportement de plafonnement ci-dessous.
+          photos: Array.from({ length: 20 }, (_, index) => `/images/photo-${index}.webp`),
         },
       },
     });
@@ -237,6 +235,7 @@ describe("exportAlbumAsPdf > rich editorial content (story 30.5)", () => {
       "place-1": {
         name: "Istanbul",
         shortDesc: "La ville-pont",
+        jour: [1],
         photos: ["/images/guide/Istanbul photo 1.webp", "/images/places/Bosphore.webp"],
         historyLabel: "Présentation",
         history: "Istanbul est la plus grande ville de **Turquie**.",
@@ -246,6 +245,7 @@ describe("exportAlbumAsPdf > rich editorial content (story 30.5)", () => {
       "place-2": {
         name: "Cappadocia",
         shortDesc: "Rock formations",
+        jour: [2],
         // Aucun contenu éditorial ni note de carnet pour ce lieu.
       },
     },
@@ -258,6 +258,7 @@ describe("exportAlbumAsPdf > rich editorial content (story 30.5)", () => {
         },
       },
     },
+    comments: {},
     profiles: {},
     gameSummary: {
       profileId: "profile-1",
@@ -278,10 +279,12 @@ describe("exportAlbumAsPdf > rich editorial content (story 30.5)", () => {
 
   const source: AlbumSource = {
     tripStartDate: "2026-08-16",
+    lastTripDay: 2,
     phase: "after",
     generatedAt: Date.now(),
     eligiblePlaces: {},
     placeVisitLogs: {},
+    placeComments: {},
     requiredProfiles: {},
     gameResults: {},
   };
@@ -319,6 +322,67 @@ describe("exportAlbumAsPdf > rich editorial content (story 30.5)", () => {
     ).resolves.toBeUndefined();
 
     expect(progressPhases).toEqual(["preparing", "rendering", "download"]);
+  });
+
+  it("completes without throwing when family comments (avis) and a detailed visite guidée are present (story 30.6)", async () => {
+    const contentWithEnrichment: FilteredAlbumContent = {
+      ...content,
+      places: {
+        ...content.places,
+        "place-1": {
+          ...content.places["place-1"]!,
+          guideSections: [
+            {
+              title: "Histoire de la mosquée",
+              paragraphs: ["Un long paragraphe sur l'histoire du lieu."],
+              bullets: ["Un premier fait marquant.", "Un second fait marquant."],
+            },
+          ],
+        },
+      },
+      comments: {
+        "place-1": {
+          "comment-1": {
+            commentId: "comment-1",
+            placeId: "place-1",
+            authorProfileId: "profile-2",
+            authorSurnameSnapshot: "Camille",
+            reaction: "like",
+            text: "On y retournerait direct !",
+            createdAt: 1000,
+            updatedAt: 1000,
+          },
+          "comment-2": {
+            commentId: "comment-2",
+            placeId: "place-1",
+            authorProfileId: "profile-3",
+            authorSurnameSnapshot: "Sacha",
+            reaction: "dislike",
+            text: "",
+            createdAt: 2000,
+            updatedAt: 2000,
+          },
+        },
+      },
+    };
+
+    await expect(
+      exportAlbumAsPdf(
+        draft,
+        contentWithEnrichment,
+        source,
+        undefined,
+        {
+          fetchAsset: vi.fn().mockResolvedValue({ ok: true, blob: () => Promise.resolve({} as Blob) }),
+          readBlobAsDataUrl: vi.fn().mockResolvedValue("data:image/webp;base64,original"),
+          loadImageElement: vi.fn().mockResolvedValue({ naturalWidth: 900, naturalHeight: 600 }),
+          drawResizedJpeg: vi.fn(() => "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD"),
+        },
+        {
+          loadImageElement: vi.fn().mockResolvedValue({ naturalWidth: 800, naturalHeight: 600 }),
+        }
+      )
+    ).resolves.toBeUndefined();
   });
 });
 
@@ -388,7 +452,7 @@ describe("exportAlbumAsPdf > voyage très illustré (nombreux lieux, export adap
     const entries: FilteredAlbumContent["entries"] = {};
     for (let i = 0; i < placeCount; i += 1) {
       const placeId = `place-${i}`;
-      places[placeId] = { name: `Lieu ${i}`, shortDesc: "" };
+      places[placeId] = { name: `Lieu ${i}`, shortDesc: "", jour: [] };
       entries[placeId] = {
         "entry-1": {
           entryId: "entry-1",
@@ -418,6 +482,7 @@ describe("exportAlbumAsPdf > voyage très illustré (nombreux lieux, export adap
     const largeContent: FilteredAlbumContent = {
       places,
       entries,
+      comments: {},
       profiles: {},
       gameSummary: null,
       coverPhotoMissing: false,
@@ -429,10 +494,12 @@ describe("exportAlbumAsPdf > voyage très illustré (nombreux lieux, export adap
 
     const largeSource: AlbumSource = {
       tripStartDate: "2026-01-01",
+      lastTripDay: null,
       phase: "after",
       generatedAt: Date.now(),
       eligiblePlaces: {},
       placeVisitLogs: {},
+      placeComments: {},
       requiredProfiles: {},
       gameResults: {},
     };

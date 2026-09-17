@@ -1,17 +1,24 @@
 import type {
   AlbumSource,
+  AlbumSourceCommentEntry,
   AlbumSourcePlaceEntry,
   AlbumSourceProfileEntry,
   AlbumSourceVisitLogEntry,
   CloudCarnetVisiteEntry,
+  CloudPlaceComment,
   CloudProfileState,
   CloudSyncSnapshot,
+  PlaceDayOverrideMap,
   PlaceSeenState,
   PlaceVisibilityState,
 } from "../types/cloud";
 import type { Place } from "../content/places";
 import { Database, get, ref } from "firebase/database";
 import type { Role } from "../app/owner-policy";
+import { getEffectivePlaceDays } from "../app/placeDays";
+import { extractGuideSections } from "../app/visiteGuideeText";
+import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
+import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
 
 /**
  * Détermine si l'utilisateur a le droit d'accéder au système d'export d'album.
@@ -122,7 +129,8 @@ export function buildEligiblePlaces(
   allPlaces: Place[],
   customPlaces: Place[],
   placeVisibilityMap: Record<string, PlaceVisibilityState> | undefined,
-  placeSeenMap: Record<string, PlaceSeenState> | undefined
+  placeSeenMap: Record<string, PlaceSeenState> | undefined,
+  placeDayOverrideMap: PlaceDayOverrideMap | undefined = {}
 ): Record<string, AlbumSourcePlaceEntry> {
   const eligible: Record<string, AlbumSourcePlaceEntry> = {};
 
@@ -131,6 +139,11 @@ export function buildEligiblePlaces(
 
   for (const place of allPossiblePlaces) {
     if (isLocationEligible(place.id, placeVisibilityMap, placeSeenMap)) {
+      // Guide de visite détaillé (story 30.6) : présent seulement si un
+      // .docx correspondant a été converti (cf. VISITES_GUIDEES, indexé par
+      // Place.id). Absent pour la plupart des lieux, c'est attendu.
+      const guideSections = extractGuideSections(VISITES_GUIDEES[place.id]?.html);
+
       // Socle éditorial (story 30.5) : recopié tel quel depuis Place, uniquement
       // quand renseigné, pour ne jamais introduire de champ vide/undefined dans
       // l'objet (garde les tests d'égalité stricte existants stables).
@@ -138,12 +151,17 @@ export function buildEligiblePlaces(
         placeId: place.id,
         name: place.name,
         shortDesc: place.shortDesc,
+        // Jour(s) effectif(s) (story 30.6) : après override propriétaire
+        // éventuel, mêmes règles que le PlanningScreen de l'appli (cf.
+        // getEffectivePlaceDays dans src/app/placeDays.ts).
+        jour: getEffectivePlaceDays(place, placeDayOverrideMap ?? {}),
         ...(place.image ? { image: place.image } : {}),
         ...(place.photos && place.photos.length > 0 ? { photos: place.photos } : {}),
         ...(place.historyLabel ? { historyLabel: place.historyLabel } : {}),
         ...(place.history ? { history: place.history } : {}),
         ...(place.anecdotesLabel ? { anecdotesLabel: place.anecdotesLabel } : {}),
         ...(place.anecdotes && place.anecdotes.length > 0 ? { anecdotes: place.anecdotes } : {}),
+        ...(guideSections.length > 0 ? { guideSections } : {}),
       };
     }
   }
@@ -174,6 +192,54 @@ export function filterCarnetVisiteByEligibility(
 
     if (Object.keys(eligibleEntries).length > 0) {
       filtered[placeId] = eligibleEntries;
+    }
+  }
+
+  return filtered;
+}
+
+/**
+ * Convertit une CloudPlaceComment en AlbumSourceCommentEntry (story 30.6).
+ * Préserve tous les champs pertinents, sans le champ interne authorUid.
+ */
+function convertPlaceComment(comment: CloudPlaceComment): AlbumSourceCommentEntry {
+  return {
+    commentId: comment.commentId,
+    placeId: comment.placeId,
+    authorProfileId: comment.authorProfileId,
+    authorSurnameSnapshot: comment.authorSurnameSnapshot,
+    reaction: comment.reaction,
+    text: comment.text,
+    createdAt: comment.createdAt,
+    updatedAt: comment.updatedAt,
+  };
+}
+
+/**
+ * Filtre les avis de la famille (likes/dislikes + commentaires, story 30.6)
+ * pour ne garder que ceux des lieux admissibles. Même schéma que
+ * filterCarnetVisiteByEligibility ci-dessous, pour l'"Avis de la famille" de
+ * l'album plutôt que le carnet de visite.
+ */
+export function filterPlaceCommentsByEligibility(
+  placeComments: Record<string, Record<string, CloudPlaceComment>>,
+  placeVisibilityMap: Record<string, PlaceVisibilityState> | undefined,
+  placeSeenMap: Record<string, PlaceSeenState> | undefined
+): Record<string, Record<string, AlbumSourceCommentEntry>> {
+  const filtered: Record<string, Record<string, AlbumSourceCommentEntry>> = {};
+
+  for (const [placeId, comments] of Object.entries(placeComments)) {
+    if (!isLocationEligible(placeId, placeVisibilityMap, placeSeenMap)) {
+      continue;
+    }
+
+    const eligibleComments: Record<string, AlbumSourceCommentEntry> = {};
+    for (const comment of Object.values(comments)) {
+      eligibleComments[comment.commentId] = convertPlaceComment(comment);
+    }
+
+    if (Object.keys(eligibleComments).length > 0) {
+      filtered[placeId] = eligibleComments;
     }
   }
 
@@ -337,12 +403,24 @@ export function assembleAlbumSource(
     allPlaces,
     customPlaces,
     snapshot.placeVisibilityMap,
-    snapshot.placeSeenMap
+    snapshot.placeSeenMap,
+    snapshot.placeDayOverrides
   );
 
   // Phase 2 : Filtre les carnets (uniquement pour places admissibles)
   const placeVisitLogs = filterCarnetVisiteByEligibility(
     placeCarnetRecords,
+    snapshot.placeVisibilityMap,
+    snapshot.placeSeenMap
+  );
+
+  // Phase 2bis : Filtre les avis de la famille (story 30.6, même règle
+  // d'éligibilité que le carnet). `snapshot.placeComments` peut être absent
+  // (snapshot ancien/partiel, même cas de figure que placeSeenMap plus haut
+  // dans ce fichier) : repli sur un objet vide plutôt que de faire échouer
+  // tout l'assemblage de l'album.
+  const placeComments = filterPlaceCommentsByEligibility(
+    snapshot.placeComments ?? {},
     snapshot.placeVisibilityMap,
     snapshot.placeSeenMap
   );
@@ -358,12 +436,20 @@ export function assembleAlbumSource(
     }
   }
 
+  // Dernier jour défini du voyage (story 30.6) : dernière entrée de
+  // JOURS_DESTINATIONS, contenu statique généré au build (comme PLACES),
+  // même règle que App.tsx (lastDefinedDay). Sert à afficher la date de fin
+  // de voyage en couverture et à borner la page planning.
+  const lastTripDay = JOURS_DESTINATIONS.length > 0 ? JOURS_DESTINATIONS[JOURS_DESTINATIONS.length - 1].jour : null;
+
   return {
     tripStartDate: snapshot.tripStartDate,
+    lastTripDay,
     phase: snapshot.phase,
     generatedAt: Date.now(),
     eligiblePlaces,
     placeVisitLogs,
+    placeComments,
     requiredProfiles,
     gameResults,
   };
@@ -381,6 +467,9 @@ export function validateAlbumSourceContent(source: AlbumSource): boolean {
     return false;
   }
   if (!source.placeVisitLogs || typeof source.placeVisitLogs !== "object") {
+    return false;
+  }
+  if (!source.placeComments || typeof source.placeComments !== "object") {
     return false;
   }
   if (!source.requiredProfiles || typeof source.requiredProfiles !== "object") {

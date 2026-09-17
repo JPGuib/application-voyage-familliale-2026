@@ -8,6 +8,10 @@ import {
   selectBudgetedCarnetPhotos,
 } from "../app/albumUtils";
 import { computeResizedDimensions } from "../app/image-upload";
+import { formatTripDayLabel } from "../app/trip-day-format";
+import { isValidTripStartDate } from "../app/trip-day";
+import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
+import { TRIP_MAP_IMAGE_PATH } from "../content/trip";
 
 export type PdfExportLimitInput = {
   imageCount: number;
@@ -56,8 +60,12 @@ export type PdfExportProgress = "preparing" | "rendering" | "download";
 // dernier filet pour un cas réellement extrême (un voyage à un nombre de
 // lieux et de photos délirant, même après dégradation maximale) : ils ne
 // devraient plus être atteints en pratique.
-const HARD_MAX_IMAGES = 250;
-const HARD_MAX_PREPARED_BYTES = 60 * 1024 * 1024;
+// Relevés (story 30.6, retour de test utilisateur "mettre toutes les
+// photos") en cohérence avec l'assouplissement du budget par lieu dans
+// albumUtils.ts (ALBUM_MAX_PHOTOS_PER_PLACE/ALBUM_PHOTO_BUDGET_TOTAL) :
+// valeurs de départ, ajustables après un usage réel.
+const HARD_MAX_IMAGES = 600;
+const HARD_MAX_PREPARED_BYTES = 150 * 1024 * 1024;
 
 // Estimation du poids d'une photo éditoriale une fois convertie (redimensionnée
 // puis recompressée en JPEG selon le palier de qualité choisi, cf.
@@ -602,6 +610,27 @@ function stripBasicMarkdown(text: string): string {
   return text.replace(/\*\*/g, "");
 }
 
+/**
+ * Formate la plage de dates du voyage (1er jour -> dernier jour défini,
+ * story 30.6) pour la couverture de l'album, en réutilisant le même helper
+ * que le reste de l'appli (`formatTripDayLabel`, cf. PlanningScreen dans
+ * App.tsx) pour rester cohérent.
+ *
+ * Cas limite : date de début absente/invalide -> aucune plage affichée
+ * (pas de texte trompeur). Un seul jour défini -> une seule date affichée.
+ */
+function formatTripDateRangeLabel(tripStartDate: string | null, lastTripDay: number | null): string | null {
+  if (!isValidTripStartDate(tripStartDate)) {
+    return null;
+  }
+  const startLabel = formatTripDayLabel(1, tripStartDate, { format: "long" });
+  if (!lastTripDay || lastTripDay <= 1) {
+    return startLabel;
+  }
+  const endLabel = formatTripDayLabel(lastTripDay, tripStartDate, { format: "long" });
+  return `${startLabel} — ${endLabel}`;
+}
+
 export async function exportAlbumAsPdf(
   draft: AlbumDraft,
   content: FilteredAlbumContent,
@@ -750,28 +779,68 @@ export async function exportAlbumAsPdf(
     doc.setFont("Nunito", "normal");
     doc.setFontSize(12.5);
     doc.text(draft.subtitle, pageWidth / 2, titleCursorY, { align: "center", maxWidth: pageContentWidth });
+    titleCursorY += 9;
+  }
+
+  // Dates du voyage (story 30.6) : 1er jour -> dernier jour défini
+  // (JOURS_DESTINATIONS), formatées avec le même helper que le reste de
+  // l'appli (cf. PlanningScreen dans App.tsx) pour rester cohérent.
+  const tripDateRangeLabel = formatTripDateRangeLabel(source.tripStartDate, source.lastTripDay);
+  if (tripDateRangeLabel) {
+    doc.setFont("Nunito", "normal");
+    doc.setFontSize(11);
+    doc.text(tripDateRangeLabel, pageWidth / 2, titleCursorY, { align: "center", maxWidth: pageContentWidth });
   }
   doc.setTextColor(...TEXT_COLOR);
 
-  // --- Itinéraire -------------------------------------------------------
-  const itineraryPlaces = Object.values(content.places);
-  if (itineraryPlaces.length > 0) {
+  // --- Circuit du voyage --------------------------------------------------
+  // Reprend la photo affichée sur le tableau de bord de l'appli (story 30.6),
+  // convertie via le même pipeline que les photos éditoriales.
+  const mapImageSrc = await resolveEditorial(TRIP_MAP_IMAGE_PATH);
+  if (mapImageSrc) {
     doc.addPage();
     paintPageBackground(doc, pageWidth, pageHeight);
-    drawTitleBand(doc, "Itinéraire du voyage", pageWidth, margin, 12, PRIMARY_COLOR);
+    drawTitleBand(doc, "Circuit du voyage", pageWidth, margin, 12, PRIMARY_COLOR);
+    const mapDimensions = await resolveDimensions(mapImageSrc, editorialConverterDeps);
+    drawFramedPhoto(doc, mapImageSrc, margin, 34, pageContentWidth, pageHeight - 34 - margin - 10, mapDimensions);
+  }
+
+  // --- Planning jour par jour ----------------------------------------------
+  // Remplace l'ancienne liste plate des lieux inclus par un regroupement par
+  // jour façon écran "Planning complet" de l'appli (story 30.6) : un jour
+  // n'est affiché que s'il contient au moins un lieu inclus dans l'album,
+  // pour rester compact (tenir sur 1 page pour un voyage classique) plutôt
+  // que de lister tous les jours du voyage même vides.
+  const includedPlaceEntries = Object.entries(content.places);
+  const daysWithIncludedPlaces = JOURS_DESTINATIONS.filter((dayEntry) =>
+    includedPlaceEntries.some(([, place]) => place.jour.includes(dayEntry.jour))
+  );
+
+  if (daysWithIncludedPlaces.length > 0) {
+    doc.addPage();
+    paintPageBackground(doc, pageWidth, pageHeight);
+    drawTitleBand(doc, "Planning du voyage", pageWidth, margin, 12, PRIMARY_COLOR);
     let cursorY = 34;
 
-    for (const [index, place] of itineraryPlaces.entries()) {
+    for (const [index, dayEntry] of daysWithIncludedPlaces.entries()) {
+      const placeNames = includedPlaceEntries
+        .filter(([, place]) => place.jour.includes(dayEntry.jour))
+        .map(([, place]) => place.name);
+
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(10);
+      const dateLabel = formatTripDayLabel(dayEntry.jour, source.tripStartDate, { format: "long" });
       doc.setFont("Nunito", "bold");
       doc.setFontSize(12);
-      const nameLines: string[] = doc.splitTextToSize(place.name, pageContentWidth - 8);
+      const destinationLines: string[] = doc.splitTextToSize(dayEntry.destination, pageContentWidth - 8);
       doc.setFont("Nunito", "normal");
       doc.setFontSize(10);
-      const descLines: string[] = place.shortDesc ? doc.splitTextToSize(place.shortDesc, pageContentWidth - 8) : [];
+      const placesLine = placeNames.join(" · ");
+      const placesLines: string[] = placesLine ? doc.splitTextToSize(placesLine, pageContentWidth - 8) : [];
 
-      const neededHeight = nameLines.length * 6 + descLines.length * 5 + 4;
+      const neededHeight = 5 + destinationLines.length * 6 + placesLines.length * 5 + 5;
       cursorY = ensureSpace(doc, cursorY, neededHeight, pageWidth, pageHeight, margin, {
-        chapterTitle: "Itinéraire du voyage",
+        chapterTitle: "Planning du voyage",
         accentColor: PRIMARY_COLOR,
       });
 
@@ -780,23 +849,29 @@ export async function exportAlbumAsPdf(
       doc.circle(margin + 1.4, cursorY - 1.4, 1.4, "F");
 
       doc.setFont("Nunito", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(...MUTED_TEXT_COLOR);
+      doc.text(dateLabel.toUpperCase(), margin + 6, cursorY);
+      cursorY += 5;
+
+      doc.setFont("Nunito", "bold");
       doc.setFontSize(12);
       doc.setTextColor(...TEXT_COLOR);
-      for (const line of nameLines) {
+      for (const line of destinationLines) {
         doc.text(line, margin + 6, cursorY);
         cursorY += 6;
       }
 
-      if (descLines.length > 0) {
+      if (placesLines.length > 0) {
         doc.setFont("Nunito", "normal");
         doc.setFontSize(10);
         doc.setTextColor(...MUTED_TEXT_COLOR);
-        for (const line of descLines) {
+        for (const line of placesLines) {
           doc.text(line, margin + 6, cursorY);
           cursorY += 5;
         }
       }
-      cursorY += 4;
+      cursorY += 5;
     }
     doc.setTextColor(...TEXT_COLOR);
   }
@@ -962,7 +1037,121 @@ export async function exportAlbumAsPdf(
       doc.setLineWidth(0.8);
       doc.line(margin, cursorY - 4, margin, cursorY + noteLines.length * 7 - 4);
       cursorY = addTextBlock(noteLines, margin + 4, cursorY, 11, 7);
-    } else if (!hasPresentation && !hasAnecdotes && galleryEntries.length === 0) {
+    }
+
+    // Avis de la famille (story 30.6) : like/dislike + commentaire libre par
+    // membre de la famille, même wording que la fiche lieu de l'appli
+    // (App.tsx, "Avis de la famille" / "J'aime" / "J'aime pas" / "Réaction
+    // sans commentaire.").
+    const placeComments = Object.values(content.comments[placeId] ?? {});
+    if (placeComments.length > 0) {
+      cursorY = ensureSpace(doc, cursorY, 9, pageWidth, pageHeight, margin, { chapterTitle, accentColor });
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(...accentColor);
+      doc.text("Avis de la famille", margin, cursorY);
+      doc.setTextColor(...TEXT_COLOR);
+      cursorY += 7;
+
+      for (const comment of placeComments) {
+        const reactionLabel =
+          comment.reaction === "like" ? "J'aime" : comment.reaction === "dislike" ? "J'aime pas" : "Commentaire";
+        const hasText = Boolean(comment.text && comment.text.trim());
+        doc.setFont("Nunito", "normal");
+        doc.setFontSize(10.5);
+        const textLines: string[] = hasText
+          ? doc.splitTextToSize(comment.text.trim(), pageContentWidth)
+          : ["Réaction sans commentaire."];
+
+        cursorY = ensureSpace(doc, cursorY, 6 + textLines.length * 5.5 + 3, pageWidth, pageHeight, margin, {
+          chapterTitle,
+          accentColor,
+        });
+
+        doc.setFont("Nunito", "bold");
+        doc.setFontSize(10.5);
+        doc.setTextColor(...TEXT_COLOR);
+        doc.text(comment.authorSurnameSnapshot || "Anonyme", margin, cursorY);
+        doc.setFont("Nunito", "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(...MUTED_TEXT_COLOR);
+        doc.text(reactionLabel, pageWidth - margin, cursorY, { align: "right" });
+        cursorY += 5.5;
+
+        doc.setFont("Nunito", "normal");
+        doc.setFontSize(10.5);
+        doc.setTextColor(...(hasText ? TEXT_COLOR : MUTED_TEXT_COLOR));
+        for (const line of textLines) {
+          doc.text(line, margin, cursorY, { maxWidth: pageContentWidth });
+          cursorY += 5.5;
+        }
+        doc.setTextColor(...TEXT_COLOR);
+        cursorY += 3;
+      }
+    }
+
+    // Guide de visite détaillé (story 30.6), seulement si ce lieu en a un
+    // (cf. VISITES_GUIDEES dans src/content/generated/visites-guidees.ts).
+    // Une pagination par paragraphe/liste (plutôt que par section entière)
+    // pour rester robuste sur un guide riche à plusieurs longues sections.
+    const guideSections = place.guideSections ?? [];
+    if (guideSections.length > 0) {
+      cursorY = ensureSpace(doc, cursorY, 10, pageWidth, pageHeight, margin, { chapterTitle, accentColor });
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(...accentColor);
+      doc.text("Guide de visite détaillé", margin, cursorY);
+      doc.setTextColor(...TEXT_COLOR);
+      cursorY += 8;
+
+      for (const section of guideSections) {
+        if (section.title) {
+          cursorY = ensureSpace(doc, cursorY, 9, pageWidth, pageHeight, margin, { chapterTitle, accentColor });
+          doc.setFont("Nunito", "bold");
+          doc.setFontSize(11);
+          doc.setTextColor(...accentColor);
+          doc.text(section.title.slice(0, 90), margin, cursorY);
+          doc.setTextColor(...TEXT_COLOR);
+          cursorY += 7;
+        }
+
+        for (const paragraph of section.paragraphs) {
+          doc.setFont("Nunito", "normal");
+          doc.setFontSize(10.5);
+          const lines: string[] = doc.splitTextToSize(paragraph, pageContentWidth);
+          cursorY = ensureSpace(doc, cursorY, lines.length * 5.5 + 2, pageWidth, pageHeight, margin, {
+            chapterTitle,
+            accentColor,
+          });
+          cursorY = addTextBlock(lines, margin, cursorY, 10.5, 5.5);
+          cursorY += 2;
+        }
+
+        if (section.bullets.length > 0) {
+          doc.setFont("Nunito", "normal");
+          doc.setFontSize(10.5);
+          const bulletLines: string[] = [];
+          for (const bullet of section.bullets) {
+            bulletLines.push(...(doc.splitTextToSize(`•  ${bullet}`, pageContentWidth - 2) as string[]));
+          }
+          cursorY = ensureSpace(doc, cursorY, bulletLines.length * 5.5 + 2, pageWidth, pageHeight, margin, {
+            chapterTitle,
+            accentColor,
+          });
+          cursorY = addTextBlock(bulletLines, margin, cursorY, 10.5, 5.5);
+        }
+        cursorY += 4;
+      }
+    }
+
+    if (
+      !hasPresentation &&
+      !hasAnecdotes &&
+      galleryEntries.length === 0 &&
+      bodyLines.length === 0 &&
+      placeComments.length === 0 &&
+      guideSections.length === 0
+    ) {
       doc.setFont("Nunito", "normal");
       doc.setFontSize(11);
       doc.setTextColor(...MUTED_TEXT_COLOR);

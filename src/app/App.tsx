@@ -44,7 +44,7 @@ import { CrosswordScreen } from "./CrosswordScreen";
 import type { CrosswordProgressSnapshot } from "./crossword-progress";
 import { OrdalieScreen } from "./OrdalieScreen";
 import { ImposteurScreen } from "./ImposteurScreen";
-import { TRIP } from "../content/trip";
+import { TRIP, TRIP_MAP_IMAGE_PATH } from "../content/trip";
 import { PLACES, type Place, type PlaceLink } from "../content/places";
 import {
   DOCUMENT_CATEGORIES,
@@ -158,6 +158,13 @@ import {
   isValidTripStartDate,
 } from "./trip-day";
 import { formatTripDayLabel } from "./trip-day-format";
+import {
+  getBasePlaceDays,
+  getEffectivePlaceDays,
+  getPlaceOrderPositionForDay,
+  normalizePlaceDays,
+  sortPlacesForDay,
+} from "./placeDays";
 import {
   type NotificationPermissionStatus,
   type NotificationPreferences,
@@ -1871,20 +1878,6 @@ function areTravelDocumentMapsEqual(
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
-function normalizePlaceDays(raw: unknown): number[] {
-  if (!Array.isArray(raw)) {
-    return [];
-  }
-
-  return Array.from(
-    new Set(
-      raw
-        .map((day) => (typeof day === "number" && Number.isFinite(day) ? Math.trunc(day) : Number.NaN))
-        .filter((day) => Number.isFinite(day) && day > 0)
-    )
-  ).sort((left, right) => left - right);
-}
-
 // Visites/activités du Guide du séjour ajoutées par le propriétaire (absentes
 // de PLACES), synchronisées cloud. Même esprit que ownerGlobalDocumentAdditions
 // ci-dessus, mais sans photo/audio (pas de pipeline d'upload dans l'appli) et
@@ -2031,77 +2024,6 @@ function parsePlaceDayOrderOverrideMap(raw: unknown): PlaceDayOrderOverrideMap {
   }
 
   return next;
-}
-
-function getBasePlaceDays(place: { jour?: number[] }): number[] {
-  return normalizePlaceDays(place.jour ?? []);
-}
-
-function getEffectivePlaceDays(
-  place: { id: string; jour?: number[] },
-  overrideMap: PlaceDayOverrideMap
-): number[] {
-  const overrideDays = overrideMap[place.id];
-  return overrideDays && overrideDays.length > 0 ? overrideDays : getBasePlaceDays(place);
-}
-
-function getPlaceOrderPositionForDay(
-  placeId: string,
-  day: number,
-  orderMap: PlaceDayOrderOverrideMap
-): number | null {
-  const perDay = orderMap[placeId];
-  if (!perDay) {
-    return null;
-  }
-  const value = perDay[day];
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return null;
-  }
-  const normalized = Math.trunc(value);
-  return normalized > 0 ? normalized : null;
-}
-
-function sortPlacesForDay<T extends { id: string }>(
-  places: T[],
-  day: number,
-  orderMap: PlaceDayOrderOverrideMap,
-  fallbackIndexMap: Record<string, number>
-): T[] {
-  const base = [...places].sort(
-    (left, right) =>
-      (fallbackIndexMap[left.id] ?? Number.MAX_SAFE_INTEGER) -
-      (fallbackIndexMap[right.id] ?? Number.MAX_SAFE_INTEGER)
-  );
-
-  const positioned = base
-    .map((item) => ({
-      item,
-      desiredPosition: getPlaceOrderPositionForDay(item.id, day, orderMap),
-      fallbackIndex: fallbackIndexMap[item.id] ?? Number.MAX_SAFE_INTEGER,
-    }))
-    .filter((entry): entry is { item: T; desiredPosition: number; fallbackIndex: number } =>
-      entry.desiredPosition !== null
-    )
-    .sort((left, right) => {
-      if (left.desiredPosition !== right.desiredPosition) {
-        return left.desiredPosition - right.desiredPosition;
-      }
-      return left.fallbackIndex - right.fallbackIndex;
-    });
-
-  const ordered = [...base];
-  for (const entry of positioned) {
-    const currentIndex = ordered.findIndex((item) => item.id === entry.item.id);
-    if (currentIndex === -1) {
-      continue;
-    }
-    const [moved] = ordered.splice(currentIndex, 1);
-    const targetIndex = Math.max(0, Math.min(entry.desiredPosition - 1, ordered.length));
-    ordered.splice(targetIndex, 0, moved);
-  }
-
-  return ordered;
 }
 
 function getPlacePositionInDay(
@@ -3924,7 +3846,7 @@ function DashboardScreen({
             className="block w-full active:scale-95 transition-transform"
           >
             <img
-              src="/images/Carte du voyage.webp?v=20260811"
+              src={TRIP_MAP_IMAGE_PATH}
               alt="Carte du circuit du séjour en Turquie"
               className="w-full h-auto object-contain"
             />
@@ -3948,7 +3870,7 @@ function DashboardScreen({
           </div>
           <div className="flex-1 flex items-center justify-center px-2 min-h-0" onClick={(e) => e.stopPropagation()}>
             <img
-              src="/images/Carte du voyage.webp?v=20260811"
+              src={TRIP_MAP_IMAGE_PATH}
               alt="Carte du circuit du séjour en Turquie"
               className="max-w-full max-h-full object-contain rounded-lg"
             />
@@ -12815,10 +12737,12 @@ export default function App() {
           if (!cancelled) {
             setAlbumSource({
               tripStartDate,
+              lastTripDay: lastDefinedDay,
               phase,
               generatedAt: Date.now(),
               eligiblePlaces: {},
               placeVisitLogs: {},
+              placeComments: {},
               requiredProfiles: {},
               gameResults: {},
             });

@@ -493,6 +493,17 @@ export type ClaimRoleResult = {
 // quand aucun voyageur n'a écrit de note de carnet pour ce lieu. Optionnels
 // car toutes les visites du programme n'ont pas ce contenu (ex. simples
 // vols ajoutés au programme sans historyLabel/anecdotesLabel).
+// Une section du guide de visite détaillé d'un lieu (story 30.6), extraite du
+// HTML généré par scripts/convert-visites-guidees.mjs (cf.
+// src/app/visiteGuideeText.ts::extractGuideSections). Ne conserve que le texte
+// (titre, paragraphes, listes à puces) : les images/audio du guide n'ont pas
+// leur place dans l'album (les photos du lieu sont déjà dans sa galerie).
+export type GuideSection = {
+  title: string;
+  paragraphs: string[];
+  bullets: string[];
+};
+
 export type AlbumSourcePlaceEntry = {
   placeId: string;
   name: string;
@@ -503,6 +514,14 @@ export type AlbumSourcePlaceEntry = {
   history?: string;
   anecdotesLabel?: string;
   anecdotes?: string[];
+  // Jour(s) effectif(s) du voyage auquel ce lieu est rattaché (story 30.6),
+  // après application d'un éventuel override propriétaire (cf.
+  // getEffectivePlaceDays dans src/app/placeDays.ts) : sert à regrouper les
+  // lieux par jour dans la page planning de l'album.
+  jour: number[];
+  // Guide de visite détaillé (story 30.6), seulement si VISITES_GUIDEES a une
+  // entrée pour ce lieu (src/content/generated/visites-guidees.ts).
+  guideSections?: GuideSection[];
 };
 
 export type AlbumSourceVisitLogEntry = {
@@ -512,6 +531,20 @@ export type AlbumSourceVisitLogEntry = {
   authorSurnameSnapshot: string;
   text: string;
   photos: Record<string, string>; // photoId -> data URI JPEG compressée
+  createdAt: number;
+  updatedAt: number;
+};
+
+// Avis de la famille sur un lieu (like/dislike + commentaire libre, story
+// 30.6) : reprend CloudPlaceComment sans les champs internes non pertinents
+// pour l'album (authorUid).
+export type AlbumSourceCommentEntry = {
+  commentId: string;
+  placeId: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  reaction: PlaceCommentReaction | null;
+  text: string;
   createdAt: number;
   updatedAt: number;
 };
@@ -526,18 +559,26 @@ export type AlbumSourceProfileEntry = {
 export type AlbumSource = {
   // Métadonnées du voyage
   tripStartDate: string | null;
+  // Dernier jour défini du voyage (dernière entrée de JOURS_DESTINATIONS),
+  // utilisé pour afficher la date de fin de voyage en couverture et pour
+  // borner la page planning (story 30.6). `null` si aucun jour n'est défini.
+  lastTripDay: number | null;
   phase: TravelPhase;
   generatedAt: number;
-  
+
   // Lieux admissibles (visibles et marqués "seen")
   eligiblePlaces: Record<string, AlbumSourcePlaceEntry>;
-  
+
   // Souvenirs du carnet de ces seuls lieux, regroupés par lieu puis par entryId
   placeVisitLogs: Record<string, Record<string, AlbumSourceVisitLogEntry>>;
-  
+
+  // Avis de la famille (story 30.6) pour ces seuls lieux, regroupés par lieu
+  // puis par commentId.
+  placeComments: Record<string, Record<string, AlbumSourceCommentEntry>>;
+
   // Profils nécessaires à l'affichage des auteurs (ceux ayant au moins une entrée)
   requiredProfiles: Record<string, AlbumSourceProfileEntry>;
-  
+
   // Résultats de jeu du jour depuis le snapshot familial
   gameResults: Record<string, CloudGameHistoryEntry[]>; // profileId -> résultats
 };
