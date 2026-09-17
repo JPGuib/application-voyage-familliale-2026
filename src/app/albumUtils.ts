@@ -150,6 +150,41 @@ export function isPhotoBudgetReduced(budget: PhotoBudgetPerPlace): boolean {
   return budget.total < ALBUM_MAX_PHOTOS_PER_PLACE;
 }
 
+/** Dimensions calculées par `fitWithinBox`, à la fois taille et position centrée dans la boîte. */
+export type FittedBox = { width: number; height: number; offsetX: number; offsetY: number };
+
+/**
+ * Calcule les dimensions d'une image (ratio conservé, mode "contain") pour
+ * qu'elle tienne entièrement dans une boîte `maxWidth` x `maxHeight`, centrée
+ * dans cette boîte (`offsetX`/`offsetY` relatifs au coin haut-gauche de la
+ * boîte). Utilisé par l'export PDF (cf. pdf-export.ts) pour éviter la
+ * déformation d'une photo étirée brutalement dans une cellule de galerie à
+ * ratio fixe.
+ *
+ * Cas limite : dimensions naturelles invalides (0, négatives, non finies)
+ * retombent sur la boîte entière (pas de ratio calculable).
+ */
+export function fitWithinBox(
+  naturalWidth: number,
+  naturalHeight: number,
+  maxWidth: number,
+  maxHeight: number
+): FittedBox {
+  if (!Number.isFinite(naturalWidth) || !Number.isFinite(naturalHeight) || naturalWidth <= 0 || naturalHeight <= 0) {
+    return { width: maxWidth, height: maxHeight, offsetX: 0, offsetY: 0 };
+  }
+
+  const scale = Math.min(maxWidth / naturalWidth, maxHeight / naturalHeight);
+  const width = naturalWidth * scale;
+  const height = naturalHeight * scale;
+  return {
+    width,
+    height,
+    offsetX: (maxWidth - width) / 2,
+    offsetY: (maxHeight - height) / 2,
+  };
+}
+
 /** Référence (id + source) d'une photo de carnet, pour la sélection budgétée. */
 export type CarnetPhotoRef = { id: string; src: string };
 

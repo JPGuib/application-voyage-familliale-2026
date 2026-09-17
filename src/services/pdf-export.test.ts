@@ -305,6 +305,15 @@ describe("exportAlbumAsPdf > rich editorial content (story 30.5)", () => {
           readBlobAsDataUrl: vi.fn().mockResolvedValue("data:image/webp;base64,original"),
           loadImageElement: vi.fn().mockResolvedValue({ naturalWidth: 900, naturalHeight: 600 }),
           drawResizedJpeg: vi.fn(() => "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD"),
+        },
+        // Palier de qualité par défaut (2 lieux) : la photo de carnet n'est pas
+        // recompressée (cf. recompressCarnetPhotoForExport), mais ses dimensions
+        // naturelles sont tout de même mesurées pour l'affichage "contain" du
+        // cadre polaroid (cf. measureImageDimensions dans pdf-export.ts) : un
+        // mock de `loadImageElement` reste donc nécessaire ici pour ne pas
+        // retomber sur un vrai décodage d'image indisponible sous jsdom.
+        {
+          loadImageElement: vi.fn().mockResolvedValue({ naturalWidth: 800, naturalHeight: 600 }),
         }
       )
     ).resolves.toBeUndefined();

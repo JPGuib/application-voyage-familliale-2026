@@ -2,6 +2,7 @@ import type { AlbumDraft, AlbumSource } from "../types/cloud";
 import type { FilteredAlbumContent, PhotoQualityTier } from "../app/albumUtils";
 import {
   findPhotoSource,
+  fitWithinBox,
   isPhotoQualityDegraded,
   PHOTO_QUALITY_TIER_DEFAULT,
   selectBudgetedCarnetPhotos,
@@ -361,17 +362,94 @@ export async function recompressCarnetPhotoForExport(
   return recompressed ?? src;
 }
 
-// --- Rendu PDF (story 30.3, refonte visuelle story 30.5) -----------------
+/**
+ * Mesure les dimensions naturelles d'une image déjà résolue en data URI
+ * (couverture ou galerie), pour l'afficher en respectant son ratio d'origine
+ * (cf. `fitWithinBox` dans albumUtils.ts) plutôt que de l'étirer brutalement
+ * dans une cellule à ratio fixe.
+ *
+ * Réutilise le même point d'injection `loadImageElement` que les fonctions
+ * de recompression ci-dessus (mêmes deps, `EditorialPhotoConverterDeps`/
+ * `CarnetPhotoRecompressionDeps`) : en production, un vrai décodage navigateur ;
+ * en tests, le mock déjà injecté pour la conversion/recompression sert aussi
+ * à cette mesure, sans dépendance réseau ni décodage supplémentaire à
+ * configurer.
+ *
+ * Cas limite : toute erreur (décodage impossible, dimensions nulles) retourne
+ * `null`, l'appelant se rabat alors sur un étirement dans la cellule (mieux
+ * qu'un échec d'export).
+ */
+async function measureImageDimensions(
+  dataUrl: string,
+  deps: ImageRecompressionDeps = {}
+): Promise<{ width: number; height: number } | null> {
+  const loadImageElement = deps.loadImageElement ?? defaultLoadImageElement;
+  try {
+    const image = await loadImageElement(dataUrl);
+    const width = image.naturalWidth || image.width || 0;
+    const height = image.naturalHeight || image.height || 0;
+    if (width <= 0 || height <= 0) {
+      return null;
+    }
+    return { width, height };
+  } catch {
+    return null;
+  }
+}
 
-// Dégradé approximé façon jsPDF (pas de vrai dégradé vectoriel disponible) :
-// on peint des bandes horizontales fines en interpolant linéairement du bleu-
-// violet vers le violet, technique classique en génération PDF. Couleurs
-// proches de `linear-gradient(135deg, #667eea 0%, #764ba2 100%)` utilisé pour
-// `.album-page--cover` dans src/styles/album.css, pour rester cohérent avec
-// l'aperçu HTML.
-const COVER_GRADIENT_START: [number, number, number] = [102, 126, 234]; // #667eea
-const COVER_GRADIENT_END: [number, number, number] = [118, 75, 162]; // #764ba2
-const ACCENT_COLOR: [number, number, number] = [25, 118, 210]; // #1976d2, accent de l'appli
+// --- Rendu PDF (story 30.3, refonte visuelle story 30.5, habillage "carnet
+// de voyage" story 30.6) ---------------------------------------------------
+//
+// Palette reprise des tokens réels de l'application (src/styles/theme.css),
+// pour que le PDF prolonge visuellement l'appli plutôt que d'utiliser une
+// palette Material bleue générique sans lien avec elle.
+const PRIMARY_COLOR: [number, number, number] = [255, 107, 61]; // #FF6B3D (--primary)
+const SECONDARY_COLOR: [number, number, number] = [255, 217, 61]; // #FFD93D (--secondary)
+const ACCENT_TEAL_COLOR: [number, number, number] = [0, 196, 167]; // #00C4A7 (--accent)
+const TEXT_COLOR: [number, number, number] = [26, 26, 46]; // #1A1A2E (--foreground)
+const MUTED_TEXT_COLOR: [number, number, number] = [139, 115, 85]; // #8B7355 (--muted-foreground)
+const PAGE_BACKGROUND_COLOR: [number, number, number] = [255, 251, 245]; // #FFFBF5 (--background)
+const WHITE_COLOR: [number, number, number] = [255, 255, 255];
+// Ombre portée simulée des cadres photo façon polaroid : un gris chaud plutôt
+// qu'un gris neutre, pour rester dans la même famille que le fond crème.
+const PHOTO_FRAME_SHADOW_COLOR: [number, number, number] = [214, 201, 184];
+
+// Alternance de couleur des bandeaux de chapitre selon l'ordre des lieux
+// (variété façon "scrapbook", plutôt qu'un bleu unique répété partout). Le
+// jaune (--secondary) est volontairement exclu de cette rotation : trop clair
+// pour porter du texte blanc lisible en fond plein, il est réservé aux petits
+// accents (puces, chips).
+const CHAPTER_ACCENT_COLORS: Array<[number, number, number]> = [PRIMARY_COLOR, ACCENT_TEAL_COLOR];
+function getChapterAccent(index: number): [number, number, number] {
+  return CHAPTER_ACCENT_COLORS[index % CHAPTER_ACCENT_COLORS.length];
+}
+
+/**
+ * Enregistre les polices embarquées (Nunito Regular/Bold, Caveat Bold) dans
+ * le document jsPDF. Instances statiques subsettées générées une fois depuis
+ * les polices variables officielles Google Fonts (cf. src/assets/fonts/*.ts),
+ * importées dynamiquement pour rester dans le même chunk paresseux que
+ * `jspdf` (chargées seulement quand un export est réellement déclenché).
+ */
+async function registerAlbumFonts(doc: import("jspdf").jsPDF): Promise<void> {
+  const [{ NUNITO_REGULAR_BASE64 }, { NUNITO_BOLD_BASE64 }, { CAVEAT_BOLD_BASE64 }] = await Promise.all([
+    import("../assets/fonts/nunito-regular"),
+    import("../assets/fonts/nunito-bold"),
+    import("../assets/fonts/caveat-bold"),
+  ]);
+
+  doc.addFileToVFS("Nunito-Regular.ttf", NUNITO_REGULAR_BASE64);
+  doc.addFont("Nunito-Regular.ttf", "Nunito", "normal");
+  doc.addFileToVFS("Nunito-Bold.ttf", NUNITO_BOLD_BASE64);
+  doc.addFont("Nunito-Bold.ttf", "Nunito", "bold");
+  doc.addFileToVFS("Caveat-Bold.ttf", CAVEAT_BOLD_BASE64);
+  doc.addFont("Caveat-Bold.ttf", "Caveat", "bold");
+}
+
+function paintPageBackground(doc: import("jspdf").jsPDF, pageWidth: number, pageHeight: number) {
+  doc.setFillColor(...PAGE_BACKGROUND_COLOR);
+  doc.rect(0, 0, pageWidth, pageHeight, "F");
+}
 
 function drawVerticalGradient(
   doc: import("jspdf").jsPDF,
@@ -395,21 +473,127 @@ function drawVerticalGradient(
   }
 }
 
+// Bandeau de titre en "pill" arrondi (au lieu d'un rectangle plein-largeur),
+// cohérent avec les coins très arrondis de l'appli (--radius: 1rem dans
+// theme.css). La couleur est choisie par l'appelant (cf. getChapterAccent)
+// pour varier d'un chapitre à l'autre plutôt que rester figée en bleu unique.
 function drawTitleBand(
   doc: import("jspdf").jsPDF,
   text: string,
   pageWidth: number,
   margin: number,
   y: number,
-  bandHeight = 14
+  accentColor: [number, number, number],
+  bandHeight = 13
 ) {
-  doc.setFillColor(...ACCENT_COLOR);
-  doc.rect(0, y, pageWidth, bandHeight, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text(text.slice(0, 90), margin, y + bandHeight / 2 + 3);
-  doc.setTextColor(0, 0, 0);
+  const bandWidth = pageWidth - margin * 2;
+  doc.setFillColor(...accentColor);
+  doc.roundedRect(margin, y, bandWidth, bandHeight, 3, 3, "F");
+  doc.setTextColor(...WHITE_COLOR);
+  doc.setFont("Nunito", "bold");
+  doc.setFontSize(bandHeight >= 13 ? 15 : 11);
+  doc.text(text.slice(0, 90), margin + 5, y + bandHeight / 2 + 2.7, { maxWidth: bandWidth - 10 });
+  doc.setTextColor(...TEXT_COLOR);
+}
+
+type EnsureSpaceOptions = {
+  /** Titre du chapitre en cours, redessiné en mini-bandeau "(suite)" si le contenu déborde sur une nouvelle page. */
+  chapterTitle?: string;
+  accentColor?: [number, number, number];
+};
+
+/**
+ * Garantit qu'un bloc de hauteur `neededHeight` tient dans la page courante à
+ * partir de `cursorY` : sinon, ajoute une nouvelle page (fond crème repeint,
+ * mini-bandeau de continuité optionnel) et retourne le nouveau `cursorY`.
+ *
+ * Corrige un manque du rendu précédent : le contenu (texte long, galerie,
+ * notes de carnet) pouvait déborder silencieusement en bas de page sans
+ * saut de page, produisant un rendu coupé/peu soigné.
+ */
+function ensureSpace(
+  doc: import("jspdf").jsPDF,
+  cursorY: number,
+  neededHeight: number,
+  pageWidth: number,
+  pageHeight: number,
+  margin: number,
+  options: EnsureSpaceOptions = {}
+): number {
+  if (cursorY + neededHeight <= pageHeight - margin) {
+    return cursorY;
+  }
+
+  doc.addPage();
+  paintPageBackground(doc, pageWidth, pageHeight);
+  let nextY = margin;
+  if (options.chapterTitle) {
+    drawTitleBand(
+      doc,
+      `${options.chapterTitle} (suite)`,
+      pageWidth,
+      margin,
+      nextY,
+      options.accentColor ?? PRIMARY_COLOR,
+      10
+    );
+    nextY += 10 + 8;
+  }
+  return nextY;
+}
+
+// Cadre "polaroid" : carte blanche arrondie + ombre portée légère derrière,
+// photo affichée en mode "contain" (ratio conservé, cf. fitWithinBox) et
+// centrée dans la carte plutôt qu'étirée brutalement dans la cellule (bug du
+// rendu précédent, visible surtout sur les photos non carrées).
+const PHOTO_FRAME_PADDING = 2.4;
+const PHOTO_FRAME_SHADOW_OFFSET = 1;
+const PHOTO_FRAME_RADIUS = 2;
+
+function drawFramedPhoto(
+  doc: import("jspdf").jsPDF,
+  src: string,
+  x: number,
+  y: number,
+  cellWidth: number,
+  cellHeight: number,
+  dimensions: { width: number; height: number } | null
+) {
+  doc.setFillColor(...PHOTO_FRAME_SHADOW_COLOR);
+  doc.roundedRect(
+    x + PHOTO_FRAME_SHADOW_OFFSET,
+    y + PHOTO_FRAME_SHADOW_OFFSET,
+    cellWidth,
+    cellHeight,
+    PHOTO_FRAME_RADIUS,
+    PHOTO_FRAME_RADIUS,
+    "F"
+  );
+  doc.setFillColor(...WHITE_COLOR);
+  doc.roundedRect(x, y, cellWidth, cellHeight, PHOTO_FRAME_RADIUS, PHOTO_FRAME_RADIUS, "F");
+
+  const innerWidth = cellWidth - PHOTO_FRAME_PADDING * 2;
+  const innerHeight = cellHeight - PHOTO_FRAME_PADDING * 2;
+  if (innerWidth <= 0 || innerHeight <= 0) {
+    return;
+  }
+
+  const fitted = fitWithinBox(dimensions?.width ?? innerWidth, dimensions?.height ?? innerHeight, innerWidth, innerHeight);
+
+  try {
+    doc.addImage(
+      src,
+      "JPEG",
+      x + PHOTO_FRAME_PADDING + fitted.offsetX,
+      y + PHOTO_FRAME_PADDING + fitted.offsetY,
+      fitted.width,
+      fitted.height,
+      undefined,
+      "FAST"
+    );
+  } catch {
+    // Cas limite : image corrompue, cadre blanc conservé plutôt que de casser le chapitre.
+  }
 }
 
 // Retire les marqueurs markdown simples (**gras**) utilisés dans
@@ -477,9 +661,27 @@ export async function exportAlbumAsPdf(
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 14;
 
+  const pageContentWidth = pageWidth - margin * 2;
+  // Cache des dimensions naturelles des photos déjà résolues (couverture ET
+  // galerie), pour n'appeler `measureImageDimensions` qu'une seule fois par
+  // photo même si elle apparaît à plusieurs endroits de l'album.
+  const dimensionCache = new Map<string, { width: number; height: number } | null>();
+  async function resolveDimensions(
+    src: string,
+    deps: ImageRecompressionDeps | undefined
+  ): Promise<{ width: number; height: number } | null> {
+    if (dimensionCache.has(src)) {
+      return dimensionCache.get(src) ?? null;
+    }
+    const dimensions = await measureImageDimensions(src, deps);
+    dimensionCache.set(src, dimensions);
+    return dimensions;
+  }
+
   const addTextBlock = (lines: string[], x: number, y: number, fontSize: number, lineHeight = 7) => {
-    doc.setFont("helvetica", "normal");
+    doc.setFont("Nunito", "normal");
     doc.setFontSize(fontSize);
+    doc.setTextColor(...TEXT_COLOR);
     let currentY = y;
     for (const line of lines) {
       const safeLine = String(line || "").slice(0, 220);
@@ -489,56 +691,123 @@ export async function exportAlbumAsPdf(
     return currentY;
   };
 
-  // --- Couverture -----------------------------------------------------
   onProgress?.("rendering");
-  drawVerticalGradient(doc, 0, 0, pageWidth, pageHeight, COVER_GRADIENT_START, COVER_GRADIENT_END);
+  await registerAlbumFonts(doc);
+
+  // --- Couverture -----------------------------------------------------
+  drawVerticalGradient(doc, 0, 0, pageWidth, pageHeight, PRIMARY_COLOR, SECONDARY_COLOR);
 
   // Photo de couverture : priorité à la photo de carnet choisie par le
   // voyageur (draft.coverPhotoId), sinon repli sur la première photo
   // éditoriale disponible parmi les lieux inclus, sinon aucune image.
   const carnetCoverSrc = findPhotoSource(content.entries, draft.coverPhotoId);
   let coverImageSrc: string | null = null;
+  let coverImageDeps: ImageRecompressionDeps | undefined;
   if (carnetCoverSrc) {
     coverImageSrc = await resolveCarnet(carnetCoverSrc);
+    coverImageDeps = carnetConverterDeps;
   } else {
     const firstEditorial = prepared.valid.find((img) => img.kind === "editorial");
     if (firstEditorial) {
       coverImageSrc = await resolveEditorial(firstEditorial.src);
+      coverImageDeps = editorialConverterDeps;
     }
   }
 
+  // Petit label "eyebrow" façon carnet de voyage, au-dessus du bandeau photo
+  // (espacement manuel des lettres : jsPDF n'expose pas d'option fiable de
+  // letter-spacing sur `text()`).
+  doc.setFont("Nunito", "bold");
+  doc.setFontSize(10.5);
+  doc.setTextColor(...WHITE_COLOR);
+  doc.text("C A R N E T   D E   V O Y A G E", pageWidth / 2, 26, { align: "center" });
+
+  const coverPhotoY = 34;
+  const coverPhotoHeight = 92;
   if (coverImageSrc) {
+    const dimensions = await resolveDimensions(coverImageSrc, coverImageDeps);
     try {
-      doc.addImage(coverImageSrc, "JPEG", margin, 20, pageWidth - margin * 2, 80, undefined, "FAST");
+      drawFramedPhoto(doc, coverImageSrc, margin, coverPhotoY, pageContentWidth, coverPhotoHeight, dimensions);
     } catch {
       // Cas limite : photo de couverture illisible/corrompue, ignorée
       // silencieusement pour garder une couverture propre (habillage seul).
     }
   }
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(26);
-  doc.text(draft.title || "Mon album", margin, 130, { maxWidth: pageWidth - margin * 2 });
-  if (draft.subtitle) {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(13);
-    doc.text(draft.subtitle, margin, 142, { maxWidth: pageWidth - margin * 2 });
+
+  // Titre en lignes pré-calculées (plutôt qu'un simple maxWidth) : la police
+  // Caveat en grand corps peut s'enrouler sur un titre un peu long, il faut
+  // alors décaler le sous-titre en conséquence pour ne pas le chevaucher.
+  doc.setFont("Caveat", "bold");
+  doc.setFontSize(40);
+  doc.setTextColor(...WHITE_COLOR);
+  const titleLines: string[] = doc.splitTextToSize(draft.title || "Mon album", pageContentWidth);
+  let titleCursorY = coverPhotoY + coverPhotoHeight + 20;
+  for (const line of titleLines) {
+    doc.text(line, pageWidth / 2, titleCursorY, { align: "center" });
+    titleCursorY += 16;
   }
-  doc.setTextColor(0, 0, 0);
+  if (draft.subtitle) {
+    doc.setFont("Nunito", "normal");
+    doc.setFontSize(12.5);
+    doc.text(draft.subtitle, pageWidth / 2, titleCursorY, { align: "center", maxWidth: pageContentWidth });
+  }
+  doc.setTextColor(...TEXT_COLOR);
 
   // --- Itinéraire -------------------------------------------------------
-  const itineraryLines = Object.values(content.places).map((place) => `• ${place.name}`);
-  if (itineraryLines.length > 0) {
+  const itineraryPlaces = Object.values(content.places);
+  if (itineraryPlaces.length > 0) {
     doc.addPage();
-    drawTitleBand(doc, "Itinéraire", pageWidth, margin, 12);
-    addTextBlock(itineraryLines, margin, 38, 11, 7);
+    paintPageBackground(doc, pageWidth, pageHeight);
+    drawTitleBand(doc, "Itinéraire du voyage", pageWidth, margin, 12, PRIMARY_COLOR);
+    let cursorY = 34;
+
+    for (const [index, place] of itineraryPlaces.entries()) {
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(12);
+      const nameLines: string[] = doc.splitTextToSize(place.name, pageContentWidth - 8);
+      doc.setFont("Nunito", "normal");
+      doc.setFontSize(10);
+      const descLines: string[] = place.shortDesc ? doc.splitTextToSize(place.shortDesc, pageContentWidth - 8) : [];
+
+      const neededHeight = nameLines.length * 6 + descLines.length * 5 + 4;
+      cursorY = ensureSpace(doc, cursorY, neededHeight, pageWidth, pageHeight, margin, {
+        chapterTitle: "Itinéraire du voyage",
+        accentColor: PRIMARY_COLOR,
+      });
+
+      const dotColor = index % 2 === 0 ? PRIMARY_COLOR : ACCENT_TEAL_COLOR;
+      doc.setFillColor(...dotColor);
+      doc.circle(margin + 1.4, cursorY - 1.4, 1.4, "F");
+
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(...TEXT_COLOR);
+      for (const line of nameLines) {
+        doc.text(line, margin + 6, cursorY);
+        cursorY += 6;
+      }
+
+      if (descLines.length > 0) {
+        doc.setFont("Nunito", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...MUTED_TEXT_COLOR);
+        for (const line of descLines) {
+          doc.text(line, margin + 6, cursorY);
+          cursorY += 5;
+        }
+      }
+      cursorY += 4;
+    }
+    doc.setTextColor(...TEXT_COLOR);
   }
 
   // --- Chapitres par lieu -------------------------------------------------
   // Un chapitre est créé pour chaque lieu inclus, même sans note de carnet :
   // le socle éditorial (présentation, anecdotes, photos officielles) est
   // toujours affiché en premier, les souvenirs personnels s'ajoutent ensuite
-  // (règle métier story 30.5).
+  // (règle métier story 30.5). L'accent de couleur alterne d'un lieu à
+  // l'autre (cf. getChapterAccent) pour une variété façon scrapbook.
+  let chapterIndex = 0;
   for (const [placeId, place] of Object.entries(content.places)) {
     const placeEntries = content.entries[placeId] ?? {};
     const bodyLines: string[] = [];
@@ -550,34 +819,66 @@ export async function exportAlbumAsPdf(
       }
     }
 
+    const chapterTitle = place.name || placeId;
+    const accentColor = getChapterAccent(chapterIndex);
+    chapterIndex += 1;
+
     doc.addPage();
-    drawTitleBand(doc, place.name || placeId, pageWidth, margin, 12);
-    let cursorY = 38;
+    paintPageBackground(doc, pageWidth, pageHeight);
+    drawTitleBand(doc, chapterTitle, pageWidth, margin, 12, accentColor);
+    let cursorY = 34;
 
     const hasPresentation = Boolean(place.history && place.history.trim());
     const hasAnecdotes = Boolean(place.anecdotes && place.anecdotes.length > 0);
 
     if (hasPresentation) {
-      doc.setFont("helvetica", "bold");
+      // `splitTextToSize` mesure le texte avec la police/taille *actuellement
+      // active* sur le document : elle doit donc être fixée ici à la même
+      // valeur que celle utilisée au dessin réel (cf. addTextBlock plus bas,
+      // "Nunito"/10.5), sous peine de mesurer à une taille différente de
+      // celle du rendu et de faire déborder une ligne sur la suivante.
+      doc.setFont("Nunito", "normal");
+      doc.setFontSize(10.5);
+      const historyLines: string[] = doc.splitTextToSize(stripBasicMarkdown(place.history || ""), pageContentWidth);
+      cursorY = ensureSpace(doc, cursorY, 7 + historyLines.length * 5.5 + 3, pageWidth, pageHeight, margin, {
+        chapterTitle,
+        accentColor,
+      });
+      doc.setFont("Nunito", "bold");
       doc.setFontSize(12);
-      doc.setTextColor(...ACCENT_COLOR);
+      doc.setTextColor(...accentColor);
       doc.text((place.historyLabel || "Présentation").slice(0, 90), margin, cursorY);
-      doc.setTextColor(0, 0, 0);
+      doc.setTextColor(...TEXT_COLOR);
       cursorY += 7;
-      const historyLines = doc.splitTextToSize(stripBasicMarkdown(place.history || ""), pageWidth - margin * 2);
       cursorY = addTextBlock(historyLines, margin, cursorY, 10.5, 5.5);
       cursorY += 3;
     }
 
     if (hasAnecdotes) {
-      doc.setFont("helvetica", "bold");
+      // Chaque anecdote est pré-découpée en lignes physiques (comme la
+      // présentation ci-dessus) : une anecdote longue qui prend plusieurs
+      // lignes est ainsi correctement prise en compte dans la hauteur
+      // réservée, au lieu de laisser jsPDF l'enrouler seul au moment du
+      // dessin (risque de chevauchement avec l'anecdote suivante).
+      // Même précaution que pour `historyLines` ci-dessus : mesurer à la
+      // police/taille exacte du rendu réel (Nunito/10.5, cf. addTextBlock).
+      doc.setFont("Nunito", "normal");
+      doc.setFontSize(10.5);
+      const anecdoteLines: string[] = [];
+      for (const item of place.anecdotes ?? []) {
+        anecdoteLines.push(...(doc.splitTextToSize(`•  ${item}`, pageContentWidth - 2) as string[]));
+      }
+      cursorY = ensureSpace(doc, cursorY, 7 + anecdoteLines.length * 5.5 + 3, pageWidth, pageHeight, margin, {
+        chapterTitle,
+        accentColor,
+      });
+      doc.setFont("Nunito", "bold");
       doc.setFontSize(12);
-      doc.setTextColor(...ACCENT_COLOR);
+      doc.setTextColor(...accentColor);
       doc.text((place.anecdotesLabel || "Anecdotes").slice(0, 90), margin, cursorY);
-      doc.setTextColor(0, 0, 0);
+      doc.setTextColor(...TEXT_COLOR);
       cursorY += 7;
-      const bulletLines = (place.anecdotes ?? []).map((item) => `• ${item}`);
-      cursorY = addTextBlock(bulletLines, margin, cursorY, 10.5, 5.5);
+      cursorY = addTextBlock(anecdoteLines, margin, cursorY, 10.5, 5.5);
       cursorY += 3;
     }
 
@@ -597,21 +898,27 @@ export async function exportAlbumAsPdf(
     if (galleryEntries.length > 0) {
       const columns = 3;
       const gap = 4;
-      const cellWidth = (pageWidth - margin * 2 - gap * (columns - 1)) / columns;
-      const cellHeight = 34;
+      const cellWidth = (pageContentWidth - gap * (columns - 1)) / columns;
+      const cellHeight = 36;
       let column = 0;
       for (const item of galleryEntries) {
+        if (column === 0) {
+          cursorY = ensureSpace(doc, cursorY, cellHeight + gap, pageWidth, pageHeight, margin, {
+            chapterTitle,
+            accentColor,
+          });
+        }
+
         const src = item.editorial ? await resolveEditorial(item.src) : await resolveCarnet(item.src);
         if (!src) {
           // Cas limite : image introuvable/erreur réseau, ignorée silencieusement.
           continue;
         }
+        const deps = item.editorial ? editorialConverterDeps : carnetConverterDeps;
+        const dimensions = await resolveDimensions(src, deps);
         const x = margin + column * (cellWidth + gap);
-        try {
-          doc.addImage(src, "JPEG", x, cursorY, cellWidth, cellHeight, undefined, "FAST");
-        } catch {
-          // Cas limite : image corrompue, on n'interrompt pas le reste du chapitre.
-        }
+        drawFramedPhoto(doc, src, x, cursorY, cellWidth, cellHeight, dimensions);
+
         column += 1;
         if (column >= columns) {
           column = 0;
@@ -624,38 +931,125 @@ export async function exportAlbumAsPdf(
       cursorY += 2;
     }
 
-    // Notes de carnet : conservées, mises en forme avec un bandeau d'accent.
+    // Notes de carnet : conservées, mises en forme avec un liseré d'accent.
+    // Chaque note est pré-découpée en lignes physiques (même raison que les
+    // anecdotes ci-dessus) pour que le liseré couvre exactement la hauteur du
+    // texte, y compris quand une note s'étend sur plusieurs lignes.
     if (bodyLines.length > 0) {
-      doc.setFont("helvetica", "bold");
+      // Même précaution que pour `historyLines`/`anecdoteLines` ci-dessus :
+      // mesurer à la police/taille exacte du rendu réel (Nunito/11, cf.
+      // addTextBlock plus bas). Sans ce `setFontSize` explicite, la mesure
+      // hérite de la taille laissée par le bloc précédent (10.5 pour la
+      // présentation/les anecdotes) : plus petite que les 11pt du rendu réel,
+      // ce qui faisait déborder certaines lignes sur la ligne suivante lors
+      // du dessin (chevauchement de texte constaté à la vérification visuelle).
+      doc.setFont("Nunito", "normal");
       doc.setFontSize(11);
+      const noteLines: string[] = [];
+      for (const line of bodyLines) {
+        noteLines.push(...(doc.splitTextToSize(line, pageContentWidth - 8) as string[]));
+      }
+      cursorY = ensureSpace(doc, cursorY, 10 + noteLines.length * 7, pageWidth, pageHeight, margin, {
+        chapterTitle,
+        accentColor,
+      });
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(...TEXT_COLOR);
       doc.text("Souvenirs du carnet", margin, cursorY);
       cursorY += 6;
-      doc.setDrawColor(...ACCENT_COLOR);
+      doc.setDrawColor(...accentColor);
       doc.setLineWidth(0.8);
-      doc.line(margin, cursorY - 4, margin, cursorY + bodyLines.length * 7 - 4);
-      cursorY = addTextBlock(bodyLines, margin + 4, cursorY, 11, 7);
+      doc.line(margin, cursorY - 4, margin, cursorY + noteLines.length * 7 - 4);
+      cursorY = addTextBlock(noteLines, margin + 4, cursorY, 11, 7);
     } else if (!hasPresentation && !hasAnecdotes && galleryEntries.length === 0) {
-      doc.setFont("helvetica", "normal");
+      doc.setFont("Nunito", "normal");
       doc.setFontSize(11);
+      doc.setTextColor(...MUTED_TEXT_COLOR);
       doc.text("Aucun souvenir détaillé pour ce lieu.", margin, cursorY);
+      doc.setTextColor(...TEXT_COLOR);
     }
   }
 
+  // --- Résultats de jeu ---------------------------------------------------
   if (content.gameSummary) {
     doc.addPage();
-    drawTitleBand(doc, "Résultats de jeu", pageWidth, margin, 12);
-    addTextBlock(
-      [
-        `Score total : ${content.gameSummary.totalScore}`,
-        `Badges : ${content.gameSummary.badges.join(", ") || "Aucun"}`,
-        `Podium : ${content.gameSummary.podium.map((entry) => `${entry.surname} ${entry.totalScore} pts`).join(" / ") || "Aucun"}`,
-      ],
-      margin,
-      38,
-      11,
-      7
-    );
+    paintPageBackground(doc, pageWidth, pageHeight);
+    drawTitleBand(doc, "Résultats de jeu", pageWidth, margin, 12, ACCENT_TEAL_COLOR);
+    let cursorY = 34;
+
+    doc.setFont("Nunito", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(...TEXT_COLOR);
+    doc.text(`Score total : ${content.gameSummary.totalScore} pts`, margin, cursorY);
+    cursorY += 11;
+
+    // Badges rendus en "chips" arrondies plutôt qu'en liste séparée par des
+    // virgules, cohérent avec l'esthétique de l'appli (coins très arrondis).
+    if (content.gameSummary.badges.length > 0) {
+      const chipHeight = 8;
+      const chipGap = 3;
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(9.5);
+      let chipX = margin;
+      for (const [index, badge] of content.gameSummary.badges.entries()) {
+        const chipWidth = doc.getTextWidth(badge) + 8;
+        if (chipX + chipWidth > pageWidth - margin) {
+          chipX = margin;
+          cursorY += chipHeight + chipGap;
+        }
+        const chipColor = index % 2 === 0 ? PRIMARY_COLOR : SECONDARY_COLOR;
+        const chipTextColor = index % 2 === 0 ? WHITE_COLOR : TEXT_COLOR;
+        doc.setFillColor(...chipColor);
+        doc.roundedRect(chipX, cursorY, chipWidth, chipHeight, chipHeight / 2, chipHeight / 2, "F");
+        doc.setTextColor(...chipTextColor);
+        doc.text(badge, chipX + 4, cursorY + chipHeight / 2 + 3);
+        chipX += chipWidth + chipGap;
+      }
+      cursorY += chipHeight + 10;
+      doc.setTextColor(...TEXT_COLOR);
+    }
+
+    // Podium familial : rang en médaillon coloré plutôt qu'en texte brut.
+    if (content.gameSummary.podium.length > 0) {
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(...ACCENT_TEAL_COLOR);
+      doc.text("Podium familial", margin, cursorY);
+      doc.setTextColor(...TEXT_COLOR);
+      cursorY += 8;
+
+      const rankColors: Array<[number, number, number]> = [SECONDARY_COLOR, [201, 201, 201], [205, 164, 120]];
+      for (const entry of content.gameSummary.podium) {
+        const rankColor = rankColors[entry.rank - 1] ?? PRIMARY_COLOR;
+        doc.setFillColor(...rankColor);
+        doc.circle(margin + 3, cursorY - 1.1, 3, "F");
+        doc.setFont("Nunito", "bold");
+        doc.setFontSize(9.5);
+        doc.setTextColor(...TEXT_COLOR);
+        doc.text(String(entry.rank), margin + 3, cursorY - 0.1, { align: "center" });
+        doc.setFont("Nunito", "normal");
+        doc.setFontSize(11);
+        doc.text(`${entry.surname} — ${entry.totalScore} pts`, margin + 9, cursorY);
+        cursorY += 7.5;
+      }
+    }
   }
+
+  // --- Pied de page (numérotation) -----------------------------------------
+  // Passe finale sur toutes les pages déjà générées, sauf la couverture (page
+  // 1, non numérotée). Pattern standard jsPDF (`setPage` en fin de
+  // génération) pour donner au PDF le fini d'un vrai livre imprimé.
+  const totalPages = doc.getNumberOfPages();
+  for (let pageNumber = 2; pageNumber <= totalPages; pageNumber += 1) {
+    doc.setPage(pageNumber);
+    doc.setFont("Nunito", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...MUTED_TEXT_COLOR);
+    doc.text(String(pageNumber - 1), pageWidth / 2, pageHeight - 8, { align: "center" });
+  }
+  doc.setPage(totalPages);
+  doc.setTextColor(...TEXT_COLOR);
 
   const safeName = normalizePdfName(draft.title || source.tripStartDate || "album-voyage");
   const fileName = `${safeName}-${new Date().toISOString().slice(0, 10)}.pdf`;

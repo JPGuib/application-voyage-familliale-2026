@@ -20,8 +20,38 @@ import {
   isPhotoBudgetReduced,
   isPhotoQualityDegraded,
   selectBudgetedCarnetPhotos,
+  fitWithinBox,
 } from "./albumUtils";
 import type { AlbumDraft, AlbumSource } from "../types/cloud";
+
+describe("fitWithinBox (cadre photo façon polaroid de l'export PDF)", () => {
+  it("conserve le ratio et centre une image plus large que haute dans une boîte carrée", () => {
+    const result = fitWithinBox(1600, 900, 100, 100);
+    expect(result.width).toBeCloseTo(100, 5);
+    expect(result.height).toBeCloseTo(56.25, 5);
+    expect(result.offsetX).toBeCloseTo(0, 5);
+    expect(result.offsetY).toBeCloseTo((100 - 56.25) / 2, 5);
+  });
+
+  it("conserve le ratio et centre une image plus haute que large dans une boîte carrée", () => {
+    const result = fitWithinBox(900, 1600, 100, 100);
+    expect(result.width).toBeCloseTo(56.25, 5);
+    expect(result.height).toBeCloseTo(100, 5);
+    expect(result.offsetX).toBeCloseTo((100 - 56.25) / 2, 5);
+    expect(result.offsetY).toBeCloseTo(0, 5);
+  });
+
+  it("remplit exactement la boîte quand l'image a déjà le même ratio", () => {
+    const result = fitWithinBox(200, 100, 40, 20);
+    expect(result).toEqual({ width: 40, height: 20, offsetX: 0, offsetY: 0 });
+  });
+
+  it("se rabat sur la boîte entière quand les dimensions naturelles sont invalides (cas limite)", () => {
+    expect(fitWithinBox(0, 0, 40, 30)).toEqual({ width: 40, height: 30, offsetX: 0, offsetY: 0 });
+    expect(fitWithinBox(-10, 100, 40, 30)).toEqual({ width: 40, height: 30, offsetX: 0, offsetY: 0 });
+    expect(fitWithinBox(Number.NaN, 100, 40, 30)).toEqual({ width: 40, height: 30, offsetX: 0, offsetY: 0 });
+  });
+});
 
 describe("Album Utilities", () => {
   const mockSource: AlbumSource = {

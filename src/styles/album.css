@@ -99,8 +99,8 @@
 }
 
 .tab.active {
-  color: #1976d2;
-  border-bottom-color: #1976d2;
+  color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 
 .album-composition {
@@ -136,8 +136,8 @@
 .form-group input[type="email"]:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 61, 0.15);
 }
 
 .char-count {
@@ -227,12 +227,12 @@
 }
 
 .btn-primary {
-  background-color: #1976d2;
-  color: white;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #1565c0;
+  background-color: #e85a2c;
 }
 
 .btn-primary:disabled {
@@ -277,7 +277,7 @@
 
 .album-page--itinerary,
 .album-page--empty-content {
-  background: #fffdf8;
+  background: var(--background);
 }
 
 .itinerary-list {
@@ -290,11 +290,15 @@
 }
 
 .itinerary-list li {
-  border-left: 3px solid #1976d2;
+  border-left: 3px solid var(--primary);
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.75rem;
+}
+
+.itinerary-list li:nth-child(even) {
+  border-left-color: var(--accent);
 }
 
 .itinerary-list span {
@@ -310,7 +314,7 @@
 }
 
 .album-page {
-  background: white;
+  background: var(--background);
   aspect-ratio: 210 / 297; /* A4 ratio */
   width: 100%;
   max-width: 500px;
@@ -323,7 +327,7 @@
 }
 
 .album-page--cover {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   color: white;
 }
 
@@ -393,6 +397,42 @@
   font-style: italic;
 }
 
+/* Badges en "chips" arrondies (story 30.6) plutôt qu'une simple liste à
+   puces, cohérent avec les coins très arrondis de l'esthétique de l'appli. */
+.game-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0.5rem 0 1rem;
+  padding: 0;
+}
+
+.game-badges li {
+  background-color: var(--primary);
+  color: #ffffff;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.game-badges li:nth-child(even) {
+  background-color: var(--secondary);
+  color: var(--foreground);
+}
+
+.game-podium h4 {
+  color: var(--accent);
+  margin: 0 0 0.5rem;
+}
+
+.game-podium ol {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #333;
+}
+
 .entries-list {
   display: flex;
   flex-direction: column;
@@ -402,7 +442,7 @@
 .entry-item {
   padding: 0.75rem;
   background-color: #f9f9f9;
-  border-left: 3px solid #1976d2;
+  border-left: 3px solid var(--primary);
   border-radius: 2px;
 }
 
@@ -414,25 +454,25 @@
   word-wrap: break-word;
 }
 
-/* Bandeau de titre coloré (story 30.5) : rapproche l'aperçu HTML du rendu
-   PDF (bandeau plein #1976d2, texte blanc), plutôt qu'un simple titre noir
-   souligné. Réutilisé pour le chapitre d'un lieu, l'itinéraire et les
-   résultats de jeu. */
+/* Bandeau de titre coloré (story 30.5, palette "carnet de voyage" story 30.6) :
+   rapproche l'aperçu HTML du rendu PDF (bandeau plein couleur --primary,
+   texte blanc), plutôt qu'un simple titre noir souligné. Réutilisé pour le
+   chapitre d'un lieu, l'itinéraire et les résultats de jeu. */
 .chapter-band {
-  background-color: #1976d2;
+  background-color: var(--primary);
   color: #ffffff;
   border-bottom: none;
   padding: 0.85rem 1rem;
   border-radius: 6px;
   margin: -0.5rem -0.5rem 1.25rem;
-  box-shadow: 0 2px 6px rgba(25, 118, 210, 0.25);
+  box-shadow: 0 2px 6px rgba(255, 107, 61, 0.25);
 }
 
 /* Socle éditorial d'un lieu (présentation/histoire), toujours affiché pour
    un lieu inclus, même sans note de carnet (règle métier story 30.5). */
 .place-presentation {
-  background: #f5f8ff;
-  border-left: 3px solid #1976d2;
+  background: #fff3ec;
+  border-left: 3px solid var(--primary);
   border-radius: 4px;
   padding: 0.85rem 1rem;
   margin-bottom: 1rem;
@@ -442,7 +482,7 @@
 
 .place-presentation h4 {
   margin: 0 0 0.5rem;
-  color: #1976d2;
+  color: var(--primary);
   font-size: 1rem;
 }
 
@@ -457,7 +497,7 @@
 
 .place-anecdotes h4 {
   margin: 0 0 0.5rem;
-  color: #1976d2;
+  color: var(--accent);
   font-size: 1rem;
 }
 
@@ -477,12 +517,18 @@
   margin-bottom: 1rem;
 }
 
+/* Cadre façon polaroid (story 30.6) : liseré blanc + ombre légère autour de
+   la photo plutôt qu'un simple recadrage sans bordure, pour un rendu plus
+   proche d'un vrai carnet de voyage. */
 .photo-gallery img {
   width: 100%;
   height: 90px;
   object-fit: cover;
-  border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(26, 26, 46, 0.18);
+  padding: 4px;
+  background-color: #ffffff;
+  box-sizing: border-box;
 }
 
 @media (max-width: 480px) {
