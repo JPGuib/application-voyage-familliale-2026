@@ -7,6 +7,8 @@ import type {
   ContentSource,
   CloudGameHistoryEntry,
   GuideSection,
+  type AlbumDestinationResultEntry,
+  type AlbumSharedChallengeDay,
 } from "../types/cloud";
 
 // --- Rubriques de contenu à la carte (Histoire / Géographie et économie /
@@ -53,6 +55,11 @@ export type AlbumGameSummary = {
     totalScore: number;
     rank: number;
   }>;
+  profiles?: Record<string, { surname: string; role?: string }>;
+  dailyResultsByProfile?: Record<string, CloudGameHistoryEntry[]>;
+  badgesByProfile?: Record<string, Array<{ icon: string; name: string; desc: string }>>;
+  destinationChallenge?: { destination: string; results: AlbumDestinationResultEntry[] };
+  sharedChallenges?: AlbumSharedChallengeDay[];
 };
 
 /**
@@ -397,6 +404,35 @@ export function filterAlbumContent(
   let gameSummary: AlbumGameSummary | null = null;
   if (draft.includeGameSummary) {
     gameSummary = extractGameSummary(source.gameResults, draft.profileId, source.requiredProfiles);
+    if (gameSummary) {
+      gameSummary.profiles = source.gameProfiles ?? Object.fromEntries(
+        Object.entries(source.requiredProfiles).map(([id, profile]) => [id, {
+          surname: profile.surname,
+          role: profile.role,
+        }])
+      );
+      gameSummary.dailyResultsByProfile = source.gameResults;
+      gameSummary.badgesByProfile = buildBadgesByProfile(source.gameResults);
+      gameSummary.destinationChallenge = source.destinationChallenge;
+      gameSummary.sharedChallenges = source.sharedChallenges;
+      const destinationPoints = new Map(
+        (source.destinationChallenge?.results ?? []).map((result) => [result.profileId, result.points])
+      );
+      const scoreEntries = Object.entries(source.gameResults)
+        .filter(([profileId]) => {
+          const role = gameSummary?.profiles?.[profileId]?.role;
+          return role === "utilisateur" || role === undefined;
+        })
+        .map(([profileId, entries]) => ({
+          profileId,
+          surname: gameSummary?.profiles?.[profileId]?.surname ?? profileId,
+          totalScore: entries.reduce((sum, entry) => sum + (entry.totalScore ?? 0), 0)
+            + (destinationPoints.get(profileId) ?? 0),
+        }))
+        .sort((left, right) => right.totalScore - left.totalScore);
+      gameSummary.podium = scoreEntries.slice(0, 3).map((entry, index) => ({ ...entry, rank: index + 1 }));
+      gameSummary.totalScore += destinationPoints.get(draft.profileId) ?? 0;
+    }
   }
 
   // Vérifier si la photo de couverture choisie explicitement est toujours
@@ -479,7 +515,7 @@ export function extractGameSummary(
   profiles: Record<string, { profileId: string; surname: string }> = {}
 ): AlbumGameSummary | null {
   const personalResults = gameResultsByProfile[profileId] ?? [];
-  if (personalResults.length === 0) {
+  if (Object.values(gameResultsByProfile).every((entries) => entries.length === 0)) {
     return null;
   }
 
@@ -530,6 +566,20 @@ export function extractGameSummary(
     badges,
     podium,
   };
+}
+
+function buildBadgesByProfile(
+  gameResultsByProfile: Record<string, CloudGameHistoryEntry[]>
+): Record<string, Array<{ icon: string; name: string; desc: string }>> {
+  return Object.fromEntries(Object.entries(gameResultsByProfile).map(([profileId, history]) => {
+    const badges = [
+      { icon: "🏛️", name: "Maître Culture", desc: "5 quiz complétés", earned: history.length >= 5 },
+      { icon: "🗺️", name: "Grand Explorateur", desc: "4 lieux découverts", earned: new Set(history.map((entry) => entry.location)).size >= 4 },
+      { icon: "⚡", name: "Éclair", desc: "Quiz en moins de 2 min", earned: history.some((entry) => entry.durationSec > 0 && entry.durationSec <= 120) },
+      { icon: "🎯", name: "Sans faute !", desc: "Score parfait", earned: history.some((entry) => entry.correctCount >= 8) },
+    ];
+    return [profileId, badges.filter((badge) => badge.earned).map(({ icon, name, desc }) => ({ icon, name, desc }))];
+  }));
 }
 
 /**

@@ -24,6 +24,8 @@ import { getEffectivePlaceDays } from "../app/placeDays";
 import { extractGuideSections } from "../app/visiteGuideeText";
 import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
+import { computeDestinationSurveyResults } from "../app/destination-survey";
+import { TRIP } from "../content/trip";
 
 /**
  * Détermine si l'utilisateur a le droit d'accéder au système d'export d'album.
@@ -648,6 +650,13 @@ export function assembleAlbumSource(
 
   // Phase 4 : Compile les résultats de jeu (inclus du snapshot)
   const gameResults: Record<string, typeof snapshot.profiles.profileId.gameResults> = {};
+  const gameProfiles = Object.fromEntries(
+    Object.values(snapshot.profiles).map((item) => [item.profileId, {
+      profileId: item.profileId,
+      surname: item.surname,
+      role: item.role,
+    }])
+  );
   for (const [profileId, profile] of Object.entries(snapshot.profiles)) {
     if (profile.gameResults.length > 0) {
       gameResults[profileId] = profile.gameResults;
@@ -659,6 +668,51 @@ export function assembleAlbumSource(
   // même règle que App.tsx (lastDefinedDay). Sert à afficher la date de fin
   // de voyage en couverture et à borner la page planning.
   const lastTripDay = JOURS_DESTINATIONS.length > 0 ? JOURS_DESTINATIONS[JOURS_DESTINATIONS.length - 1].jour : null;
+
+  const destinationResults = computeDestinationSurveyResults({
+    destination: TRIP.surveyDestination ?? "",
+    participants: Object.values(snapshot.profiles).map((item) => ({
+      profileId: item.profileId,
+      surname: item.surname,
+      role: item.role,
+    })),
+    votesByProfile: snapshot.destinationSurvey ?? {},
+    scoring: snapshot.gameScoring.destinationProposalScoring,
+  });
+
+  const sharedChallengeDays = Array.from(new Set(
+    Object.values(snapshot.profiles)
+      .flatMap((item) => item.gameResults)
+      .map((entry) => entry.day)
+  )).sort((left, right) => left - right);
+  const sharedChallenges = sharedChallengeDays.flatMap((day) => {
+    const entries = Object.values(snapshot.profiles)
+      .filter((profile) => profile.role === "utilisateur")
+      .map((profile) => {
+        const gameEntry = profile.gameResults.find((entry) => entry.day === day);
+        const reactionsByProfile = snapshot.challengeReactions?.[day]?.[profile.profileId] ?? {};
+        const reactions = ["❤️", "😂", "😮", "👏"].map((emoji) => ({
+          emoji,
+          count: Object.values(reactionsByProfile).filter((reaction) => reaction.emoji === emoji).length,
+          reactors: Object.values(reactionsByProfile)
+            .filter((reaction) => reaction.emoji === emoji)
+            .map((reaction) => snapshot.profiles[reaction.reactorProfileId]?.surname ?? "Profil supprimé"),
+        })).filter((reaction) => reaction.count > 0);
+        const bestVotes = snapshot.challengeBestVotes?.[day]?.[profile.profileId] ?? {};
+        return {
+          profileId: profile.profileId,
+          surname: profile.surname,
+          response: gameEntry?.challengeResponse?.trim() ?? "",
+          completedAt: gameEntry?.completedAt ?? "",
+          reactions,
+          bestVoters: Object.values(bestVotes).map(
+            (vote) => snapshot.profiles[vote.voterProfileId]?.surname ?? "Profil supprimé"
+          ),
+        };
+      })
+      .filter((entry) => entry.response.length > 0);
+    return entries.length > 0 ? [{ day, entries }] : [];
+  });
 
   return {
     tripStartDate: snapshot.tripStartDate,
@@ -672,6 +726,20 @@ export function assembleAlbumSource(
     contentVisitLogs,
     requiredProfiles,
     gameResults,
+    gameProfiles,
+    destinationChallenge: {
+      destination: TRIP.surveyDestination ?? "",
+      results: destinationResults.rows.map((row) => ({
+        profileId: row.profileId,
+        surname: row.surname,
+        role: row.role,
+        proposals: row.proposals,
+        isCorrect: row.isCorrect,
+        rank: row.rank,
+        points: row.points,
+      })),
+    },
+    sharedChallenges,
   };
 }
 

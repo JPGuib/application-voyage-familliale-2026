@@ -552,8 +552,39 @@ export type AlbumSourceCommentEntry = {
 export type AlbumSourceProfileEntry = {
   profileId: string;
   surname: string;
+  role?: Role;
   gender?: ProfileGender;
   householdRole?: ProfileHouseholdRole;
+};
+
+export type AlbumGameProfileEntry = {
+  profileId: string;
+  surname: string;
+  role: Role;
+};
+
+export type AlbumDestinationResultEntry = {
+  profileId: string;
+  surname: string;
+  role: Role;
+  proposals: string[];
+  isCorrect: boolean;
+  rank: number | null;
+  points: number;
+};
+
+export type AlbumSharedChallengeEntry = {
+  profileId: string;
+  surname: string;
+  response: string;
+  completedAt: string;
+  reactions: Array<{ emoji: string; count: number; reactors: string[] }>;
+  bestVoters: string[];
+};
+
+export type AlbumSharedChallengeDay = {
+  day: number;
+  entries: AlbumSharedChallengeEntry[];
 };
 
 // Rubriques de contenu (Histoire / Géographie et économie / Culture et
@@ -624,6 +655,16 @@ export type AlbumSource = {
 
   // Résultats de jeu du jour depuis le snapshot familial
   gameResults: Record<string, CloudGameHistoryEntry[]>; // profileId -> résultats
+
+  // Contexte complet de la rubrique Résultats, dérivé du même snapshot que
+  // l'écran de résultats de l'application. Facultatif pour compatibilité
+  // avec les sources d'album historiques et les tests unitaires existants.
+  gameProfiles?: Record<string, AlbumGameProfileEntry>;
+  destinationChallenge?: {
+    destination: string;
+    results: AlbumDestinationResultEntry[];
+  };
+  sharedChallenges?: AlbumSharedChallengeDay[];
 };
 
 /**

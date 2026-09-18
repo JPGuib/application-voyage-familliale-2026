@@ -1469,6 +1469,118 @@ export async function exportAlbumAsPdf(
         cursorY += 7.5;
       }
     }
+
+    const gameProfiles = content.gameSummary.profiles ?? {};
+    const dailyResultsByProfile = content.gameSummary.dailyResultsByProfile ?? {};
+    const playerIds = Object.keys(dailyResultsByProfile).filter(
+      (profileId) => gameProfiles[profileId]?.role === "utilisateur"
+    );
+    const ensureGameSpace = (height: number) => {
+      cursorY = ensureSpace(doc, cursorY, height, pageWidth, pageHeight, margin, {
+        chapterTitle: "Résultats de jeu",
+        accentColor: ACCENT_TEAL_COLOR,
+      });
+    };
+    const drawGameCard = (title: string, lines: string[], fill: [number, number, number]) => {
+      const lineHeight = 5.5;
+      const height = 10 + lines.length * lineHeight;
+      ensureGameSpace(height);
+      doc.setFillColor(...fill);
+      doc.roundedRect(margin, cursorY - 4, pageContentWidth, height, 3, 3, "F");
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(10.5);
+      doc.setTextColor(...TEXT_COLOR);
+      doc.text(title, margin + 5, cursorY + 3);
+      doc.setFont("Nunito", "normal");
+      doc.setFontSize(9.5);
+      lines.forEach((line, index) => doc.text(line.slice(0, 115), margin + 5, cursorY + 9 + index * lineHeight));
+      cursorY += height + 5;
+    };
+
+    // Détail par journée : même lecture que l'accordéon Résultats de l'appli,
+    // mais imprimée pour chaque voyageur dans un ordre stable.
+    if (playerIds.length > 0) {
+      ensureGameSpace(13);
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(...ACCENT_TEAL_COLOR);
+      doc.text("Scores et détails par journée", margin, cursorY);
+      cursorY += 8;
+      const days = Array.from(new Set(playerIds.flatMap((id) => dailyResultsByProfile[id].map((entry) => entry.day)))).sort(
+        (left, right) => left - right
+      );
+      for (const day of days) {
+        for (const profileId of playerIds) {
+          const entry = dailyResultsByProfile[profileId].find((item) => item.day === day);
+          if (!entry) continue;
+          const surname = gameProfiles[profileId]?.surname ?? profileId;
+          const lines = [
+            `${entry.location} · ${entry.totalScore} pts`,
+            `Quiz : ${entry.correctCount} bonnes réponses · ${entry.quizScore} pts`,
+            `Énigme : ${entry.riddleSolved ? "gagnée" : "perdue"} · Défi : ${entry.challengeDone ? "réalisé" : "non réalisé"}`,
+          ];
+          if (entry.riddleAnswer) lines.push(`Réponse énigme : ${entry.riddleAnswer}`);
+          if (entry.challengeResponse) lines.push(`Réponse défi : ${entry.challengeResponse}`);
+          drawGameCard(`${surname} · ${formatTripDayLabel(day, source.tripStartDate)}`, lines, [255, 243, 224]);
+        }
+      }
+    }
+
+    const badgesByProfile = content.gameSummary.badgesByProfile ?? {};
+    if (Object.keys(badgesByProfile).length > 0) {
+      ensureGameSpace(13);
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(...ACCENT_TEAL_COLOR);
+      doc.text("Badges gagnés", margin, cursorY);
+      cursorY += 8;
+      for (const profileId of playerIds) {
+        const badges = badgesByProfile[profileId] ?? [];
+        if (badges.length === 0) continue;
+        drawGameCard(
+          gameProfiles[profileId]?.surname ?? profileId,
+          badges.map((badge) => `${badge.icon} ${badge.name} · ${badge.desc}`),
+          [255, 243, 224]
+        );
+      }
+    }
+
+    const destinationChallenge = content.gameSummary.destinationChallenge;
+    if (destinationChallenge) {
+      ensureGameSpace(13);
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(...ACCENT_TEAL_COLOR);
+      doc.text("Challenge destination", margin, cursorY);
+      cursorY += 8;
+      drawGameCard(
+        `Destination correcte : ${destinationChallenge.destination}`,
+        destinationChallenge.results
+          .filter((result) => result.role !== "proprietaire")
+          .map((result) => `${result.surname} · ${result.points} pts · ${result.proposals.length > 0 ? result.proposals.join(", ") : "Aucune proposition"}${result.isCorrect ? " · Bonne réponse" : " · Incorrect"}`),
+        [227, 242, 253]
+      );
+    }
+
+    if ((content.gameSummary.sharedChallenges ?? []).length > 0) {
+      ensureGameSpace(13);
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(...ACCENT_TEAL_COLOR);
+      doc.text("Défis partagés", margin, cursorY);
+      cursorY += 8;
+      for (const challengeDay of content.gameSummary.sharedChallenges ?? []) {
+        for (const entry of challengeDay.entries) {
+          const reactions = entry.reactions.map((reaction) => `${reaction.emoji} ${reaction.count}`).join("  ");
+          const votes = entry.bestVoters.length > 0 ? `🏆 ${entry.bestVoters.length}` : "";
+          drawGameCard(
+            `${entry.surname} · ${formatTripDayLabel(challengeDay.day, source.tripStartDate)}`,
+            [entry.response, [reactions, votes].filter(Boolean).join("  ") || "Aucune réaction"],
+            entry.bestVoters.length > 0 ? [232, 245, 233] : [245, 245, 245]
+          );
+        }
+      }
+    }
   }
 
   // --- Pied de page (numérotation + rappel du jour de visite) -------------

@@ -533,6 +533,45 @@
   color: #333;
 }
 
+.game-results-detail {
+  margin-top: 1.25rem;
+}
+
+.game-results-detail h4 {
+  color: var(--accent);
+  margin: 0 0 0.65rem;
+}
+
+.game-result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.75rem;
+  background: #fff3e0;
+  color: var(--foreground);
+}
+
+.game-result-card small {
+  color: var(--muted-foreground);
+}
+
+.game-badge-person {
+  margin-bottom: 0.75rem;
+}
+
+.game-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  background: #fff3e0;
+  color: var(--foreground);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .entries-list {
   display: flex;
   flex-direction: column;

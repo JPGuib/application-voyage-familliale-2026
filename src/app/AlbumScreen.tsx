@@ -337,7 +337,7 @@ export function AlbumScreen({
             })}
 
             {/* Option des résultats de jeu */}
-            {Object.keys(albumSource.gameResults[profileId] || {}).length > 0 && (
+            {Object.values(albumSource.gameResults).some((entries) => entries.length > 0) && (
               <section className="album-section">
                 <h3 className="album-section-title">Résultats du jeu</h3>
                 <label>
@@ -712,6 +712,70 @@ function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
                     </li>
                   ))}
                 </ol>
+              </div>
+            )}
+            {content.gameSummary.dailyResultsByProfile && (
+              <div className="game-results-detail">
+                <h4>Scores et détails par journée</h4>
+                {Object.entries(content.gameSummary.dailyResultsByProfile)
+                  .filter(([profileId]) => content.gameSummary?.profiles?.[profileId]?.role === "utilisateur")
+                  .flatMap(([profileId, entries]) => entries.map((entry) => ({
+                    profileId,
+                    surname: content.gameSummary?.profiles?.[profileId]?.surname ?? profileId,
+                    entry,
+                  })))
+                  .sort((left, right) => left.entry.day - right.entry.day || left.surname.localeCompare(right.surname, "fr"))
+                  .map(({ surname, entry }) => (
+                    <div className="game-result-card" key={`${surname}-${entry.day}`}>
+                      <strong>{surname} · Jour {entry.day}</strong>
+                      <span>{entry.location} · {entry.totalScore} pts</span>
+                      <small>
+                        Quiz : {entry.correctCount} bonnes réponses · Énigme : {entry.riddleSolved ? "gagnée" : "perdue"} · Défi : {entry.challengeDone ? "réalisé" : "non réalisé"}
+                      </small>
+                      {entry.riddleAnswer && <small>Réponse énigme : {entry.riddleAnswer}</small>}
+                      {entry.challengeResponse && <small>Réponse défi : {entry.challengeResponse}</small>}
+                    </div>
+                  ))}
+              </div>
+            )}
+            {content.gameSummary.badgesByProfile && (
+              <div className="game-results-detail">
+                <h4>Badges gagnés</h4>
+                {Object.entries(content.gameSummary.badgesByProfile).map(([profileId, badges]) => (
+                  <div className="game-badge-person" key={profileId}>
+                    <strong>{content.gameSummary?.profiles?.[profileId]?.surname ?? profileId}</strong>
+                    <div className="game-badges">
+                      {badges.map((badge) => <span className="game-badge-chip" key={badge.name}>{badge.icon} {badge.name}</span>)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {content.gameSummary.destinationChallenge && (
+              <div className="game-results-detail">
+                <h4>Challenge destination</h4>
+                <p>Destination correcte : <strong>{content.gameSummary.destinationChallenge.destination}</strong></p>
+                {content.gameSummary.destinationChallenge.results
+                  .filter((result) => result.role !== "proprietaire")
+                  .map((result) => (
+                    <div className="game-result-card" key={`destination-${result.profileId}`}>
+                      <strong>{result.surname} · {result.points} pts</strong>
+                      <small>Propositions : {result.proposals.length > 0 ? result.proposals.join(", ") : "Aucune proposition"}</small>
+                      <small>{result.isCorrect ? `Bonne réponse${result.rank ? ` · choix ${result.rank}` : ""}` : "Incorrect"}</small>
+                    </div>
+                  ))}
+              </div>
+            )}
+            {content.gameSummary.sharedChallenges && content.gameSummary.sharedChallenges.length > 0 && (
+              <div className="game-results-detail">
+                <h4>Défis partagés</h4>
+                {content.gameSummary.sharedChallenges.flatMap((challengeDay) => challengeDay.entries.map((entry) => (
+                  <div className="game-result-card" key={`shared-${challengeDay.day}-${entry.profileId}`}>
+                    <strong>{entry.surname} · Jour {challengeDay.day}</strong>
+                    <span>{entry.response}</span>
+                    <small>{entry.reactions.map((reaction) => `${reaction.emoji} ${reaction.count}`).join("  ") || "Aucune réaction"}{entry.bestVoters.length > 0 ? `  🏆 ${entry.bestVoters.length}` : ""}</small>
+                  </div>
+                )))}
               </div>
             )}
           </div>
