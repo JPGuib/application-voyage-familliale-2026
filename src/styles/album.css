@@ -191,6 +191,59 @@
   font-style: italic;
 }
 
+/* Sélecteur visuel de photo de couverture (story 30.7) : grille de vignettes
+   cliquables plutôt qu'une liste déroulante texte, pour que le voyageur
+   choisisse lui-même sa photo de couverture au lieu de subir un choix
+   automatique invisible (retour utilisateur). */
+.cover-photo-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.6rem;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 0.25rem;
+}
+
+.cover-photo-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: #f9f9f9;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: #555;
+  text-align: center;
+}
+
+.cover-photo-option img {
+  width: 100%;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.cover-photo-option.selected {
+  border-color: var(--primary);
+  background: #fff3ec;
+  color: #333;
+  font-weight: 600;
+}
+
+.cover-photo-option--placeholder {
+  min-height: 88px;
+  justify-content: center;
+}
+
+.cover-photo-option-hint {
+  font-size: 0.65rem;
+  font-weight: normal;
+  color: #999;
+}
+
 .album-actions {
   display: flex;
   gap: 1rem;
@@ -493,6 +546,19 @@
   border-radius: 6px;
   margin: -0.5rem -0.5rem 1.25rem;
   box-shadow: 0 2px 6px rgba(255, 107, 61, 0.25);
+}
+
+/* Jour de visite rappelé sous le bandeau de titre d'un chapitre-lieu (story
+   30.7, retour utilisateur : "on perd rapidement le jour de la visite").
+   Même style que `.itinerary-day-label` (page planning), pour rester
+   cohérent. */
+.chapter-day-label {
+  display: block;
+  margin: -0.75rem 0 1rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
 }
 
 /* Socle éditorial d'un lieu (présentation/histoire), toujours affiché pour

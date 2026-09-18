@@ -340,26 +340,14 @@ export function filterAlbumContent(
     gameSummary = extractGameSummary(source.gameResults, draft.profileId, source.requiredProfiles);
   }
 
-  // Vérifier si la photo de couverture est valide
+  // Vérifier si la photo de couverture choisie explicitement est toujours
+  // valide (lieu resté inclus, index photo toujours dans les bornes). La
+  // sentinelle "aucune photo" et le choix "automatique" (chaîne vide) ne
+  // sont jamais considérés comme manquants : cf. `resolveEffectiveCoverPhoto`
+  // pour le repli automatique qui s'applique dans ces deux cas.
   let coverPhotoMissing = false;
-  if (draft.coverPhotoId) {
-    // Vérifier que la photo existe toujours dans les sources filtrées
-    let found = false;
-    for (const placeEntries of Object.values(filteredEntries)) {
-      for (const entry of Object.values(placeEntries)) {
-        if (typeof entry === "object" && entry !== null && "photos" in entry) {
-          const e = entry as { photos?: Record<string, unknown> };
-          if (e.photos && draft.coverPhotoId in e.photos) {
-            found = true;
-            break;
-          }
-        }
-      }
-      if (found) break;
-    }
-    if (!found) {
-      coverPhotoMissing = true;
-    }
+  if (draft.coverPhotoId && draft.coverPhotoId !== ALBUM_NO_COVER_PHOTO_ID) {
+    coverPhotoMissing = resolveCoverPhotoSource(draft.coverPhotoId, filteredPlaces, filteredEntries) === null;
   }
 
   // Estimer le nombre de pages (A4)
@@ -554,6 +542,145 @@ export function findPhotoSource(
   }
 
   return "";
+}
+
+// --- Choix de la photo de couverture par le voyageur (story 30.7) --------
+//
+// Avant cet ajout, le sélecteur de couverture (AlbumScreen.tsx) ne proposait
+// que les photos personnelles du carnet ; s'il n'en choisissait aucune, la
+// couverture retombait silencieusement sur "la première photo éditoriale
+// trouvée", sans que le voyageur comprenne ni maîtrise ce choix (retour
+// utilisateur). Cette section permet de désigner explicitement N'IMPORTE
+// QUELLE photo (éditoriale d'un lieu OU personnelle du carnet) comme
+// couverture, tout en gardant un choix "automatique" explicite et un choix
+// "aucune photo" explicite (distinct de "pas encore choisi").
+
+/** Sentinelle "aucune photo de couverture" choisie explicitement par le voyageur. */
+export const ALBUM_NO_COVER_PHOTO_ID = "__no_cover__";
+
+const EDITORIAL_COVER_ID_PATTERN = /^editorial:(.+):(\d+)$/;
+
+/** Identifiant stable d'une photo éditoriale d'un lieu, pour coverPhotoId. */
+export function buildEditorialCoverPhotoId(placeId: string, photoIndex: number): string {
+  return `editorial:${placeId}:${photoIndex}`;
+}
+
+export type ResolvedCoverPhoto = { src: string; kind: "editorial" | "carnet" };
+
+/**
+ * Résout un `coverPhotoId` explicite (photo éditoriale au format
+ * "editorial:{placeId}:{index}", ou id de photo de carnet) vers sa source.
+ *
+ * Retourne `null` si l'id est vide, correspond à la sentinelle "aucune
+ * photo", ou ne correspond plus à rien (lieu retiré de la sélection, index
+ * hors limites) — l'appelant doit alors se rabattre sur le comportement
+ * automatique (cf. `resolveEffectiveCoverPhoto`).
+ */
+export function resolveCoverPhotoSource(
+  coverPhotoId: string,
+  places: Record<string, FilteredAlbumPlace>,
+  entries: Record<string, Record<string, unknown>>
+): ResolvedCoverPhoto | null {
+  if (!coverPhotoId || coverPhotoId === ALBUM_NO_COVER_PHOTO_ID) {
+    return null;
+  }
+
+  const editorialMatch = EDITORIAL_COVER_ID_PATTERN.exec(coverPhotoId);
+  if (editorialMatch) {
+    const [, placeId, indexText] = editorialMatch;
+    const src = places[placeId]?.photos?.[Number(indexText)];
+    return typeof src === "string" ? { src, kind: "editorial" } : null;
+  }
+
+  const carnetSrc = findPhotoSource(entries, coverPhotoId);
+  return carnetSrc ? { src: carnetSrc, kind: "carnet" } : null;
+}
+
+/**
+ * Résout la couverture effective de l'album : choix explicite du voyageur
+ * (`resolveCoverPhotoSource`) s'il est présent et toujours valide ; sinon
+ * repli automatique sur la première photo éditoriale disponible, dans
+ * l'ordre chronologique des lieux inclus (les lieux de `places` sont déjà
+ * triés par jour, cf. `buildEligiblePlaces` dans album-source.ts) ; sinon la
+ * première photo de carnet trouvée ; sinon aucune couverture.
+ *
+ * La sentinelle `ALBUM_NO_COVER_PHOTO_ID` court-circuite ce repli : c'est un
+ * choix explicite du voyageur de ne pas avoir de photo en couverture.
+ */
+export function resolveEffectiveCoverPhoto(
+  places: Record<string, FilteredAlbumPlace>,
+  entries: Record<string, Record<string, unknown>>,
+  coverPhotoId: string
+): ResolvedCoverPhoto | null {
+  if (coverPhotoId === ALBUM_NO_COVER_PHOTO_ID) {
+    return null;
+  }
+
+  if (coverPhotoId) {
+    const explicit = resolveCoverPhotoSource(coverPhotoId, places, entries);
+    if (explicit) {
+      return explicit;
+    }
+  }
+
+  for (const place of Object.values(places)) {
+    if (place.photos && place.photos.length > 0) {
+      return { src: place.photos[0], kind: "editorial" };
+    }
+  }
+
+  const fallbackCarnetPhotoId = findFallbackCoverPhoto(entries);
+  if (fallbackCarnetPhotoId) {
+    const src = findPhotoSource(entries, fallbackCarnetPhotoId);
+    if (src) {
+      return { src, kind: "carnet" };
+    }
+  }
+
+  return null;
+}
+
+/** Une option sélectionnable dans le picker visuel de photo de couverture. */
+export type CoverPhotoOption = {
+  id: string;
+  src: string;
+  placeName: string;
+  kind: "editorial" | "carnet";
+};
+
+/**
+ * Liste toutes les photos sélectionnables comme couverture (éditoriales des
+ * lieux inclus, puis personnelles du carnet), dans l'ordre chronologique des
+ * lieux (même ordre que les chapitres de l'album). Alimente le picker visuel
+ * de AlbumScreen.tsx.
+ */
+export function listCoverPhotoOptions(
+  places: Record<string, FilteredAlbumPlace>,
+  entries: Record<string, Record<string, unknown>>
+): CoverPhotoOption[] {
+  const options: CoverPhotoOption[] = [];
+
+  for (const [placeId, place] of Object.entries(places)) {
+    (place.photos ?? []).forEach((src, index) => {
+      if (typeof src === "string" && src) {
+        options.push({ id: buildEditorialCoverPhotoId(placeId, index), src, placeName: place.name, kind: "editorial" });
+      }
+    });
+
+    for (const entry of Object.values(entries[placeId] ?? {})) {
+      if (typeof entry !== "object" || entry === null || !("photos" in entry)) {
+        continue;
+      }
+      const photos = (entry as { photos?: Record<string, unknown> }).photos ?? {};
+      for (const [photoId, src] of Object.entries(photos)) {
+        if (typeof src === "string" && src) {
+          options.push({ id: photoId, src, placeName: place.name, kind: "carnet" });
+        }
+      }
+    }
+  }
+
+  return options;
 }
 
 /**

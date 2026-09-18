@@ -3,12 +3,14 @@ import type { AlbumSource } from "../types/cloud";
 import { useAlbumDraft } from "../hooks/useAlbumDraft";
 import { canAccessAlbumComposition, getAlbumAccessDeniedMessage } from "./album-access";
 import {
+  ALBUM_NO_COVER_PHOTO_ID,
   filterAlbumContent,
   findFallbackCoverPhoto,
-  findPhotoSource,
   escapeAndLimitText,
   isPhotoBudgetReduced,
   isPhotoQualityDegraded,
+  listCoverPhotoOptions,
+  resolveEffectiveCoverPhoto,
   selectBudgetedCarnetPhotos,
 } from "./albumUtils";
 import {
@@ -17,7 +19,7 @@ import {
   exportAlbumAsPdf,
   preparePdfImages,
 } from "../services/pdf-export";
-import { formatTripDayLabel } from "./trip-day-format";
+import { formatPrimaryTripDayLabel, formatTripDayLabel } from "./trip-day-format";
 import { isValidTripStartDate } from "./trip-day";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
 import { TRIP_MAP_IMAGE_PATH } from "../content/trip";
@@ -103,26 +105,12 @@ export function AlbumScreen({
     }
   }, [filteredContent.coverPhotoMissing, draft.coverPhotoId, filteredContent.entries, updateCoverPhoto]);
 
-  // Construire la liste des photos disponibles pour le sélecteur de couverture
-  const availablePhotos: Array<{ id: string; label: string }> = [
-    { id: "", label: "Pas de couverture avec photo" },
-  ];
-
-  for (const placeEntries of Object.values(filteredContent.entries)) {
-    for (const entry of Object.values(placeEntries)) {
-      if (typeof entry === "object" && entry !== null && "photos" in entry) {
-        const e = entry as { photos?: Record<string, unknown> };
-        if (e.photos) {
-          for (const photoId of Object.keys(e.photos)) {
-            availablePhotos.push({
-              id: photoId,
-              label: `Photo de ${e && "placeId" in e ? "lieu" : "souvenir"}`,
-            });
-          }
-        }
-      }
-    }
-  }
+  // Photos sélectionnables comme couverture (story 30.7) : photos officielles
+  // des lieux inclus ET photos personnelles du carnet, dans l'ordre
+  // chronologique du voyage (retour utilisateur : "je ne sais pas comment
+  // est choisie la première photo, il serait préférable qu'elle soit choisie
+  // par l'utilisateur").
+  const coverPhotoOptions = listCoverPhotoOptions(filteredContent.places, filteredContent.entries);
 
   const handleExportPdf = async () => {
     setExportError(null);
@@ -238,20 +226,44 @@ export function AlbumScreen({
               <span className="char-count">{draft.subtitle.length} / 100</span>
             </div>
 
-            {/* Photo de couverture */}
+            {/* Photo de couverture (story 30.7) : choix visuel explicite,
+                plutôt qu'un repli automatique invisible pour le voyageur. */}
             <div className="form-group">
-              <label htmlFor="cover-photo">Photo de couverture</label>
-              <select
-                id="cover-photo"
-                value={draft.coverPhotoId}
-                onChange={(e) => updateCoverPhoto(e.target.value)}
-              >
-                {availablePhotos.map((photo) => (
-                  <option key={photo.id} value={photo.id}>
-                    {photo.label}
-                  </option>
+              <label>Photo de couverture</label>
+              <div className="cover-photo-picker">
+                <button
+                  type="button"
+                  className={`cover-photo-option cover-photo-option--placeholder ${
+                    draft.coverPhotoId === "" ? "selected" : ""
+                  }`}
+                  onClick={() => updateCoverPhoto("")}
+                >
+                  <span>Choix automatique</span>
+                  <span className="cover-photo-option-hint">1ère photo, dans l'ordre du voyage</span>
+                </button>
+                <button
+                  type="button"
+                  className={`cover-photo-option cover-photo-option--placeholder ${
+                    draft.coverPhotoId === ALBUM_NO_COVER_PHOTO_ID ? "selected" : ""
+                  }`}
+                  onClick={() => updateCoverPhoto(ALBUM_NO_COVER_PHOTO_ID)}
+                >
+                  <span>Aucune photo</span>
+                </button>
+                {coverPhotoOptions.map((option) => (
+                  <button
+                    type="button"
+                    key={option.id}
+                    className={`cover-photo-option ${draft.coverPhotoId === option.id ? "selected" : ""}`}
+                    onClick={() => updateCoverPhoto(option.id)}
+                    aria-label={`Choisir cette photo de ${option.placeName} comme couverture`}
+                    aria-pressed={draft.coverPhotoId === option.id}
+                  >
+                    <img src={option.src} alt="" />
+                    <span>{option.placeName}</span>
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
 
             {/* Sélection des lieux */}
@@ -354,7 +366,7 @@ interface AlbumPreviewProps {
 }
 
 function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
-  const selectedCoverSource = findPhotoSource(content.entries, draft.coverPhotoId);
+  const resolvedCoverPhoto = resolveEffectiveCoverPhoto(content.places, content.entries, draft.coverPhotoId);
   const hasLocations = Object.keys(content.places).length > 0;
   // Voyage riche en lieux : le budget de photos par lieu est réduit et/ou la
   // qualité des photos est dégradée à l'export (story 30.5, export
@@ -378,9 +390,9 @@ function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
       {/* Page de couverture */}
       <div className="album-page album-page--cover">
         <div className="album-cover">
-          {selectedCoverSource && (
+          {resolvedCoverPhoto && (
             <div className="cover-image">
-              <img src={selectedCoverSource} alt="Couverture" />
+              <img src={resolvedCoverPhoto.src} alt="Couverture" />
             </div>
           )}
           <div className="cover-text">
@@ -451,11 +463,13 @@ function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
         const hasComments = placeComments.length > 0;
         const guideSections = place.guideSections ?? [];
         const hasGuide = guideSections.length > 0;
+        const chapterDayLabel = formatPrimaryTripDayLabel(place.jour, source.tripStartDate, { format: "short" });
 
         return (
           <div key={placeId} className="album-page">
             <div className="page-content">
               <h3 className="place-title chapter-band">{escapeAndLimitText(place.name, 100)}</h3>
+              {chapterDayLabel && <span className="chapter-day-label">{chapterDayLabel.toUpperCase()}</span>}
 
               {hasPresentation && (
                 <div className="place-presentation">

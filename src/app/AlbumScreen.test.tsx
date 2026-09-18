@@ -193,4 +193,59 @@ describe("AlbumScreen preview", () => {
     // Le message reste informatif : l'aperçu continue de s'afficher normalement.
     expect(screen.getByText("Planning du voyage")).toBeInTheDocument();
   });
+
+  describe("choix de la photo de couverture par le voyageur (story 30.7)", () => {
+    it("lets the traveler click an editorial thumbnail to make it the cover photo, overriding the automatic default", () => {
+      renderAlbum(sourceWithEditorialOnly);
+
+      // Istanbul a 2 photos éditoriales ; l'automatique choisirait la 1ère
+      // ("Istanbul photo 1.webp") : on clique explicitement sur la 2nde
+      // ("Bosphore.webp") pour vérifier que le choix du voyageur est bien
+      // pris en compte plutôt que le repli automatique.
+      const options = screen.getAllByRole("button", {
+        name: /Choisir cette photo de Istanbul comme couverture/i,
+      });
+      expect(options).toHaveLength(2);
+      fireEvent.click(options[1]!);
+      fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
+
+      expect(screen.getByRole("img", { name: "Couverture" })).toHaveAttribute(
+        "src",
+        "/images/places/Bosphore.webp"
+      );
+    });
+
+    it("shows no cover image when the traveler explicitly picks 'Aucune photo', even though photos are available", () => {
+      renderAlbum(sourceWithEditorialOnly);
+
+      fireEvent.click(screen.getByRole("button", { name: "Aucune photo" }));
+      fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
+
+      expect(screen.queryByRole("img", { name: "Couverture" })).not.toBeInTheDocument();
+    });
+
+    it("falls back to the first available photo, in chronological order, when the traveler has chosen nothing (automatic default)", () => {
+      renderAlbum(sourceWithEditorialOnly);
+      fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
+
+      expect(screen.getByRole("img", { name: "Couverture" })).toHaveAttribute(
+        "src",
+        "/images/guide/Istanbul photo 1.webp"
+      );
+    });
+  });
+
+  describe("jour de visite rappelé au chapitre (story 30.7)", () => {
+    it("shows the visit day next to a place's chapter title in the preview", () => {
+      const sourceWithDate: AlbumSource = { ...sourceWithEditorialOnly, tripStartDate: "2026-08-16" };
+      renderAlbum(sourceWithDate);
+
+      fireEvent.click(screen.getByRole("button", { name: /Voir l'aperçu/i }));
+
+      // jour 1 -> même date que tripStartDate ("2026-08-16"), formatée en
+      // court (ex. "LUN. 16 AOÛT") par formatPrimaryTripDayLabel.
+      const chapterHeading = screen.getByRole("heading", { name: "Istanbul" });
+      expect(chapterHeading.parentElement).toHaveTextContent(/16 AOÛT/i);
+    });
+  });
 });

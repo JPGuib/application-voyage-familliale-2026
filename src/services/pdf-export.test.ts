@@ -6,6 +6,7 @@ import {
   convertEditorialAssetToJpegDataUrl,
   recompressCarnetPhotoForExport,
   exportAlbumAsPdf,
+  computeChapterDayColorCursor,
   EDITORIAL_PHOTO_MAX_DIMENSION_PX,
 } from "./pdf-export";
 import {
@@ -18,6 +19,7 @@ import {
 } from "../app/albumUtils";
 import type { FilteredAlbumContent } from "../app/albumUtils";
 import type { AlbumDraft, AlbumSource } from "../types/cloud";
+import { formatTripDayLabel } from "../app/trip-day-format";
 
 // jsPDF#save() détecte l'environnement Node (require("fs") disponible, ce qui
 // est le cas sous Vitest même avec l'environnement "jsdom") et écrit alors
@@ -29,13 +31,30 @@ import type { AlbumDraft, AlbumSource } from "../types/cloud";
 // après l'appel à super() pour neutraliser cet effet de bord et ne tester
 // que la composition des pages, pas le téléchargement lui-même (déjà couvert
 // fonctionnellement par la story 30.3 et non modifié ici).
+// `text` est, comme `save` ci-dessus, assignée en propriété propre de
+// l'instance (pas sur le prototype) : on l'enveloppe donc de la même façon,
+// en délégant systématiquement à l'implémentation réelle (le rendu du texte
+// n'est pas modifié), pour permettre aux tests qui en ont besoin (rappel du
+// jour de visite, story 30.7) d'inspecter les appels via `TestJsPDF.textCalls`
+// (tableau statique partagé, à réinitialiser par le test avant usage).
 vi.mock("jspdf", async (importOriginal) => {
   const actual = await importOriginal<typeof import("jspdf")>();
   class TestJsPDF extends actual.jsPDF {
+    static textCalls: unknown[][] = [];
+
     constructor(...args: ConstructorParameters<typeof actual.jsPDF>) {
       super(...args);
       Object.defineProperty(this, "save", {
         value: () => this,
+        writable: true,
+        configurable: true,
+      });
+      const originalText = this.text.bind(this);
+      Object.defineProperty(this, "text", {
+        value: (...textArgs: unknown[]) => {
+          TestJsPDF.textCalls.push(textArgs);
+          return originalText(...(textArgs as Parameters<typeof originalText>));
+        },
         writable: true,
         configurable: true,
       });
@@ -510,5 +529,136 @@ describe("exportAlbumAsPdf > voyage très illustré (nombreux lieux, export adap
         drawResizedJpeg: vi.fn(() => "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD"),
       })
     ).resolves.toBeUndefined();
+  });
+});
+
+describe("computeChapterDayColorCursor (couleur de chapitre par jour, story 30.7)", () => {
+  it("assigns the same color-cursor to chapters sharing the same day", () => {
+    expect(computeChapterDayColorCursor([1, 1])).toEqual([0, 0]);
+  });
+
+  it("advances the color-cursor by one at the first chapter of a new day", () => {
+    expect(computeChapterDayColorCursor([1, 1, 2, 2, 3])).toEqual([0, 0, 1, 1, 2]);
+  });
+
+  it("advances the color-cursor for the very first chapter even when its day is unknown (bug fix : un jour inconnu ne doit pas être confondu avec l'état initial)", () => {
+    expect(computeChapterDayColorCursor([null, null, 1])).toEqual([0, 0, 1]);
+  });
+
+  it("returns an empty array for no chapters", () => {
+    expect(computeChapterDayColorCursor([])).toEqual([]);
+  });
+});
+
+describe("exportAlbumAsPdf > jour de visite rappelé au titre et en pied de page (story 30.7)", () => {
+  it("prints the visit day label under the chapter title and in the footer of every page of that chapter", async () => {
+    const draft: AlbumDraft = {
+      profileId: "profile-1",
+      title: "Notre voyage",
+      subtitle: "",
+      coverPhotoId: "",
+      includedLocationIds: new Set(["place-1", "place-2", "place-3"]),
+      includeGameSummary: false,
+      theme: "default",
+      createdAt: 1,
+      updatedAt: 1,
+    };
+
+    const content: FilteredAlbumContent = {
+      places: {
+        // Deux lieux le même jour, un troisième le jour suivant (déjà triés
+        // chronologiquement en amont par buildEligiblePlaces).
+        "place-1": { name: "Lieu A", shortDesc: "", jour: [1] },
+        "place-2": { name: "Lieu B", shortDesc: "", jour: [1] },
+        "place-3": { name: "Lieu C", shortDesc: "", jour: [2] },
+      },
+      entries: {},
+      comments: {},
+      profiles: {},
+      gameSummary: null,
+      coverPhotoMissing: false,
+      estimatedPageCount: 5,
+      estimatedImageCount: 0,
+      photoBudgetPerPlace: resolvePhotoBudgetPerPlace(3),
+      photoQualityTier: PHOTO_QUALITY_TIER_DEFAULT,
+    };
+
+    const source: AlbumSource = {
+      tripStartDate: "2026-08-16",
+      lastTripDay: 2,
+      phase: "after",
+      generatedAt: Date.now(),
+      eligiblePlaces: {},
+      placeVisitLogs: {},
+      placeComments: {},
+      requiredProfiles: {},
+      gameResults: {},
+    };
+
+    const jspdfModule = await import("jspdf");
+    const TestJsPDF = jspdfModule.jsPDF as unknown as { textCalls: unknown[][] };
+    TestJsPDF.textCalls = [];
+
+    await expect(exportAlbumAsPdf(draft, content, source)).resolves.toBeUndefined();
+
+    const day1Label = formatTripDayLabel(1, "2026-08-16", { format: "short" }).toUpperCase();
+    const day2Label = formatTripDayLabel(2, "2026-08-16", { format: "short" }).toUpperCase();
+
+    const matchesDayLabel = ([text]: unknown[]) => text === day1Label || text === day2Label;
+    const titleAreaCalls = TestJsPDF.textCalls.filter(
+      (call) => matchesDayLabel(call) && (call[3] as { align?: string } | undefined)?.align !== "right"
+    );
+    // Un rappel sous le bandeau de titre pour chacun des 3 chapitres (place-1,
+    // place-2, place-3), quel que soit le jour.
+    expect(titleAreaCalls.length).toBe(3);
+
+    const footerCalls = TestJsPDF.textCalls.filter(
+      (call) => matchesDayLabel(call) && (call[3] as { align?: string } | undefined)?.align === "right"
+    );
+    // 3 chapitres, une page chacun (pas de débordement) : 3 pieds de page datés.
+    expect(footerCalls.length).toBe(3);
+  });
+
+  it("does not print any day label for a chapter whose place has no known day", async () => {
+    const draft: AlbumDraft = {
+      profileId: "profile-1",
+      title: "Notre voyage",
+      subtitle: "",
+      coverPhotoId: "",
+      includedLocationIds: new Set(["place-1"]),
+      includeGameSummary: false,
+      theme: "default",
+      createdAt: 1,
+      updatedAt: 1,
+    };
+
+    const content: FilteredAlbumContent = {
+      places: {
+        "place-1": { name: "Lieu sans jour", shortDesc: "", jour: [] },
+      },
+      entries: {},
+      comments: {},
+      profiles: {},
+      gameSummary: null,
+      coverPhotoMissing: false,
+      estimatedPageCount: 3,
+      estimatedImageCount: 0,
+      photoBudgetPerPlace: resolvePhotoBudgetPerPlace(1),
+      photoQualityTier: PHOTO_QUALITY_TIER_DEFAULT,
+    };
+
+    const source: AlbumSource = {
+      tripStartDate: "2026-08-16",
+      lastTripDay: 1,
+      phase: "after",
+      generatedAt: Date.now(),
+      eligiblePlaces: {},
+      placeVisitLogs: {},
+      placeComments: {},
+      requiredProfiles: {},
+      gameResults: {},
+    };
+
+    await expect(exportAlbumAsPdf(draft, content, source)).resolves.toBeUndefined();
   });
 });

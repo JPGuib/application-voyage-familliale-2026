@@ -1,14 +1,14 @@
 import type { AlbumDraft, AlbumSource } from "../types/cloud";
 import type { FilteredAlbumContent, PhotoQualityTier } from "../app/albumUtils";
 import {
-  findPhotoSource,
   fitWithinBox,
   isPhotoQualityDegraded,
   PHOTO_QUALITY_TIER_DEFAULT,
+  resolveEffectiveCoverPhoto,
   selectBudgetedCarnetPhotos,
 } from "../app/albumUtils";
 import { computeResizedDimensions } from "../app/image-upload";
-import { formatTripDayLabel } from "../app/trip-day-format";
+import { formatPrimaryTripDayLabel, formatTripDayLabel } from "../app/trip-day-format";
 import { isValidTripStartDate } from "../app/trip-day";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
 import { TRIP_MAP_IMAGE_PATH } from "../content/trip";
@@ -422,14 +422,45 @@ const WHITE_COLOR: [number, number, number] = [255, 255, 255];
 // qu'un gris neutre, pour rester dans la même famille que le fond crème.
 const PHOTO_FRAME_SHADOW_COLOR: [number, number, number] = [214, 201, 184];
 
-// Alternance de couleur des bandeaux de chapitre selon l'ordre des lieux
-// (variété façon "scrapbook", plutôt qu'un bleu unique répété partout). Le
-// jaune (--secondary) est volontairement exclu de cette rotation : trop clair
-// pour porter du texte blanc lisible en fond plein, il est réservé aux petits
-// accents (puces, chips).
+// Alternance de couleur des bandeaux de chapitre selon le JOUR de visite
+// (variété façon "scrapbook", plutôt qu'un bleu unique répété partout) : deux
+// lieux visités le même jour partagent la même couleur, la couleur change au
+// jour suivant (retour utilisateur : "je ferais une couleur par jour", au
+// lieu d'une alternance par lieu). Le jaune (--secondary) est volontairement
+// exclu de cette rotation : trop clair pour porter du texte blanc lisible en
+// fond plein, il est réservé aux petits accents (puces, chips).
 const CHAPTER_ACCENT_COLORS: Array<[number, number, number]> = [PRIMARY_COLOR, ACCENT_TEAL_COLOR];
 function getChapterAccent(index: number): [number, number, number] {
   return CHAPTER_ACCENT_COLORS[index % CHAPTER_ACCENT_COLORS.length];
+}
+
+/**
+ * Calcule, pour une liste de chapitres-lieux (ordonnée chronologiquement,
+ * cf. buildEligiblePlaces dans album-source.ts), l'index d'accent de couleur
+ * à appliquer à chacun : deux chapitres consécutifs partageant le même jour
+ * reçoivent le même index, l'index avance d'un cran au premier chapitre d'un
+ * nouveau jour (cf. `getChapterAccent`).
+ *
+ * Cas limite : le tout premier chapitre doit toujours démarrer un nouveau
+ * "groupe couleur", même quand son jour est inconnu (`null`, lieu sans jour
+ * renseigné) — sans le drapeau `isFirst`, un premier jour `null` serait
+ * confondu avec l'état initial `lastDay = null` et le curseur ne
+ * démarrerait jamais (bug constaté : `getChapterAccent(-1)` plante le rendu).
+ */
+export function computeChapterDayColorCursor(daysByChapter: Array<number | null>): number[] {
+  const cursors: number[] = [];
+  let lastDay: number | null = null;
+  let cursor = -1;
+  let isFirst = true;
+  for (const day of daysByChapter) {
+    if (isFirst || day !== lastDay) {
+      cursor += 1;
+      lastDay = day;
+      isFirst = false;
+    }
+    cursors.push(cursor);
+  }
+  return cursors;
 }
 
 /**
@@ -631,6 +662,16 @@ function formatTripDateRangeLabel(tripStartDate: string | null, lastTripDay: num
   return `${startLabel} — ${endLabel}`;
 }
 
+/**
+ * Étiquette de jour d'un chapitre-lieu (retour utilisateur : "on perd
+ * rapidement le jour de la visite"), affichée sous le bandeau de titre du
+ * chapitre et rappelée en pied de page de chaque page de ce chapitre. Même
+ * helper que l'aperçu HTML (cf. AlbumScreen.tsx), pour rester cohérents.
+ */
+function formatChapterDayLabel(jour: number[], tripStartDate: string | null): string | null {
+  return formatPrimaryTripDayLabel(jour, tripStartDate, { format: "short" });
+}
+
 export async function exportAlbumAsPdf(
   draft: AlbumDraft,
   content: FilteredAlbumContent,
@@ -726,21 +767,21 @@ export async function exportAlbumAsPdf(
   // --- Couverture -----------------------------------------------------
   drawVerticalGradient(doc, 0, 0, pageWidth, pageHeight, PRIMARY_COLOR, SECONDARY_COLOR);
 
-  // Photo de couverture : priorité à la photo de carnet choisie par le
-  // voyageur (draft.coverPhotoId), sinon repli sur la première photo
-  // éditoriale disponible parmi les lieux inclus, sinon aucune image.
-  const carnetCoverSrc = findPhotoSource(content.entries, draft.coverPhotoId);
+  // Photo de couverture : priorité au choix explicite du voyageur
+  // (draft.coverPhotoId, photo éditoriale OU de carnet, cf. AlbumScreen.tsx),
+  // sinon repli automatique sur la première photo éditoriale disponible dans
+  // l'ordre chronologique des lieux inclus (content.places est déjà trié par
+  // jour, cf. buildEligiblePlaces dans album-source.ts), sinon aucune image
+  // (choix explicite "aucune photo" ou album sans aucune photo disponible).
+  const coverPhoto = resolveEffectiveCoverPhoto(content.places, content.entries, draft.coverPhotoId);
   let coverImageSrc: string | null = null;
   let coverImageDeps: ImageRecompressionDeps | undefined;
-  if (carnetCoverSrc) {
-    coverImageSrc = await resolveCarnet(carnetCoverSrc);
+  if (coverPhoto?.kind === "carnet") {
+    coverImageSrc = await resolveCarnet(coverPhoto.src);
     coverImageDeps = carnetConverterDeps;
-  } else {
-    const firstEditorial = prepared.valid.find((img) => img.kind === "editorial");
-    if (firstEditorial) {
-      coverImageSrc = await resolveEditorial(firstEditorial.src);
-      coverImageDeps = editorialConverterDeps;
-    }
+  } else if (coverPhoto?.kind === "editorial") {
+    coverImageSrc = await resolveEditorial(coverPhoto.src);
+    coverImageDeps = editorialConverterDeps;
   }
 
   // Petit label "eyebrow" façon carnet de voyage, au-dessus du bandeau photo
@@ -880,10 +921,26 @@ export async function exportAlbumAsPdf(
   // Un chapitre est créé pour chaque lieu inclus, même sans note de carnet :
   // le socle éditorial (présentation, anecdotes, photos officielles) est
   // toujours affiché en premier, les souvenirs personnels s'ajoutent ensuite
-  // (règle métier story 30.5). L'accent de couleur alterne d'un lieu à
-  // l'autre (cf. getChapterAccent) pour une variété façon scrapbook.
-  let chapterIndex = 0;
-  for (const [placeId, place] of Object.entries(content.places)) {
+  // (règle métier story 30.5). L'accent de couleur alterne selon le JOUR de
+  // visite (cf. getChapterAccent) plutôt que selon l'index du lieu : deux
+  // lieux visités le même jour partagent la même couleur, la couleur change
+  // au jour suivant (retour utilisateur : "je ferais une couleur par jour").
+  // Repose sur le tri chronologique des chapitres (cf. buildEligiblePlaces
+  // dans album-source.ts) : le jour ne peut donc que rester stable ou
+  // avancer d'un chapitre à l'autre.
+  //
+  // Le jour de visite est aussi rappelé sous le bandeau de titre et en pied
+  // de page de chaque page du chapitre (retour utilisateur : "on perd
+  // rapidement le jour de la visite"), via `chapterFooterRanges` complété
+  // ci-dessous et exploité dans la passe finale de numérotation des pages.
+  const chapterEntries = Object.entries(content.places);
+  const chapterPrimaryDays = chapterEntries.map(([, place]) =>
+    place.jour.length > 0 ? Math.min(...place.jour) : null
+  );
+  const chapterDayColorCursors = computeChapterDayColorCursor(chapterPrimaryDays);
+  const chapterFooterRanges: Array<{ startPage: number; endPage: number; label: string }> = [];
+
+  for (const [chapterPosition, [placeId, place]] of chapterEntries.entries()) {
     const placeEntries = content.entries[placeId] ?? {};
     const bodyLines: string[] = [];
     for (const entry of Object.values(placeEntries)) {
@@ -895,13 +952,22 @@ export async function exportAlbumAsPdf(
     }
 
     const chapterTitle = place.name || placeId;
-    const accentColor = getChapterAccent(chapterIndex);
-    chapterIndex += 1;
+    const accentColor = getChapterAccent(chapterDayColorCursors[chapterPosition]);
+    const chapterDayLabel = formatChapterDayLabel(place.jour, source.tripStartDate);
 
     doc.addPage();
+    const chapterStartPage = doc.getNumberOfPages();
     paintPageBackground(doc, pageWidth, pageHeight);
     drawTitleBand(doc, chapterTitle, pageWidth, margin, 12, accentColor);
     let cursorY = 34;
+    if (chapterDayLabel) {
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(...MUTED_TEXT_COLOR);
+      doc.text(chapterDayLabel.toUpperCase(), margin, 30);
+      doc.setTextColor(...TEXT_COLOR);
+      cursorY = 36;
+    }
 
     const hasPresentation = Boolean(place.history && place.history.trim());
     const hasAnecdotes = Boolean(place.anecdotes && place.anecdotes.length > 0);
@@ -1158,6 +1224,10 @@ export async function exportAlbumAsPdf(
       doc.text("Aucun souvenir détaillé pour ce lieu.", margin, cursorY);
       doc.setTextColor(...TEXT_COLOR);
     }
+
+    if (chapterDayLabel) {
+      chapterFooterRanges.push({ startPage: chapterStartPage, endPage: doc.getNumberOfPages(), label: chapterDayLabel });
+    }
   }
 
   // --- Résultats de jeu ---------------------------------------------------
@@ -1225,10 +1295,13 @@ export async function exportAlbumAsPdf(
     }
   }
 
-  // --- Pied de page (numérotation) -----------------------------------------
+  // --- Pied de page (numérotation + rappel du jour de visite) -------------
   // Passe finale sur toutes les pages déjà générées, sauf la couverture (page
   // 1, non numérotée). Pattern standard jsPDF (`setPage` en fin de
-  // génération) pour donner au PDF le fini d'un vrai livre imprimé.
+  // génération) pour donner au PDF le fini d'un vrai livre imprimé. Les
+  // pages d'un chapitre-lieu rappellent aussi leur jour de visite (cf.
+  // `chapterFooterRanges`, retour utilisateur : "on perd rapidement le jour
+  // de la visite").
   const totalPages = doc.getNumberOfPages();
   for (let pageNumber = 2; pageNumber <= totalPages; pageNumber += 1) {
     doc.setPage(pageNumber);
@@ -1236,6 +1309,15 @@ export async function exportAlbumAsPdf(
     doc.setFontSize(9);
     doc.setTextColor(...MUTED_TEXT_COLOR);
     doc.text(String(pageNumber - 1), pageWidth / 2, pageHeight - 8, { align: "center" });
+
+    const dayFooter = chapterFooterRanges.find(
+      (range) => pageNumber >= range.startPage && pageNumber <= range.endPage
+    );
+    if (dayFooter) {
+      // Même casse que le rappel sous le bandeau de titre (majuscules), pour
+      // rester cohérent entre les deux rappels du jour sur une même page.
+      doc.text(dayFooter.label.toUpperCase(), pageWidth - margin, pageHeight - 8, { align: "right" });
+    }
   }
   doc.setPage(totalPages);
   doc.setTextColor(...TEXT_COLOR);

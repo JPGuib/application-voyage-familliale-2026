@@ -134,10 +134,33 @@ export function buildEligiblePlaces(
 ): Record<string, AlbumSourcePlaceEntry> {
   const eligible: Record<string, AlbumSourcePlaceEntry> = {};
 
-  // Combiner places par défaut + places ajoutées par le propriétaire
-  const allPossiblePlaces = [...allPlaces, ...customPlaces];
+  // Combiner places par défaut + places ajoutées par le propriétaire, puis
+  // trier par jour effectif (bug corrigé : sans ce tri, les places ajoutées
+  // par le propriétaire — ex. "Hierapolis" — arrivaient systématiquement en
+  // fin de liste, après tout le catalogue par défaut, quel que soit leur
+  // jour réel de visite, puisque `customPlaces` est concaténé après
+  // `allPlaces`). Ce tri conditionne l'ordre des chapitres dans l'album et
+  // du PDF (cf. filterAlbumContent dans albumUtils.ts, qui préserve l'ordre
+  // d'insertion de ce Record), qui doit suivre l'ordre chronologique du
+  // voyage plutôt que l'ordre du catalogue de contenu.
+  const allPossiblePlaces = [...allPlaces, ...customPlaces]
+    .map((place, index) => ({
+      place,
+      index,
+      effectiveDays: getEffectivePlaceDays(place, placeDayOverrideMap ?? {}),
+    }))
+    .sort((left, right) => {
+      const leftDay = left.effectiveDays.length > 0 ? Math.min(...left.effectiveDays) : Number.MAX_SAFE_INTEGER;
+      const rightDay = right.effectiveDays.length > 0 ? Math.min(...right.effectiveDays) : Number.MAX_SAFE_INTEGER;
+      if (leftDay !== rightDay) {
+        return leftDay - rightDay;
+      }
+      // Départage stable : ordre d'origine (catalogue par défaut, puis
+      // lieux ajoutés dans leur ordre d'ajout) pour les lieux du même jour.
+      return left.index - right.index;
+    });
 
-  for (const place of allPossiblePlaces) {
+  for (const { place, effectiveDays } of allPossiblePlaces) {
     if (isLocationEligible(place.id, placeVisibilityMap, placeSeenMap)) {
       // Guide de visite détaillé (story 30.6) : présent seulement si un
       // .docx correspondant a été converti (cf. VISITES_GUIDEES, indexé par
@@ -154,7 +177,7 @@ export function buildEligiblePlaces(
         // Jour(s) effectif(s) (story 30.6) : après override propriétaire
         // éventuel, mêmes règles que le PlanningScreen de l'appli (cf.
         // getEffectivePlaceDays dans src/app/placeDays.ts).
-        jour: getEffectivePlaceDays(place, placeDayOverrideMap ?? {}),
+        jour: effectiveDays,
         ...(place.image ? { image: place.image } : {}),
         ...(place.photos && place.photos.length > 0 ? { photos: place.photos } : {}),
         ...(place.historyLabel ? { historyLabel: place.historyLabel } : {}),

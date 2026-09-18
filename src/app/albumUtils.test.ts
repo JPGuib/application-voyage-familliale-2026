@@ -10,6 +10,7 @@ import {
   ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE,
   ALBUM_MAX_PHOTOS_PER_PLACE,
   ALBUM_MIN_PHOTOS_PER_PLACE,
+  ALBUM_NO_COVER_PHOTO_ID,
   PHOTO_QUALITY_TIER_DEFAULT,
   PHOTO_QUALITY_TIER_REDUCED,
   PHOTO_QUALITY_TIER_MINIMAL,
@@ -21,6 +22,11 @@ import {
   isPhotoQualityDegraded,
   selectBudgetedCarnetPhotos,
   fitWithinBox,
+  buildEditorialCoverPhotoId,
+  resolveCoverPhotoSource,
+  resolveEffectiveCoverPhoto,
+  listCoverPhotoOptions,
+  type FilteredAlbumPlace,
 } from "./albumUtils";
 import type { AlbumDraft, AlbumSource } from "../types/cloud";
 
@@ -556,6 +562,128 @@ describe("Album Utilities", () => {
       expect(result.photoQualityTier).toEqual(PHOTO_QUALITY_TIER_MINIMAL);
       // Chaque lieu reste inclus : aucun lieu n'est retiré pour respecter le budget.
       expect(Object.keys(result.places)).toHaveLength(40);
+    });
+  });
+
+  describe("Choix de la photo de couverture par le voyageur (story 30.7)", () => {
+    const places: Record<string, FilteredAlbumPlace> = {
+      "place-1": {
+        name: "Istanbul",
+        shortDesc: "Ville historique",
+        jour: [1],
+        photos: ["/images/places/istanbul-1.webp", "/images/places/istanbul-2.webp"],
+      },
+      "place-2": {
+        name: "Cappadoce",
+        shortDesc: "Rochers",
+        jour: [2],
+      },
+    };
+    const entries: Record<string, Record<string, unknown>> = {
+      "place-2": {
+        "entry-1": {
+          entryId: "entry-1",
+          placeId: "place-2",
+          photos: { "photo-carnet-1": "data:image/jpeg;base64,carnet" },
+        },
+      },
+    };
+
+    describe("resolveCoverPhotoSource", () => {
+      it("resolves an editorial cover photo id to its source", () => {
+        const id = buildEditorialCoverPhotoId("place-1", 1);
+        expect(resolveCoverPhotoSource(id, places, entries)).toEqual({
+          src: "/images/places/istanbul-2.webp",
+          kind: "editorial",
+        });
+      });
+
+      it("resolves a carnet photo id to its source", () => {
+        expect(resolveCoverPhotoSource("photo-carnet-1", places, entries)).toEqual({
+          src: "data:image/jpeg;base64,carnet",
+          kind: "carnet",
+        });
+      });
+
+      it("returns null for the 'no cover' sentinel", () => {
+        expect(resolveCoverPhotoSource(ALBUM_NO_COVER_PHOTO_ID, places, entries)).toBeNull();
+      });
+
+      it("returns null for an empty id", () => {
+        expect(resolveCoverPhotoSource("", places, entries)).toBeNull();
+      });
+
+      it("returns null when the editorial photo index is out of bounds (place edited/removed)", () => {
+        const id = buildEditorialCoverPhotoId("place-1", 99);
+        expect(resolveCoverPhotoSource(id, places, entries)).toBeNull();
+      });
+
+      it("returns null when the editorial place is no longer included", () => {
+        const id = buildEditorialCoverPhotoId("place-removed", 0);
+        expect(resolveCoverPhotoSource(id, places, entries)).toBeNull();
+      });
+
+      it("returns null for an unknown carnet photo id", () => {
+        expect(resolveCoverPhotoSource("unknown-photo", places, entries)).toBeNull();
+      });
+    });
+
+    describe("resolveEffectiveCoverPhoto", () => {
+      it("prefers the explicit selection when present and still valid", () => {
+        const id = buildEditorialCoverPhotoId("place-1", 0);
+        expect(resolveEffectiveCoverPhoto(places, entries, id)).toEqual({
+          src: "/images/places/istanbul-1.webp",
+          kind: "editorial",
+        });
+      });
+
+      it("falls back to the first editorial photo, in chronological place order, when nothing is chosen", () => {
+        expect(resolveEffectiveCoverPhoto(places, entries, "")).toEqual({
+          src: "/images/places/istanbul-1.webp",
+          kind: "editorial",
+        });
+      });
+
+      it("falls back to a carnet photo when no editorial photo exists at all", () => {
+        const placesWithoutEditorial: Record<string, FilteredAlbumPlace> = {
+          "place-2": places["place-2"]!,
+        };
+        expect(resolveEffectiveCoverPhoto(placesWithoutEditorial, entries, "")).toEqual({
+          src: "data:image/jpeg;base64,carnet",
+          kind: "carnet",
+        });
+      });
+
+      it("returns null (no cover at all) when the traveler explicitly chose no cover, even if photos are available", () => {
+        expect(resolveEffectiveCoverPhoto(places, entries, ALBUM_NO_COVER_PHOTO_ID)).toBeNull();
+      });
+
+      it("falls back to automatic behavior when the explicit selection is stale (place no longer included)", () => {
+        const id = buildEditorialCoverPhotoId("place-removed", 0);
+        expect(resolveEffectiveCoverPhoto(places, entries, id)).toEqual({
+          src: "/images/places/istanbul-1.webp",
+          kind: "editorial",
+        });
+      });
+
+      it("returns null when there is no photo available anywhere", () => {
+        expect(resolveEffectiveCoverPhoto({}, {}, "")).toBeNull();
+      });
+    });
+
+    describe("listCoverPhotoOptions", () => {
+      it("lists editorial photos then carnet photos, per place, in place order", () => {
+        const options = listCoverPhotoOptions(places, entries);
+        expect(options).toEqual([
+          { id: "editorial:place-1:0", src: "/images/places/istanbul-1.webp", placeName: "Istanbul", kind: "editorial" },
+          { id: "editorial:place-1:1", src: "/images/places/istanbul-2.webp", placeName: "Istanbul", kind: "editorial" },
+          { id: "photo-carnet-1", src: "data:image/jpeg;base64,carnet", placeName: "Cappadoce", kind: "carnet" },
+        ]);
+      });
+
+      it("returns an empty list when there are no places", () => {
+        expect(listCoverPhotoOptions({}, {})).toEqual([]);
+      });
     });
   });
 });

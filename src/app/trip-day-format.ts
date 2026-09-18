@@ -58,3 +58,25 @@ export function formatTripDayLabel(
 
   return formatter.format(date);
 }
+
+/**
+ * Étiquette du jour "principal" (le plus tôt) d'un lieu pouvant couvrir
+ * plusieurs jours (`Place.jour`/`AlbumSourcePlaceEntry.jour`), pour l'album
+ * souvenir (chapitres triés chronologiquement, cf. buildEligiblePlaces dans
+ * album-source.ts) : rappelle le jour de visite à côté du titre du chapitre
+ * et en pied de page du PDF (retour utilisateur : "on perd rapidement le
+ * jour de la visite").
+ *
+ * Cas limite : aucun jour connu pour ce lieu -> pas d'étiquette (`null`),
+ * plutôt qu'un jour inventé.
+ */
+export function formatPrimaryTripDayLabel(
+  jour: number[],
+  tripStartDate: string | null | undefined,
+  options: TripDayLabelOptions = {}
+): string | null {
+  if (!jour || jour.length === 0) {
+    return null;
+  }
+  return formatTripDayLabel(Math.min(...jour), tripStartDate, options);
+}

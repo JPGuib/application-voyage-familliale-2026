@@ -290,6 +290,61 @@ describe("Album Source - Eligibility Filter", () => {
       ]);
       expect(result["place-1"]!.guideSections).toBeUndefined();
     });
+
+    it("orders eligible places chronologically by day, not by catalogue/custom insertion order (bug fix)", () => {
+      // Bug corrigé : un lieu ajouté par le propriétaire (ex. "Hierapolis")
+      // arrivait systématiquement en fin d'album, après tout le catalogue
+      // par défaut, parce que `customPlaces` était concaténé après
+      // `allPlaces` sans tenir compte du jour réel de visite.
+      const defaultPlacesMultiDay: Place[] = [
+        { id: "place-day-3", name: "Lieu jour 3", shortDesc: "Desc", tag: "tag", jour: [3] },
+        { id: "place-day-1", name: "Lieu jour 1", shortDesc: "Desc", tag: "tag", jour: [1] },
+      ];
+      const customPlaceEarlyDay: Place[] = [
+        { id: "place-custom-day-2", name: "Hierapolis", shortDesc: "Desc", tag: "custom", jour: [2] },
+      ];
+
+      const result = buildEligiblePlaces(
+        defaultPlacesMultiDay,
+        customPlaceEarlyDay,
+        { "place-day-3": "visible", "place-day-1": "visible", "place-custom-day-2": "visible" },
+        { "place-day-3": "seen", "place-day-1": "seen", "place-custom-day-2": "seen" }
+      );
+
+      expect(Object.keys(result)).toEqual(["place-day-1", "place-custom-day-2", "place-day-3"]);
+    });
+
+    it("keeps catalogue order as a stable tie-break for places sharing the same day", () => {
+      const samedayPlaces: Place[] = [
+        { id: "place-b", name: "B", shortDesc: "Desc", tag: "tag", jour: [1] },
+        { id: "place-a", name: "A", shortDesc: "Desc", tag: "tag", jour: [1] },
+      ];
+
+      const result = buildEligiblePlaces(
+        samedayPlaces,
+        [],
+        { "place-b": "visible", "place-a": "visible" },
+        { "place-b": "seen", "place-a": "seen" }
+      );
+
+      expect(Object.keys(result)).toEqual(["place-b", "place-a"]);
+    });
+
+    it("places a place without any day at the end of the order", () => {
+      const places: Place[] = [
+        { id: "place-no-day", name: "Sans jour", shortDesc: "Desc", tag: "tag", jour: [] },
+        { id: "place-day-1", name: "Jour 1", shortDesc: "Desc", tag: "tag", jour: [1] },
+      ];
+
+      const result = buildEligiblePlaces(
+        places,
+        [],
+        { "place-no-day": "visible", "place-day-1": "visible" },
+        { "place-no-day": "seen", "place-day-1": "seen" }
+      );
+
+      expect(Object.keys(result)).toEqual(["place-day-1", "place-no-day"]);
+    });
   });
 
   describe("filterPlaceCommentsByEligibility (avis de la famille, story 30.6)", () => {
