@@ -77,6 +77,7 @@ describe("useAlbumDraft", () => {
       subtitle: "Subtitle",
       coverPhotoId: "photo-123",
       includedLocationIds: ["place-1", "place-2"],
+      includedContentIds: ["histoire:histoire-generale"],
       includeGameSummary: true,
       theme: "dark",
       createdAt: 1000,
@@ -91,10 +92,31 @@ describe("useAlbumDraft", () => {
     expect(result.current.draft.coverPhotoId).toBe("photo-123");
     expect(result.current.draft.includedLocationIds.has("place-1")).toBe(true);
     expect(result.current.draft.includedLocationIds.has("place-2")).toBe(true);
+    expect(result.current.draft.includedContentIds.has("histoire:histoire-generale")).toBe(true);
     expect(result.current.draft.includeGameSummary).toBe(true);
     expect(result.current.draft.theme).toBe("dark");
     expect(result.current.draft.createdAt).toBe(1000);
     expect(result.current.draft.updatedAt).toBe(2000);
+  });
+
+  it("falls back to an empty draft when includedContentIds is missing (draft saved before story 30.8)", () => {
+    const legacyDraftData = {
+      profileId: "profile-1",
+      title: "Saved Album",
+      subtitle: "",
+      coverPhotoId: "",
+      includedLocationIds: ["place-1"],
+      includeGameSummary: false,
+      theme: "default",
+      createdAt: 1000,
+      updatedAt: 1000,
+    };
+    localStorage.setItem("album-draft-profile-1", JSON.stringify(legacyDraftData));
+
+    const { result } = renderHook(() => useAlbumDraft("profile-1", [], ["histoire:histoire-generale"]));
+
+    expect(result.current.draft.title).toBe("");
+    expect(result.current.draft.includedContentIds.has("histoire:histoire-generale")).toBe(true);
   });
 
   it("isolates drafts by profileId (AC7)", async () => {
@@ -212,6 +234,30 @@ describe("useAlbumDraft", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     stored = JSON.parse(localStorage.getItem("album-draft-profile-1")!);
     expect(stored.includedLocationIds).not.toContain("place-1");
+  });
+
+  it("toggles content item inclusion and persists (story 30.8)", async () => {
+    const { result } = renderHook(() => useAlbumDraft("profile-1"));
+
+    act(() => {
+      result.current.toggleContentItem("histoire:histoire-generale");
+    });
+
+    expect(result.current.draft.includedContentIds.has("histoire:histoire-generale")).toBe(true);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    let stored = JSON.parse(localStorage.getItem("album-draft-profile-1")!);
+    expect(stored.includedContentIds).toContain("histoire:histoire-generale");
+
+    act(() => {
+      result.current.toggleContentItem("histoire:histoire-generale");
+    });
+
+    expect(result.current.draft.includedContentIds.has("histoire:histoire-generale")).toBe(false);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    stored = JSON.parse(localStorage.getItem("album-draft-profile-1")!);
+    expect(stored.includedContentIds).not.toContain("histoire:histoire-generale");
   });
 
   it("handles multiple location toggles", async () => {

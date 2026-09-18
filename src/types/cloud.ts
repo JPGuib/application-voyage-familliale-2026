@@ -556,6 +556,41 @@ export type AlbumSourceProfileEntry = {
   householdRole?: ProfileHouseholdRole;
 };
 
+// Rubriques de contenu (Histoire / Géographie et économie / Culture et
+// tradition, story 30.8) éligibles à l'album, à la carte comme les lieux.
+// Contrairement aux lieux, pas de notion de "vu"/visibilité : tous les
+// topics des 3 rubriques sont toujours admissibles, seule la sélection du
+// voyageur (AlbumDraft.includedContentIds) filtre ce qui est effectivement
+// inclus. Clé composite `${section}:${itemId}` (cf. buildContentItemKey
+// dans albumUtils.ts) car un itemId n'est unique qu'au sein de sa rubrique
+// (même contrainte que ContentOverrideMap/CloudCarnetContentEntry).
+export type AlbumSourceContentTopicEntry = {
+  itemId: string;
+  section: ContentSource;
+  name: string;
+  shortDesc: string;
+  image?: string;
+  photos?: string[];
+  historyLabel?: string;
+  history?: string;
+  anecdotesLabel?: string;
+  anecdotes?: string[];
+};
+
+// Souvenir du carnet d'une rubrique de contenu (même principe que
+// AlbumSourceVisitLogEntry pour un lieu), sans photos : les entrées de
+// carnet de contenu n'en ont jamais (cf. CloudCarnetContentEntry).
+export type AlbumSourceContentEntry = {
+  entryId: string;
+  section: ContentSource;
+  itemId: string;
+  authorProfileId: string;
+  authorSurnameSnapshot: string;
+  text: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
 export type AlbumSource = {
   // Métadonnées du voyage
   tripStartDate: string | null;
@@ -575,6 +610,14 @@ export type AlbumSource = {
   // Avis de la famille (story 30.6) pour ces seuls lieux, regroupés par lieu
   // puis par commentId.
   placeComments: Record<string, Record<string, AlbumSourceCommentEntry>>;
+
+  // Rubriques de contenu admissibles (Histoire / Géographie et économie /
+  // Culture et tradition, story 30.8), clé composite (cf. ci-dessus).
+  contentTopics: Record<string, AlbumSourceContentTopicEntry>;
+
+  // Souvenirs du carnet de ces rubriques, regroupés par clé composite puis
+  // par entryId (même schéma que placeVisitLogs).
+  contentVisitLogs: Record<string, Record<string, AlbumSourceContentEntry>>;
 
   // Profils nécessaires à l'affichage des auteurs (ceux ayant au moins une entrée)
   requiredProfiles: Record<string, AlbumSourceProfileEntry>;
@@ -607,7 +650,12 @@ export type AlbumDraft = {
   
   // Lieux à inclure (IDs des places marquées "seen" que le voyageur a sélectionnées)
   includedLocationIds: Set<string>;
-  
+
+  // Topics de contenu à inclure (Histoire / Géographie et économie / Culture
+  // et tradition, story 30.8), à la carte comme les lieux. Clés composites
+  // `${section}:${itemId}` (cf. AlbumSourceContentTopicEntry ci-dessus).
+  includedContentIds: Set<string>;
+
   // Options d'inclusion
   includeGameSummary: boolean;
   

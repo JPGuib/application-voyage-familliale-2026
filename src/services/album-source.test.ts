@@ -34,11 +34,13 @@ vi.mock("../content/generated/jours-destinations", () => ({
 
 import {
   assembleAlbumSource,
+  buildEligibleContentTopics,
   buildEligiblePlaces,
   canAccessAlbumExport,
   filterCarnetVisiteByEligibility,
   filterPlaceCommentsByEligibility,
   isLocationEligible,
+  loadFamilyContentVisitLogs,
   loadFamilyPlaceVisitLogs,
   validateAlbumSourceContent,
 } from "./album-source";
@@ -344,6 +346,73 @@ describe("Album Source - Eligibility Filter", () => {
       );
 
       expect(Object.keys(result)).toEqual(["place-day-1", "place-no-day"]);
+    });
+  });
+
+  describe("buildEligibleContentTopics (Histoire / Géographie et économie / Culture et tradition, story 30.8)", () => {
+    it("builds a composite-key record grouped by section, in section then catalogue order", () => {
+      const result = buildEligibleContentTopics({
+        histoire: [
+          { id: "histoire-1", name: "Histoire 1", shortDesc: "Desc" },
+          { id: "histoire-2", name: "Histoire 2", shortDesc: "Desc" },
+        ],
+        "geographie-economie": [{ id: "geo-1", name: "Géo 1", shortDesc: "Desc" }],
+        "culture-tradition": [],
+      });
+
+      expect(Object.keys(result)).toEqual(["histoire:histoire-1", "histoire:histoire-2", "geographie-economie:geo-1"]);
+    });
+
+    it("copies the editorial content onto the eligible entry, omitting undefined fields", () => {
+      const result = buildEligibleContentTopics({
+        histoire: [
+          {
+            id: "histoire-1",
+            name: "Empire ottoman",
+            shortDesc: "Une longue histoire",
+            image: "/images/Histoire/ottoman.webp",
+            photos: ["/images/Histoire/ottoman.webp", "/images/Histoire/istanbul.webp"],
+            historyLabel: "Présentation",
+            history: "Un long texte historique.",
+            anecdotesLabel: "Le saviez-vous ?",
+            anecdotes: ["Une anecdote."],
+          },
+        ],
+        "geographie-economie": [],
+        "culture-tradition": [],
+      });
+
+      expect(result["histoire:histoire-1"]).toEqual({
+        itemId: "histoire-1",
+        section: "histoire",
+        name: "Empire ottoman",
+        shortDesc: "Une longue histoire",
+        image: "/images/Histoire/ottoman.webp",
+        photos: ["/images/Histoire/ottoman.webp", "/images/Histoire/istanbul.webp"],
+        historyLabel: "Présentation",
+        history: "Un long texte historique.",
+        anecdotesLabel: "Le saviez-vous ?",
+        anecdotes: ["Une anecdote."],
+      });
+    });
+
+    it("omits editorial fields entirely when the source topic has none (no undefined keys leaking in)", () => {
+      const result = buildEligibleContentTopics({
+        histoire: [{ id: "histoire-1", name: "Sujet", shortDesc: "Desc" }],
+        "geographie-economie": [],
+        "culture-tradition": [],
+      });
+
+      expect(Object.keys(result["histoire:histoire-1"]!).sort()).toEqual(["itemId", "name", "section", "shortDesc"]);
+    });
+
+    it("returns an empty object for empty sections", () => {
+      const result = buildEligibleContentTopics({
+        histoire: [],
+        "geographie-economie": [],
+        "culture-tradition": [],
+      });
+      expect(result).toEqual({});
     });
   });
 
@@ -718,6 +787,75 @@ describe("Album Source - Assembly", () => {
       expect(result.requiredProfiles).toEqual({});
     });
 
+    it("includes content topics and their carnet entries when provided (story 30.8)", () => {
+      const snapshot = mockSnapshot();
+
+      const result = assembleAlbumSource(
+        snapshot,
+        {},
+        [],
+        [],
+        {
+          histoire: [{ id: "histoire-1", name: "Empire ottoman", shortDesc: "Desc" }],
+          "geographie-economie": [],
+          "culture-tradition": [],
+        },
+        {
+          "histoire:histoire-1": {
+            "entry-1": {
+              entryId: "entry-1",
+              section: "histoire",
+              itemId: "histoire-1",
+              authorProfileId: "profile-1",
+              authorSurnameSnapshot: "Alice",
+              text: "Passionnant",
+              createdAt: 1000,
+              updatedAt: 1000,
+            },
+          },
+        }
+      );
+
+      expect(result.contentTopics).toHaveProperty("histoire:histoire-1");
+      expect(result.contentVisitLogs["histoire:histoire-1"]).toHaveProperty("entry-1");
+    });
+
+    it("drops content carnet entries whose composite key does not match any known topic", () => {
+      const snapshot = mockSnapshot();
+
+      const result = assembleAlbumSource(
+        snapshot,
+        {},
+        [],
+        [],
+        { histoire: [], "geographie-economie": [], "culture-tradition": [] },
+        {
+          "histoire:removed-topic": {
+            "entry-1": {
+              entryId: "entry-1",
+              section: "histoire",
+              itemId: "removed-topic",
+              authorProfileId: "profile-1",
+              authorSurnameSnapshot: "Alice",
+              text: "Orphelin",
+              createdAt: 1000,
+              updatedAt: 1000,
+            },
+          },
+        }
+      );
+
+      expect(result.contentVisitLogs).toEqual({});
+    });
+
+    it("defaults content topics and visit logs to empty when not provided (backward compatibility)", () => {
+      const snapshot = mockSnapshot();
+      const result = assembleAlbumSource(snapshot, {}, [], []);
+
+      expect(result.contentTopics).toEqual({});
+      expect(result.contentVisitLogs).toEqual({});
+    });
+
     it("computes lastTripDay from the last JOURS_DESTINATIONS entry (story 30.6)", () => {
       const snapshot = mockSnapshot();
       const result = assembleAlbumSource(snapshot, {}, [], []);
@@ -792,6 +930,8 @@ describe("Album Source - Assembly", () => {
         eligiblePlaces: { "place-1": { placeId: "place-1", name: "Place 1", shortDesc: "Desc", jour: [] } },
         placeVisitLogs: {},
         placeComments: {},
+        contentTopics: {},
+        contentVisitLogs: {},
         requiredProfiles: {},
         gameResults: {},
       };
@@ -1093,6 +1233,121 @@ describe("Album Source - Assembly", () => {
       mockGet.mockRejectedValue(new Error("permission_denied"));
 
       await expect(loadFamilyPlaceVisitLogs(db, "famille-test")).rejects.toThrow(
+        "permission_denied"
+      );
+    });
+  });
+
+  describe("loadFamilyContentVisitLogs (Histoire / Géographie et économie / Culture et tradition, story 30.8)", () => {
+    const db = {} as import("firebase/database").Database;
+
+    const snapshotOf = (value: unknown) => ({
+      exists: () => value !== null && value !== undefined,
+      val: () => value,
+    });
+
+    const validContentEntry = (overrides: Record<string, unknown> = {}) => ({
+      entryId: "entry-1",
+      source: "histoire",
+      itemId: "histoire-1",
+      authorProfileId: "profile-1",
+      authorSurnameSnapshot: "Alice",
+      text: "Passionnant !",
+      createdAt: 1000,
+      updatedAt: 1000,
+      ...overrides,
+    });
+
+    beforeEach(() => {
+      mockGet.mockReset();
+      mockRef.mockClear();
+    });
+
+    it("reads contentVisitLogs/$familyId exactly once, without any subscription", async () => {
+      mockGet.mockResolvedValue(snapshotOf(null));
+
+      await loadFamilyContentVisitLogs(db, "famille-test");
+
+      expect(mockRef).toHaveBeenCalledWith(db, "contentVisitLogs/famille-test");
+      expect(mockGet).toHaveBeenCalledTimes(1);
+    });
+
+    it("returns an empty object when the snapshot does not exist", async () => {
+      mockGet.mockResolvedValue(snapshotOf(null));
+
+      await expect(loadFamilyContentVisitLogs(db, "famille-test")).resolves.toEqual({});
+    });
+
+    it("parses entries from several topics/sections, keyed by composite key then entryId", async () => {
+      mockGet.mockResolvedValue(
+        snapshotOf({
+          histoire: {
+            "histoire-1": {
+              "entry-1": validContentEntry(),
+              "entry-2": validContentEntry({ entryId: "entry-2", text: "Deuxième avis" }),
+            },
+          },
+          "geographie-economie": {
+            "geo-1": {
+              "entry-3": validContentEntry({
+                entryId: "entry-3",
+                source: "geographie-economie",
+                itemId: "geo-1",
+              }),
+            },
+          },
+        })
+      );
+
+      const result = await loadFamilyContentVisitLogs(db, "famille-test");
+
+      expect(Object.keys(result)).toEqual(["histoire:histoire-1", "geographie-economie:geo-1"]);
+      expect(Object.keys(result["histoire:histoire-1"])).toEqual(["entry-1", "entry-2"]);
+      expect(result["geographie-economie:geo-1"]["entry-3"]).toMatchObject({
+        section: "geographie-economie",
+        itemId: "geo-1",
+        authorProfileId: "profile-1",
+      });
+    });
+
+    it("drops malformed entries but keeps the valid ones of the same topic", async () => {
+      mockGet.mockResolvedValue(
+        snapshotOf({
+          histoire: {
+            "histoire-1": {
+              "entry-ok": validContentEntry({ entryId: "entry-ok" }),
+              "entry-no-author": validContentEntry({ entryId: "entry-no-author", authorProfileId: "" }),
+              "entry-bad-date": validContentEntry({ entryId: "entry-bad-date", createdAt: 0 }),
+              "entry-not-object": "corrompu",
+            },
+          },
+        })
+      );
+
+      const result = await loadFamilyContentVisitLogs(db, "famille-test");
+
+      expect(Object.keys(result["histoire:histoire-1"])).toEqual(["entry-ok"]);
+    });
+
+    it("omits a topic whose entries are all malformed", async () => {
+      mockGet.mockResolvedValue(
+        snapshotOf({
+          histoire: {
+            "histoire-1": { "entry-1": validContentEntry() },
+            "histoire-2": { "entry-2": validContentEntry({ itemId: "histoire-2", authorProfileId: "" }) },
+          },
+        })
+      );
+
+      const result = await loadFamilyContentVisitLogs(db, "famille-test");
+
+      expect(Object.keys(result)).toEqual(["histoire:histoire-1"]);
+    });
+
+    it("propagates a read failure instead of returning partial data", async () => {
+      mockGet.mockRejectedValue(new Error("permission_denied"));
+
+      await expect(loadFamilyContentVisitLogs(db, "famille-test")).rejects.toThrow(
         "permission_denied"
       );
     });

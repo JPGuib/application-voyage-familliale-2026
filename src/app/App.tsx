@@ -222,7 +222,7 @@ import { buildGroupInfoItem } from "./groupInfo";
 import { GroupInfoScreen } from "./GroupInfoScreen";
 import { AlbumScreen } from "./AlbumScreen";
 import { canAccessAlbumComposition, getAlbumAccessDeniedMessage } from "./album-access";
-import { assembleAlbumSource, loadFamilyPlaceVisitLogs } from "../services/album-source";
+import { assembleAlbumSource, loadFamilyContentVisitLogs, loadFamilyPlaceVisitLogs } from "../services/album-source";
 import type { AlbumSource, ChatPollType, CloudChatMessage } from "../types/cloud";
 
 const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
@@ -12743,6 +12743,8 @@ export default function App() {
               eligiblePlaces: {},
               placeVisitLogs: {},
               placeComments: {},
+              contentTopics: {},
+              contentVisitLogs: {},
               requiredProfiles: {},
               gameResults: {},
             });
@@ -12750,16 +12752,29 @@ export default function App() {
           return;
         }
 
-        const placeVisitLogs = database
-          ? await loadFamilyPlaceVisitLogs(database, familyId)
-          : {};
+        const [placeVisitLogs, contentVisitLogs] = database
+          ? await Promise.all([
+              loadFamilyPlaceVisitLogs(database, familyId),
+              loadFamilyContentVisitLogs(database, familyId),
+            ])
+          : [{}, {}];
         if (!cancelled) {
           setAlbumSource(
             assembleAlbumSource(
               cloudSnapshot,
               placeVisitLogs,
               PLACES,
-              ownerGlobalPlaceAdditions
+              ownerGlobalPlaceAdditions,
+              // Rubriques de contenu (story 30.8) : catalogue brut (pas la
+              // version avec overrides propriétaire), même simplification
+              // que pour PLACES ci-dessus (déjà sans override, cf.
+              // buildEligiblePlaces).
+              {
+                histoire: HISTOIRE_TOPICS,
+                "geographie-economie": GEOGRAPHIE_ECONOMIE_TOPICS,
+                "culture-tradition": CULTURE_TRADITION_TOPICS,
+              },
+              contentVisitLogs
             )
           );
         }

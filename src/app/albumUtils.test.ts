@@ -96,6 +96,34 @@ describe("Album Utilities", () => {
       },
     },
     placeComments: {},
+    contentTopics: {
+      "histoire:histoire-1": {
+        itemId: "histoire-1",
+        section: "histoire",
+        name: "Empire ottoman",
+        shortDesc: "Une longue histoire",
+      },
+      "culture-tradition:tapis": {
+        itemId: "tapis",
+        section: "culture-tradition",
+        name: "Le tapis turc",
+        shortDesc: "Un artisanat séculaire",
+      },
+    },
+    contentVisitLogs: {
+      "histoire:histoire-1": {
+        "entry-3": {
+          entryId: "entry-3",
+          section: "histoire",
+          itemId: "histoire-1",
+          authorProfileId: "profile-1",
+          authorSurnameSnapshot: "John",
+          text: "Passionnant !",
+          createdAt: 3000,
+          updatedAt: 3000,
+        },
+      },
+    },
     requiredProfiles: {
       "profile-1": { profileId: "profile-1", surname: "John" },
     },
@@ -122,6 +150,7 @@ describe("Album Utilities", () => {
     subtitle: "Turkey Adventure",
     coverPhotoId: "photo-1",
     includedLocationIds: new Set(["place-1"]),
+    includedContentIds: new Set(["histoire:histoire-1"]),
     includeGameSummary: false,
     theme: "default",
     createdAt: Date.now(),
@@ -141,6 +170,27 @@ describe("Album Utilities", () => {
 
       expect(Object.keys(result.entries)).toContain("place-1");
       expect(Object.keys(result.entries)).not.toContain("place-2");
+    });
+
+    it("filters content topics based on draft selection à la carte (story 30.8)", () => {
+      const result = filterAlbumContent(mockSource, mockDraft);
+
+      expect(Object.keys(result.contentTopics)).toContain("histoire:histoire-1");
+      expect(Object.keys(result.contentTopics)).not.toContain("culture-tradition:tapis");
+    });
+
+    it("filters content carnet entries for selected content topics only (story 30.8)", () => {
+      const result = filterAlbumContent(mockSource, mockDraft);
+
+      expect(Object.keys(result.contentEntries)).toContain("histoire:histoire-1");
+    });
+
+    it("excludes an entire content section when none of its topics are selected (story 30.8)", () => {
+      const draftWithoutContent = { ...mockDraft, includedContentIds: new Set<string>() };
+      const result = filterAlbumContent(mockSource, draftWithoutContent);
+
+      expect(Object.keys(result.contentTopics)).toHaveLength(0);
+      expect(Object.keys(result.contentEntries)).toHaveLength(0);
     });
 
     it("includes game summary when enabled in draft", () => {
@@ -562,6 +612,54 @@ describe("Album Utilities", () => {
       expect(result.photoQualityTier).toEqual(PHOTO_QUALITY_TIER_MINIMAL);
       // Chaque lieu reste inclus : aucun lieu n'est retiré pour respecter le budget.
       expect(Object.keys(result.places)).toHaveLength(40);
+    });
+
+    it("counts included content topics toward the shared photo budget, alongside places (story 30.8)", () => {
+      const manyTopics: AlbumSource["contentTopics"] = {};
+      const includedContentIds = new Set<string>();
+      for (let i = 0; i < 40; i += 1) {
+        const key = `histoire:sujet-${i}`;
+        manyTopics[key] = { itemId: `sujet-${i}`, section: "histoire", name: `Sujet ${i}`, shortDesc: "" };
+        includedContentIds.add(key);
+      }
+
+      const bigSource: AlbumSource = {
+        ...mockSource,
+        eligiblePlaces: {},
+        placeVisitLogs: {},
+        contentTopics: manyTopics,
+      };
+      const bigDraft: AlbumDraft = {
+        ...mockDraft,
+        includedLocationIds: new Set(),
+        includedContentIds,
+      };
+
+      const result = filterAlbumContent(bigSource, bigDraft);
+
+      // 40 topics inclus (0 lieu) doit dégrader le budget/qualité tout comme
+      // 40 lieux inclus l'aurait fait : lieux et topics partagent le même
+      // budget total.
+      expect(result.photoQualityTier).toEqual(PHOTO_QUALITY_TIER_MINIMAL);
+      expect(Object.keys(result.contentTopics)).toHaveLength(40);
+    });
+
+    it("counts a content topic's editorial photos in the image estimate (story 30.8)", () => {
+      const sourceWithTopicPhotos: AlbumSource = {
+        ...mockSource,
+        contentTopics: {
+          ...mockSource.contentTopics,
+          "histoire:histoire-1": {
+            ...mockSource.contentTopics["histoire:histoire-1"]!,
+            photos: ["/images/Histoire/photo-1.webp", "/images/Histoire/photo-2.webp"],
+          },
+        },
+      };
+
+      const result = filterAlbumContent(sourceWithTopicPhotos, mockDraft);
+
+      // 1 photo de carnet (place-1) + 2 photos éditoriales du topic inclus.
+      expect(result.estimatedImageCount).toBe(3);
     });
   });
 

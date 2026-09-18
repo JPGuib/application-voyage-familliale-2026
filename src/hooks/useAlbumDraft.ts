@@ -5,8 +5,9 @@ import type { AlbumDraft } from "../types/cloud";
  * Format de sérialisation pour AlbumDraft en localStorage.
  * Les Sets sont convertis en arrays pour la sérialisation JSON.
  */
-type AlbumDraftSerialized = Omit<AlbumDraft, "includedLocationIds"> & {
+type AlbumDraftSerialized = Omit<AlbumDraft, "includedLocationIds" | "includedContentIds"> & {
   includedLocationIds: string[];
+  includedContentIds: string[];
 };
 
 /**
@@ -20,7 +21,11 @@ function getStorageKey(profileId: string): string {
 /**
  * Initialise un brouillon vide avec les valeurs par défaut.
  */
-function createEmptyDraft(profileId: string, initialLocationIds: string[] = []): AlbumDraft {
+function createEmptyDraft(
+  profileId: string,
+  initialLocationIds: string[] = [],
+  initialContentIds: string[] = []
+): AlbumDraft {
   const now = Date.now();
   return {
     profileId,
@@ -28,6 +33,7 @@ function createEmptyDraft(profileId: string, initialLocationIds: string[] = []):
     subtitle: "",
     coverPhotoId: "",
     includedLocationIds: new Set(initialLocationIds),
+    includedContentIds: new Set(initialContentIds),
     includeGameSummary: false,
     theme: "default",
     createdAt: now,
@@ -45,6 +51,7 @@ function serializeDraft(draft: AlbumDraft): AlbumDraftSerialized {
     subtitle: draft.subtitle,
     coverPhotoId: draft.coverPhotoId,
     includedLocationIds: Array.from(draft.includedLocationIds),
+    includedContentIds: Array.from(draft.includedContentIds),
     includeGameSummary: draft.includeGameSummary,
     theme: draft.theme,
     createdAt: draft.createdAt,
@@ -54,6 +61,12 @@ function serializeDraft(draft: AlbumDraft): AlbumDraftSerialized {
 
 /**
  * Désérialise un AlbumDraft depuis localStorage (convertit array en Set).
+ *
+ * Cas limite (story 30.8) : un brouillon enregistré avant l'ajout des
+ * rubriques de contenu à la carte n'a pas de champ `includedContentIds` ;
+ * comme pour tout autre champ obligatoire manquant, on retombe sur `null`
+ * (donc sur un brouillon vide flambant neuf, cf. `useAlbumDraft` ci-dessous)
+ * plutôt que de deviner une valeur par défaut ambiguë.
  */
 function deserializeDraft(data: unknown): AlbumDraft | null {
   if (typeof data !== "object" || data === null) {
@@ -69,6 +82,7 @@ function deserializeDraft(data: unknown): AlbumDraft | null {
     typeof obj.subtitle !== "string" ||
     typeof obj.coverPhotoId !== "string" ||
     !Array.isArray(obj.includedLocationIds) ||
+    !Array.isArray(obj.includedContentIds) ||
     typeof obj.includeGameSummary !== "boolean" ||
     typeof obj.theme !== "string" ||
     typeof obj.createdAt !== "number" ||
@@ -77,8 +91,11 @@ function deserializeDraft(data: unknown): AlbumDraft | null {
     return null;
   }
 
-  // Valider que includedLocationIds contient uniquement des strings
-  if (!obj.includedLocationIds.every((id) => typeof id === "string")) {
+  // Valider que includedLocationIds/includedContentIds ne contiennent que des strings
+  if (
+    !obj.includedLocationIds.every((id) => typeof id === "string") ||
+    !obj.includedContentIds.every((id) => typeof id === "string")
+  ) {
     return null;
   }
 
@@ -88,6 +105,7 @@ function deserializeDraft(data: unknown): AlbumDraft | null {
     subtitle: obj.subtitle,
     coverPhotoId: obj.coverPhotoId,
     includedLocationIds: new Set(obj.includedLocationIds),
+    includedContentIds: new Set(obj.includedContentIds),
     includeGameSummary: obj.includeGameSummary,
     theme: obj.theme,
     createdAt: obj.createdAt,
@@ -103,10 +121,19 @@ function deserializeDraft(data: unknown): AlbumDraft | null {
  *            ouvre l'album sur le même appareil (AC7).
  *
  * @param profileId Identifiant du profil propriétaire du brouillon
- * @returns Objet { draft, updateTitle, updateSubtitle, updateCoverPhoto, 
- *                  toggleLocation, updateGameSummary, updateTheme, clearDraft }
+ * @param initialLocationIds Lieux inclus par défaut pour un nouveau brouillon
+ * @param initialContentIds Topics de contenu inclus par défaut pour un nouveau
+ *                           brouillon (Histoire/Géographie et économie/Culture
+ *                           et tradition, clés composites, story 30.8)
+ * @returns Objet { draft, updateTitle, updateSubtitle, updateCoverPhoto,
+ *                  toggleLocation, toggleContentItem, updateGameSummary,
+ *                  updateTheme, clearDraft }
  */
-export function useAlbumDraft(profileId: string, initialLocationIds: string[] = []) {
+export function useAlbumDraft(
+  profileId: string,
+  initialLocationIds: string[] = [],
+  initialContentIds: string[] = []
+) {
   const [draft, setDraft] = useState<AlbumDraft>(() => {
     try {
       const storageKey = getStorageKey(profileId);
@@ -121,7 +148,7 @@ export function useAlbumDraft(profileId: string, initialLocationIds: string[] = 
     } catch {
       // Ignore parsing errors, fall through to empty draft
     }
-    return createEmptyDraft(profileId, initialLocationIds);
+    return createEmptyDraft(profileId, initialLocationIds, initialContentIds);
   });
 
   /**
@@ -193,6 +220,27 @@ export function useAlbumDraft(profileId: string, initialLocationIds: string[] = 
   }, []);
 
   /**
+   * Bascule l'inclusion/exclusion d'un topic de contenu (Histoire/Géographie
+   * et économie/Culture et tradition, story 30.8). Même logique que
+   * `toggleLocation` ci-dessus, sur `includedContentIds` (clés composites).
+   */
+  const toggleContentItem = useCallback((contentItemKey: string) => {
+    setDraft((prev) => {
+      const newIncluded = new Set(prev.includedContentIds);
+      if (newIncluded.has(contentItemKey)) {
+        newIncluded.delete(contentItemKey);
+      } else {
+        newIncluded.add(contentItemKey);
+      }
+      return {
+        ...prev,
+        includedContentIds: newIncluded,
+        updatedAt: Date.now(),
+      };
+    });
+  }, []);
+
+  /**
    * Met à jour l'option d'inclusion des résultats de jeu.
    */
   const updateGameSummary = useCallback((includeGameSummary: boolean) => {
@@ -223,8 +271,8 @@ export function useAlbumDraft(profileId: string, initialLocationIds: string[] = 
     } catch {
       // Ignore removal errors
     }
-    setDraft(createEmptyDraft(profileId, initialLocationIds));
-  }, [initialLocationIds, profileId]);
+    setDraft(createEmptyDraft(profileId, initialLocationIds, initialContentIds));
+  }, [initialLocationIds, initialContentIds, profileId]);
 
   return {
     draft,
@@ -232,6 +280,7 @@ export function useAlbumDraft(profileId: string, initialLocationIds: string[] = 
     updateSubtitle,
     updateCoverPhoto,
     toggleLocation,
+    toggleContentItem,
     updateGameSummary,
     updateTheme,
     clearDraft,

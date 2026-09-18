@@ -3,6 +3,7 @@ import type { AlbumSource } from "../types/cloud";
 import { useAlbumDraft } from "../hooks/useAlbumDraft";
 import { canAccessAlbumComposition, getAlbumAccessDeniedMessage } from "./album-access";
 import {
+  ALBUM_CONTENT_SECTIONS,
   ALBUM_NO_COVER_PHOTO_ID,
   filterAlbumContent,
   findFallbackCoverPhoto,
@@ -80,10 +81,15 @@ export function AlbumScreen({
     updateSubtitle,
     updateCoverPhoto,
     toggleLocation,
+    toggleContentItem,
     updateGameSummary,
     updateTheme,
     clearDraft,
-  } = useAlbumDraft(profileId, Object.keys(albumSource.eligiblePlaces));
+  } = useAlbumDraft(
+    profileId,
+    Object.keys(albumSource.eligiblePlaces),
+    Object.keys(albumSource.contentTopics ?? {})
+  );
 
   const [activeTab, setActiveTab] = useState<"composition" | "preview">("composition");
   const [isExporting, setIsExporting] = useState(false);
@@ -111,6 +117,12 @@ export function AlbumScreen({
   // est choisie la première photo, il serait préférable qu'elle soit choisie
   // par l'utilisateur").
   const coverPhotoOptions = listCoverPhotoOptions(filteredContent.places, filteredContent.entries);
+
+  // Topics de contenu admissibles (Histoire / Géographie et économie /
+  // Culture et tradition, story 30.8), groupés par rubrique pour la sélection
+  // à la carte — mêmes topics quel que soit le brouillon (pas de notion de
+  // "vu"/visibilité pour ces rubriques, contrairement aux lieux).
+  const contentTopicEntries = Object.entries(albumSource.contentTopics ?? {});
 
   const handleExportPdf = async () => {
     setExportError(null);
@@ -266,9 +278,14 @@ export function AlbumScreen({
               </div>
             </div>
 
-            {/* Sélection des lieux */}
-            <div className="form-group">
-              <label>Lieux à inclure</label>
+            {/* Contenu à inclure, à la carte (story 30.8) : chaque rubrique
+                (lieux, Histoire, Géographie et économie, Culture et
+                tradition, résultats de jeu) est une section indépendante,
+                qu'on peut inclure entièrement, partiellement, ou pas du
+                tout — sans case "section entière", une section non désirée
+                se traduit simplement par aucun de ses éléments cochés. */}
+            <section className="album-section">
+              <h3 className="album-section-title">Lieux visités</h3>
               <div className="locations-list">
                 {Object.entries(albumSource.eligiblePlaces).length === 0 ? (
                   <p className="empty-state">
@@ -289,11 +306,40 @@ export function AlbumScreen({
                   ))
                 )}
               </div>
-            </div>
+            </section>
+
+            {ALBUM_CONTENT_SECTIONS.map((contentSection) => {
+              const topicsInSection = contentTopicEntries.filter(
+                ([, topic]) => topic.section === contentSection.id
+              );
+              if (topicsInSection.length === 0) {
+                return null;
+              }
+              return (
+                <section className="album-section" key={contentSection.id}>
+                  <h3 className="album-section-title">{contentSection.label}</h3>
+                  <div className="locations-list">
+                    {topicsInSection.map(([key, topic]) => (
+                      <div key={key} className="location-item">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={draft.includedContentIds.has(key)}
+                            onChange={() => toggleContentItem(key)}
+                          />
+                          <span className="location-name">{topic.name}</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
 
             {/* Option des résultats de jeu */}
             {Object.keys(albumSource.gameResults[profileId] || {}).length > 0 && (
-              <div className="form-group">
+              <section className="album-section">
+                <h3 className="album-section-title">Résultats du jeu</h3>
                 <label>
                   <input
                     type="checkbox"
@@ -305,7 +351,7 @@ export function AlbumScreen({
                 <p className="help-text">
                   Synthèse : score personnel, badges et podium familial (réponses détaillées exclues)
                 </p>
-              </div>
+              </section>
             )}
 
             {/* Boutons d'action */}
@@ -368,6 +414,7 @@ interface AlbumPreviewProps {
 function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
   const resolvedCoverPhoto = resolveEffectiveCoverPhoto(content.places, content.entries, draft.coverPhotoId);
   const hasLocations = Object.keys(content.places).length > 0;
+  const hasContentTopics = Object.keys(content.contentTopics).length > 0;
   // Voyage riche en lieux : le budget de photos par lieu est réduit et/ou la
   // qualité des photos est dégradée à l'export (story 30.5, export
   // adaptatif). L'aperçu doit annoncer fidèlement ce qui sera dans le PDF,
@@ -572,6 +619,74 @@ function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
         );
       })}
 
+      {/* Chapitres par rubrique de contenu (Histoire / Géographie et
+          économie / Culture et tradition, story 30.8) : même principe que
+          les chapitres par lieu ci-dessus (socle éditorial toujours affiché,
+          souvenirs de carnet texte seul en plus), sans jour ni avis de la
+          famille ni guide de visite détaillé (notions propres aux lieux). */}
+      {hasContentTopics &&
+        Object.entries(content.contentTopics).map(([key, topic]) => {
+          const topicEntries = content.contentEntries[key] ?? {};
+          const noteTexts = Object.values(topicEntries)
+            .map((entry) => entry.text?.trim())
+            .filter((text): text is string => Boolean(text));
+          const hasPresentation = Boolean(topic.history && topic.history.trim());
+          const hasAnecdotes = Boolean(topic.anecdotes && topic.anecdotes.length > 0);
+          const editorialPhotos = (topic.photos ?? []).slice(0, content.photoBudgetPerPlace.editorial);
+          const hasGallery = editorialPhotos.length > 0;
+          const hasNotes = noteTexts.length > 0;
+          const sectionLabel = ALBUM_CONTENT_SECTIONS.find((s) => s.id === topic.section)?.label ?? "";
+
+          return (
+            <div key={key} className="album-page">
+              <div className="page-content">
+                <h3 className="place-title chapter-band">{escapeAndLimitText(topic.name, 100)}</h3>
+                {sectionLabel && <span className="chapter-day-label">{sectionLabel.toUpperCase()}</span>}
+
+                {hasPresentation && (
+                  <div className="place-presentation">
+                    {topic.historyLabel && <h4>{escapeAndLimitText(topic.historyLabel, 100)}</h4>}
+                    <p>{escapeAndLimitText(topic.history || "", 1000)}</p>
+                  </div>
+                )}
+
+                {hasAnecdotes && (
+                  <div className="place-anecdotes">
+                    <h4>{escapeAndLimitText(topic.anecdotesLabel || "Anecdotes", 100)}</h4>
+                    <ul>
+                      {(topic.anecdotes ?? []).map((anecdote, index) => (
+                        <li key={index}>{escapeAndLimitText(anecdote, 300)}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {hasGallery && (
+                  <div className="photo-gallery">
+                    {editorialPhotos.map((src, index) => (
+                      <img key={`editorial-${index}`} src={src} alt="" />
+                    ))}
+                  </div>
+                )}
+
+                {hasNotes && (
+                  <div className="entries-list">
+                    {noteTexts.map((text, index) => (
+                      <div key={index} className="entry-item">
+                        <p className="entry-text">{escapeAndLimitText(text, 500)}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!hasPresentation && !hasAnecdotes && !hasGallery && !hasNotes && (
+                  <p className="album-empty-message">Aucun souvenir détaillé pour cette rubrique.</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
       {/* Page des résultats de jeu */}
       {content.gameSummary && (
         <div className="album-page">
@@ -603,13 +718,13 @@ function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
         </div>
       )}
 
-      {!hasLocations && !content.gameSummary && (
+      {!hasLocations && !hasContentTopics && !content.gameSummary && (
         <div className="album-page album-page--empty-content">
           <div className="page-content">
             <h3 className="place-title">Souvenirs personnels</h3>
             <p className="album-empty-message">
-              Aucun souvenir n'est encore disponible pour les lieux sélectionnés. La couverture
-              et l'itinéraire restent prêts pour votre album.
+              Aucun souvenir n'est encore disponible pour les lieux et rubriques sélectionnés. La
+              couverture et l'itinéraire restent prêts pour votre album.
             </p>
           </div>
         </div>

@@ -122,6 +122,26 @@
   color: #333;
 }
 
+/* Section de contenu à la carte (story 30.8) : lieux, Histoire, Géographie
+   et économie, Culture et tradition, résultats de jeu. Chaque section est
+   visuellement isolée (bordure + titre) pour que le voyageur comprenne
+   qu'il compose son album rubrique par rubrique, plutôt qu'une simple liste
+   de cases à cocher indifférenciée. */
+.album-section {
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.album-section-title {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
 .form-group input[type="text"],
 .form-group input[type="email"],
 .form-group select {

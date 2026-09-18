@@ -1,6 +1,8 @@
 import type {
   AlbumSource,
   AlbumSourceCommentEntry,
+  AlbumSourceContentEntry,
+  AlbumSourceContentTopicEntry,
   AlbumSourcePlaceEntry,
   AlbumSourceProfileEntry,
   AlbumSourceVisitLogEntry,
@@ -8,6 +10,7 @@ import type {
   CloudPlaceComment,
   CloudProfileState,
   CloudSyncSnapshot,
+  ContentSource,
   PlaceDayOverrideMap,
   PlaceSeenState,
   PlaceVisibilityState,
@@ -15,6 +18,8 @@ import type {
 import type { Place } from "../content/places";
 import { Database, get, ref } from "firebase/database";
 import type { Role } from "../app/owner-policy";
+import { ALBUM_CONTENT_SECTIONS, buildContentItemKey } from "../app/albumUtils";
+import type { AlbumContentSectionId } from "../app/albumUtils";
 import { getEffectivePlaceDays } from "../app/placeDays";
 import { extractGuideSections } from "../app/visiteGuideeText";
 import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
@@ -185,6 +190,60 @@ export function buildEligiblePlaces(
         ...(place.anecdotesLabel ? { anecdotesLabel: place.anecdotesLabel } : {}),
         ...(place.anecdotes && place.anecdotes.length > 0 ? { anecdotes: place.anecdotes } : {}),
         ...(guideSections.length > 0 ? { guideSections } : {}),
+      };
+    }
+  }
+
+  return eligible;
+}
+
+/**
+ * Forme minimale requise d'un topic de contenu (Histoire / Géographie et
+ * économie / Culture et tradition) pour être admissible à l'album — même
+ * champs que `ContentTopic` dans src/app/App.tsx, mais définis localement
+ * pour ne pas importer ce fichier (énorme composant applicatif) depuis un
+ * service.
+ */
+export type ContentTopicLike = {
+  id: string;
+  name: string;
+  shortDesc: string;
+  image?: string;
+  photos?: string[];
+  historyLabel?: string;
+  history?: string;
+  anecdotesLabel?: string;
+  anecdotes?: string[];
+};
+
+/**
+ * Construit la liste des topics de contenu admissibles pour les 3 rubriques
+ * (Histoire, Géographie et économie, Culture et tradition, story 30.8).
+ *
+ * Contrairement à `buildEligiblePlaces`, pas de filtre "vu"/visibilité : ces
+ * rubriques n'ont pas cette notion, tous leurs topics sont toujours
+ * admissibles — seule la sélection à la carte du voyageur
+ * (`AlbumDraft.includedContentIds`, appliquée dans `filterAlbumContent`)
+ * décide de ce qui est effectivement inclus dans l'album final.
+ */
+export function buildEligibleContentTopics(
+  topicsBySection: Record<AlbumContentSectionId, ContentTopicLike[]>
+): Record<string, AlbumSourceContentTopicEntry> {
+  const eligible: Record<string, AlbumSourceContentTopicEntry> = {};
+
+  for (const section of ALBUM_CONTENT_SECTIONS) {
+    for (const topic of topicsBySection[section.id] ?? []) {
+      eligible[buildContentItemKey(section.id, topic.id)] = {
+        itemId: topic.id,
+        section: section.id,
+        name: topic.name,
+        shortDesc: topic.shortDesc,
+        ...(topic.image ? { image: topic.image } : {}),
+        ...(topic.photos && topic.photos.length > 0 ? { photos: topic.photos } : {}),
+        ...(topic.historyLabel ? { historyLabel: topic.historyLabel } : {}),
+        ...(topic.history ? { history: topic.history } : {}),
+        ...(topic.anecdotesLabel ? { anecdotesLabel: topic.anecdotesLabel } : {}),
+        ...(topic.anecdotes && topic.anecdotes.length > 0 ? { anecdotes: topic.anecdotes } : {}),
       };
     }
   }
@@ -366,7 +425,7 @@ function parseCarnetVisiteEntryFromValue(
     !authorSurnameSnapshot ||
     !normalizedEntryId ||
     !normalizedPlaceId ||
-    text.length > 2000 || // CARNET_VISITE_MAX_TEXT_LENGTH
+    text.length > 20000 || // CARNET_VISITE_MAX_TEXT_LENGTH (cloudSyncProvider.ts)
     createdAt <= 0 ||
     updatedAt <= 0
   ) {
@@ -406,6 +465,118 @@ function parseCarnetVisiteEntryFromValue(
 }
 
 /**
+ * Charge tous les carnets de contenu (Histoire, Géographie et économie,
+ * Culture et tradition, story 30.8) pour la famille depuis Firebase RTDB.
+ *
+ * Même stratégie que `loadFamilyPlaceVisitLogs` ci-dessus : une lecture
+ * unique (get) sur contentVisitLogs/$familyId, jamais d'abonnement. Chemin à
+ * un niveau d'imbrication supplémentaire par rapport aux lieux
+ * (source/itemId/entryId plutôt que placeId/entryId), cf.
+ * observeContentVisitLog dans cloudSyncProvider.ts.
+ *
+ * @returns Record indexé par clé composite `${source}:${itemId}`
+ * (cf. buildContentItemKey dans src/app/albumUtils.ts), puis par entryId.
+ */
+export async function loadFamilyContentVisitLogs(
+  database: Database,
+  familyId: string
+): Promise<Record<string, Record<string, AlbumSourceContentEntry>>> {
+  const logsRef = ref(database, `contentVisitLogs/${familyId}`);
+  const snapshot = await get(logsRef);
+
+  const result: Record<string, Record<string, AlbumSourceContentEntry>> = {};
+
+  if (!snapshot.exists()) {
+    return result;
+  }
+
+  const bySource = snapshot.val();
+  if (typeof bySource !== "object" || bySource === null) {
+    return result;
+  }
+
+  for (const [source, byItem] of Object.entries(bySource)) {
+    if (typeof byItem !== "object" || byItem === null) {
+      continue;
+    }
+
+    for (const [itemId, byEntry] of Object.entries(byItem as Record<string, unknown>)) {
+      if (typeof byEntry !== "object" || byEntry === null) {
+        continue;
+      }
+
+      const entriesForItem: Record<string, AlbumSourceContentEntry> = {};
+      for (const [entryId, entryValue] of Object.entries(byEntry as Record<string, unknown>)) {
+        const entry = parseCarnetContentEntryFromValue(source as ContentSource, itemId, entryId, entryValue);
+        if (entry) {
+          entriesForItem[entry.entryId] = entry;
+        }
+      }
+
+      if (Object.keys(entriesForItem).length > 0) {
+        result[buildContentItemKey(source as AlbumContentSectionId, itemId)] = entriesForItem;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Parser strict d'une entrée de carnet de contenu. Même logique de
+ * validation que `parseCarnetVisiteEntryFromValue` ci-dessus (et que
+ * `parseCarnetContentEntry` dans cloudSyncProvider.ts), sans le champ photos
+ * (les entrées de carnet de contenu n'en ont jamais).
+ */
+function parseCarnetContentEntryFromValue(
+  source: ContentSource,
+  itemId: string,
+  entryId: string,
+  value: unknown
+): AlbumSourceContentEntry | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  const entry = value as Record<string, unknown>;
+
+  const normalizedEntryId =
+    typeof entry.entryId === "string" && entry.entryId.trim().length > 0 ? entry.entryId : entryId;
+  const normalizedItemId =
+    typeof entry.itemId === "string" && entry.itemId.trim().length > 0 ? entry.itemId : itemId;
+  const authorProfileId =
+    typeof entry.authorProfileId === "string" ? entry.authorProfileId.trim() : "";
+  const authorSurnameSnapshot =
+    typeof entry.authorSurnameSnapshot === "string" ? entry.authorSurnameSnapshot.trim() : "";
+  const text = typeof entry.text === "string" ? entry.text : "";
+  const createdAt = typeof entry.createdAt === "number" ? entry.createdAt : 0;
+  const updatedAt = typeof entry.updatedAt === "number" ? entry.updatedAt : createdAt;
+
+  if (
+    !authorProfileId ||
+    !authorSurnameSnapshot ||
+    !normalizedEntryId ||
+    !normalizedItemId ||
+    text.length > 20000 || // CARNET_VISITE_MAX_TEXT_LENGTH (cloudSyncProvider.ts)
+    createdAt <= 0 ||
+    updatedAt <= 0
+  ) {
+    return null;
+  }
+
+  return {
+    entryId: normalizedEntryId,
+    section: source,
+    itemId: normalizedItemId,
+    authorProfileId,
+    authorSurnameSnapshot,
+    text,
+    createdAt,
+    updatedAt,
+  };
+}
+
+/**
  * Assemble une AlbumSource complète à partir du snapshot familial
  * et des carnets de visite préalablement chargés.
  *
@@ -419,7 +590,16 @@ export function assembleAlbumSource(
   snapshot: CloudSyncSnapshot,
   placeCarnetRecords: Record<string, Record<string, CloudCarnetVisiteEntry>>,
   allPlaces: Place[],
-  customPlaces: Place[]
+  customPlaces: Place[],
+  // Rubriques de contenu (story 30.8) : facultatives (défaut = objet/tableau
+  // vide) pour ne pas casser les appelants existants (tests notamment) qui
+  // n'ont pas encore ce contexte.
+  topicsBySection: Record<AlbumContentSectionId, ContentTopicLike[]> = {
+    histoire: [],
+    "geographie-economie": [],
+    "culture-tradition": [],
+  },
+  contentCarnetRecords: Record<string, Record<string, AlbumSourceContentEntry>> = {}
 ): AlbumSource {
   // Phase 1 : Filtre les places admissibles
   const eligiblePlaces = buildEligiblePlaces(
@@ -429,6 +609,10 @@ export function assembleAlbumSource(
     snapshot.placeSeenMap,
     snapshot.placeDayOverrides
   );
+
+  // Phase 1bis : Topics de contenu admissibles (story 30.8, pas de filtre
+  // "vu"/visibilité, cf. buildEligibleContentTopics).
+  const contentTopics = buildEligibleContentTopics(topicsBySection);
 
   // Phase 2 : Filtre les carnets (uniquement pour places admissibles)
   const placeVisitLogs = filterCarnetVisiteByEligibility(
@@ -447,6 +631,17 @@ export function assembleAlbumSource(
     snapshot.placeVisibilityMap,
     snapshot.placeSeenMap
   );
+
+  // Phase 2ter : Filtre les carnets de contenu (story 30.8), en écartant
+  // toute entrée orpheline dont la clé composite ne correspond plus à aucun
+  // topic connu (ex. topic retiré du catalogue après coup) — pas de filtre
+  // "vu"/visibilité ici, contrairement aux lieux.
+  const contentVisitLogs: Record<string, Record<string, AlbumSourceContentEntry>> = {};
+  for (const [key, entries] of Object.entries(contentCarnetRecords)) {
+    if (key in contentTopics && Object.keys(entries).length > 0) {
+      contentVisitLogs[key] = entries;
+    }
+  }
 
   // Phase 3 : Extrait les profils requis
   const requiredProfiles = extractRequiredProfiles(placeVisitLogs, snapshot.profiles);
@@ -473,6 +668,8 @@ export function assembleAlbumSource(
     eligiblePlaces,
     placeVisitLogs,
     placeComments,
+    contentTopics,
+    contentVisitLogs,
     requiredProfiles,
     gameResults,
   };
@@ -495,6 +692,16 @@ export function validateAlbumSourceContent(source: AlbumSource): boolean {
   if (!source.placeComments || typeof source.placeComments !== "object") {
     return false;
   }
+  // Rubriques de contenu (story 30.8) : désormais des données autorisées et
+  // attendues de l'album (contrairement à avant, où contentVisitLogs figurait
+  // dans forbiddenKeys ci-dessous), d'où leur vérification ici au même titre
+  // que les autres champs.
+  if (!source.contentTopics || typeof source.contentTopics !== "object") {
+    return false;
+  }
+  if (!source.contentVisitLogs || typeof source.contentVisitLogs !== "object") {
+    return false;
+  }
   if (!source.requiredProfiles || typeof source.requiredProfiles !== "object") {
     return false;
   }
@@ -512,7 +719,6 @@ export function validateAlbumSourceContent(source: AlbumSource): boolean {
     "checklist",
     "chatMessages",
     "chatConversations",
-    "contentVisitLogs",
   ];
 
   for (const forbiddenKey of forbiddenKeys) {

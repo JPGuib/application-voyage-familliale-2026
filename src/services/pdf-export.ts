@@ -1,6 +1,7 @@
 import type { AlbumDraft, AlbumSource } from "../types/cloud";
 import type { FilteredAlbumContent, PhotoQualityTier } from "../app/albumUtils";
 import {
+  ALBUM_CONTENT_SECTIONS,
   fitWithinBox,
   isPhotoQualityDegraded,
   PHOTO_QUALITY_TIER_DEFAULT,
@@ -182,6 +183,25 @@ export function collectPdfImages(content: FilteredAlbumContent): PdfPreparedImag
     for (const photo of selectBudgetedCarnetPhotos(placeEntries, carnetBudget)) {
       images.push({ id: photo.id, src: photo.src, kind: "carnet", fileSize: photo.src.length * 0.75 });
     }
+  }
+
+  // Photos éditoriales des topics de contenu inclus (Histoire / Géographie
+  // et économie / Culture et tradition, story 30.8). Pas de photos de
+  // carnet pour ces rubriques (les entrées de carnet de contenu n'en ont
+  // jamais, cf. AlbumSourceContentEntry) : seul le budget éditorial
+  // s'applique ici.
+  for (const [key, topic] of Object.entries(content.contentTopics ?? {})) {
+    const photos = topic.photos ?? [];
+    photos.slice(0, editorialBudget).forEach((src, index) => {
+      if (typeof src === "string" && src) {
+        images.push({
+          id: `content-editorial:${key}:${index}`,
+          src,
+          kind: "editorial",
+          fileSize: EDITORIAL_PHOTO_ESTIMATED_BYTES,
+        });
+      }
+    });
   }
 
   return images;
@@ -1227,6 +1247,162 @@ export async function exportAlbumAsPdf(
 
     if (chapterDayLabel) {
       chapterFooterRanges.push({ startPage: chapterStartPage, endPage: doc.getNumberOfPages(), label: chapterDayLabel });
+    }
+  }
+
+  // --- Chapitres par rubrique de contenu (Histoire / Géographie et
+  // économie / Culture et tradition, story 30.8) --------------------------
+  // Même principe que les chapitres par lieu ci-dessus (bandeau de titre,
+  // présentation, anecdotes, galerie éditoriale, souvenirs de carnet), en
+  // plus simple : pas de jour de visite, pas d'avis de la famille, pas de
+  // guide de visite détaillé (notions propres aux lieux du Guide du séjour).
+  // L'étiquette sous le bandeau de titre indique la rubrique plutôt qu'un
+  // jour, et sert aussi à choisir la couleur d'accent : tous les topics
+  // d'une même rubrique partagent la même couleur (alternance PAR RUBRIQUE,
+  // via l'index dans ALBUM_CONTENT_SECTIONS), pas par topic.
+  for (const [sectionIndex, section] of ALBUM_CONTENT_SECTIONS.entries()) {
+    const topicsInSection = Object.entries(content.contentTopics ?? {}).filter(
+      ([, topic]) => topic.section === section.id
+    );
+    if (topicsInSection.length === 0) {
+      continue;
+    }
+
+    const accentColor = getChapterAccent(sectionIndex);
+
+    for (const [key, topic] of topicsInSection) {
+      const topicEntries = content.contentEntries?.[key] ?? {};
+      const chapterTitle = topic.name || key;
+
+      doc.addPage();
+      const chapterStartPage = doc.getNumberOfPages();
+      paintPageBackground(doc, pageWidth, pageHeight);
+      drawTitleBand(doc, chapterTitle, pageWidth, margin, 12, accentColor);
+      let cursorY = 36;
+
+      doc.setFont("Nunito", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(...MUTED_TEXT_COLOR);
+      doc.text(section.label.toUpperCase(), margin, 30);
+      doc.setTextColor(...TEXT_COLOR);
+
+      const hasPresentation = Boolean(topic.history && topic.history.trim());
+      const hasAnecdotes = Boolean(topic.anecdotes && topic.anecdotes.length > 0);
+
+      if (hasPresentation) {
+        doc.setFont("Nunito", "normal");
+        doc.setFontSize(10.5);
+        const historyLines: string[] = doc.splitTextToSize(
+          stripBasicMarkdown(topic.history || ""),
+          pageContentWidth
+        );
+        cursorY = ensureSpace(doc, cursorY, 7 + historyLines.length * 5.5 + 3, pageWidth, pageHeight, margin, {
+          chapterTitle,
+          accentColor,
+        });
+        doc.setFont("Nunito", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(...accentColor);
+        doc.text((topic.historyLabel || "Présentation").slice(0, 90), margin, cursorY);
+        doc.setTextColor(...TEXT_COLOR);
+        cursorY += 7;
+        cursorY = addTextBlock(historyLines, margin, cursorY, 10.5, 5.5);
+        cursorY += 3;
+      }
+
+      if (hasAnecdotes) {
+        doc.setFont("Nunito", "normal");
+        doc.setFontSize(10.5);
+        const anecdoteLines: string[] = [];
+        for (const item of topic.anecdotes ?? []) {
+          anecdoteLines.push(...(doc.splitTextToSize(`•  ${item}`, pageContentWidth - 2) as string[]));
+        }
+        cursorY = ensureSpace(doc, cursorY, 7 + anecdoteLines.length * 5.5 + 3, pageWidth, pageHeight, margin, {
+          chapterTitle,
+          accentColor,
+        });
+        doc.setFont("Nunito", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(...accentColor);
+        doc.text((topic.anecdotesLabel || "Anecdotes").slice(0, 90), margin, cursorY);
+        doc.setTextColor(...TEXT_COLOR);
+        cursorY += 7;
+        cursorY = addTextBlock(anecdoteLines, margin, cursorY, 10.5, 5.5);
+        cursorY += 3;
+      }
+
+      // Galerie photo éditoriale uniquement : les entrées de carnet de
+      // contenu n'ont jamais de photos (cf. AlbumSourceContentEntry).
+      const galleryPhotos = (topic.photos ?? []).slice(0, content.photoBudgetPerPlace.editorial);
+      if (galleryPhotos.length > 0) {
+        const columns = 3;
+        const gap = 4;
+        const cellWidth = (pageContentWidth - gap * (columns - 1)) / columns;
+        const cellHeight = 36;
+        let column = 0;
+        for (const src of galleryPhotos) {
+          if (column === 0) {
+            cursorY = ensureSpace(doc, cursorY, cellHeight + gap, pageWidth, pageHeight, margin, {
+              chapterTitle,
+              accentColor,
+            });
+          }
+
+          const resolvedSrc = await resolveEditorial(src);
+          if (resolvedSrc) {
+            const dimensions = await resolveDimensions(resolvedSrc, editorialConverterDeps);
+            const x = margin + column * (cellWidth + gap);
+            drawFramedPhoto(doc, resolvedSrc, x, cursorY, cellWidth, cellHeight, dimensions);
+          }
+          // Cas limite : photo introuvable/erreur réseau, ignorée silencieusement.
+
+          column += 1;
+          if (column >= columns) {
+            column = 0;
+            cursorY += cellHeight + gap;
+          }
+        }
+        if (column !== 0) {
+          cursorY += cellHeight + gap;
+        }
+        cursorY += 2;
+      }
+
+      // Souvenirs du carnet (texte seul, pas de photos pour ces rubriques).
+      const noteTexts = Object.values(topicEntries)
+        .map((entry) => entry.text?.trim())
+        .filter((text): text is string => Boolean(text));
+      if (noteTexts.length > 0) {
+        doc.setFont("Nunito", "normal");
+        doc.setFontSize(11);
+        const noteLines: string[] = [];
+        for (const line of noteTexts) {
+          noteLines.push(...(doc.splitTextToSize(line, pageContentWidth - 8) as string[]));
+        }
+        cursorY = ensureSpace(doc, cursorY, 10 + noteLines.length * 7, pageWidth, pageHeight, margin, {
+          chapterTitle,
+          accentColor,
+        });
+        doc.setFont("Nunito", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(...TEXT_COLOR);
+        doc.text("Souvenirs du carnet", margin, cursorY);
+        cursorY += 6;
+        doc.setDrawColor(...accentColor);
+        doc.setLineWidth(0.8);
+        doc.line(margin, cursorY - 4, margin, cursorY + noteLines.length * 7 - 4);
+        cursorY = addTextBlock(noteLines, margin + 4, cursorY, 11, 7);
+      }
+
+      if (!hasPresentation && !hasAnecdotes && galleryPhotos.length === 0 && noteTexts.length === 0) {
+        doc.setFont("Nunito", "normal");
+        doc.setFontSize(11);
+        doc.setTextColor(...MUTED_TEXT_COLOR);
+        doc.text("Aucun souvenir détaillé pour cette rubrique.", margin, cursorY);
+        doc.setTextColor(...TEXT_COLOR);
+      }
+
+      chapterFooterRanges.push({ startPage: chapterStartPage, endPage: doc.getNumberOfPages(), label: section.label });
     }
   }
 

@@ -2,9 +2,44 @@ import type {
   AlbumDraft,
   AlbumSource,
   AlbumSourceCommentEntry,
+  AlbumSourceContentEntry,
+  AlbumSourceContentTopicEntry,
+  ContentSource,
   CloudGameHistoryEntry,
   GuideSection,
 } from "../types/cloud";
+
+// --- Rubriques de contenu à la carte (Histoire / Géographie et économie /
+// Culture et tradition, story 30.8) -----------------------------------------
+//
+// Avant cet ajout, seuls les lieux du Guide du séjour et une synthèse de jeu
+// pouvaient être inclus dans l'album ; tout le contenu éditorial des 3
+// rubriques (et les souvenirs de carnet qui leur sont propres) en était
+// absent. Contrairement aux lieux (filtrés par "vu"/visibilité), ces
+// rubriques n'ont pas de notion d'admissibilité : tous leurs topics sont
+// toujours proposables, seule la sélection du voyageur
+// (AlbumDraft.includedContentIds) décide de ce qui est effectivement inclus
+// — d'où l'absence d'une étape "buildEligible..." dédiée côté album-source.ts,
+// contrairement à buildEligiblePlaces.
+export type AlbumContentSectionId = Exclude<ContentSource, "places">;
+
+export type AlbumContentSectionDef = { id: AlbumContentSectionId; label: string };
+
+export const ALBUM_CONTENT_SECTIONS: AlbumContentSectionDef[] = [
+  { id: "histoire", label: "Histoire" },
+  { id: "geographie-economie", label: "Géographie et économie" },
+  { id: "culture-tradition", label: "Culture et tradition" },
+];
+
+/**
+ * Clé composite identifiant un topic de contenu de façon unique dans
+ * `AlbumSource.contentTopics`/`AlbumDraft.includedContentIds` : un `itemId`
+ * n'est unique qu'au sein de sa rubrique (même contrainte que
+ * `ContentOverrideMap`), il faut donc toujours la rubrique en plus de l'id.
+ */
+export function buildContentItemKey(section: AlbumContentSectionId, itemId: string): string {
+  return `${section}:${itemId}`;
+}
 
 export type AlbumGameSummary = {
   profileId: string;
@@ -269,6 +304,11 @@ export interface FilteredAlbumContent {
   // Avis de la famille (story 30.6, like/dislike + commentaire), filtrés sur
   // les lieux inclus — même schéma que `entries` pour le carnet de visite.
   comments: Record<string, Record<string, AlbumSourceCommentEntry>>;
+  // Topics de contenu inclus (Histoire / Géographie et économie / Culture et
+  // tradition, story 30.8), clé composite (cf. `buildContentItemKey`).
+  contentTopics: Record<string, AlbumSourceContentTopicEntry>;
+  // Souvenirs du carnet de ces topics, même schéma que `entries` pour les lieux.
+  contentEntries: Record<string, Record<string, AlbumSourceContentEntry>>;
   profiles: Record<string, unknown>;
   gameSummary: AlbumGameSummary | null;
   coverPhotoMissing: boolean;
@@ -334,6 +374,25 @@ export function filterAlbumContent(
     }
   }
 
+  // Filtrer les topics de contenu selon la sélection à la carte du voyageur
+  // (story 30.8) : mêmes règles que les lieux (socle éditorial toujours
+  // recopié pour un topic inclus, même sans note de carnet). Repli sur un
+  // objet vide si absent (source construite avant l'ajout de cette
+  // fonctionnalité, ex. un vieux brouillon/fixture de test).
+  const filteredContentTopics: Record<string, AlbumSourceContentTopicEntry> = {};
+  for (const [key, topic] of Object.entries(source.contentTopics ?? {})) {
+    if (draft.includedContentIds.has(key)) {
+      filteredContentTopics[key] = topic;
+    }
+  }
+
+  const filteredContentEntries: Record<string, Record<string, AlbumSourceContentEntry>> = {};
+  for (const [key, entries] of Object.entries(source.contentVisitLogs ?? {})) {
+    if (draft.includedContentIds.has(key)) {
+      filteredContentEntries[key] = entries;
+    }
+  }
+
   // Game summary (si activé)
   let gameSummary: AlbumGameSummary | null = null;
   if (draft.includeGameSummary) {
@@ -355,17 +414,22 @@ export function filterAlbumContent(
     draft.title,
     filteredPlaces,
     filteredEntries,
-    gameSummary
+    gameSummary,
+    filteredContentTopics,
+    filteredContentEntries
   );
 
-  // Budget de photos par lieu et palier de dégradation qualité, calculés une
-  // seule fois pour tout l'album à partir du nombre de lieux inclus (story
-  // 30.5, export adaptatif) : plus il y a de lieux inclus, plus le budget
-  // par lieu (et la qualité des photos, cf. photoQualityTier) est réduit,
-  // sans jamais nécessiter de retirer un lieu de la sélection.
+  // Budget de photos par item et palier de dégradation qualité, calculés une
+  // seule fois pour tout l'album à partir du nombre TOTAL d'items inclus
+  // (story 30.5, export adaptatif ; story 30.8, extension aux rubriques de
+  // contenu) : lieux ET topics de contenu partagent le même budget, plus il
+  // y a d'items inclus au total, plus le budget par item (et la qualité des
+  // photos, cf. photoQualityTier) est réduit, sans jamais nécessiter de
+  // retirer un item de la sélection.
   const includedPlaceCount = Object.keys(filteredPlaces).length;
-  const photoBudgetPerPlace = resolvePhotoBudgetPerPlace(includedPlaceCount);
-  const photoQualityTier = resolvePhotoQualityTier(includedPlaceCount);
+  const includedContentTopicCount = Object.keys(filteredContentTopics).length;
+  const photoBudgetPerPlace = resolvePhotoBudgetPerPlace(includedPlaceCount + includedContentTopicCount);
+  const photoQualityTier = resolvePhotoQualityTier(includedPlaceCount + includedContentTopicCount);
 
   // Estimer le nombre d'images : photos éditoriales des lieux inclus +
   // photos du carnet de voyage, chacune plafonnée au budget par lieu
@@ -380,10 +444,21 @@ export function filterAlbumContent(
     estimatedImageCount += selectBudgetedCarnetPhotos(placeEntries, photoBudgetPerPlace.carnet).length;
   }
 
+  // Idem pour les topics de contenu inclus : photos éditoriales uniquement
+  // (les entrées de carnet de contenu n'ont jamais de photos, cf.
+  // AlbumSourceContentEntry).
+  for (const topic of Object.values(filteredContentTopics)) {
+    if (topic.photos && topic.photos.length > 0) {
+      estimatedImageCount += Math.min(topic.photos.length, photoBudgetPerPlace.editorial);
+    }
+  }
+
   return {
     places: filteredPlaces,
     entries: filteredEntries,
     comments: filteredComments,
+    contentTopics: filteredContentTopics,
+    contentEntries: filteredContentEntries,
     profiles: source.requiredProfiles,
     gameSummary,
     coverPhotoMissing,
@@ -471,13 +546,18 @@ function estimatePageCount(
   _title: string,
   places: Record<string, unknown>,
   entries: Record<string, Record<string, unknown>>,
-  gameSummary: unknown
+  gameSummary: unknown,
+  contentTopics: Record<string, unknown> = {},
+  contentEntries: Record<string, Record<string, unknown>> = {}
 ): number {
   let pages = 2; // Cover and itinerary pages
 
   const placeIds = Object.keys(places);
-  if (placeIds.length === 0) {
-    // Keep a stable minimal content page for an album without any place.
+  const contentTopicKeys = Object.keys(contentTopics);
+
+  if (placeIds.length === 0 && contentTopicKeys.length === 0) {
+    // Keep a stable minimal content page for an album without any place nor
+    // content topic.
     pages += 1;
   } else {
     for (const placeId of placeIds) {
@@ -485,6 +565,17 @@ function estimatePageCount(
       const entryCount = Object.keys(entries[placeId] ?? {}).length;
       if (entryCount > 1) {
         // La première note tient dans la page de chapitre, les suivantes débordent.
+        pages += Math.ceil((entryCount - 1) / 3);
+      }
+    }
+
+    // Idem pour les topics de contenu inclus (story 30.8) : même logique de
+    // pagination qu'un lieu, avec les notes de carnet (texte seul, pas de
+    // photos) qui débordent au même rythme.
+    for (const key of contentTopicKeys) {
+      pages += 1;
+      const entryCount = Object.keys(contentEntries[key] ?? {}).length;
+      if (entryCount > 1) {
         pages += Math.ceil((entryCount - 1) / 3);
       }
     }
