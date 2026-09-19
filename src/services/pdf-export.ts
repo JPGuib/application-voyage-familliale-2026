@@ -545,15 +545,24 @@ function drawTitleBand(
   y: number,
   accentColor: [number, number, number],
   bandHeight = 13
-) {
+): number {
   const bandWidth = pageWidth - margin * 2;
-  doc.setFillColor(...accentColor);
-  doc.roundedRect(margin, y, bandWidth, bandHeight, 3, 3, "F");
-  doc.setTextColor(...WHITE_COLOR);
   doc.setFont("Nunito", "bold");
-  doc.setFontSize(bandHeight >= 13 ? 15 : 11);
-  doc.text(text.slice(0, 90), margin + 5, y + bandHeight / 2 + 2.7, { maxWidth: bandWidth - 10 });
+  const fontSize = bandHeight >= 13 ? 15 : 11;
+  const lineHeight = bandHeight >= 13 ? 6.2 : 4.8;
+  doc.setFontSize(fontSize);
+  const lines = doc.splitTextToSize(text.slice(0, 90), bandWidth - 10) as string[];
+  const resolvedHeight = Math.max(bandHeight, lines.length * lineHeight + 7);
+
+  doc.setFillColor(...accentColor);
+  doc.roundedRect(margin, y, bandWidth, resolvedHeight, 3, 3, "F");
+  doc.setTextColor(...WHITE_COLOR);
+  const firstBaseline = y + (resolvedHeight - lines.length * lineHeight) / 2 + lineHeight * 0.78;
+  lines.forEach((line, index) => {
+    doc.text(line, margin + 5, firstBaseline + index * lineHeight, { maxWidth: bandWidth - 10 });
+  });
   doc.setTextColor(...TEXT_COLOR);
+  return resolvedHeight;
 }
 
 type EnsureSpaceOptions = {
@@ -588,7 +597,7 @@ function ensureSpace(
   paintPageBackground(doc, pageWidth, pageHeight);
   let nextY = margin;
   if (options.chapterTitle) {
-    drawTitleBand(
+    const continuationBandHeight = drawTitleBand(
       doc,
       `${options.chapterTitle} (suite)`,
       pageWidth,
@@ -597,7 +606,7 @@ function ensureSpace(
       options.accentColor ?? PRIMARY_COLOR,
       10
     );
-    nextY += 10 + 8;
+    nextY += continuationBandHeight + 8;
   }
   return nextY;
 }
@@ -979,15 +988,15 @@ export async function exportAlbumAsPdf(
     doc.addPage();
     const chapterStartPage = doc.getNumberOfPages();
     paintPageBackground(doc, pageWidth, pageHeight);
-    drawTitleBand(doc, chapterTitle, pageWidth, margin, 12, accentColor);
-    let cursorY = 34;
+    const titleBandHeight = drawTitleBand(doc, chapterTitle, pageWidth, margin, 12, accentColor);
+    let cursorY = 12 + titleBandHeight + 9;
     if (chapterDayLabel) {
       doc.setFont("Nunito", "bold");
       doc.setFontSize(9.5);
       doc.setTextColor(...MUTED_TEXT_COLOR);
-      doc.text(chapterDayLabel.toUpperCase(), margin, 30);
+      doc.text(chapterDayLabel.toUpperCase(), margin, cursorY);
       doc.setTextColor(...TEXT_COLOR);
-      cursorY = 36;
+      cursorY += 6;
     }
 
     const hasPresentation = Boolean(place.history && place.history.trim());
@@ -1278,14 +1287,15 @@ export async function exportAlbumAsPdf(
       doc.addPage();
       const chapterStartPage = doc.getNumberOfPages();
       paintPageBackground(doc, pageWidth, pageHeight);
-      drawTitleBand(doc, chapterTitle, pageWidth, margin, 12, accentColor);
-      let cursorY = 36;
+      const titleBandHeight = drawTitleBand(doc, chapterTitle, pageWidth, margin, 12, accentColor);
+      let cursorY = 12 + titleBandHeight + 9;
 
       doc.setFont("Nunito", "bold");
       doc.setFontSize(9.5);
       doc.setTextColor(...MUTED_TEXT_COLOR);
-      doc.text(section.label.toUpperCase(), margin, 30);
+      doc.text(section.label.toUpperCase(), margin, cursorY);
       doc.setTextColor(...TEXT_COLOR);
+      cursorY += 6;
 
       const hasPresentation = Boolean(topic.history && topic.history.trim());
       const hasAnecdotes = Boolean(topic.anecdotes && topic.anecdotes.length > 0);
