@@ -125,7 +125,7 @@ function buildSnapshot(options: {
     },
     ownerCodeHash: "",
     phase: "during" as const,
-    tripStartDate: options.tripStartDate ?? null,
+    tripStartDate: options.tripStartDate ?? "2026-08-23",
     launchGateCycle: 1,
     launchGateCompletedCycleByProfile: {
       p1: 1,
@@ -180,6 +180,82 @@ describe("Story 19.1 — verrouillage du défi du jour + override propriétaire"
   beforeEach(() => {
     localStorage.clear();
     cloudSyncMock.mockReset();
+  });
+
+  it("shows the 18 h unavailability before the first game window", async () => {
+    vi.setSystemTime(new Date(2026, 7, 24, 17, 59, 59));
+    mockCloudSync(buildSnapshot({ leoGameResults: [], tripStartDate: "2026-08-24" }));
+    render(<App />);
+
+    await loginAs(/Léo/i);
+    goToGameScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Le jeu ouvre à 18 h/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("button", { name: /C'est parti/i })).not.toBeInTheDocument();
+  });
+
+  it("lets an owner override open the first challenge before 18 h", async () => {
+    vi.setSystemTime(new Date(2026, 7, 24, 17, 59, 59));
+    mockCloudSync(
+      buildSnapshot({
+        leoGameResults: [],
+        tripStartDate: "2026-08-24",
+        gameDayOverrides: { 1: "open" },
+      })
+    );
+    render(<App />);
+
+    await loginAs(/Léo/i);
+    goToGameScreen();
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /C'est parti/i })).toBeInTheDocument();
+      expect(document.querySelector('[data-game-day="1"]')).toBeInTheDocument();
+    });
+  });
+
+  it("keeps day J active until J+1 18 h, then opens the next challenge", async () => {
+    vi.setSystemTime(new Date(2026, 7, 25, 17, 59, 59));
+    mockCloudSync(
+      buildSnapshot({ leoGameResults: [{ day: 1, totalScore: 42 }], tripStartDate: "2026-08-24" })
+    );
+    const { unmount } = render(<App />);
+
+    await loginAs(/Léo/i);
+    goToGameScreen();
+    await waitFor(() => {
+      expect(screen.getByText("Défi du jour déjà relevé !")).toBeInTheDocument();
+    });
+
+    unmount();
+    localStorage.clear();
+    vi.setSystemTime(new Date(2026, 7, 25, 18));
+    mockCloudSync(buildSnapshot({ leoGameResults: [], tripStartDate: "2026-08-24" }));
+    render(<App />);
+
+    await loginAs(/Léo/i);
+    goToGameScreen();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /C'est parti/i })).toBeInTheDocument();
+      expect(document.querySelector('[data-game-day="2"]')).toBeInTheDocument();
+    });
+  });
+
+  it("keeps the final challenge as a normal persisted session until the final window closes", async () => {
+    vi.setSystemTime(new Date(2026, 7, 25, 17, 59, 59));
+    mockCloudSync(buildSnapshot({ leoGameResults: [], tripStartDate: "2026-08-15" }));
+    render(<App />);
+
+    await loginAs(/Léo/i);
+    goToGameScreen();
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /C'est parti/i })).toBeInTheDocument();
+      expect(document.querySelector('[data-game-day="10"]')).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/Mode rejeu post-voyage/i)).not.toBeInTheDocument();
   });
 
   it("blocks a profile that already completed today's challenge and shows the score obtained", async () => {
@@ -323,5 +399,18 @@ describe("Story 19.1 — verrouillage du défi du jour + override propriétaire"
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Jeux/i })).toBeInTheDocument();
     });
+  });
+
+  it("hides owner day overrides once post-trip replay has started", async () => {
+    mockCloudSync(buildSnapshot({ tripStartDate: "2026-07-01" }));
+    render(<App />);
+
+    await loginAs(/Maman/i);
+    fireEvent.click(screen.getByRole("button", { name: /Paramètres/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /Profil & paramètres/i })).toBeInTheDocument();
+    });
+    expect(screen.queryByText("Journée de jeu")).not.toBeInTheDocument();
   });
 });

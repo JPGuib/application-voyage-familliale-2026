@@ -5,6 +5,13 @@ export type NotificationPreferences = {
   notif_game: boolean;
   notif_comments: boolean;
   lastGameReminderDate?: string;
+  lastGameReminderSlot?: string;
+};
+
+export type PendingGameReminderSlot = {
+  id: string;
+  gameDay: number;
+  scheduledAt: Date;
 };
 
 export const DEFAULT_NOTIFICATION_PREFS: NotificationPreferences = {
@@ -23,6 +30,7 @@ function normalizePreferences(value: Partial<NotificationPreferences> | null | u
     notif_game: Boolean(value?.notif_game),
     notif_comments: Boolean(value?.notif_comments),
     ...(value?.lastGameReminderDate ? { lastGameReminderDate: value.lastGameReminderDate } : {}),
+    ...(value?.lastGameReminderSlot ? { lastGameReminderSlot: value.lastGameReminderSlot } : {}),
   };
 }
 
@@ -157,16 +165,70 @@ export function shouldTriggerChecklistReminder(
   return (daysUntilStart === 3 || daysUntilStart === 1) && preferences.notif_checklist && checklistPercent < 100;
 }
 
+const GAME_REMINDER_TIMES = [
+  { dayOffset: 0, hour: 18 },
+  { dayOffset: 1, hour: 9 },
+  { dayOffset: 1, hour: 12 },
+  { dayOffset: 1, hour: 16 },
+] as const;
+
+export function getPendingGameReminderSlots(
+  tripStartDate: string | null | undefined,
+  gameDay: number,
+  now: Date = new Date()
+): PendingGameReminderSlot[] {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(tripStartDate ?? "");
+  if (!match || gameDay < 1) {
+    return [];
+  }
+
+  const [, year, month, day] = match;
+  const gameDate = new Date(Number(year), Number(month) - 1, Number(day));
+  if (
+    gameDate.getFullYear() !== Number(year) ||
+    gameDate.getMonth() !== Number(month) - 1 ||
+    gameDate.getDate() !== Number(day)
+  ) {
+    return [];
+  }
+  gameDate.setDate(gameDate.getDate() + gameDay - 1);
+
+  return GAME_REMINDER_TIMES.map((slot, index) => {
+    const scheduledAt = new Date(gameDate);
+    scheduledAt.setDate(scheduledAt.getDate() + slot.dayOffset);
+    scheduledAt.setHours(slot.hour, 0, 0, 0);
+    return { id: `${tripStartDate}:${gameDay}:${index}`, gameDay, scheduledAt };
+  }).filter((slot) => slot.scheduledAt.getTime() >= now.getTime() - 60_000);
+}
+
+function parseGameReminderSlot(slotId: string | undefined): {
+  tripStartDate: string;
+  order: number;
+} | null {
+  const match = /^(\d{4}-\d{2}-\d{2}):(\d+):([0-3])$/.exec(slotId ?? "");
+  if (!match) return null;
+  return {
+    tripStartDate: match[1],
+    order: Number(match[2]) * GAME_REMINDER_TIMES.length + Number(match[3]),
+  };
+}
+
 export function shouldTriggerGameReminder(
-  currentDay: number,
+  gameDay: number,
   gameHistory: Array<{ day: number }>,
-  todayIsoDate: string,
+  reminderSlotId: string,
   preferences: NotificationPreferences
 ): boolean {
-  const alreadyPlayedToday = gameHistory.some((entry) => entry.day === currentDay);
-  if (alreadyPlayedToday) {
+  if (!preferences.notif_game || gameHistory.some((entry) => entry.day === gameDay)) {
     return false;
   }
 
-  return preferences.notif_game && preferences.lastGameReminderDate !== todayIsoDate;
+  const currentSlot = parseGameReminderSlot(reminderSlotId);
+  const lastSlot = parseGameReminderSlot(preferences.lastGameReminderSlot);
+  return (
+    currentSlot !== null &&
+    (lastSlot === null ||
+      lastSlot.tripStartDate !== currentSlot.tripStartDate ||
+      currentSlot.order > lastSlot.order)
+  );
 }

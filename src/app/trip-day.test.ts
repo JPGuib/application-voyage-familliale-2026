@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   clampToLastDefinedDay,
+  computeActiveGameDay,
   computeCurrentDay,
   computeDaysUntilStart,
   isTripFinished,
@@ -16,6 +17,7 @@ describe("isValidTripStartDate", () => {
     expect(isValidTripStartDate(null)).toBe(false);
     expect(isValidTripStartDate(undefined)).toBe(false);
     expect(isValidTripStartDate("16/08/2026")).toBe(false);
+    expect(isValidTripStartDate("2026-02-31")).toBe(false);
     expect(isValidTripStartDate("")).toBe(false);
   });
 });
@@ -40,6 +42,30 @@ describe("computeCurrentDay", () => {
 
   it("retourne 1 si la date de début est dans le futur", () => {
     expect(computeCurrentDay("2026-12-25", new Date(2026, 7, 20))).toBe(1);
+  });
+});
+
+describe("computeActiveGameDay", () => {
+  it("n'ouvre aucun défi avant 18 h le premier jour", () => {
+    expect(computeActiveGameDay("2026-08-16", 3, new Date(2026, 7, 16, 17, 59, 59))).toBe(null);
+    expect(computeActiveGameDay("2026-08-16", 3, new Date(2026, 7, 16, 18))).toBe(1);
+  });
+
+  it("maintient le défi précédent jusqu'à 18 h exclu le lendemain", () => {
+    expect(computeActiveGameDay("2026-08-16", 3, new Date(2026, 7, 17, 9))).toBe(1);
+    expect(computeActiveGameDay("2026-08-16", 3, new Date(2026, 7, 17, 17, 59, 59))).toBe(1);
+    expect(computeActiveGameDay("2026-08-16", 3, new Date(2026, 7, 17, 18))).toBe(2);
+  });
+
+  it("garde le dernier défi actif jusqu'à J+1 18 h puis ferme la fenêtre", () => {
+    expect(computeActiveGameDay("2026-08-16", 3, new Date(2026, 7, 19, 17, 59, 59))).toBe(3);
+    expect(computeActiveGameDay("2026-08-16", 3, new Date(2026, 7, 19, 18))).toBe(null);
+  });
+
+  it("retourne null sans date valide ou sans dernier jour défini", () => {
+    expect(computeActiveGameDay(null, 3, new Date(2026, 7, 16, 18))).toBe(null);
+    expect(computeActiveGameDay("date invalide", 3, new Date(2026, 7, 16, 18))).toBe(null);
+    expect(computeActiveGameDay("2026-08-16", null, new Date(2026, 7, 16, 18))).toBe(null);
   });
 });
 

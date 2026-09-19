@@ -152,6 +152,7 @@ import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
 import {
   clampToLastDefinedDay,
+  computeActiveGameDay,
   computeCurrentDay,
   computeDaysUntilStart,
   isTripFinished,
@@ -170,6 +171,7 @@ import {
   type NotificationPreferences,
   DEFAULT_NOTIFICATION_PREFS,
   areNotificationsSupported,
+  getPendingGameReminderSlots,
   getNotificationPermissionStatus,
   readNotificationPreferences,
   requestPermission,
@@ -8696,6 +8698,7 @@ function GameScreen({
   onChallengeResponseChange,
   onCompleteChallenge,
   currentDay,
+  gameAvailable,
   tripStartDate,
   alreadyPlayedToday,
   gameDayOverride,
@@ -8737,6 +8740,7 @@ function GameScreen({
   onChallengeResponseChange: (value: string) => void;
   onCompleteChallenge: () => void;
   currentDay: number;
+  gameAvailable: boolean;
   tripStartDate: string | null;
   alreadyPlayedToday: GameHistoryEntry | null;
   gameDayOverride: "open" | "closed" | null;
@@ -8759,7 +8763,7 @@ function GameScreen({
       !scorePersistenceDisabled && gameDayOverride !== "open" && alreadyPlayedToday !== null;
 
     return (
-      <div className="flex flex-col h-full overflow-y-auto">
+      <div className="flex flex-col h-full overflow-y-auto" data-game-day={gameDay}>
         <div className="relative bg-[#FF6B3D] text-white px-6 pt-12 pb-6 flex-shrink-0">
           <MemphisDecor />
           <button
@@ -8776,7 +8780,20 @@ function GameScreen({
             Quiz Turquie — {formatTripDayLabel(gameDay, tripStartDate)}
           </p>
         </div>
-        {isClosedByOwner ? (
+        {!gameAvailable ? (
+          <div
+            className="flex-1 flex flex-col items-center justify-center px-6 text-center"
+            data-game-window-state={`${tripStartDate ?? "null"}|${gameDay}|${currentDay}`}
+          >
+            <div className="text-8xl mb-6">🕕</div>
+            <h2 className="text-2xl font-black text-foreground mb-2">
+              Le jeu ouvre à 18 h
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Aucun défi n&apos;est disponible pour le moment.
+            </p>
+          </div>
+        ) : isClosedByOwner ? (
           <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
             <div className="text-8xl mb-6">🔒</div>
             <h2 className="text-2xl font-black text-foreground mb-2">
@@ -10269,6 +10286,7 @@ function SettingsScreen({
   onSaveGameScoring,
   currentDay,
   lastDefinedDay,
+  gameDayOverrideAvailable,
   gameDayOverride,
   onSetGameDayOverride,
   notificationPreferences,
@@ -10322,6 +10340,7 @@ function SettingsScreen({
   onSaveGameScoring: (scoring: GameScoringConfig) => Promise<{ ok: boolean; message: string }>;
   currentDay: number;
   lastDefinedDay: number | null;
+  gameDayOverrideAvailable: boolean;
   gameDayOverride: "open" | "closed" | null;
   onSetGameDayOverride: (
     code: string,
@@ -11285,7 +11304,7 @@ function SettingsScreen({
           </div>
         )}
 
-        {profile.role === "proprietaire" && cloudEnabled && (
+        {profile.role === "proprietaire" && cloudEnabled && gameDayOverrideAvailable && (
           <div className="bg-card rounded-2xl border border-border p-4">
             <p className="text-xs font-extrabold text-muted-foreground uppercase tracking-widest">
               Journée de jeu
@@ -12693,6 +12712,10 @@ export default function App() {
       return [];
     }
   });
+  const gameHistoryRef = useRef(gameHistory);
+  const notificationPreferencesRef = useRef(notificationPreferences);
+  gameHistoryRef.current = gameHistory;
+  notificationPreferencesRef.current = notificationPreferences;
   // Record personnel du mode "Défi" de Bazar Crush (Candy Crush) — cf.
   // candy-crush-challenge.ts. Même pattern que gameHistory ci-dessus : lu
   // depuis le localStorage tant que le cloud n'a pas encore hydraté.
@@ -12709,6 +12732,7 @@ export default function App() {
   });
   const [crosswordProgress, setCrosswordProgress] = useState<CrosswordProgressSnapshot | null>(null);
   const [postTripReplayDay, setPostTripReplayDay] = useState<number | null>(null);
+  const [gameNow, setGameNow] = useState(() => new Date());
 
   // Calculé tôt (avant l'effet d'hydratation cloud plus bas) car la
   // progression de jeu en cours (gameProgress) doit être comparée au jour
@@ -12717,10 +12741,41 @@ export default function App() {
     JOURS_DESTINATIONS.length > 0
       ? JOURS_DESTINATIONS[JOURS_DESTINATIONS.length - 1].jour
       : null;
-  const rawCurrentDay = computeCurrentDay(tripStartDate);
+  const rawCurrentDay = computeCurrentDay(tripStartDate, gameNow);
   const currentDay = clampToLastDefinedDay(rawCurrentDay, lastDefinedDay);
+  const activeGameDay = computeActiveGameDay(tripStartDate, lastDefinedDay, gameNow);
   const tripFinished = isTripFinished(rawCurrentDay, lastDefinedDay);
-  const postTripReplayEnabled = tripFinished && phase === "during";
+  const postTripReplayEnabled = tripFinished && activeGameDay === null && phase === "during";
+  const forcedOpenGameDay =
+    activeGameDay === null &&
+    !tripFinished &&
+    cloudSnapshot?.gameDayOverrides?.[currentDay] === "open"
+      ? currentDay
+      : null;
+  const playableGameDay = activeGameDay ?? forcedOpenGameDay;
+  const playableGameDayRef = useRef(playableGameDay);
+  playableGameDayRef.current = playableGameDay;
+
+  useEffect(() => {
+    const refreshGameClock = () => setGameNow(new Date());
+    const now = new Date();
+    const nextMidnight = new Date(now);
+    nextMidnight.setHours(24, 0, 0, 0);
+    const nextGameBoundary = new Date(now);
+    nextGameBoundary.setHours(18, 0, 0, 0);
+    if (nextGameBoundary.getTime() <= now.getTime()) {
+      nextGameBoundary.setDate(nextGameBoundary.getDate() + 1);
+    }
+    const nextBoundary = Math.min(nextMidnight.getTime(), nextGameBoundary.getTime());
+    const timeoutId = window.setTimeout(refreshGameClock, nextBoundary - now.getTime());
+    window.addEventListener("focus", refreshGameClock);
+    document.addEventListener("visibilitychange", refreshGameClock);
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.removeEventListener("focus", refreshGameClock);
+      document.removeEventListener("visibilitychange", refreshGameClock);
+    };
+  }, [gameNow]);
 
   useEffect(() => {
     if (screen !== "album") {
@@ -12810,7 +12865,34 @@ export default function App() {
       : Array.from({ length: Math.max(lastDefinedDay ?? 1, 1) }, (_, i) => i + 1);
   const gameDay = postTripReplayEnabled
     ? postTripReplayDay ?? replayDayChoices[replayDayChoices.length - 1] ?? currentDay
-    : currentDay;
+    : playableGameDay ?? currentDay;
+  const previousPlayableGameDayRef = useRef(playableGameDay);
+  const gameDayTransitionPending = previousPlayableGameDayRef.current !== playableGameDay;
+
+  useEffect(() => {
+    if (previousPlayableGameDayRef.current === playableGameDay) {
+      return;
+    }
+    previousPlayableGameDayRef.current = playableGameDay;
+    if (gameState === "intro") {
+      return;
+    }
+
+    setGameState("intro");
+    setCurrentQ(0);
+    setSelectedAns(null);
+    setAnswers([]);
+    setQuizStartedAt(null);
+    setQuizDurationSec(0);
+    setRiddleAnswer("");
+    setRiddleFeedback(null);
+    setRiddleValidated(false);
+    setRiddleSolved(false);
+    setRiddleSelfCheckPending(false);
+    setChallengeResponse("");
+    setChallengeDone(false);
+  }, [gameState, playableGameDay]);
+
   const isPostTripReplayOpenScreen = (target: Screen): boolean =>
     postTripReplayEnabled &&
     (target === "game" ||
@@ -12857,9 +12939,11 @@ export default function App() {
   // envois cloud, pour ne jamais désynchroniser les deux.
   const currentGameProgress: GameProgress | null =
     !postTripReplayEnabled &&
+    playableGameDay !== null &&
+    !gameDayTransitionPending &&
     (gameState === "playing" || gameState === "done" || gameState === "riddle" || gameState === "challenge")
       ? {
-          day: currentDay,
+          day: playableGameDay,
           phase: gameState === "done" ? "riddle" : gameState,
           answers,
           quizStartedAt,
@@ -13314,7 +13398,7 @@ export default function App() {
     gameHistory,
     candyCrushBest,
     gameState,
-    currentDay,
+    playableGameDay,
     answers,
     quizStartedAt,
     quizDurationSec,
@@ -13766,10 +13850,11 @@ export default function App() {
     }
 
     const cloudProgress = cloudProfile.gameProgress ?? null;
-    const dayOverrideForCurrentDay = cloudSnapshot.gameDayOverrides?.[currentDay] ?? null;
+    const dayOverrideForCurrentDay =
+      playableGameDay === null ? null : cloudSnapshot.gameDayOverrides?.[playableGameDay] ?? null;
     const hasMatchingCloudProgress =
       cloudProgress !== null &&
-      cloudProgress.day === currentDay &&
+      cloudProgress.day === playableGameDay &&
       dayOverrideForCurrentDay !== "closed";
 
     if (hasMatchingCloudProgress && gameState === "intro") {
@@ -13803,7 +13888,7 @@ export default function App() {
         setRiddleFeedback(
           cloudProgress.riddleSolved
             ? `Bonne réponse ! Vous gagnez ${gameScoring.riddlePoints} points.`
-            : `Pas tout à fait. La bonne réponse était "${getRiddleForDay(currentDay).answer}".`
+            : `Pas tout à fait. La bonne réponse était "${getRiddleForDay(playableGameDay).answer}".`
         );
       }
     } else if (
@@ -13847,7 +13932,7 @@ export default function App() {
     // de gameState lue ci-dessus reste néanmoins toujours à jour (fermeture
     // React normale), seul le déclenchement de l'effet ignore ses changements.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cloudEnabled, cloudSnapshot, isAuthenticated, profile.id, currentDay, postTripReplayEnabled]);
+  }, [cloudEnabled, cloudSnapshot, isAuthenticated, playableGameDay, profile.id, postTripReplayEnabled]);
 
   const lastCloudPushRef = useRef<string | null>(null);
   const pendingCloudPhaseRef = useRef<TravelPhase | null>(null);
@@ -15904,7 +15989,7 @@ const resetForProfileSwitch = () => {
     }
 
     try {
-      await setGameDayOverride(currentDay, value);
+      await setGameDayOverride(gameDay, value);
     } catch {
       return { ok: false, message: "Synchronisation cloud indisponible pour le moment." };
     }
@@ -15917,10 +16002,10 @@ const resetForProfileSwitch = () => {
       ok: true,
       message:
         value === "open"
-          ? `${formatTripDayLabel(currentDay, tripStartDate)} ouvert manuellement.`
+          ? `${formatTripDayLabel(gameDay, tripStartDate)} ouvert manuellement.`
           : value === "closed"
-            ? `${formatTripDayLabel(currentDay, tripStartDate)} fermé manuellement.`
-            : `${formatTripDayLabel(currentDay, tripStartDate)} repassé en automatique.`,
+            ? `${formatTripDayLabel(gameDay, tripStartDate)} fermé manuellement.`
+            : `${formatTripDayLabel(gameDay, tripStartDate)} repassé en automatique.`,
     };
   };
 
@@ -16174,8 +16259,10 @@ const resetForProfileSwitch = () => {
   const todaysQuestions = getQuestionsForDay(gameDay);
   const todaysRiddle = getRiddleForDay(gameDay);
   const todaysChallenge = getChallengeForDay(gameDay);
+  const gameDestination =
+    JOURS_DESTINATIONS.find((entry) => entry.jour === gameDay)?.destination ?? TRIP.todayDestination;
 
-  const localGameProgressCheckedRef = useRef(false);
+  const localGameProgressCheckedRef = useRef<number | null | undefined>(undefined);
   useEffect(() => {
     if (cloudEnabled) return; // Mode cloud : géré par l'effet d'hydratation cloud.
     if (postTripReplayEnabled) {
@@ -16192,11 +16279,11 @@ const resetForProfileSwitch = () => {
       setChallengeResponse("");
       return;
     }
-    if (localGameProgressCheckedRef.current) return;
-    localGameProgressCheckedRef.current = true;
+    if (localGameProgressCheckedRef.current === playableGameDay) return;
+    localGameProgressCheckedRef.current = playableGameDay;
 
     const progress = parseGameProgress(localStorage.getItem("jp-game-progress"));
-    if (!progress || progress.day !== currentDay) {
+    if (playableGameDay === null || !progress || progress.day !== playableGameDay) {
       // Progression d'un jour précédent jamais terminée : on ne la reprend
       // pas, on repart sur un jour neuf.
       if (gameState !== "intro") {
@@ -16221,14 +16308,16 @@ const resetForProfileSwitch = () => {
       );
     }
     setChallengeResponse(progress.challengeDraft ?? "");
-  }, [cloudEnabled, currentDay, gameState, todaysRiddle.answer, postTripReplayEnabled]);
+  }, [cloudEnabled, gameState, playableGameDay, todaysRiddle.answer, postTripReplayEnabled]);
 
   const answerQ = (idx: number) => {
     if (selectedAns !== null) return;
+    const answeredGameDay = playableGameDay;
     setSelectedAns(idx);
     const newAnswers = [...answers, idx];
     setAnswers(newAnswers);
     setTimeout(() => {
+      if (playableGameDayRef.current !== answeredGameDay) return;
       if (currentQ < todaysQuestions.length - 1) {
         setCurrentQ((q) => q + 1);
         setSelectedAns(null);
@@ -16301,10 +16390,10 @@ const resetForProfileSwitch = () => {
       return;
     }
 
-    if (!postTripReplayEnabled) {
+    if (!postTripReplayEnabled && playableGameDay !== null) {
       const entry: GameHistoryEntry = {
-        day: currentDay,
-        location: todayDestination,
+        day: playableGameDay,
+        location: gameDestination,
         quizScore: gameScore,
         correctCount,
         riddleSolved,
@@ -16631,8 +16720,8 @@ const resetForProfileSwitch = () => {
   const todayDestination = todayEntry?.destination ?? TRIP.todayDestination;
   const todaySubtitle = todayEntry?.visites_prevues ?? TRIP.todaySubtitle;
   const totalDays = lastDefinedDay ?? TRIP.totalDays;
-  const alreadyPlayedToday = gameHistory.find((entry) => entry.day === currentDay) ?? null;
-  const gameDayOverride = cloudSnapshot?.gameDayOverrides?.[currentDay] ?? null;
+  const alreadyPlayedToday = gameHistory.find((entry) => entry.day === playableGameDay) ?? null;
+  const gameDayOverride = cloudSnapshot?.gameDayOverrides?.[gameDay] ?? null;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -16664,31 +16753,57 @@ const resetForProfileSwitch = () => {
   }, [daysUntilStart, isAuthenticated, notificationPreferences, pct, profile.id]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || postTripReplayEnabled || phase !== "during") {
       return;
     }
 
-    const today = new Date().toISOString().slice(0, 10);
-    if (!shouldTriggerGameReminder(currentDay, gameHistory, today, notificationPreferences)) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      const shown = showNotification("Defi du jour", "Tu n'as pas encore joue aujourd'hui !");
-      if (!shown) {
-        return;
-      }
-
-      const updated = updateNotificationPreferences(profile.id, {
-        lastGameReminderDate: today,
+    const pendingSlots = new Map<string, ReturnType<typeof getPendingGameReminderSlots>[number]>();
+    if (activeGameDay !== null) {
+      getPendingGameReminderSlots(tripStartDate, activeGameDay, gameNow).forEach((slot) => {
+        pendingSlots.set(slot.id, slot);
       });
-      setNotificationPreferences(updated);
-    }, 300);
+    }
+    if (!tripFinished) {
+      getPendingGameReminderSlots(tripStartDate, currentDay, gameNow)
+        .filter((slot) => slot.scheduledAt.getHours() === 18)
+        .forEach((slot) => pendingSlots.set(slot.id, slot));
+    }
+
+    const timeoutIds = Array.from(pendingSlots.values()).map((slot) =>
+      window.setTimeout(() => {
+        if (Date.now() - slot.scheduledAt.getTime() > 60_000) return;
+        if (computeActiveGameDay(tripStartDate, lastDefinedDay, new Date()) !== slot.gameDay) return;
+        if (cloudSnapshot?.gameDayOverrides?.[slot.gameDay] === "closed") return;
+        const currentPreferences = readNotificationPreferences(profile.id);
+        notificationPreferencesRef.current = currentPreferences;
+        if (!shouldTriggerGameReminder(slot.gameDay, gameHistoryRef.current, slot.id, currentPreferences)) return;
+        const shown = showNotification("Defi du jour", "Tu n'as pas encore joue aujourd'hui !");
+        if (!shown) return;
+        const updated = updateNotificationPreferences(profile.id, {
+          lastGameReminderSlot: slot.id,
+        });
+        setNotificationPreferences(updated);
+      }, Math.max(0, slot.scheduledAt.getTime() - Date.now()))
+    );
 
     return () => {
-      window.clearTimeout(timeoutId);
+      timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
     };
-  }, [currentDay, gameHistory, isAuthenticated, notificationPreferences, profile.id]);
+  }, [
+    activeGameDay,
+    cloudSnapshot?.gameDayOverrides,
+    currentDay,
+    gameHistory,
+    gameNow,
+    isAuthenticated,
+    lastDefinedDay,
+    notificationPreferences,
+    phase,
+    postTripReplayEnabled,
+    profile.id,
+    tripFinished,
+    tripStartDate,
+  ]);
 
   useEffect(() => {
     const previousComments = previousCommentsSnapshotRef.current;
@@ -17945,8 +18060,9 @@ const resetForProfileSwitch = () => {
             onSaveTripStartDate={saveTripStartDate}
             gameScoring={gameScoring}
             onSaveGameScoring={saveGameScoring}
-            currentDay={currentDay}
+            currentDay={gameDay}
             lastDefinedDay={lastDefinedDay}
+            gameDayOverrideAvailable={!postTripReplayEnabled}
             gameDayOverride={gameDayOverride}
             onSetGameDayOverride={confirmDayOverrideChange}
             notificationPreferences={notificationPreferences}
@@ -18288,6 +18404,7 @@ const resetForProfileSwitch = () => {
               setChallengeDone(false);
             }}
             currentDay={currentDay}
+            gameAvailable={playableGameDay !== null || postTripReplayEnabled}
             tripStartDate={tripStartDate}
             alreadyPlayedToday={alreadyPlayedToday}
             gameDayOverride={gameDayOverride}
@@ -18337,7 +18454,7 @@ const resetForProfileSwitch = () => {
             onBack={() => goToScreen("dashboard")}
             history={gameHistory}
             familyMembers={familyMembersForPodium}
-            currentDay={currentDay}
+            currentDay={playableGameDay ?? currentDay}
             sharedChallengeDays={sharedChallengeDays}
             tripStartDate={tripStartDate}
             currentProfileId={profile.id}
@@ -18829,6 +18946,7 @@ const resetForProfileSwitch = () => {
               setChallengeDone(false);
             }}
             currentDay={currentDay}
+            gameAvailable={playableGameDay !== null || postTripReplayEnabled}
             tripStartDate={tripStartDate}
             alreadyPlayedToday={alreadyPlayedToday}
             gameDayOverride={gameDayOverride}
@@ -18924,7 +19042,7 @@ const resetForProfileSwitch = () => {
             onBack={() => goToScreen("dashboard")}
             history={gameHistory}
             familyMembers={familyMembersForPodium}
-            currentDay={currentDay}
+            currentDay={playableGameDay ?? currentDay}
             sharedChallengeDays={sharedChallengeDays}
             tripStartDate={tripStartDate}
             destinationSurveyDestination={todayDestination}
@@ -19089,8 +19207,9 @@ const resetForProfileSwitch = () => {
             onSaveTripStartDate={saveTripStartDate}
             gameScoring={gameScoring}
             onSaveGameScoring={saveGameScoring}
-            currentDay={currentDay}
+            currentDay={gameDay}
             lastDefinedDay={lastDefinedDay}
+            gameDayOverrideAvailable={!postTripReplayEnabled}
             gameDayOverride={gameDayOverride}
             onSetGameDayOverride={confirmDayOverrideChange}
             notificationPreferences={notificationPreferences}

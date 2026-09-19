@@ -10,18 +10,15 @@ de pertes car c'est firebase qui est prioritaire et lors du
 déploiement il y a fusion entre les données de Firebase et ce qui vient
 de place.ts (/ document.ts)
 
-
+----
 * JEU - J5 - Jeu du jour - Un joueur qui a oublié de faire le jeu de la veille pourrait-il le passer quand même ? (paramètre possible ? Paramètre admin ? ...)
 * JEU - J2 - Jeu du jour - notification quiz du jour
+---
 * JEU - J1 - Jeu du jour - pouvoir revoir les questions (quiz / enigmes) pour qu'elle ne se basent que sur ce qui a été réellement visité (en lien avec Backlog C2), pas prevu => associer une question à un jour / un id de places
 * JEU - J3 - Jeu du jour - défi photos
 
 * UI - UI1 - retour l'UI ? S'inspire de wechat
 
 * POST-SEJOUR - PSJ1 - récupérer polarstep ?
-* POST-SEJOUR - PSJ2 - créer un album souvenir => Epic 30 préparée : album personnel PDF, puis édition familiale privée publiée par le propriétaire (spécifications : docs/specs-stories/epic-30/)
 * POST-SEJOUR - PSJ3 - Pouvoir visionner les vidéos voyage mystere
 => voir si on se créer un écran post séjour avec l'album et les vidéos par exemple ?
-
-Abandonnés
-* CONTENU - C6 - pouvoir stocker des photos (=>attention cela a un coût)

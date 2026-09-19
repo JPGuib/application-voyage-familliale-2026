@@ -6,7 +6,16 @@
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 export function isValidTripStartDate(value: string | null | undefined): value is string {
-  return typeof value === "string" && DATE_PATTERN.test(value);
+  if (typeof value !== "string") return false;
+  const match = DATE_PATTERN.exec(value);
+  if (!match) return false;
+  const [, year, month, day] = match;
+  const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+  return (
+    parsed.getFullYear() === Number(year) &&
+    parsed.getMonth() === Number(month) - 1 &&
+    parsed.getDate() === Number(day)
+  );
 }
 
 function parseLocalDate(value: string): Date | null {
@@ -18,6 +27,35 @@ function parseLocalDate(value: string): Date | null {
 
 function startOfLocalDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function localCalendarDayNumber(date: Date): number {
+  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000;
+}
+
+/**
+ * Resolves the challenge available in the local window [day J 18:00, day J+1 18:00).
+ * Returns null before the first window and after the final one.
+ */
+export function computeActiveGameDay(
+  tripStartDate: string | null | undefined,
+  lastDefinedDay: number | null,
+  now: Date = new Date()
+): number | null {
+  if (!isValidTripStartDate(tripStartDate) || lastDefinedDay === null || lastDefinedDay < 1) {
+    return null;
+  }
+
+  const start = parseLocalDate(tripStartDate);
+  if (!start) return null;
+
+  const gameWindowDate = new Date(now);
+  if (now.getHours() < 18) {
+    gameWindowDate.setDate(gameWindowDate.getDate() - 1);
+  }
+
+  const activeDay = localCalendarDayNumber(gameWindowDate) - localCalendarDayNumber(start) + 1;
+  return activeDay >= 1 && activeDay <= lastDefinedDay ? activeDay : null;
 }
 
 /**

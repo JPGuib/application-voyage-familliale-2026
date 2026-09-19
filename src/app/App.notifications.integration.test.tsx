@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "./App";
 import { PLACES } from "../content/places";
 
@@ -32,7 +32,10 @@ function makeProfile(id: string, surname: string, role: "proprietaire" | "utilis
   };
 }
 
-function makeSnapshot(placeComments: Record<string, unknown>) {
+function makeSnapshot(
+  placeComments: Record<string, unknown>,
+  options: { tripStartDate?: string | null; gameDayOverrides?: Record<number, "open" | "closed"> } = {}
+) {
   return {
     familyState: {
       version: 1,
@@ -51,9 +54,9 @@ function makeSnapshot(placeComments: Record<string, unknown>) {
     ownerGlobalChecklistAdditions: [],
     ownerGlobalChecklistRemovals: {},
     placeComments,
-    gameDayOverrides: {},
+    gameDayOverrides: options.gameDayOverrides ?? {},
     phase: "during" as const,
-    tripStartDate: null,
+    tripStartDate: options.tripStartDate ?? null,
     launchGateCycle: 1,
     launchGateCompletedCycleByProfile: {
       p1: 1,
@@ -196,5 +199,53 @@ describe("App notifications integration (story 22.1)", () => {
     expect(
       screen.getByRole("button", { name: /Commentaires de la famille sur les lieux/i })
     ).toBeDisabled();
+  });
+
+  it("sends the opening reminder once when the mounted app reaches 18 h", async () => {
+    vi.useRealTimers();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 7, 24, 17, 59, 59));
+    localStorage.setItem(
+      "jp-notification-prefs-by-profile",
+      JSON.stringify({
+        p3: {
+          notif_checklist: false,
+          notif_game: true,
+          notif_comments: false,
+        },
+      })
+    );
+
+    cloudSyncMock.mockImplementation(() => ({
+      cloudEnabled: true,
+      cloudReady: true,
+      cloudAuthError: null,
+      cloudActorUid: "actor-visitor",
+      cloudSnapshot: makeSnapshot({}, { tripStartDate: "2026-08-24" }),
+      pushSnapshot: vi.fn().mockResolvedValue(undefined),
+      claimRoleForProfile: vi.fn().mockResolvedValue(null),
+      familyId: "famille-voyage-2026",
+    }));
+
+    render(<App />);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_000);
+    });
+
+    const MockNotificationCtor = Notification as unknown as {
+      instances: Array<{ title: string; body: string }>;
+    };
+    expect(MockNotificationCtor.instances).toEqual([
+      {
+        title: "Defi du jour",
+        body: "Tu n'as pas encore joue aujourd'hui !",
+      },
+    ]);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+    expect(MockNotificationCtor.instances).toHaveLength(1);
   });
 });
