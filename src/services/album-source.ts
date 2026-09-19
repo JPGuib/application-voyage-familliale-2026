@@ -26,7 +26,7 @@ import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
 import { computeDestinationSurveyResults } from "../app/destination-survey";
 import { TRIP } from "../content/trip";
-import { getChallengeForDay } from "../content/game";
+import { DEFAULT_GAME_SCORING, getChallengeForDay } from "../content/game";
 
 /**
  * Détermine si l'utilisateur a le droit d'accéder au système d'export d'album.
@@ -678,7 +678,7 @@ export function assembleAlbumSource(
       role: item.role,
     })),
     votesByProfile: snapshot.destinationSurvey ?? {},
-    scoring: snapshot.gameScoring.destinationProposalScoring,
+    scoring: (snapshot.gameScoring ?? DEFAULT_GAME_SCORING).destinationProposalScoring,
   });
 
   const sharedChallengeDays = Array.from(new Set(

@@ -2,6 +2,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import App from "./App";
 import { hashOwnerCode } from "./owner-code";
+import { DEFAULT_GAME_SCORING } from "../content/game";
 
 const cloudSyncMock = vi.fn();
 
@@ -47,6 +48,7 @@ function makeSnapshot(phase: SnapshotPhase) {
     phase,
     launchGateCycle,
     launchGateCompletedCycleByProfile,
+    gameScoring: DEFAULT_GAME_SCORING,
     profiles: {
       p1: {
         profileId: "p1",
