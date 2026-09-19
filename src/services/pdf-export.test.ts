@@ -144,7 +144,7 @@ describe("collectPdfImages > editorial photos (story 30.5)", () => {
     };
   }
 
-  it("includes editorial photos for included places, capped per place", () => {
+  it("includes every editorial photo for included places", () => {
     const content = baseContent({
       places: {
         "place-1": {
@@ -161,7 +161,7 @@ describe("collectPdfImages > editorial photos (story 30.5)", () => {
     const images = collectPdfImages(content);
     const editorial = images.filter((image) => image.kind === "editorial");
 
-    expect(editorial).toHaveLength(ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE);
+    expect(editorial).toHaveLength(20);
     expect(editorial.every((image) => image.src.startsWith("/images/"))).toBe(true);
   });
 

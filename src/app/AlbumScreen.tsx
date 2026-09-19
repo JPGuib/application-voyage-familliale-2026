@@ -503,8 +503,12 @@ function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
         const hasNotes = Object.keys(placeEntries).length > 0;
         const hasPresentation = Boolean(place.history && place.history.trim());
         const hasAnecdotes = Boolean(place.anecdotes && place.anecdotes.length > 0);
-        const editorialPhotos = (place.photos ?? []).slice(0, content.photoBudgetPerPlace.editorial);
-        const carnetPhotos = selectBudgetedCarnetPhotos(placeEntries, content.photoBudgetPerPlace.carnet);
+        const editorialPhotos = place.photos ?? [];
+        const carnetPhotos = Object.values(placeEntries).flatMap((entry) => {
+          if (!entry || typeof entry !== "object" || !("photos" in entry)) return [];
+          const photos = (entry as { photos?: Record<string, string> }).photos ?? {};
+          return Object.entries(photos).map(([id, src]) => ({ id, src }));
+        });
         const hasGallery = editorialPhotos.length > 0 || carnetPhotos.length > 0;
         const placeComments = Object.values(content.comments[placeId] ?? {});
         const hasComments = placeComments.length > 0;

@@ -467,26 +467,21 @@ export function filterAlbumContent(
   const photoBudgetPerPlace = resolvePhotoBudgetPerPlace(includedPlaceCount + includedContentTopicCount);
   const photoQualityTier = resolvePhotoQualityTier(includedPlaceCount + includedContentTopicCount);
 
-  // Estimer le nombre d'images : photos éditoriales des lieux inclus +
-  // photos du carnet de voyage, chacune plafonnée au budget par lieu
-  // (cf. photoBudgetPerPlace), les photos de carnet les plus récentes étant
-  // conservées en priorité en cas de troncature (cf. selectBudgetedCarnetPhotos).
+  // Estimer le nombre d'images : toutes les photos disponibles sont conservées.
+  // Le garde-fou de volume est appliqué juste avant le rendu PDF.
   let estimatedImageCount = 0;
   for (const [placeId, place] of Object.entries(filteredPlaces)) {
-    if (place.photos && place.photos.length > 0) {
-      estimatedImageCount += Math.min(place.photos.length, photoBudgetPerPlace.editorial);
-    }
+    estimatedImageCount += place.photos?.length ?? 0;
     const placeEntries = filteredEntries[placeId] ?? {};
-    estimatedImageCount += selectBudgetedCarnetPhotos(placeEntries, photoBudgetPerPlace.carnet).length;
+    estimatedImageCount += Object.values(placeEntries).reduce((count, entry) => {
+      if (!entry || typeof entry !== "object" || !("photos" in entry)) return count;
+      return count + Object.keys((entry as { photos?: Record<string, unknown> }).photos ?? {}).length;
+    }, 0);
   }
 
-  // Idem pour les topics de contenu inclus : photos éditoriales uniquement
-  // (les entrées de carnet de contenu n'ont jamais de photos, cf.
-  // AlbumSourceContentEntry).
+  // Idem pour les topics de contenu inclus : toutes les photos éditoriales.
   for (const topic of Object.values(filteredContentTopics)) {
-    if (topic.photos && topic.photos.length > 0) {
-      estimatedImageCount += Math.min(topic.photos.length, photoBudgetPerPlace.editorial);
-    }
+    estimatedImageCount += topic.photos?.length ?? 0;
   }
 
   return {

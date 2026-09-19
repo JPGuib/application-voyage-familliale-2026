@@ -6,7 +6,6 @@ import {
   isPhotoQualityDegraded,
   PHOTO_QUALITY_TIER_DEFAULT,
   resolveEffectiveCoverPhoto,
-  selectBudgetedCarnetPhotos,
 } from "../app/albumUtils";
 import { computeResizedDimensions } from "../app/image-upload";
 import { formatPrimaryTripDayLabel, formatTripDayLabel } from "../app/trip-day-format";
@@ -159,13 +158,10 @@ export function collectPdfImages(content: FilteredAlbumContent): PdfPreparedImag
   // `resolvePhotoBudgetPerPlace` dans albumUtils.ts. Ce même budget est
   // utilisé par l'aperçu HTML (AlbumScreen.tsx) pour rester cohérent avec ce
   // qui sera effectivement rendu dans le PDF.
-  const { editorial: editorialBudget, carnet: carnetBudget } = content.photoBudgetPerPlace;
-
   for (const [placeId, place] of Object.entries(content.places)) {
     // Photos éditoriales des lieux inclus (présentation officielle du lieu).
     const photos = place.photos ?? [];
-    const cappedEditorial = photos.slice(0, editorialBudget);
-    cappedEditorial.forEach((src, index) => {
+    photos.forEach((src, index) => {
       if (typeof src === "string" && src) {
         images.push({
           id: `editorial:${placeId}:${index}`,
@@ -180,7 +176,11 @@ export function collectPdfImages(content: FilteredAlbumContent): PdfPreparedImag
     // récentes conservées en priorité en cas de troncature (cf.
     // selectBudgetedCarnetPhotos).
     const placeEntries = content.entries[placeId] ?? {};
-    for (const photo of selectBudgetedCarnetPhotos(placeEntries, carnetBudget)) {
+    for (const photo of Object.values(placeEntries).flatMap((entry) => {
+      if (!entry || typeof entry !== "object" || !("photos" in entry)) return [];
+      const photosById = (entry as { photos?: Record<string, string> }).photos ?? {};
+      return Object.entries(photosById).map(([id, src]) => ({ id, src }));
+    })) {
       images.push({ id: photo.id, src: photo.src, kind: "carnet", fileSize: photo.src.length * 0.75 });
     }
   }
@@ -192,7 +192,7 @@ export function collectPdfImages(content: FilteredAlbumContent): PdfPreparedImag
   // s'applique ici.
   for (const [key, topic] of Object.entries(content.contentTopics ?? {})) {
     const photos = topic.photos ?? [];
-    photos.slice(0, editorialBudget).forEach((src, index) => {
+    photos.forEach((src, index) => {
       if (typeof src === "string" && src) {
         images.push({
           id: `content-editorial:${key}:${index}`,
@@ -1059,18 +1059,22 @@ export async function exportAlbumAsPdf(
     // export adaptatif), les photos de carnet les plus récentes étant
     // conservées en priorité en cas de troncature.
     const galleryEntries: Array<{ src: string; editorial: boolean }> = [];
-    for (const src of (place.photos ?? []).slice(0, content.photoBudgetPerPlace.editorial)) {
+    for (const src of place.photos ?? []) {
       galleryEntries.push({ src, editorial: true });
     }
-    for (const photo of selectBudgetedCarnetPhotos(placeEntries, content.photoBudgetPerPlace.carnet)) {
+    for (const photo of Object.values(placeEntries).flatMap((entry) => {
+      if (!entry || typeof entry !== "object" || !("photos" in entry)) return [];
+      const photosById = (entry as { photos?: Record<string, string> }).photos ?? {};
+      return Object.entries(photosById).map(([id, src]) => ({ id, src }));
+    })) {
       galleryEntries.push({ src: photo.src, editorial: false });
     }
 
     if (galleryEntries.length > 0) {
-      const columns = 3;
+      const columns = 2;
       const gap = 4;
       const cellWidth = (pageContentWidth - gap * (columns - 1)) / columns;
-      const cellHeight = 36;
+      const cellHeight = 55;
       let column = 0;
       for (const item of galleryEntries) {
         if (column === 0) {
@@ -1344,12 +1348,12 @@ export async function exportAlbumAsPdf(
 
       // Galerie photo éditoriale uniquement : les entrées de carnet de
       // contenu n'ont jamais de photos (cf. AlbumSourceContentEntry).
-      const galleryPhotos = (topic.photos ?? []).slice(0, content.photoBudgetPerPlace.editorial);
+      const galleryPhotos = topic.photos ?? [];
       if (galleryPhotos.length > 0) {
-        const columns = 3;
+        const columns = 2;
         const gap = 4;
         const cellWidth = (pageContentWidth - gap * (columns - 1)) / columns;
-        const cellHeight = 36;
+        const cellHeight = 55;
         let column = 0;
         for (const src of galleryPhotos) {
           if (column === 0) {

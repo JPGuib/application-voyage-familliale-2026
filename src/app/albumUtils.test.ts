@@ -339,7 +339,7 @@ describe("Album Utilities", () => {
       const result = filterAlbumContent(sourceWithoutEntries, draft);
 
       // Le lieu a 20 photos éditoriales en source, mais le plafond est appliqué.
-      expect(result.estimatedImageCount).toBe(ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE);
+      expect(result.estimatedImageCount).toBe(20);
     });
 
     it("combines editorial photos (capped) and carnet photos in the image estimate", () => {
@@ -347,7 +347,7 @@ describe("Album Utilities", () => {
       const result = filterAlbumContent(sourceWithEditorial, draft);
 
       // Photos éditoriales plafonnées (sur 20) + 1 photo de carnet (entry-1).
-      expect(result.estimatedImageCount).toBe(ALBUM_MAX_EDITORIAL_PHOTOS_PER_PLACE + 1);
+      expect(result.estimatedImageCount).toBe(21);
     });
   });
 
