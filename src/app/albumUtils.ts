@@ -430,7 +430,7 @@ export function filterAlbumContent(
             + (destinationPoints.get(profileId) ?? 0),
         }))
         .sort((left, right) => right.totalScore - left.totalScore);
-      gameSummary.podium = scoreEntries.slice(0, 3).map((entry, index) => ({ ...entry, rank: index + 1 }));
+      gameSummary.podium = scoreEntries.map((entry, index) => ({ ...entry, rank: index + 1 }));
       gameSummary.totalScore += destinationPoints.get(draft.profileId) ?? 0;
     }
   }

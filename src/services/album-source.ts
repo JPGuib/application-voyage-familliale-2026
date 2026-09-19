@@ -26,6 +26,7 @@ import { VISITES_GUIDEES } from "../content/generated/visites-guidees";
 import { JOURS_DESTINATIONS } from "../content/generated/jours-destinations";
 import { computeDestinationSurveyResults } from "../app/destination-survey";
 import { TRIP } from "../content/trip";
+import { getChallengeForDay } from "../content/game";
 
 /**
  * Détermine si l'utilisateur a le droit d'accéder au système d'export d'album.
@@ -711,7 +712,12 @@ export function assembleAlbumSource(
         };
       })
       .filter((entry) => entry.response.length > 0);
-    return entries.length > 0 ? [{ day, entries }] : [];
+    return entries.length > 0 ? [{
+      day,
+      title: getChallengeForDay(day).title,
+      description: getChallengeForDay(day).description,
+      entries,
+    }] : [];
   });
 
   return {

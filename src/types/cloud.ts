@@ -584,6 +584,8 @@ export type AlbumSharedChallengeEntry = {
 
 export type AlbumSharedChallengeDay = {
   day: number;
+  title: string;
+  description: string;
   entries: AlbumSharedChallengeEntry[];
 };
 

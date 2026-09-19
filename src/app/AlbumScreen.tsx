@@ -705,26 +705,31 @@ function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
             {content.gameSummary.podium.length > 0 && (
               <div className="game-podium">
                 <h4>Podium familial</h4>
-                <ol>
+                <div className="game-podium-list">
                   {content.gameSummary.podium.map((entry) => (
-                    <li key={`${entry.profileId}-${entry.rank}`}>
-                      {entry.surname} : {entry.totalScore} pts
-                    </li>
+                    <div className={`game-podium-row game-podium-row--${entry.rank}`} key={`${entry.profileId}-${entry.rank}`}>
+                      <span className="game-podium-medal">{entry.rank <= 3 ? ["🥇", "🥈", "🥉"][entry.rank - 1] : `#${entry.rank}`}</span>
+                      <strong>{entry.surname}</strong>
+                      <span>{entry.totalScore} pts</span>
+                    </div>
                   ))}
-                </ol>
+                </div>
               </div>
             )}
             {content.gameSummary.dailyResultsByProfile && (
               <div className="game-results-detail">
                 <h4>Scores et détails par journée</h4>
                 {Object.entries(content.gameSummary.dailyResultsByProfile)
-                  .filter(([profileId]) => content.gameSummary?.profiles?.[profileId]?.role === "utilisateur")
+                  .filter(([profileId]) => {
+                    const role = content.gameSummary?.profiles?.[profileId]?.role;
+                    return role === "utilisateur" || role === undefined;
+                  })
                   .flatMap(([profileId, entries]) => entries.map((entry) => ({
                     profileId,
                     surname: content.gameSummary?.profiles?.[profileId]?.surname ?? profileId,
                     entry,
                   })))
-                  .sort((left, right) => left.entry.day - right.entry.day || left.surname.localeCompare(right.surname, "fr"))
+                  .sort((left, right) => left.surname.localeCompare(right.surname, "fr") || left.entry.day - right.entry.day)
                   .map(({ surname, entry }) => (
                     <div className="game-result-card" key={`${surname}-${entry.day}`}>
                       <strong>{surname} · Jour {entry.day}</strong>
@@ -768,10 +773,11 @@ function AlbumPreview({ content, draft, source }: AlbumPreviewProps) {
             )}
             {content.gameSummary.sharedChallenges && content.gameSummary.sharedChallenges.length > 0 && (
               <div className="game-results-detail">
-                <h4>Défis partagés</h4>
+                  <h4>Défis partagés</h4>
                 {content.gameSummary.sharedChallenges.flatMap((challengeDay) => challengeDay.entries.map((entry) => (
-                  <div className="game-result-card" key={`shared-${challengeDay.day}-${entry.profileId}`}>
-                    <strong>{entry.surname} · Jour {challengeDay.day}</strong>
+                  <div className="game-result-card game-result-card--shared" key={`shared-${challengeDay.day}-${entry.profileId}`}>
+                    <strong>Jour {challengeDay.day} · {entry.surname}</strong>
+                    <small>{challengeDay.title} : {challengeDay.description}</small>
                     <span>{entry.response}</span>
                     <small>{entry.reactions.map((reaction) => `${reaction.emoji} ${reaction.count}`).join("  ") || "Aucune réaction"}{entry.bestVoters.length > 0 ? `  🏆 ${entry.bestVoters.length}` : ""}</small>
                   </div>

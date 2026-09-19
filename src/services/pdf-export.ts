@@ -434,6 +434,7 @@ async function measureImageDimensions(
 const PRIMARY_COLOR: [number, number, number] = [255, 107, 61]; // #FF6B3D (--primary)
 const SECONDARY_COLOR: [number, number, number] = [255, 217, 61]; // #FFD93D (--secondary)
 const ACCENT_TEAL_COLOR: [number, number, number] = [0, 196, 167]; // #00C4A7 (--accent)
+const RESULTS_BLUE_COLOR: [number, number, number] = [107, 61, 255]; // #6B3DFF (écran Résultats)
 const TEXT_COLOR: [number, number, number] = [26, 26, 46]; // #1A1A2E (--foreground)
 const MUTED_TEXT_COLOR: [number, number, number] = [139, 115, 85]; // #8B7355 (--muted-foreground)
 const PAGE_BACKGROUND_COLOR: [number, number, number] = [255, 251, 245]; // #FFFBF5 (--background)
@@ -1408,9 +1409,10 @@ export async function exportAlbumAsPdf(
 
   // --- Résultats de jeu ---------------------------------------------------
   if (content.gameSummary) {
+    const gameSectionStartPage = doc.getNumberOfPages() + 1;
     doc.addPage();
     paintPageBackground(doc, pageWidth, pageHeight);
-    drawTitleBand(doc, "Résultats de jeu", pageWidth, margin, 12, ACCENT_TEAL_COLOR);
+    drawTitleBand(doc, "Résultats de jeu", pageWidth, margin, 12, RESULTS_BLUE_COLOR);
     let cursorY = 34;
 
     doc.setFont("Nunito", "bold");
@@ -1449,7 +1451,7 @@ export async function exportAlbumAsPdf(
     if (content.gameSummary.podium.length > 0) {
       doc.setFont("Nunito", "bold");
       doc.setFontSize(12);
-      doc.setTextColor(...ACCENT_TEAL_COLOR);
+      doc.setTextColor(...RESULTS_BLUE_COLOR);
       doc.text("Podium familial", margin, cursorY);
       doc.setTextColor(...TEXT_COLOR);
       cursorY += 8;
@@ -1457,15 +1459,22 @@ export async function exportAlbumAsPdf(
       const rankColors: Array<[number, number, number]> = [SECONDARY_COLOR, [201, 201, 201], [205, 164, 120]];
       for (const entry of content.gameSummary.podium) {
         const rankColor = rankColors[entry.rank - 1] ?? PRIMARY_COLOR;
+        const rowFill = entry.rank === 1 ? [255, 243, 224] : entry.rank === 3 ? [251, 233, 231] : [245, 245, 245];
+        doc.setFillColor(...rowFill as [number, number, number]);
+        doc.roundedRect(margin, cursorY - 5, pageContentWidth, 9, 4.5, 4.5, "F");
         doc.setFillColor(...rankColor);
-        doc.circle(margin + 3, cursorY - 1.1, 3, "F");
+        doc.circle(margin + 5, cursorY - 0.8, 3, "F");
         doc.setFont("Nunito", "bold");
         doc.setFontSize(9.5);
         doc.setTextColor(...TEXT_COLOR);
-        doc.text(String(entry.rank), margin + 3, cursorY - 0.1, { align: "center" });
+        doc.text(entry.rank <= 3 ? ["1", "2", "3"][entry.rank - 1] : String(entry.rank), margin + 5, cursorY, { align: "center" });
         doc.setFont("Nunito", "normal");
         doc.setFontSize(11);
-        doc.text(`${entry.surname} — ${entry.totalScore} pts`, margin + 9, cursorY);
+        doc.setFont("Nunito", "bold");
+        doc.text(entry.surname, margin + 12, cursorY);
+        doc.setTextColor(...RESULTS_BLUE_COLOR);
+        doc.text(`${entry.totalScore} pts`, pageWidth - margin - 4, cursorY, { align: "right" });
+        doc.setTextColor(...TEXT_COLOR);
         cursorY += 7.5;
       }
     }
@@ -1473,7 +1482,10 @@ export async function exportAlbumAsPdf(
     const gameProfiles = content.gameSummary.profiles ?? {};
     const dailyResultsByProfile = content.gameSummary.dailyResultsByProfile ?? {};
     const playerIds = Object.keys(dailyResultsByProfile).filter(
-      (profileId) => gameProfiles[profileId]?.role === "utilisateur"
+      (profileId) => {
+        const role = gameProfiles[profileId]?.role;
+        return role === "utilisateur" || role === undefined;
+      }
     );
     const ensureGameSpace = (height: number) => {
       cursorY = ensureSpace(doc, cursorY, height, pageWidth, pageHeight, margin, {
@@ -1503,14 +1515,14 @@ export async function exportAlbumAsPdf(
       ensureGameSpace(13);
       doc.setFont("Nunito", "bold");
       doc.setFontSize(12);
-      doc.setTextColor(...ACCENT_TEAL_COLOR);
+      doc.setTextColor(...RESULTS_BLUE_COLOR);
       doc.text("Scores et détails par journée", margin, cursorY);
       cursorY += 8;
-      const days = Array.from(new Set(playerIds.flatMap((id) => dailyResultsByProfile[id].map((entry) => entry.day)))).sort(
-        (left, right) => left - right
-      );
-      for (const day of days) {
-        for (const profileId of playerIds) {
+      for (const profileId of playerIds.sort((left, right) =>
+        (gameProfiles[left]?.surname ?? left).localeCompare(gameProfiles[right]?.surname ?? right, "fr")
+      )) {
+        const days = dailyResultsByProfile[profileId].map((entry) => entry.day).sort((left, right) => left - right);
+        for (const day of days) {
           const entry = dailyResultsByProfile[profileId].find((item) => item.day === day);
           if (!entry) continue;
           const surname = gameProfiles[profileId]?.surname ?? profileId;
@@ -1531,7 +1543,7 @@ export async function exportAlbumAsPdf(
       ensureGameSpace(13);
       doc.setFont("Nunito", "bold");
       doc.setFontSize(12);
-      doc.setTextColor(...ACCENT_TEAL_COLOR);
+      doc.setTextColor(...RESULTS_BLUE_COLOR);
       doc.text("Badges gagnés", margin, cursorY);
       cursorY += 8;
       for (const profileId of playerIds) {
@@ -1550,7 +1562,7 @@ export async function exportAlbumAsPdf(
       ensureGameSpace(13);
       doc.setFont("Nunito", "bold");
       doc.setFontSize(12);
-      doc.setTextColor(...ACCENT_TEAL_COLOR);
+      doc.setTextColor(...RESULTS_BLUE_COLOR);
       doc.text("Challenge destination", margin, cursorY);
       cursorY += 8;
       drawGameCard(
@@ -1566,21 +1578,32 @@ export async function exportAlbumAsPdf(
       ensureGameSpace(13);
       doc.setFont("Nunito", "bold");
       doc.setFontSize(12);
-      doc.setTextColor(...ACCENT_TEAL_COLOR);
+      doc.setTextColor(...RESULTS_BLUE_COLOR);
       doc.text("Défis partagés", margin, cursorY);
       cursorY += 8;
       for (const challengeDay of content.gameSummary.sharedChallenges ?? []) {
+        drawGameCard(
+          `Jour ${challengeDay.day} · ${formatTripDayLabel(challengeDay.day, source.tripStartDate)}`,
+          [`${challengeDay.title} : ${challengeDay.description}`],
+          [227, 242, 253]
+        );
         for (const entry of challengeDay.entries) {
           const reactions = entry.reactions.map((reaction) => `${reaction.emoji} ${reaction.count}`).join("  ");
           const votes = entry.bestVoters.length > 0 ? `🏆 ${entry.bestVoters.length}` : "";
           drawGameCard(
-            `${entry.surname} · ${formatTripDayLabel(challengeDay.day, source.tripStartDate)}`,
+            `${entry.surname} · Jour ${challengeDay.day}`,
             [entry.response, [reactions, votes].filter(Boolean).join("  ") || "Aucune réaction"],
             entry.bestVoters.length > 0 ? [232, 245, 233] : [245, 245, 245]
           );
         }
       }
     }
+
+    chapterFooterRanges.push({
+      startPage: gameSectionStartPage,
+      endPage: doc.getNumberOfPages(),
+      label: "Résultats de jeu",
+    });
   }
 
   // --- Pied de page (numérotation + rappel du jour de visite) -------------
