@@ -778,12 +778,25 @@ export async function exportAlbumAsPdf(
     return dimensions;
   }
 
-  const addTextBlock = (lines: string[], x: number, y: number, fontSize: number, lineHeight = 7) => {
+  const addTextBlock = (
+    lines: string[],
+    x: number,
+    y: number,
+    fontSize: number,
+    lineHeight = 7,
+    pagination: EnsureSpaceOptions = {}
+  ) => {
     doc.setFont("Nunito", "normal");
     doc.setFontSize(fontSize);
     doc.setTextColor(...TEXT_COLOR);
     let currentY = y;
     for (const line of lines) {
+      if (currentY + lineHeight > pageHeight - margin) {
+        currentY = ensureSpace(doc, currentY, lineHeight, pageWidth, pageHeight, margin, pagination);
+        doc.setFont("Nunito", "normal");
+        doc.setFontSize(fontSize);
+        doc.setTextColor(...TEXT_COLOR);
+      }
       const safeLine = String(line || "").slice(0, 220);
       doc.text(safeLine, x, currentY, { maxWidth: pageWidth - x - margin });
       currentY += lineHeight;
@@ -1021,7 +1034,7 @@ export async function exportAlbumAsPdf(
       doc.text((place.historyLabel || "Présentation").slice(0, 90), margin, cursorY);
       doc.setTextColor(...TEXT_COLOR);
       cursorY += 7;
-      cursorY = addTextBlock(historyLines, margin, cursorY, 10.5, 5.5);
+      cursorY = addTextBlock(historyLines, margin, cursorY, 10.5, 5.5, { chapterTitle, accentColor });
       cursorY += 3;
     }
 
@@ -1049,7 +1062,7 @@ export async function exportAlbumAsPdf(
       doc.text((place.anecdotesLabel || "Anecdotes").slice(0, 90), margin, cursorY);
       doc.setTextColor(...TEXT_COLOR);
       cursorY += 7;
-      cursorY = addTextBlock(anecdoteLines, margin, cursorY, 10.5, 5.5);
+      cursorY = addTextBlock(anecdoteLines, margin, cursorY, 10.5, 5.5, { chapterTitle, accentColor });
       cursorY += 3;
     }
 
@@ -1136,7 +1149,7 @@ export async function exportAlbumAsPdf(
       doc.setDrawColor(...accentColor);
       doc.setLineWidth(0.8);
       doc.line(margin, cursorY - 4, margin, cursorY + noteLines.length * 7 - 4);
-      cursorY = addTextBlock(noteLines, margin + 4, cursorY, 11, 7);
+      cursorY = addTextBlock(noteLines, margin + 4, cursorY, 11, 7, { chapterTitle, accentColor });
     }
 
     // Avis de la famille (story 30.6) : like/dislike + commentaire libre par
@@ -1181,10 +1194,7 @@ export async function exportAlbumAsPdf(
         doc.setFont("Nunito", "normal");
         doc.setFontSize(10.5);
         doc.setTextColor(...(hasText ? TEXT_COLOR : MUTED_TEXT_COLOR));
-        for (const line of textLines) {
-          doc.text(line, margin, cursorY, { maxWidth: pageContentWidth });
-          cursorY += 5.5;
-        }
+        cursorY = addTextBlock(textLines, margin, cursorY, 10.5, 5.5, { chapterTitle, accentColor });
         doc.setTextColor(...TEXT_COLOR);
         cursorY += 3;
       }
@@ -1223,7 +1233,7 @@ export async function exportAlbumAsPdf(
             chapterTitle,
             accentColor,
           });
-          cursorY = addTextBlock(lines, margin, cursorY, 10.5, 5.5);
+          cursorY = addTextBlock(lines, margin, cursorY, 10.5, 5.5, { chapterTitle, accentColor });
           cursorY += 2;
         }
 
@@ -1238,7 +1248,7 @@ export async function exportAlbumAsPdf(
             chapterTitle,
             accentColor,
           });
-          cursorY = addTextBlock(bulletLines, margin, cursorY, 10.5, 5.5);
+          cursorY = addTextBlock(bulletLines, margin, cursorY, 10.5, 5.5, { chapterTitle, accentColor });
         }
         cursorY += 4;
       }
@@ -1321,7 +1331,7 @@ export async function exportAlbumAsPdf(
         doc.text((topic.historyLabel || "Présentation").slice(0, 90), margin, cursorY);
         doc.setTextColor(...TEXT_COLOR);
         cursorY += 7;
-        cursorY = addTextBlock(historyLines, margin, cursorY, 10.5, 5.5);
+        cursorY = addTextBlock(historyLines, margin, cursorY, 10.5, 5.5, { chapterTitle, accentColor });
         cursorY += 3;
       }
 
@@ -1342,7 +1352,7 @@ export async function exportAlbumAsPdf(
         doc.text((topic.anecdotesLabel || "Anecdotes").slice(0, 90), margin, cursorY);
         doc.setTextColor(...TEXT_COLOR);
         cursorY += 7;
-        cursorY = addTextBlock(anecdoteLines, margin, cursorY, 10.5, 5.5);
+        cursorY = addTextBlock(anecdoteLines, margin, cursorY, 10.5, 5.5, { chapterTitle, accentColor });
         cursorY += 3;
       }
 
@@ -1406,7 +1416,7 @@ export async function exportAlbumAsPdf(
         doc.setDrawColor(...accentColor);
         doc.setLineWidth(0.8);
         doc.line(margin, cursorY - 4, margin, cursorY + noteLines.length * 7 - 4);
-        cursorY = addTextBlock(noteLines, margin + 4, cursorY, 11, 7);
+        cursorY = addTextBlock(noteLines, margin + 4, cursorY, 11, 7, { chapterTitle, accentColor });
       }
 
       if (!hasPresentation && !hasAnecdotes && galleryPhotos.length === 0 && noteTexts.length === 0) {
