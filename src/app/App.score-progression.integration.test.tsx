@@ -211,6 +211,7 @@ describe("App results chart integration (story 22.2)", () => {
   });
 
   it("shows completed challenges from past days without waiting for every profile", async () => {
+    vi.setSystemTime(new Date(2026, 7, 24, 18));
     localStorage.setItem("jp-active-profile-id", "p2");
     const snapshot = makeSnapshot({
       p1: makeProfile("p1", "Maman", "proprietaire"),

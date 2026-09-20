@@ -214,3 +214,38 @@ development_status:
     30-4-edition-familiale-publiee: review
     30-5-contenu-editorial-et-habillage-visuel: done
   epic-30-retrospective: optional
+
+  epic-31: backlog
+  31-1-figer-turquie-2026-instance-reference: backlog
+  31-2-cartographier-dependances-specifiques-voyage: backlog
+  31-3-definir-contrat-conceptuel-voyage: backlog
+  31-4-definir-strategie-version-migration: backlog
+  epic-31-retrospective: optional
+
+  epic-32: backlog
+  32-1-creer-modele-pack-voyage: backlog
+  32-2-brancher-moteur-sur-pack-actif: backlog
+  32-3-valider-automatiquement-pack-avant-publication: backlog
+  32-4-organiser-medias-par-pack: backlog
+  epic-32-retrospective: optional
+
+  epic-33: backlog
+  33-1-namespace-donnees-locales-par-voyage: backlog
+  33-2-scoper-synchronisation-cloud-instance-famille: backlog
+  33-3-definir-selection-instance: backlog
+  33-4-adapter-regles-securite-et-tester-isolation: backlog
+  epic-33-retrospective: optional
+
+  epic-34: backlog
+  34-1-definir-configuration-instance: backlog
+  34-2-automatiser-build-deploiement-instance: backlog
+  34-3-gerer-cache-pwa-et-mises-a-jour-instance: backlog
+  34-4-documenter-checklist-operationnelle: backlog
+  epic-34-retrospective: optional
+
+  epic-35: backlog
+  35-1-creer-pack-minimal-test-independant: backlog
+  35-2-publier-instance-demonstration-second-pack: backlog
+  35-3-ajouter-tests-non-regression-inter-packs: backlog
+  35-4-valider-conservation-instance-turquie: backlog
+  epic-35-retrospective: optional

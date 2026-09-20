@@ -5,15 +5,7 @@ BACKLOG / EVOLUTIONS
 * GENERIQUE - G2 - Un administrateur général, et un groupe de famille avec des droits d'aministrateurs pour faire une partie de ce que peut faire l'administrateur
 
 * CONTENU - C7 - rajouter des musiques dans l'audio (genre les mouettes ...)
-peux-=>REMARQUE : TOUT REDEPLOIEMENT DE L'APPLICATION n'entraine pas 
-de pertes car c'est firebase qui est prioritaire et lors du 
-déploiement il y a fusion entre les données de Firebase et ce qui vient
-de place.ts (/ document.ts)
 
-----
-* JEU - J5 - Jeu du jour - Un joueur qui a oublié de faire le jeu de la veille pourrait-il le passer quand même ? (paramètre possible ? Paramètre admin ? ...)
-* JEU - J2 - Jeu du jour - notification quiz du jour
----
 * JEU - J1 - Jeu du jour - pouvoir revoir les questions (quiz / enigmes) pour qu'elle ne se basent que sur ce qui a été réellement visité (en lien avec Backlog C2), pas prevu => associer une question à un jour / un id de places
 * JEU - J3 - Jeu du jour - défi photos
 

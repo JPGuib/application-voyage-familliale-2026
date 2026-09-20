@@ -23,7 +23,13 @@ vi.mock("../content/trip", () => ({
 
 type SnapshotPhase = "before" | "during";
 
-function makeSnapshot(phase: SnapshotPhase) {
+function makeSnapshot(
+  phase: SnapshotPhase,
+  options: {
+    tripStartDate?: string | null;
+    gameDayOverrides?: Record<number, "open" | "closed">;
+  } = {}
+) {
   const launchGateCycle = phase === "during" ? 1 : 0;
   const launchGateCompletedCycleByProfile =
     phase === "during"
@@ -46,6 +52,8 @@ function makeSnapshot(phase: SnapshotPhase) {
     ownerCodeHash: "hash",
     ownerRecoveryHash: "",
     phase,
+    tripStartDate: options.tripStartDate ?? null,
+    gameDayOverrides: options.gameDayOverrides ?? {},
     launchGateCycle,
     launchGateCompletedCycleByProfile,
     gameScoring: DEFAULT_GAME_SCORING,
@@ -277,7 +285,10 @@ describe("App access-control integration", () => {
   it("allows user after unlock to access guide game tips and results", async () => {
     localStorage.setItem("jp-active-profile-id", "p2");
 
-    const snapshot = makeSnapshot("during");
+    const snapshot = makeSnapshot("during", {
+      tripStartDate: "2026-08-24",
+      gameDayOverrides: { 1: "open" },
+    });
     cloudSyncMock.mockImplementation(() => ({
       cloudEnabled: true,
       cloudReady: true,
@@ -292,7 +303,7 @@ describe("App access-control integration", () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Checklist/i })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: /Checklist/i }));
@@ -302,7 +313,7 @@ describe("App access-control integration", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Accueil" }));
     await waitFor(() => {
-      expect(screen.getByText(/Jour\s+1/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Checklist/i })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Séjour" }));
